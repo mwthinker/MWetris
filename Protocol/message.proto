@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package tetris_protocol;
+
+enum BlockType {
+	I = 0;
+	J = 1;
+	L = 2;
+	O = 3;
+	S = 4;
+	T = 5;
+	Z = 6;
+	EMPTY = 7;
+	WALL = 8;
+}
+
+message PlayerName {
+	string name = 1;
+}
+
+message Player {
+	string name = 1;
+	int32 level = 2;
+	int32 points = 3;
+	bool ai = 4;
+	BlockType current = 5;
+	BlockType next = 6;
+	int32 id = 7;
+	repeated BlockType board = 8;
+}
+
+message ConnectionInfo {
+	repeated Player players = 1;
+}
+
+message PlayerCode {
+
+}
+
+message ConnectionStartBlock {
+	BlockType current = 1;
+	BlockType next = 2;
+}
+
+message PlayerLevel {
+	int32 id = 1;
+	int32 player_id = 2;
+	int32 level = 3;
+}
+
+message PlayerTetris {
+	string name = 1;
+}
+
+message PlayerMove {
+	string name = 1;
+}
+
+message Restart {
+	string name = 1;
+}
+
+message Pause {
+	string name = 1;
+}
+
+message Connection {
+	string name = 1;
+}
+
+message GameInfo {
+	string text = 1;
+	int32 width = 2;
+	int32 height = 3;
+}
+
+message Wrapper {
+	string text = 1;
+    GameInfo game_info = 2;
+}
