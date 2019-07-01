@@ -8,7 +8,7 @@
 #include "../types.h"
 
 #include <sdl/vertexbufferobject.h>
-#include <sdl/shader.h>
+#include <sdl/shaderprogram.h>
 #include <mw/signal.h>
 
 #include <map>

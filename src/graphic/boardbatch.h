@@ -38,21 +38,39 @@ namespace tetris {
 		vertexes.push_back(BoardShader::Vertex(x + w, y + h, (sprite.getX() + sprite.getWidth()) / textureW, (sprite.getY() + sprite.getHeight()) / textureH, color));
 	}
 
-	class BoardBatch : public sdl::Batch<BoardShader> {
+	class BoardBatch {
 	public:
-		BoardBatch(const std::shared_ptr<BoardShader>& shader, int maxVertexes) : Batch(GL_TRIANGLES, GL_DYNAMIC_DRAW, shader, maxVertexes) {
-			logger()->info("[BoardBatch] {} Mib\n", getVboSizeInMiB());
+		BoardBatch(const std::shared_ptr<BoardShader>& shader, int maxVertexes)
+			: batch_(GL_TRIANGLES, GL_DYNAMIC_DRAW, maxVertexes),
+			shader_(shader) {
+			logger()->info("[BoardBatch] {} Mib\n", batch_.getVboSizeInMiB());
 		}
 
-		BoardBatch(const std::shared_ptr<BoardShader>& shader) : Batch(GL_TRIANGLES, shader) {
+		BoardBatch(const std::shared_ptr<BoardShader>& shader) : batch_(GL_TRIANGLES) {
 		}
 
 		virtual ~BoardBatch() = default;
 
+		void clear() {
+			batch_.clear();
+		}
+
+		void uploadToGraphicCard() {
+			batch_.uploadToGraphicCard();
+		}
+
+		void add(const std::vector<BoardShader::Vertex>& data) {
+			batch_.add(data);
+		}
+
+		void draw() {
+
+		}
+
 		void addTriangle(const BoardShader::Vertex& v1, const BoardShader::Vertex& v2, const BoardShader::Vertex& v3) {
-			Batch::add(v1);
-			Batch::add(v2);
-			Batch::add(v3);
+			batch_.add(v1);
+			batch_.add(v2);
+			batch_.add(v3);
 		}
 
 		void addRectangle(float x, float y, float w, float h, const Color& color) {
@@ -118,6 +136,9 @@ namespace tetris {
 			addRectangle(BoardShader::Vertex(x1 - dx, y1 + dy), BoardShader::Vertex(x1 + dx, y1 - dy), BoardShader::Vertex(x2 + dx, y2 - dy), BoardShader::Vertex(x2 - dx, y2 + dy));
 		}
 
+	private:
+		std::shared_ptr<BoardShader> shader_;
+		sdl::Batch<BoardShader::Vertex> batch_;
 	};
 
 }

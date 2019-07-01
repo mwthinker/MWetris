@@ -2,7 +2,7 @@
 #define BOARDSHADER_H
 
 #include "../types.h"
-#include <sdl/shader.h>
+#include <sdl/shaderprogram.h>
 #include <sdl/sprite.h>
 
 #include <memory>
@@ -27,6 +27,10 @@ namespace tetris {
 		class Vertex {
 		public:
 			Vertex() = default;
+			Vertex(const Vertex&) = default;
+			Vertex& operator=(const Vertex&) = default;
+			Vertex(Vertex&&) = default;
+			Vertex& operator=(Vertex&&) = default;
 
 			Vertex(GLfloat x, GLfloat y) : pos_(x, y), color_(1, 1, 1, 1), texture_(0) {
 			}
@@ -52,7 +56,7 @@ namespace tetris {
 		};
 
 	private:
-		sdl::ShaderObject shader_;
+		sdl::ShaderProgram shader_;
 
 		// Vertex buffer attributes.
 		int aPosIndex_;

@@ -122,6 +122,7 @@ namespace tetris {
 	}
 
 	void ImGuiWindow::initOpenGl() {
+		Window::setOpenGlVersion(3, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
 		Window::initOpenGl();
 	}

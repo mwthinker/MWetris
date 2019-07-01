@@ -5,6 +5,8 @@
 using namespace tetris;
 
 BoardShader::BoardShader() : aPosIndex_(-1), aTexIndex_(-1), aTextureIndex_(-1), aColorIndex_(-1), uMatrixIndex_(-1) {
+	static_assert(std::is_standard_layout<Vertex>(),
+		"Vertex type must be a POD type.");
 }
 
 BoardShader::BoardShader(std::string vShaderFile, std::string fShaderFile) {
