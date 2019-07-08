@@ -24,6 +24,7 @@
 #include "imguishader.h"
 
 #include <sdl/vertexarrayobject.h>
+#include <sdl/vertexbufferobject.h>
 #include <sdl/window.h>
 
 #if defined(__APPLE__)
@@ -36,7 +37,10 @@
 namespace {
 	
 	GLuint       g_FontTexture = 0;
-	unsigned int g_VboHandle = 0, g_ElementsHandle = 0;	
+	unsigned int g_VboHandle = 0;
+	//sdl::VertexBufferObject imguiVbo;
+
+	unsigned int g_ElementsHandle = 0;
 
 	tetris::ImGuiShader shader;
 	
@@ -165,6 +169,85 @@ namespace {
 
 	GlState glState_;
 
+	void backupGlState() {
+		// Backup GL state
+		glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint*)& glState_.last_active_texture);
+		glActiveTexture(GL_TEXTURE0);
+		glGetIntegerv(GL_CURRENT_PROGRAM, &glState_.last_program);
+		glGetIntegerv(GL_TEXTURE_BINDING_2D, &glState_.last_texture);
+#ifdef GL_SAMPLER_BINDING
+		glGetIntegerv(GL_SAMPLER_BINDING, &glState_.last_sampler);
+#endif
+		glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &glState_.last_array_buffer);
+		glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &glState_.last_vertex_array);
+#ifdef GL_POLYGON_MODE
+		glGetIntegerv(GL_POLYGON_MODE, glState_.last_polygon_mode);
+#endif
+		glGetIntegerv(GL_VIEWPORT, glState_.last_viewport);
+		glGetIntegerv(GL_SCISSOR_BOX, glState_.last_scissor_box);
+		glGetIntegerv(GL_BLEND_SRC_RGB, (GLint*)& glState_.last_blend_src_rgb);
+		glGetIntegerv(GL_BLEND_DST_RGB, (GLint*)& glState_.last_blend_dst_rgb);
+		glGetIntegerv(GL_BLEND_SRC_ALPHA, (GLint*)& glState_.last_blend_src_alpha);
+		glGetIntegerv(GL_BLEND_DST_ALPHA, (GLint*)& glState_.last_blend_dst_alpha);
+		glGetIntegerv(GL_BLEND_EQUATION_RGB, (GLint*)& glState_.last_blend_equation_rgb);
+		glGetIntegerv(GL_BLEND_EQUATION_ALPHA, (GLint*)& glState_.last_blend_equation_alpha);
+		glState_.last_enable_blend = glIsEnabled(GL_BLEND);
+		glState_.last_enable_cull_face = glIsEnabled(GL_CULL_FACE);
+		glState_.last_enable_depth_test = glIsEnabled(GL_DEPTH_TEST);
+		glState_.last_enable_scissor_test = glIsEnabled(GL_SCISSOR_TEST);
+		glState_.clip_origin_lower_left = true;
+#if defined(GL_CLIP_ORIGIN) && !defined(__APPLE__)
+		glState_.last_clip_origin = 0; glGetIntegerv(GL_CLIP_ORIGIN, (GLint*)& glState_.last_clip_origin); // Support for GL 4.5's glClipControl(GL_UPPER_LEFT)
+		if (glState_.last_clip_origin == GL_UPPER_LEFT) {
+			glState_.clip_origin_lower_left = false;
+		}
+#endif
+	}
+
+	void restoreGlState() {
+		// Restore modified GL state
+		glUseProgram(glState_.last_program);
+		glBindTexture(GL_TEXTURE_2D, glState_.last_texture);
+#ifdef GL_SAMPLER_BINDING
+		glBindSampler(0, glState_.last_sampler);
+#endif
+		glActiveTexture(glState_.last_active_texture);
+
+		glBindVertexArray(glState_.last_vertex_array);
+
+		glBindBuffer(GL_ARRAY_BUFFER, glState_.last_array_buffer);
+		glBlendEquationSeparate(glState_.last_blend_equation_rgb, glState_.last_blend_equation_alpha);
+		glBlendFuncSeparate(glState_.last_blend_src_rgb, glState_.last_blend_dst_rgb, glState_.last_blend_src_alpha, glState_.last_blend_dst_alpha);
+		if (glState_.last_enable_blend) {
+			glEnable(GL_BLEND);
+		} else {
+			glDisable(GL_BLEND);
+		}
+
+		if (glState_.last_enable_cull_face) {
+			glEnable(GL_CULL_FACE);
+		} else {
+			glDisable(GL_CULL_FACE);
+		}
+		if (glState_.last_enable_depth_test) {
+			glEnable(GL_DEPTH_TEST);
+		} else {
+			glDisable(GL_DEPTH_TEST);
+		}
+		if (glState_.last_enable_scissor_test) {
+			glEnable(GL_SCISSOR_TEST);
+		} else {
+			glDisable(GL_SCISSOR_TEST);
+		}
+
+#ifdef GL_POLYGON_MODE
+		glPolygonMode(GL_FRONT_AND_BACK, (GLenum)glState_.last_polygon_mode[0]);
+#endif
+
+		glViewport(glState_.last_viewport[0], glState_.last_viewport[1], (GLsizei)glState_.last_viewport[2], (GLsizei)glState_.last_viewport[3]);
+		glScissor(glState_.last_scissor_box[0], glState_.last_scissor_box[1], (GLsizei)glState_.last_scissor_box[2], (GLsizei)glState_.last_scissor_box[3]);
+	}
+
 }
 
 // Functions
@@ -188,85 +271,6 @@ void ImGui_ImplOpenGL3_NewFrame() {
 	if (!g_FontTexture) {
 		ImGui_ImplOpenGL3_CreateDeviceObjects();
 	}
-}
-
-void backupGlState() {
-	// Backup GL state
-	glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint*)& glState_.last_active_texture);
-	glActiveTexture(GL_TEXTURE0);
-	glGetIntegerv(GL_CURRENT_PROGRAM, &glState_.last_program);
-	glGetIntegerv(GL_TEXTURE_BINDING_2D, &glState_.last_texture);
-#ifdef GL_SAMPLER_BINDING
-	glGetIntegerv(GL_SAMPLER_BINDING, &glState_.last_sampler);
-#endif
-	glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &glState_.last_array_buffer);
-	glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &glState_.last_vertex_array);
-#ifdef GL_POLYGON_MODE
-	glGetIntegerv(GL_POLYGON_MODE, glState_.last_polygon_mode);
-#endif
-	glGetIntegerv(GL_VIEWPORT, glState_.last_viewport);
-	glGetIntegerv(GL_SCISSOR_BOX, glState_.last_scissor_box);
-	glGetIntegerv(GL_BLEND_SRC_RGB, (GLint*)& glState_.last_blend_src_rgb);
-	glGetIntegerv(GL_BLEND_DST_RGB, (GLint*)& glState_.last_blend_dst_rgb);
-	glGetIntegerv(GL_BLEND_SRC_ALPHA, (GLint*)& glState_.last_blend_src_alpha);
-	glGetIntegerv(GL_BLEND_DST_ALPHA, (GLint*)& glState_.last_blend_dst_alpha);
-	glGetIntegerv(GL_BLEND_EQUATION_RGB, (GLint*)& glState_.last_blend_equation_rgb);
-	glGetIntegerv(GL_BLEND_EQUATION_ALPHA, (GLint*)& glState_.last_blend_equation_alpha);
-	glState_.last_enable_blend = glIsEnabled(GL_BLEND);
-	glState_.last_enable_cull_face = glIsEnabled(GL_CULL_FACE);
-	glState_.last_enable_depth_test = glIsEnabled(GL_DEPTH_TEST);
-	glState_.last_enable_scissor_test = glIsEnabled(GL_SCISSOR_TEST);
-	glState_.clip_origin_lower_left = true;
-#if defined(GL_CLIP_ORIGIN) && !defined(__APPLE__)
-	glState_.last_clip_origin = 0; glGetIntegerv(GL_CLIP_ORIGIN, (GLint*)& glState_.last_clip_origin); // Support for GL 4.5's glClipControl(GL_UPPER_LEFT)
-	if (glState_.last_clip_origin == GL_UPPER_LEFT) {
-		glState_.clip_origin_lower_left = false;
-	}
-#endif
-}
-
-void restoreGlState() {
-	// Restore modified GL state
-	glUseProgram(glState_.last_program);
-	glBindTexture(GL_TEXTURE_2D, glState_.last_texture);
-#ifdef GL_SAMPLER_BINDING
-	glBindSampler(0, glState_.last_sampler);
-#endif
-	glActiveTexture(glState_.last_active_texture);
-
-	glBindVertexArray(glState_.last_vertex_array);
-
-	glBindBuffer(GL_ARRAY_BUFFER, glState_.last_array_buffer);
-	glBlendEquationSeparate(glState_.last_blend_equation_rgb, glState_.last_blend_equation_alpha);
-	glBlendFuncSeparate(glState_.last_blend_src_rgb, glState_.last_blend_dst_rgb, glState_.last_blend_src_alpha, glState_.last_blend_dst_alpha);
-	if (glState_.last_enable_blend) {
-		glEnable(GL_BLEND);
-	} else {
-		glDisable(GL_BLEND);
-	}
-
-	if (glState_.last_enable_cull_face) {
-		glEnable(GL_CULL_FACE);
-	} else {
-		glDisable(GL_CULL_FACE);
-	}
-	if (glState_.last_enable_depth_test) {
-		glEnable(GL_DEPTH_TEST);
-	} else {
-		glDisable(GL_DEPTH_TEST);
-	}
-	if (glState_.last_enable_scissor_test) {
-		glEnable(GL_SCISSOR_TEST);
-	} else {
-		glDisable(GL_SCISSOR_TEST);
-	}
-
-#ifdef GL_POLYGON_MODE
-	glPolygonMode(GL_FRONT_AND_BACK, (GLenum)glState_.last_polygon_mode[0]);
-#endif
-
-	glViewport(glState_.last_viewport[0], glState_.last_viewport[1], (GLsizei) glState_.last_viewport[2], (GLsizei) glState_.last_viewport[3]);
-	glScissor(glState_.last_scissor_box[0], glState_.last_scissor_box[1], (GLsizei) glState_.last_scissor_box[2], (GLsizei) glState_.last_scissor_box[3]);
 }
 
 // OpenGL3 Render function.
@@ -309,12 +313,12 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data) {
 #endif
     // Recreate the VAO every time
     // (This is to easily allow multiple GL contexts. VAO are not shared among GL contexts, and we don't track creation/deletion of windows so we don't have an obvious key to use to cache them.)
-    //VertexA
 	
-	GLuint vao_handle = 0;
-    glGenVertexArrays(1, &vao_handle);
-    glBindVertexArray(vao_handle);
+	sdl::VertexArrayObject vao;
+	vao.create();
+	vao.bind();
 
+	//vbo.
     glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
 	shader.setVertexAttribPointer();
 
@@ -327,6 +331,7 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data) {
         const ImDrawList* cmd_list = draw_data->CmdLists[n];
         size_t idx_buffer_offset = 0;
 
+		//imguiVbo.bindData()
         glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
         glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)cmd_list->VtxBuffer.Size * sizeof(ImDrawVert), (const GLvoid*)cmd_list->VtxBuffer.Data, GL_STREAM_DRAW);
 
@@ -361,8 +366,8 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data) {
             idx_buffer_offset += pcmd->ElemCount * sizeof(ImDrawIdx);
         }
     }
-    glDeleteVertexArrays(1, &vao_handle);
-    
+	vao = sdl::VertexArrayObject();
+
 	restoreGlState();
 }
 
@@ -415,6 +420,7 @@ bool ImGui_ImplOpenGL3_CreateDeviceObjects() {
 	shader = tetris::ImGuiShader(vertexShader, fragmentShader);
 
     // Create buffers
+	//imguiVbo = sdl::VertexBufferObject();
     glGenBuffers(1, &g_VboHandle);
     glGenBuffers(1, &g_ElementsHandle);
 
@@ -427,6 +433,7 @@ bool ImGui_ImplOpenGL3_CreateDeviceObjects() {
 }
 
 void ImGui_ImplOpenGL3_DestroyDeviceObjects() {
+	//imguiVbo = sdl::VertexBufferObject();
 	if (g_VboHandle) {
 		glDeleteBuffers(1, &g_VboHandle);
 	}

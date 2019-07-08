@@ -45,8 +45,6 @@ namespace tetris {
 		Page currentPage_;
 
 	private:
-		
-
 		void pushButtonStyle();
 
 		void popButtonStyle();
