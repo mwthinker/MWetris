@@ -8,7 +8,7 @@
 
 #include <sdl/sound.h>
 #include <sdl/sprite.h>
-//#include <mw/color.h>
+#include <sdl/color.h>
 #include <sdl/font.h>
 #include <sdl/music.h>
 #include <sdl/textureatlas.h>
@@ -55,27 +55,27 @@ namespace tetris {
 
 		void save();
 
-		//sdl::Font loadFont(const std::string& file, unsigned int fontSize);
+		const sdl::Font& loadFont(const std::string& file, int fontSize);
 		sdl::Sound loadSound(const std::string& file);
 		sdl::Music loadMusic(const std::string& file);
 		sdl::Sprite loadSprite(const std::string& file);
 
 		sdl::Sprite getSprite(BlockType blockType);
 
-		sdl::Font getDefaultFont(int size);
+		const sdl::Font& getDefaultFont(int size);
 
-		ImColor getOuterSquareColor() const;
-		ImColor getInnerSquareColor() const;
-		ImColor getStartAreaColor() const;
-		ImColor getPlayerAreaColor() const;
-		ImColor getBorderColor() const;
+		sdl::Color getOuterSquareColor() const;
+		sdl::Color getInnerSquareColor() const;
+		sdl::Color getStartAreaColor() const;
+		sdl::Color getPlayerAreaColor() const;
+		sdl::Color getBorderColor() const;
 
 		float getTetrisSquareSize() const;
 		float getTetrisBorderSize() const;
 
 		bool isShowDownBlock() const;
 		void setShowDownBlock(bool showDownColor);
-		ImColor getDownBlockColor() const;
+		sdl::Color getDownBlockColor() const;
 
 		void bindTextureFromAtlas() const;
 
@@ -155,39 +155,39 @@ namespace tetris {
 
 		float getWindowBarHeight() const;
 
-		ImColor getWindowBarColor() const;
+		sdl::Color getWindowBarColor() const;
 
 		sdl::Sprite getCheckboxBoxSprite();
 		sdl::Sprite getCheckboxCheckSprite();
-		ImColor getCheckboxTextColor() const;
-		ImColor getCheckboxBackgroundColor() const;
-		ImColor getCheckboxBoxColor() const;
-		ImColor getChecboxCheckColor() const;
+		sdl::Color getCheckboxTextColor() const;
+		sdl::Color getCheckboxBackgroundColor() const;
+		sdl::Color getCheckboxBoxColor() const;
+		sdl::Color getChecboxCheckColor() const;
 
 		sdl::Sprite getRadioButtonBoxSprite();
 		sdl::Sprite getRadioButtonCheckSprite();
-		ImColor getRadioButtonTextColor() const;
-		ImColor getRadioButtonBackgroundColor() const;
-		ImColor getRadioButtonBoxColor() const;
-		ImColor getRadioButtonCheckColor() const;
+		sdl::Color getRadioButtonTextColor() const;
+		sdl::Color getRadioButtonBackgroundColor() const;
+		sdl::Color getRadioButtonBoxColor() const;
+		sdl::Color getRadioButtonCheckColor() const;
 
-		ImColor getLabelTextColor() const;
-		ImColor getLabelBackgroundColor() const;
+		sdl::Color getLabelTextColor() const;
+		sdl::Color getLabelBackgroundColor() const;
 
-		ImColor getButtonFocusColor() const;
-		ImColor getButtonTextColor() const;
-		ImColor getButtonHoverColor() const;
-		ImColor getButtonPushColor() const;
-		ImColor getButtonBackgroundColor() const;
-		ImColor getButtonBorderColor() const;
+		sdl::Color getButtonFocusColor() const;
+		sdl::Color getButtonTextColor() const;
+		sdl::Color getButtonHoverColor() const;
+		sdl::Color getButtonPushColor() const;
+		sdl::Color getButtonBackgroundColor() const;
+		sdl::Color getButtonBorderColor() const;
 
-		ImColor getComboBoxFocusColor() const;
-		ImColor getComboBoxTextColor() const;
-		ImColor getComboBoxSelectedTextColor() const;
-		ImColor getComboBoxSelectedBackgroundColor() const;
-		ImColor getComboBoxBackgroundColor() const;
-		ImColor getComboBoxBorderColor() const;
-		ImColor getComboBoxShowDropDownColor() const;
+		sdl::Color getComboBoxFocusColor() const;
+		sdl::Color getComboBoxTextColor() const;
+		sdl::Color getComboBoxSelectedTextColor() const;
+		sdl::Color getComboBoxSelectedBackgroundColor() const;
+		sdl::Color getComboBoxBackgroundColor() const;
+		sdl::Color getComboBoxBorderColor() const;
+		sdl::Color getComboBoxShowDropDownColor() const;
 		sdl::Sprite getComboBoxShowDropDownSprite();
 
 		sdl::Sprite getHumanSprite();
@@ -195,7 +195,7 @@ namespace tetris {
 		sdl::Sprite getCrossSprite();
 		sdl::Sprite getZoomSprite();
 
-		ImColor getMiddleTextColor() const;
+		sdl::Color getMiddleTextColor() const;
 		int getMiddleTextBoxSize() const;
 
 		//void setActiveLocalGame(int columns, int rows, const std::vector<PlayerData>& playerDataVector);

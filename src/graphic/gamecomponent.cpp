@@ -44,8 +44,9 @@ namespace tetris {
 		: tetrisGame_{tetrisGame}
 		, updateMatrix_{true} {
 
-		eventConnection_ = tetrisGame_.addGameEventHandler(std::bind(&GameComponent::eventHandler, this, std::placeholders::_1));
-
+		eventConnection_ = tetrisGame_.addGameEventHandler([&](TetrisGameEvent& tetrisEvent) {
+			eventHandler(tetrisEvent);
+		});
 		boardShader_ = std::make_shared<BoardShader>("board.ver.glsl", "board.fra.glsl");
 		dynamicBoardBatch_ = std::make_shared<BoardBatch>(boardShader_, 10000);
 	}
@@ -86,8 +87,8 @@ namespace tetris {
 				dy_ = 0;
 			}
 
-			model = glm::translate(model, Vec3(dx_, dy_, 0));
-			model = glm::scale(model, Vec3(scale_, scale_, 0));
+			model = glm::translate(model, Vec3{dx_, dy_, 0});
+			model = glm::scale(model, Vec3{scale_, scale_, 0});
 
 			boardShader_->setMatrix(projMatrix_ * model);
 			boardShader_->useProgram();
@@ -104,7 +105,7 @@ namespace tetris {
 
 			for (auto& pair : graphicPlayers_) {
 				GameGraphic& graphic = pair.second;
-				graphic.update((float)deltaTime, *dynamicBoardBatch_);
+				graphic.update(static_cast<float>(deltaTime), *dynamicBoardBatch_);
 			}
 			dynamicBoardBatch_->uploadToGraphicCard();
 
@@ -133,7 +134,6 @@ namespace tetris {
 		}
 
 		staticBoardBatch_ = std::make_shared<BoardBatch>(boardShader_);
-
 		graphicPlayers_.clear();
 
 		float w = 0;

@@ -68,8 +68,8 @@ namespace tetris {
 
 		void networkPage();
 		
-		bool show_another_window;
 		float menuHeight_;
+		TetrisGame game_;
 	};
 
 } // Namespace tetris.

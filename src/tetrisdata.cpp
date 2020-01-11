@@ -1,6 +1,8 @@
 #include "tetrisdata.h"
 #include "square.h"
 
+#include <sdl/color.h>
+
 #include <nlohmann/json.hpp>
 
 #include <fstream>
@@ -9,24 +11,32 @@
 using nlohmann::json;
 using namespace tetris;
 
-void from_json(const json& j, ImColor& color) {
-	std::stringstream stream(j.get<std::string>());
-	if (!(stream >> color.Value.x)) {
-		throw std::runtime_error("Red value invalid");
-	}
-	if (!(stream >> color.Value.y)) {
-		throw std::runtime_error("Green value invalid");
-	}
-	if (!(stream >> color.Value.z)) {
-		throw std::runtime_error("Blue value invalid");
-	}
-	if (!stream.eof()) {
-		if (!(stream >> color.Value.w)) {
-			throw std::runtime_error("Alpha value invalid");
+namespace sdl {
+
+	void from_json(const json& j, Color& color) {
+		std::stringstream stream(j.get<std::string>());
+		float r;
+		if (!(stream >> r)) {
+			throw std::runtime_error("Red value invalid");
 		}
-	} else {
-		color.Value.w = 1.f;
+		float g;
+		if (!(stream >> g)) {
+			throw std::runtime_error("Green value invalid");
+		}
+		float b;
+		if (!(stream >> b)) {
+			throw std::runtime_error("Blue value invalid");
+		}
+		float a = 1.f;
+		if (!stream.eof()) {
+			if (!(stream >> a)) {
+				throw std::runtime_error("Alpha value invalid");
+			}
+		}
+
+		color = {r, g, b, a};
 	}
+
 }
 
 namespace tetris {
@@ -193,21 +203,19 @@ namespace tetris {
 		std::ofstream stream(jsonPath_);
 		stream << jsonObject_.dump(1);
 	}
+	
+	const sdl::Font& TetrisData::loadFont(const std::string& file, int fontSize) {
+		assert(fontSize > 0);
 
-	/*
-	sdl::Font TetrisData::loadFont(const std::string& file, unsigned int fontSize) {
 		size_t size = fonts_.size();
 		std::string key = file;
 		key += fontSize;
 		sdl::Font& font = fonts_[key];
-
-		// Font not found?
 		if (fonts_.size() > size) {
-			font = sdl::Font(file, fontSize);
+			font = sdl::Font{file, fontSize};
 		}
-
 		return font;
-	}*/
+	}
 
 	sdl::Sound TetrisData::loadSound(const std::string& file) {
 		size_t size = sounds_.size();
@@ -257,32 +265,32 @@ namespace tetris {
 		return sdl::Sprite();
 	}
 
-	sdl::Font TetrisData::getDefaultFont(int size) {
-		return {};// loadFont(jsonObject_["window"]["font"].get<std::string>(), size);
+	const sdl::Font& TetrisData::getDefaultFont(int size) {
+		return loadFont(jsonObject_["window"]["font"].get<std::string>(), size);
 	}
 
 	void TetrisData::bindTextureFromAtlas() const {
 		textureAtlas_.get().bindTexture();
 	}
 
-	ImColor TetrisData::getOuterSquareColor() const {
-		return jsonObject_["window"]["tetrisBoard"]["outerSquareColor"].get<ImColor>();
+	sdl::Color TetrisData::getOuterSquareColor() const {
+		return jsonObject_["window"]["tetrisBoard"]["outerSquareColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getInnerSquareColor() const {
-		return jsonObject_["window"]["tetrisBoard"]["innerSquareColor"].get<ImColor>();
+	sdl::Color TetrisData::getInnerSquareColor() const {
+		return jsonObject_["window"]["tetrisBoard"]["innerSquareColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getStartAreaColor() const {
-		return jsonObject_["window"]["tetrisBoard"]["startAreaColor"].get<ImColor>();
+	sdl::Color TetrisData::getStartAreaColor() const {
+		return jsonObject_["window"]["tetrisBoard"]["startAreaColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getPlayerAreaColor() const {
-		return jsonObject_["window"]["tetrisBoard"]["playerAreaColor"].get<ImColor>();
+	sdl::Color TetrisData::getPlayerAreaColor() const {
+		return jsonObject_["window"]["tetrisBoard"]["playerAreaColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getBorderColor() const {
-		return jsonObject_["window"]["tetrisBoard"]["borderColor"].get<ImColor>();
+	sdl::Color TetrisData::getBorderColor() const {
+		return jsonObject_["window"]["tetrisBoard"]["borderColor"].get<sdl::Color>();
 	}
 
 
@@ -298,11 +306,11 @@ namespace tetris {
 		jsonObject_["window"]["tetrisBoard"]["showDownBlock"] = showDownColor;
 	}
 
-	ImColor TetrisData::getDownBlockColor() const {
+	sdl::Color TetrisData::getDownBlockColor() const {
 		try {
-			return jsonObject_.at("window").at("tetrisBoard").at("downBlockColor").get<ImColor>();
+			return jsonObject_.at("window").at("tetrisBoard").at("downBlockColor").get<sdl::Color>();
 		} catch (nlohmann::detail::out_of_range) {
-			return ImColor(1.f, 1.f, 1.f, 0.15f);
+			return {1.f, 1.f, 1.f, 0.15f};
 		}
 	}
 
@@ -537,8 +545,8 @@ namespace tetris {
 		return jsonObject_["window"]["bar"]["height"].get<float>();
 	}
 
-	ImColor TetrisData::getWindowBarColor() const {
-		return jsonObject_["window"]["bar"]["color"].get<ImColor>();
+	sdl::Color TetrisData::getWindowBarColor() const {
+		return jsonObject_["window"]["bar"]["color"].get<sdl::Color>();
 	}
 
 	sdl::Sprite TetrisData::getCheckboxBoxSprite() {
@@ -549,20 +557,20 @@ namespace tetris {
 		return loadSprite(jsonObject_["window"]["checkBox"]["checkImage"].get<std::string>());
 	}
 
-	ImColor TetrisData::getCheckboxTextColor() const {
-		return jsonObject_["window"]["checkBox"]["textColor"].get<ImColor>();
+	sdl::Color TetrisData::getCheckboxTextColor() const {
+		return jsonObject_["window"]["checkBox"]["textColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getCheckboxBackgroundColor() const {
-		return jsonObject_["window"]["checkBox"]["backgroundColor"].get<ImColor>();
+	sdl::Color TetrisData::getCheckboxBackgroundColor() const {
+		return jsonObject_["window"]["checkBox"]["backgroundColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getCheckboxBoxColor() const {
-		return jsonObject_["window"]["checkBox"]["boxColor"].get<ImColor>();
+	sdl::Color TetrisData::getCheckboxBoxColor() const {
+		return jsonObject_["window"]["checkBox"]["boxColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getChecboxCheckColor() const {
-		return jsonObject_["window"]["checkBox"]["checkColor"].get<ImColor>();
+	sdl::Color TetrisData::getChecboxCheckColor() const {
+		return jsonObject_["window"]["checkBox"]["checkColor"].get<sdl::Color>();
 	}
 
 	sdl::Sprite TetrisData::getRadioButtonBoxSprite() {
@@ -573,80 +581,80 @@ namespace tetris {
 		return loadSprite(jsonObject_["window"]["radioButton"]["checkImage"].get<std::string>());
 	}
 
-	ImColor TetrisData::getRadioButtonTextColor() const {
-		return jsonObject_["window"]["radioButton"]["textColor"].get<ImColor>();
+	sdl::Color TetrisData::getRadioButtonTextColor() const {
+		return jsonObject_["window"]["radioButton"]["textColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getRadioButtonBackgroundColor() const {
-		return jsonObject_["window"]["radioButton"]["backgroundColor"].get<ImColor>();
+	sdl::Color TetrisData::getRadioButtonBackgroundColor() const {
+		return jsonObject_["window"]["radioButton"]["backgroundColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getRadioButtonBoxColor() const {
-		return jsonObject_["window"]["radioButton"]["boxColor"].get<ImColor>();
+	sdl::Color TetrisData::getRadioButtonBoxColor() const {
+		return jsonObject_["window"]["radioButton"]["boxColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getRadioButtonCheckColor() const {
-		return jsonObject_["window"]["radioButton"]["checkColor"].get<ImColor>();
+	sdl::Color TetrisData::getRadioButtonCheckColor() const {
+		return jsonObject_["window"]["radioButton"]["checkColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getLabelTextColor() const {
-		return jsonObject_["window"]["label"]["textColor"].get<ImColor>();
+	sdl::Color TetrisData::getLabelTextColor() const {
+		return jsonObject_["window"]["label"]["textColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getLabelBackgroundColor() const {
-		return jsonObject_["window"]["label"]["backgroundColor"].get<ImColor>();
+	sdl::Color TetrisData::getLabelBackgroundColor() const {
+		return jsonObject_["window"]["label"]["backgroundColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getButtonFocusColor() const {
-		return jsonObject_["window"]["button"]["focusColor"].get<ImColor>();
+	sdl::Color TetrisData::getButtonFocusColor() const {
+		return jsonObject_["window"]["button"]["focusColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getButtonTextColor() const {
-		return jsonObject_["window"]["button"]["textColor"].get<ImColor>();
+	sdl::Color TetrisData::getButtonTextColor() const {
+		return jsonObject_["window"]["button"]["textColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getButtonHoverColor() const {
-		return jsonObject_["window"]["button"]["hoverColor"].get<ImColor>();
+	sdl::Color TetrisData::getButtonHoverColor() const {
+		return jsonObject_["window"]["button"]["hoverColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getButtonPushColor() const {
-		return jsonObject_["window"]["button"]["pushColor"].get<ImColor>();
+	sdl::Color TetrisData::getButtonPushColor() const {
+		return jsonObject_["window"]["button"]["pushColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getButtonBackgroundColor() const {
-		return jsonObject_["window"]["button"]["backgroundColor"].get<ImColor>();
+	sdl::Color TetrisData::getButtonBackgroundColor() const {
+		return jsonObject_["window"]["button"]["backgroundColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getButtonBorderColor() const {
-		return jsonObject_["window"]["button"]["borderColor"].get<ImColor>();
+	sdl::Color TetrisData::getButtonBorderColor() const {
+		return jsonObject_["window"]["button"]["borderColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getComboBoxFocusColor() const {
-		return jsonObject_["window"]["comboBox"]["focusColor"].get<ImColor>();
+	sdl::Color TetrisData::getComboBoxFocusColor() const {
+		return jsonObject_["window"]["comboBox"]["focusColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getComboBoxTextColor() const {
-		return jsonObject_["window"]["comboBox"]["textColor"].get<ImColor>();
+	sdl::Color TetrisData::getComboBoxTextColor() const {
+		return jsonObject_["window"]["comboBox"]["textColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getComboBoxSelectedTextColor() const {
-		return jsonObject_["window"]["comboBox"]["selectedTextColor"].get<ImColor>();
+	sdl::Color TetrisData::getComboBoxSelectedTextColor() const {
+		return jsonObject_["window"]["comboBox"]["selectedTextColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getComboBoxSelectedBackgroundColor() const {
-		return jsonObject_["window"]["comboBox"]["selectedBackgroundColor"].get<ImColor>();
+	sdl::Color TetrisData::getComboBoxSelectedBackgroundColor() const {
+		return jsonObject_["window"]["comboBox"]["selectedBackgroundColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getComboBoxBackgroundColor() const {
-		return jsonObject_["window"]["comboBox"]["backgroundColor"].get<ImColor>();
+	sdl::Color TetrisData::getComboBoxBackgroundColor() const {
+		return jsonObject_["window"]["comboBox"]["backgroundColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getComboBoxBorderColor() const {
-		return jsonObject_["window"]["comboBox"]["borderColor"].get<ImColor>();
+	sdl::Color TetrisData::getComboBoxBorderColor() const {
+		return jsonObject_["window"]["comboBox"]["borderColor"].get<sdl::Color>();
 	}
 
-	ImColor TetrisData::getComboBoxShowDropDownColor() const {
-		return jsonObject_["window"]["comboBox"]["showDropDownColor"].get<ImColor>();
+	sdl::Color TetrisData::getComboBoxShowDropDownColor() const {
+		return jsonObject_["window"]["comboBox"]["showDropDownColor"].get<sdl::Color>();
 	}
 
 	sdl::Sprite TetrisData::getComboBoxShowDropDownSprite() {
@@ -669,11 +677,11 @@ namespace tetris {
 		return loadSprite(jsonObject_["window"]["sprites"]["zoom"].get<std::string>());
 	}
 
-	ImColor TetrisData::getMiddleTextColor() const {
+	sdl::Color TetrisData::getMiddleTextColor() const {
 		try {
-			return jsonObject_.at("window").at("tetrisBoard").at("middleTextColor").get<ImColor>();
+			return jsonObject_.at("window").at("tetrisBoard").at("middleTextColor").get<sdl::Color>();
 		} catch (nlohmann::detail::out_of_range) {
-			return ImColor(0.2f, 0.2f, 0.2f, 0.5f);
+			return sdl::Color{0.2f, 0.2f, 0.2f, 0.5f};
 		}
 	}
 

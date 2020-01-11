@@ -172,7 +172,7 @@ namespace tetris {
 			true);
 		nextBlock_.update(Block(player.getTetrisBoard().getNextBlockType(), 0, 0));
 
-		sdl::Font font = TetrisData::getInstance().getDefaultFont(30);
+		const auto& font = TetrisData::getInstance().getDefaultFont(30);
 		name_ = DrawText(player.getName(), font, x, y + squareSize * 5, 8.f);
 
 		level_ = player.getLevel();

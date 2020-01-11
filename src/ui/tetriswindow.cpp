@@ -10,8 +10,6 @@ namespace tetris {
 
 		const ImGuiWindowFlags ImGuiNoWindow = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoMove;
 
-		const ImGuiWindowFlags ImGuiNoWindow2 = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-
 		bool ComboAi(const char* name, int& item, const std::vector<Ai>& ais, ImGuiComboFlags flags = 0) {
 			int oldItem = item;
 			if (ImGui::BeginCombo(name, ais[item].getName().c_str(), flags))
@@ -60,11 +58,11 @@ namespace tetris {
 
 	void TetrisWindow::pushButtonStyle() {
 		ImGui::PushFont(buttonFont_);
-		ImGui::PushStyleColor(ImGuiCol_Text, tetris::TetrisData::getInstance().getButtonTextColor().Value);
-		ImGui::PushStyleColor(ImGuiCol_Border, tetris::TetrisData::getInstance().getButtonBorderColor().Value);
-		ImGui::PushStyleColor(ImGuiCol_Button, tetris::TetrisData::getInstance().getButtonBackgroundColor().Value);
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, tetris::TetrisData::getInstance().getButtonHoverColor().Value);
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, tetris::TetrisData::getInstance().getButtonFocusColor().Value);
+		ImGui::PushStyleColor(ImGuiCol_Text, tetris::TetrisData::getInstance().getButtonTextColor().toImU32());
+		ImGui::PushStyleColor(ImGuiCol_Border, tetris::TetrisData::getInstance().getButtonBorderColor().toImU32());
+		ImGui::PushStyleColor(ImGuiCol_Button, tetris::TetrisData::getInstance().getButtonBackgroundColor().toImU32());
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, tetris::TetrisData::getInstance().getButtonHoverColor().toImU32());
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, tetris::TetrisData::getInstance().getButtonFocusColor().toImU32());
 	}
 
 	void TetrisWindow::popButtonStyle() {
@@ -78,7 +76,6 @@ namespace tetris {
 	}
 
 	TetrisWindow::TetrisWindow() {
-		show_another_window = false;
 		menuHeight_ = tetris::TetrisData::getInstance().getWindowBarHeight();
 
 		manTexture_ = tetris::TetrisData::getInstance().getHumanSprite();
@@ -124,9 +121,9 @@ namespace tetris {
 		//ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(2, 2));
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, tetris::TetrisData::getInstance().getWindowBarColor().Value);
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, tetris::TetrisData::getInstance().getWindowBarColor().toImU32());
 
-		ImGui::Bar(menuHeight_, tetris::TetrisData::getInstance().getWindowBarColor().Value);
+		ImGui::Bar(menuHeight_, tetris::TetrisData::getInstance().getWindowBarColor().toImU32());
 	}
 
 	void TetrisWindow::endBar() {
