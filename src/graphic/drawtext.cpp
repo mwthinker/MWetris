@@ -3,14 +3,18 @@
 using namespace tetris;
 
 DrawText::DrawText(std::string text, const sdl::Font& font, float lowX, float lowY, float scale, bool center)
-	: lowX_(lowX), lowY_(lowY), center_(center) {
+	: lowX_{lowX}
+	, lowY_{lowY}
+	, center_{center} {
 
 	text_ = sdl::Text{text, font};
 	updateVertexes();
 }
 
 DrawText::DrawText(float lowX, float lowY)
-	: lowX_(lowX), lowY_(lowY), center_(true) {
+	: lowX_{lowX}
+	, lowY_{lowY}
+	, center_{true} {
 }
 
 void DrawText::update(std::string text) {

@@ -30,20 +30,21 @@ namespace tetris {
 		}
 	}
 
-	RawTetrisBoard::RawTetrisBoard(int columns, int rows, BlockType current, BlockType next) :
-		gameboard_(rows * columns, BlockType::EMPTY),
-		next_(next),
-		columns_(columns), rows_(rows),
-		isGameOver_(false),
-		externalRowsAdded_(0),
-		rowToBeRemoved_(-1) {
+	RawTetrisBoard::RawTetrisBoard(int columns, int rows, BlockType current, BlockType next)
+		: gameboard_{rows * columns, BlockType::EMPTY}
+		, next_{next}
+		, columns_{columns}
+		, rows_{rows}
+		, isGameOver_{false}
+		, externalRowsAdded_{0}
+		, rowToBeRemoved_{-1} {
 
 		// Uses the size of the board. I.e. rows_ and columns_.
 		current_ = createBlock(current);
 	}
 
-	RawTetrisBoard::RawTetrisBoard(const std::vector<BlockType>& board, int columns, int rows, const Block& current, BlockType next) :
-		RawTetrisBoard(columns, rows, current.getBlockType(), next) {
+	RawTetrisBoard::RawTetrisBoard(const std::vector<BlockType>& board, int columns, int rows, const Block& current, BlockType next)
+		: RawTetrisBoard{columns, rows, current.getBlockType(), next} {
 
 		gameboard_.insert(gameboard_.begin(), board.begin(), board.end());
 

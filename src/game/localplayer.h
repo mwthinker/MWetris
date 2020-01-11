@@ -19,7 +19,7 @@ namespace tetris {
 
 	class LocalPlayerBuilder {
 	public:
-		LocalPlayerBuilder();
+		LocalPlayerBuilder() = default;
 
 		ILocalPlayerPtr build();
 
@@ -90,27 +90,15 @@ namespace tetris {
 		}
 
 	private:
-		void init() {
-			name_ = "PLAYER";
-			points_ = 0;
-			level_ = 1;
-			levelUpCounter_ = 0;
-			clearedRows_ = 0;
-			points_ = 0;
-			width_ = 10;
-			height_ = 24;
-			movingBlockType_ = BlockType::EMPTY;
-		}
-
 		IDevicePtr device_;
-		std::string name_;
-		int points_, level_, levelUpCounter_, clearedRows_;
-		int width_, height_;
+		std::string name_{"PLAYER"};
+		int points_{0}, level_{1}, levelUpCounter_{0}, clearedRows_{0};
+		int width_{10}, height_{24};
 		Block movingBlock_;
-		BlockType movingBlockType_;
-		BlockType next_;
+		BlockType movingBlockType_{BlockType::EMPTY};
+		BlockType next_{BlockType::EMPTY};
 		std::vector<BlockType> board_;
-		int gameOverPosition_;
+		int gameOverPosition_{};
 	};
 
 	class ILocalPlayer : public IPlayer {

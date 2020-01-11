@@ -11,19 +11,13 @@
 namespace tetris {
 
 	struct RowRoughness {
-		RowRoughness() : holes_(0), rowSum_(0) {
-		}
-
-		int holes_;
-		int rowSum_;
+		int holes_{};
+		int rowSum_{};
 	};
 
 	struct ColumnRoughness {
-		ColumnRoughness() : holes_(0), bumpiness(0) {
-		}
-
-		int holes_;
-		int bumpiness;
+		int holes_{};
+		int bumpiness{};
 	};
 
 	RowRoughness calculateRowRoughness(const RawTetrisBoard& board, int highestUsedRow);
@@ -42,19 +36,13 @@ namespace tetris {
 	int calculateRowHoles(const RawTetrisBoard& board);
 
 	struct AiParameters {
-		inline AiParameters() : landingHeight_(false), erodedPieces_(false),
-			rowHoles_(false), columnHoles_(false),
-			holes_(false), cumulativeWells_(false),
-			holeDepth_(false) {
-		}
-
-		bool landingHeight_;
-		bool erodedPieces_;
-		bool rowHoles_;
-		bool columnHoles_;
-		bool holes_;
-		bool cumulativeWells_;
-		bool holeDepth_;
+		bool landingHeight_{};
+		bool erodedPieces_{};
+		bool rowHoles_{};
+		bool columnHoles_{};
+		bool holes_{};
+		bool cumulativeWells_{};
+		bool holeDepth_{};
 	};
 
 	class Ai {
@@ -76,13 +64,13 @@ namespace tetris {
 		}
 
 		struct State {
-			State();
+			State() = default;
 
 			State(int left, int rotations);
 
-			int left_;
-			int rotationLeft_;
-			float value_;
+			int left_{};
+			int rotationLeft_{};
+			float value_{std::numeric_limits<float>::lowest()};
 		};
 
 		State calculateBestState(const RawTetrisBoard& board, int depth);

@@ -5,7 +5,7 @@ namespace tetris {
 
 	class ActionHandler {
 	public:
-		ActionHandler();
+		ActionHandler() = default;
 		ActionHandler(double waitingTime, bool rebound);
 
 		void update(double timeStep, bool action);
@@ -16,10 +16,12 @@ namespace tetris {
 		void reset();
 
 	private:
-		bool action_;
-		double lastTime_, waitingTime_, time_;
-		bool rebound_;
-		bool lastAction_;
+		bool action_{};
+		double lastTime_{};
+		double waitingTime_{};
+		double time_{};
+		bool rebound_{};
+		bool lastAction_{};
 	};
 
 }

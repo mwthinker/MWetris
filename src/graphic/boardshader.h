@@ -32,16 +32,30 @@ namespace tetris {
 			Vertex(Vertex&&) = default;
 			Vertex& operator=(Vertex&&) = default;
 
-			Vertex(GLfloat x, GLfloat y) : pos_(x, y), color_(1, 1, 1, 1), texture_(0) {
+			Vertex(GLfloat x, GLfloat y)
+				: pos_{x, y}
+				, color_{1, 1, 1, 1}
+				, texture_{0} {
 			}
 
-			Vertex(GLfloat x, GLfloat y, const Color& color) : pos_(x, y), color_(color), texture_(0) {
+			Vertex(GLfloat x, GLfloat y, const Color& color)
+				: pos_{x, y}
+				, color_{color}
+				, texture_{0} {
 			}
 
-			Vertex(GLfloat x, GLfloat y, GLfloat xTex, GLfloat yTex) : pos_(x, y), tex_(xTex, yTex), color_(1, 1, 1, 1), texture_(1.f) {
+			Vertex(GLfloat x, GLfloat y, GLfloat xTex, GLfloat yTex)
+				: pos_{x, y}
+				, tex_{xTex, yTex}
+				, color_{1, 1, 1, 1}
+				, texture_{1} {
 			}
 
-			Vertex(GLfloat x, GLfloat y, GLfloat xTex, GLfloat yTex, const Color& color) : pos_(x, y), tex_(xTex, yTex), color_(color), texture_(1.f) {
+			Vertex(GLfloat x, GLfloat y, GLfloat xTex, GLfloat yTex, const Color& color)
+				: pos_{x, y}
+				, tex_{xTex, yTex}
+				, color_{color}
+				, texture_{1} {
 			}
 
 			bool isTexture() const {

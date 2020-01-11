@@ -336,7 +336,7 @@ namespace tetris {
 	void ImGuiWindow::settingsPage() {
 		beginBar();
 		pushButtonStyle();
-		if (ImGui::Button("Menu", { 100.5f, menuHeight_ })) {
+		if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
 			changePage(Page::MENU);
 		}
 		popButtonStyle();
@@ -347,7 +347,7 @@ namespace tetris {
 		ImGui::PopFont();
 
 		ImGui::Indent(10.f);
-		ImGui::Dummy({ 0.0f, 5.0f });
+		ImGui::Dummy({0.0f, 5.0f});
 
 		ImGui::PushFont(defaultFont_);	
 		bool check = tetris::TetrisData::getInstance().isWindowBordered();

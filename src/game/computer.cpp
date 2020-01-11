@@ -7,12 +7,8 @@
 
 using namespace tetris;
 
-Computer::Computer()
-	: currentTurn_(0), activeThread_(false) {
-}
-
 Computer::Computer(const Ai& ai)
-	: ai_(ai), currentTurn_(0), activeThread_(false) {
+	: ai_{ai} {
 }
 
 Input Computer::getInput() const {

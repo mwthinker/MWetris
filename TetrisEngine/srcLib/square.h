@@ -20,7 +20,8 @@ namespace tetris {
 		Square() = default;
 
 		Square(int column, int row)
-			: column_(column), row_(row) {
+			: column_{column}
+			, row_{row} {
 		}
 
 		bool operator==(const Square& square) const {
@@ -31,7 +32,8 @@ namespace tetris {
 			return square.column_ != column_ || square.row_ != row_;
 		}
 
-		int column_, row_;
+		int column_{};
+		int row_{};
 	};
 
 } // Namespace tetris.

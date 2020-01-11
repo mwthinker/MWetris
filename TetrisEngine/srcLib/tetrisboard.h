@@ -56,8 +56,8 @@ namespace tetris {
 		std::vector<BlockType> squaresToAdd_;
 		mw::Signal<BoardEvent, const TetrisBoard&> listener_;
 		Random random_;
-		int turns_;
-		int rowsRemoved_;
+		int turns_{};
+		int rowsRemoved_{};
 	};
 
 } // Namespace tetris.

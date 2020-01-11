@@ -27,7 +27,8 @@ namespace tetris {
 			CLIENT
 		};
 
-		GameStart(Status status) : status_(status) {
+		GameStart(Status status)
+			: status_{status} {
 		}
 
 		Status status_;
@@ -35,7 +36,8 @@ namespace tetris {
 
 	class CountDown : public TetrisGameEvent {
 	public:
-		CountDown(int timeLeft) : timeLeft_(timeLeft) {
+		CountDown(int timeLeft)
+			: timeLeft_{timeLeft} {
 		}
 
 		int timeLeft_;
@@ -44,7 +46,8 @@ namespace tetris {
 	class GamePause : public TetrisGameEvent {
 	public:
 		GamePause(bool pause, bool printPause)
-			: pause_(pause), printPause_(printPause) {
+			: pause_{pause}
+			, printPause_{printPause} {
 		}
 
 		bool pause_;
@@ -53,7 +56,8 @@ namespace tetris {
 
 	class GameOver : public TetrisGameEvent {
 	public:
-		GameOver(const std::shared_ptr<IPlayer>& player) : player_(player) {
+		GameOver(const std::shared_ptr<IPlayer>& player)
+			: player_{player} {
 		}
 
 		std::shared_ptr<IPlayer> player_;
@@ -62,7 +66,7 @@ namespace tetris {
 	class InitGame : public TetrisGameEvent {
 	public:
 		InitGame(const std::vector<std::shared_ptr<IPlayer>>& players)
-			: players_(players) {
+			: players_{players} {
 		}
 
 		std::vector<std::shared_ptr<IPlayer>> players_;
@@ -81,7 +85,9 @@ namespace tetris {
 	class LevelChange : public TetrisGameEvent {
 	public:
 		LevelChange(const std::shared_ptr<IPlayer>& player, int newLevel, int oldLevel)
-			: player_(player), newLevel_(newLevel), oldLevel_(oldLevel) {
+			: player_{player}
+			, newLevel_{newLevel}
+			, oldLevel_{oldLevel} {
 		}
 
 		int newLevel_;
@@ -92,7 +98,9 @@ namespace tetris {
 	class PointsChange : public TetrisGameEvent {
 	public:
 		PointsChange(const std::shared_ptr<IPlayer>& player, int newPoints, int oldPoints)
-			: player_(player), newPoints_(newPoints), oldPoints_(oldPoints) {
+			: player_{player}
+			, newPoints_{newPoints}
+			, oldPoints_{oldPoints} {
 		}
 
 		int newPoints_;

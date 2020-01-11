@@ -3,8 +3,8 @@
 
 using namespace tetris;
 
-ServerGame::ServerGame(mw::Signal<TetrisGameEvent&>& gameEventSignal) : 
-	gameRules_(std::make_unique<GameRules>(gameEventSignal)) {
+ServerGame::ServerGame(mw::Signal<TetrisGameEvent&>& gameEventSignal)
+	: gameRules_{std::make_unique<GameRules>(gameEventSignal)} {
 }
 
 ServerGame::~ServerGame() {

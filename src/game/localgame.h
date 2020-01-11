@@ -61,7 +61,7 @@ namespace tetris {
 
 	private:
 		std::unique_ptr<GameRules> gameRules_;
-		bool pause_;
+		bool pause_{};
 	};
 
 	class IGameFactory {

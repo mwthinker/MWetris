@@ -26,18 +26,21 @@ namespace tetris {
 
 	class HighscoreRecord {
 	public:
-		HighscoreRecord() : points_(0), level_(1), rows_(0) {
-		}
+		HighscoreRecord() = default;
 
 		HighscoreRecord(const std::string& name, std::string date, int points, int level, int rows)
-			: name_(name), date_(date), points_(points), level_(level), rows_(rows) {
+			: name_{name}
+			, date_{date}
+			, points_{points}
+			, level_{level}
+			, rows_{rows} {
 		}
 
 		std::string name_;
 		std::string date_;
-		int points_;
-		int level_;
-		int rows_;
+		int points_{0};
+		int level_{1};
+		int rows_{0};
 	};
 
 	class TetrisData {

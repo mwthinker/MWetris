@@ -57,10 +57,10 @@ namespace tetris {
 
 		// Font related.
 		sdl::Text middleText_;
-		float fontSize_;
-		float dx_, dy_;
-		float scale_;
-		float borderSize_;
+		float fontSize_{};
+		float dx_{}, dy_{};
+		float scale_{};
+		float borderSize_{};
 	};
 
 }

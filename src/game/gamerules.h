@@ -57,7 +57,7 @@ namespace tetris {
 
 		std::vector<ILocalPlayerPtr> localPlayers_;
 		mw::Signal<TetrisGameEvent&>& gameEventSignal_;
-		int nbrOfAlivePlayers_;
+		int nbrOfAlivePlayers_{};
 		static const double HOLES_PERCENT;
 		static const int LEVELUP_NBR;
 	};

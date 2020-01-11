@@ -12,7 +12,7 @@ namespace tetris {
 	public:
 		using const_iterator = std::array<Square, 4>::const_iterator;
 
-		Block();
+		Block() = default;
 		Block(BlockType blockType, int startColumn, int lowestStartRow);
 		Block(BlockType blockType, int startColumn, int lowestStartRow, int rotations);
 
@@ -74,12 +74,12 @@ namespace tetris {
 	private:
 		void rotate(int rotate);
 
-		int rotationSquareIndex_;
-		std::array<Square, 4> squares_;
-		int maxRotations_, currentRotation_;
-		int lowestStartRow_;
-		int startColumn_;
-		BlockType blockType_;
+		int rotationSquareIndex_{};
+		std::array<Square, 4> squares_{};
+		int maxRotations_{}, currentRotation_{};
+		int lowestStartRow_{};
+		int startColumn_{};
+		BlockType blockType_{BlockType::EMPTY};
 	};
 
 } // Namespace tetris.

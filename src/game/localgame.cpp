@@ -18,6 +18,6 @@ int LocalGame::getNbrAlivePlayers() const {
 	return gameRules_->getNbrAlivePlayers();
 }
 
-LocalGame::LocalGame(mw::Signal<TetrisGameEvent&>& gameEventSignal) : 
-	gameRules_(std::make_unique<GameRules>(gameEventSignal)), pause_(false) {
+LocalGame::LocalGame(mw::Signal<TetrisGameEvent&>& gameEventSignal)
+	: gameRules_{std::make_unique<GameRules>(gameEventSignal)} {
 }

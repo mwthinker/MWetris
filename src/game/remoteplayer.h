@@ -9,8 +9,6 @@ namespace tetris {
 
 	class RemotePlayer : public IPlayer {
 	public:
-		
-
 		virtual ~RemotePlayer() = default;
 
 		virtual void update(double deltaTime);

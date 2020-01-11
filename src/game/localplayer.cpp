@@ -7,10 +7,6 @@
 
 using namespace tetris;
 
-LocalPlayerBuilder::LocalPlayerBuilder() {
-	init();
-}
-
 ILocalPlayer::~ILocalPlayer() {
 	connection_.disconnect();
 }
@@ -33,16 +29,16 @@ ILocalPlayerPtr LocalPlayerBuilder::build() {
 	return player;
 }
 
-ILocalPlayer::ILocalPlayer(const RawTetrisBoard& board, const IDevicePtr& device) :
-	leftHandler_(0.09, false),
-	rightHandler_(0.09, false),
-	rotateHandler_(0.0, true),
-	downGroundHandler_(0.0, true),
-	gravityMove_(1, false),				// Value doesn't matter! Changes every frame.
-	downHandler_(0.04, false),
-	device_(device),
-	levelUpCounter_(0),
-	tetrisBoard_(board.getBoardVector(), board.getColumns(), board.getRows(), board.getBlock(), board.getNextBlockType()) {
+ILocalPlayer::ILocalPlayer(const RawTetrisBoard& board, const IDevicePtr& device)
+	: leftHandler_{0.09, false}
+	, rightHandler_{0.09, false}
+	, rotateHandler_{0.0, true}
+	, downGroundHandler_{0.0, true}
+	, gravityMove_{1, false}  // Value doesn't matter! Changes every frame.
+	, downHandler_{0.04, false}
+	, device_{device}
+	, levelUpCounter_{0}
+	, tetrisBoard_{board.getBoardVector(), board.getColumns(), board.getRows(), board.getBlock(), board.getNextBlockType()} {
 	
 	connection_ = tetrisBoard_.addGameEventListener([&](BoardEvent gameEvent, const TetrisBoard& board) {
 		boardListener(gameEvent);

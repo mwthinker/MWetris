@@ -4,7 +4,8 @@
 
 using namespace tetris;
 
-RemotePlayer::RemotePlayer() : tetrisBoard_(10,10, BlockType::I, BlockType::I) {
+RemotePlayer::RemotePlayer()
+	: tetrisBoard_{10,10, BlockType::I, BlockType::I} {
 }
 
 void RemotePlayer::update(double deltaTime) {

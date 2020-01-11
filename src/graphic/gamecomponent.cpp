@@ -41,8 +41,8 @@ namespace tetris {
 	}
 
 	GameComponent::GameComponent(TetrisGame& tetrisGame)
-		: tetrisGame_(tetrisGame),
-		updateMatrix_(true) {
+		: tetrisGame_{tetrisGame}
+		, updateMatrix_{true} {
 
 		eventConnection_ = tetrisGame_.addGameEventHandler(std::bind(&GameComponent::eventHandler, this, std::placeholders::_1));
 

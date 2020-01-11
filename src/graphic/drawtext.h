@@ -62,9 +62,9 @@ namespace tetris {
 		void updateVertexes();
 
 		sdl::Text text_;
-
-		float lowX_, lowY_;
-		bool center_;
+		float lowX_{};
+		float lowY_{};
+		bool center_{};
 		std::vector<BoardShader::Vertex> vertexes_;
 	};
 

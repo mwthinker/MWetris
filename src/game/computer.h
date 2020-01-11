@@ -16,7 +16,7 @@ namespace tetris {
 
 	class Computer : public IDevice {
 	public:
-		Computer();
+		Computer() = default;
 
 		Computer(const Ai& ai);
 
@@ -36,12 +36,12 @@ namespace tetris {
 		// Calculate and return the best input to achieve the current state.
 		Input calculateInput(Ai::State state) const;
 
-		int currentTurn_;
-		Input input_;
-		Ai::State latestState_;
+		int currentTurn_{};
+		Input input_{};
+		Ai::State latestState_{};
 		Block latestBlock_;
 		Ai ai_;
-		bool activeThread_;
+		bool activeThread_{};
 		std::future<Ai::State> handle_;
 	};
 

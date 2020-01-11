@@ -328,16 +328,19 @@ namespace tetris {
 		}
 		return edges;
 	}
-	Ai::State::State() : left_(0), rotationLeft_(0), value_(std::numeric_limits<float>::lowest()) {
+	
+	Ai::State::State(int left, int rotations)
+		: left_{left}
+		, rotationLeft_{rotations} {
 	}
 
-	Ai::State::State(int left, int rotations) : left_(left), rotationLeft_(rotations), value_(std::numeric_limits<float>::lowest()) {
+	Ai::Ai()
+		: Ai{"Default", Ai::getDefaultValueFunction()} {
 	}
 
-	Ai::Ai() : Ai("Default", Ai::getDefaultValueFunction()) {
-	}
-
-	Ai::Ai(std::string name, std::string valueFunction, bool allowException) : name_(name), valueFunction_(valueFunction) {
+	Ai::Ai(std::string name, std::string valueFunction, bool allowException)
+		: name_{name}, valueFunction_{valueFunction} {
+		
 		initCalculator(allowException);
 	}
 

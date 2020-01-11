@@ -8,7 +8,9 @@ namespace tetris {
 	class Random {
 	public:
 		Random() = default;
-		Random(std::mt19937::result_type seed) : engine_(seed) {}
+		Random(std::mt19937::result_type seed)
+			: engine_(seed) {
+		}
 
 		int generateInt(int min, int max) const {
 			return std::uniform_int_distribution<int>{min, max}(engine_);

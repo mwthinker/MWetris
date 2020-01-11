@@ -27,7 +27,7 @@ namespace tetris {
 	// Handle all communication between game and gui.
 	class TetrisGame {
 	public:
-		enum Status { WAITING_TO_CONNECT, LOCAL, SERVER, CLIENT };
+		enum Status {WAITING_TO_CONNECT, LOCAL, SERVER, CLIENT};
 
 		TetrisGame();
 		~TetrisGame();

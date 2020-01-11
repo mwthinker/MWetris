@@ -16,10 +16,12 @@ namespace tetris {
 
 	class Color {
 	public:
-		Color(glm::vec4 vec) : value(vec) {
+		Color(glm::vec4 vec)
+			: value(vec) {
 		}
 
-		Color(ImColor vec) : value(vec.Value.x, vec.Value.y, vec.Value.z, vec.Value.w) {
+		Color(ImColor vec)
+			: value{vec.Value.x, vec.Value.y, vec.Value.z, vec.Value.w} {
 		}
 
 		Color(float red = 0, float green = 0, float blue = 0, float alpha = 0)

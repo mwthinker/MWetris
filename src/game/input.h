@@ -4,10 +4,6 @@
 namespace tetris {
 
 	struct Input {
-		Input() : rotate_(false), down_(false), left_(false),
-			right_(false), downGround_(false) {
-		}
-
 		bool rotate_;
 		bool down_;
 		bool downGround_;

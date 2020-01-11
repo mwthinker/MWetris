@@ -72,17 +72,20 @@ namespace tetris {
 	}
 
 	TetrisBoard::TetrisBoard(int columns, int rows, BlockType current, BlockType next)
-		: RawTetrisBoard(columns, rows, current, next), turns_(0), rowsRemoved_(0) {
+		: RawTetrisBoard{columns, rows, current, next} {
 	}
 
 	TetrisBoard::TetrisBoard(const std::vector<BlockType>& board,
 		int columns, int rows, Block current, BlockType next,
 		int savedRowsRemoved)
-		: RawTetrisBoard(board, columns, rows, current, next), turns_(0), rowsRemoved_(savedRowsRemoved) {
+		: RawTetrisBoard{board, columns, rows, current, next}
+		, rowsRemoved_{savedRowsRemoved} {
 	}
 
 	TetrisBoard::TetrisBoard(const TetrisBoard& board)
-		: RawTetrisBoard(board), turns_(board.turns_), rowsRemoved_(board.rowsRemoved_) {
+		: RawTetrisBoard{board}
+		, turns_{board.turns_}
+		, rowsRemoved_{board.rowsRemoved_} {
 
 		// No copy of the listener_.
 	}

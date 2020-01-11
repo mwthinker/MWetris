@@ -12,11 +12,11 @@ namespace tetris {
 		Block2() = default;
 
 		Block2(BlockType blockType)
-			: Block2(blockType, 0) {
+			: Block2{blockType, 0} {
 		}
 
 		Block2(BlockType blockType, int rotations)
-			: Block2(blockType, rotations, 0, 0) {
+			: Block2{blockType, rotations, 0, 0} {
 		}
 
 		Block2(BlockType blockType, int rotations, int lowX, int lowY);

@@ -2,16 +2,9 @@
 
 using namespace tetris;
 
-ActionHandler::ActionHandler() {
-}
-
-ActionHandler::ActionHandler(double waitingTime, bool rebound) {
-	lastTime_ = 0;
-    waitingTime_ = waitingTime;
-    time_ = 0;
-	action_ = false;
-	rebound_ = rebound;
-	lastAction_ = false;
+ActionHandler::ActionHandler(double waitingTime, bool rebound)
+	: waitingTime_{waitingTime}
+	, rebound_{rebound} {
 }
 
 void ActionHandler::update(double timeStep, bool action) {

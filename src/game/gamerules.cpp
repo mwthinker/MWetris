@@ -7,7 +7,7 @@ const double GameRules::HOLES_PERCENT = 0.2f;
 const int GameRules::LEVELUP_NBR = 3;
 
 GameRules::GameRules(mw::Signal<TetrisGameEvent&>& gameEventSignal)
-	: nbrOfAlivePlayers_(0), gameEventSignal_(gameEventSignal) {
+	: gameEventSignal_{gameEventSignal} {
 }
 
 void GameRules::createGame(const std::vector<ILocalPlayerPtr>& players) {

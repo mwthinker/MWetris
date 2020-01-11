@@ -19,7 +19,7 @@ DrawBlock::DrawBlock(const Block& block, int boardHeight, float squareSize, floa
 	timeLeft_ = -0.001f;
 	movingTime_ = 1.5f;
 	update(block);
-	color_ = Color(1, 1, 1, 1);
+	color_ = Color{1, 1, 1, 1};
 }
 
 void DrawBlock::update(const Block& block) {
