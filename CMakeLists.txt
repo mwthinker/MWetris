@@ -66,8 +66,6 @@ set(SOURCES
 
 	src/ui/imguiextra.cpp
 	src/ui/imguiextra.h
-	src/ui/imguiwindow.cpp
-	src/ui/imguiwindow.h
 	src/ui/tetriswindow.cpp
 	src/ui/tetriswindow.h
 

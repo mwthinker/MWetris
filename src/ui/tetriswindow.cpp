@@ -1,4 +1,4 @@
-#include "imguiwindow.h"
+#include "tetriswindow.h"
 
 #include "imguiextra.h"
 #include "../logger.h"
@@ -31,21 +31,21 @@ namespace tetris {
 			return oldItem != item;
 		}
 
-		constexpr const char* toString(ImGuiWindow::Page page) {
+		constexpr const char* toString(TetrisWindow::Page page) {
 			switch (page) {
-			case ImGuiWindow::Page::MENU:
+			case TetrisWindow::Page::MENU:
 				return "MENU";
-			case ImGuiWindow::Page::PLAY:
+			case TetrisWindow::Page::PLAY:
 				return "PLAY";
-			case ImGuiWindow::Page::HIGHSCORE:
+			case TetrisWindow::Page::HIGHSCORE:
 				return "HIGHSCORE";
-			case ImGuiWindow::Page::CUSTOM:
+			case TetrisWindow::Page::CUSTOM:
 				return "CUSTOM";
-			case ImGuiWindow::Page::SETTINGS:
+			case TetrisWindow::Page::SETTINGS:
 				return "SETTINGS";
-			case ImGuiWindow::Page::NEW_HIGHSCORE:
+			case TetrisWindow::Page::NEW_HIGHSCORE:
 				return "NEW_HIGHSCORE";
-			case ImGuiWindow::Page::NETWORK:
+			case TetrisWindow::Page::NETWORK:
 				return "NETWORK";
 			}
 			return "Unknown";
@@ -53,12 +53,12 @@ namespace tetris {
 
 	}
 
-	void ImGuiWindow::changePage(Page page) {
-		logger()->info("[ImGuiWindow] open {} page", toString(page));
+	void TetrisWindow::changePage(Page page) {
+		logger()->info("[TetrisWindow] open {} page", toString(page));
 		currentPage_ = page;
 	}
 
-	void ImGuiWindow::pushButtonStyle() {
+	void TetrisWindow::pushButtonStyle() {
 		ImGui::PushFont(buttonFont_);
 		ImGui::PushStyleColor(ImGuiCol_Text, tetris::TetrisData::getInstance().getButtonTextColor().Value);
 		ImGui::PushStyleColor(ImGuiCol_Border, tetris::TetrisData::getInstance().getButtonBorderColor().Value);
@@ -67,7 +67,7 @@ namespace tetris {
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, tetris::TetrisData::getInstance().getButtonFocusColor().Value);
 	}
 
-	void ImGuiWindow::popButtonStyle() {
+	void TetrisWindow::popButtonStyle() {
 		ImGui::PopStyleColor();
 		ImGui::PopStyleColor();
 		ImGui::PopStyleColor();
@@ -77,7 +77,7 @@ namespace tetris {
 		ImGui::PopFont();
 	}
 
-	ImGuiWindow::ImGuiWindow() {
+	TetrisWindow::TetrisWindow() {
 		show_another_window = false;
 		menuHeight_ = tetris::TetrisData::getInstance().getWindowBarHeight();
 
@@ -102,13 +102,12 @@ namespace tetris {
 		//ImGui::GetStyle().
 
 		//ImGui::PushStyleColor(ImGuiCol_Button, buttonTextColor_.Value);
-
 	}
 
-	ImGuiWindow::~ImGuiWindow() {
+	TetrisWindow::~TetrisWindow() {
 	}
 
-	void ImGuiWindow::initPreLoop() {
+	void TetrisWindow::initPreLoop() {
 		sdl::ImGuiWindow::initPreLoop();
 		auto& io{ImGui::GetIO()};
 		
@@ -121,7 +120,7 @@ namespace tetris {
 		//ImGui::GetStyle().WindowBorderSize = 0;
 	}
 
-	void ImGuiWindow::beginBar() {
+	void TetrisWindow::beginBar() {
 		//ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(2, 2));
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
@@ -130,7 +129,7 @@ namespace tetris {
 		ImGui::Bar(menuHeight_, tetris::TetrisData::getInstance().getWindowBarColor().Value);
 	}
 
-	void ImGuiWindow::endBar() {
+	void TetrisWindow::endBar() {
 		ImGui::Dummy({0.f, tetris::TetrisData::getInstance().getWindowBarHeight()});
 
 		ImGui::SetCursorPos({0.f, tetris::TetrisData::getInstance().getWindowBarHeight()});
@@ -140,7 +139,7 @@ namespace tetris {
 		ImGui::PopStyleVar();
 	}
 
-	void ImGuiWindow::beginMain() {
+	void TetrisWindow::beginMain() {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
@@ -152,7 +151,7 @@ namespace tetris {
 		ImGui::Begin("Main", nullptr, ImGuiNoWindow);
 	}
 
-	void ImGuiWindow::endMain() {
+	void TetrisWindow::endMain() {
 		ImGui::End();
 
 		ImGui::PopStyleVar();
@@ -160,15 +159,12 @@ namespace tetris {
 		ImGui::PopStyleVar();
 	}
 
-	void ImGuiWindow::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
+	void TetrisWindow::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
 		ImVec4 clear_color{0.45f, 0.55f, 0.6f, 1.f};
 		auto context = SDL_GL_GetCurrentContext();
 	
 		ImGui::PushFont(defaultFont_);
 		ImGui::PopFont();
-
-		const ImGuiWindowFlags ImGuiNoWindow = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoMove;
-		const ImGuiWindowFlags ImGuiInnerWindow = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 
 		beginMain();
 		ImGui::ImageBackground(background_);
@@ -197,7 +193,7 @@ namespace tetris {
 		endMain();
 	}
 
-	void ImGuiWindow::eventUpdate(const SDL_Event& windowEvent) {
+	void TetrisWindow::eventUpdate(const SDL_Event& windowEvent) {
 		sdl::ImGuiWindow::eventUpdate(windowEvent);
 
 		switch (windowEvent.type) {
@@ -217,7 +213,7 @@ namespace tetris {
 		}
 	}
 
-	void ImGuiWindow::menuPage() {
+	void TetrisWindow::menuPage() {
 		beginBar();
 		endBar();
 
@@ -258,7 +254,7 @@ namespace tetris {
 		popButtonStyle();
 	}
 
-	void ImGuiWindow::playPage() {
+	void TetrisWindow::playPage() {
 		beginBar();
 		pushButtonStyle();
 		ImGui::PushFont(buttonFont_);
@@ -280,7 +276,7 @@ namespace tetris {
 		ImGui::Dummy({0.0f, tetris::TetrisData::getInstance().getWindowBarHeight()});
 	}
 
-	void ImGuiWindow::highscorePage() {
+	void TetrisWindow::highscorePage() {
 		beginBar();
 		pushButtonStyle();
 		if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
@@ -319,7 +315,7 @@ namespace tetris {
 		ImGui::PopFont();
 	}	
 
-	void ImGuiWindow::settingsPage() {
+	void TetrisWindow::settingsPage() {
 		beginBar();
 		pushButtonStyle();
 		if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
@@ -400,7 +396,7 @@ namespace tetris {
 	}
 
 
-	void ImGuiWindow::customGamePage() {
+	void TetrisWindow::customGamePage() {
 		beginBar();
 		ImGui::PushFont(buttonFont_);
 		if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
@@ -410,7 +406,7 @@ namespace tetris {
 		endBar();
 	}
 
-	void ImGuiWindow::networkPage() {
+	void TetrisWindow::networkPage() {
 		beginBar();
 		pushButtonStyle();
 		if (ImGui::Button("Menu", {100.5f, menuHeight_})) {

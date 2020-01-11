@@ -1,5 +1,5 @@
-#ifndef IMGUIWINDOW_H
-#define IMGUIWINDOW_H
+#ifndef TETRISWINDOW_H
+#define TETRISWINDOW_H
 
 #include "../game/tetrisgame.h"
 
@@ -11,11 +11,11 @@
 
 namespace tetris {
 
-	class ImGuiWindow : public sdl::ImGuiWindow {
+	class TetrisWindow : public sdl::ImGuiWindow {
 	public:
-		ImGuiWindow();
+		TetrisWindow();
 
-		virtual ~ImGuiWindow();
+		virtual ~TetrisWindow();
 
 		enum class Page { MENU, PLAY, HIGHSCORE, CUSTOM, SETTINGS, NEW_HIGHSCORE, NETWORK };
 	
@@ -74,4 +74,4 @@ namespace tetris {
 
 } // Namespace tetris.
 
-#endif // IMGUIWINDOW_H
+#endif // TETRISWINDOW_H
