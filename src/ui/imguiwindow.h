@@ -18,11 +18,9 @@ namespace tetris {
 		virtual ~ImGuiWindow();
 
 		enum class Page { MENU, PLAY, HIGHSCORE, CUSTOM, SETTINGS, NEW_HIGHSCORE, NETWORK };
-	protected:		
-
-		void initOpenGl();
-
-		void initPreLoop();
+	
+	protected:
+		void initPreLoop() override;
 
 		ImFontAtlas fontAtlas_;
 		ImFont* headerFont_;
@@ -58,8 +56,6 @@ namespace tetris {
 
 		void eventUpdate(const SDL_Event& windowEvent) override;
 
-		void resize(int width, int height);
-
 		void playPage();
 
 		void menuPage();
@@ -71,8 +67,7 @@ namespace tetris {
 		void settingsPage();
 
 		void networkPage();
-
-		bool show_demo_window;
+		
 		bool show_another_window;
 		float menuHeight_;
 	};

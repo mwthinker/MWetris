@@ -9,8 +9,7 @@
 namespace tetris {
 
 	namespace {
-#undef max
-#undef min
+
 		int calculateWitdh(const Block& block) {
 			int min = std::numeric_limits<int>::max();
 			int max = 0;

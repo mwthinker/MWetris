@@ -78,7 +78,6 @@ namespace tetris {
 	}
 
 	ImGuiWindow::ImGuiWindow() {
-		show_demo_window = true;
 		show_another_window = false;
 		menuHeight_ = tetris::TetrisData::getInstance().getWindowBarHeight();
 
@@ -99,7 +98,7 @@ namespace tetris {
 		setTitle("MWetris");
 		setIcon(tetris::TetrisData::getInstance().getWindowIcon());
 		setBordered(tetris::TetrisData::getInstance().isWindowBordered());
-
+		setShowDemoWindow(true);
 		//ImGui::GetStyle().
 
 		//ImGui::PushStyleColor(ImGuiCol_Button, buttonTextColor_.Value);
@@ -109,15 +108,9 @@ namespace tetris {
 	ImGuiWindow::~ImGuiWindow() {
 	}
 
-	void ImGuiWindow::initOpenGl() {
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-		sdl::ImGuiWindow::initOpenGl();
-	}
-
 	void ImGuiWindow::initPreLoop() {
 		sdl::ImGuiWindow::initPreLoop();
 		auto& io{ImGui::GetIO()};
-
 		
 		defaultFont_ = io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 16);
 		headerFont_ = io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 50);
@@ -172,7 +165,6 @@ namespace tetris {
 		auto context = SDL_GL_GetCurrentContext();
 	
 		ImGui::PushFont(defaultFont_);
-		sdl::ImGuiWindow::setShowDemoWindow(show_demo_window);
 		ImGui::PopFont();
 
 		const ImGuiWindowFlags ImGuiNoWindow = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoMove;
@@ -212,7 +204,6 @@ namespace tetris {
 			case SDL_WINDOWEVENT:
 				switch (windowEvent.window.event) {
 					case SDL_WINDOWEVENT_RESIZED:
-						resize(windowEvent.window.data1, windowEvent.window.data2);
 						break;
 					case SDL_WINDOWEVENT_LEAVE:
 						break;
@@ -226,11 +217,6 @@ namespace tetris {
 		}
 	}
 
-	void ImGuiWindow::resize(int width, int height) {
-		glViewport(0, 0, width, height);
-	}
-
-
 	void ImGuiWindow::menuPage() {
 		beginBar();
 		endBar();
@@ -242,7 +228,7 @@ namespace tetris {
 		pushButtonStyle();
 		
 		//ImGui::Indent(10.f);
-		ImVec2 dummy = { 0.0f, 5.0f };
+		ImVec2 dummy{0.0f, 5.0f};
 	
 		if (ImGui::Button("Play")) {
 			changePage(Page::PLAY);

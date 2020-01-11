@@ -47,7 +47,6 @@ namespace tetris {
 
 		// Return the lowest row.
 		int getLowestRow() const {
-#undef min
 			return std::min({squares_[0].row_, squares_[1].row_, squares_[2].row_, squares_[3].row_});;
 		}
 
