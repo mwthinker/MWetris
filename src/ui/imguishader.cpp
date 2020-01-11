@@ -33,15 +33,15 @@ namespace tetris {
 	void ImGuiShader::setVertexAttribPointer() const {
 		glEnableVertexAttribArray(aPosIndex_);
 		glVertexAttribPointer(aPosIndex_, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)IM_OFFSETOF(ImDrawVert, pos));
-		sdl::checkGlError();
+		sdl::assertGlError();
 
 		glEnableVertexAttribArray(aTexIndex_);
 		glVertexAttribPointer(aTexIndex_, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)IM_OFFSETOF(ImDrawVert, uv));
-		sdl::checkGlError();
+		sdl::assertGlError();
 
 		glEnableVertexAttribArray(aColorIndex_);
 		glVertexAttribPointer(aColorIndex_, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert), (GLvoid*)IM_OFFSETOF(ImDrawVert, col));
-		sdl::checkGlError();
+		sdl::assertGlError();
 	}
 
 	void ImGuiShader::setMatrix(const tetris::Mat44& matrix) const {

@@ -52,7 +52,7 @@ namespace tetris {
 
 		void save();
 
-		sdl::Font loadFont(const std::string& file, unsigned int fontSize);
+		//sdl::Font loadFont(const std::string& file, unsigned int fontSize);
 		sdl::Sound loadSound(const std::string& file);
 		sdl::Music loadMusic(const std::string& file);
 		sdl::Sprite loadSprite(const std::string& file);

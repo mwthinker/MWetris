@@ -5,7 +5,7 @@ using namespace tetris;
 DrawText::DrawText(std::string text, const sdl::Font& font, float lowX, float lowY, float scale, bool center)
 	: lowX_(lowX), lowY_(lowY), center_(center) {
 
-	text_ = sdl::Text(text, font, scale);
+	text_ = sdl::Text{text, font};
 	updateVertexes();
 }
 
@@ -14,9 +14,11 @@ DrawText::DrawText(float lowX, float lowY)
 }
 
 void DrawText::update(std::string text) {
+	/*
 	if (text_.getText() != text) {
 		update(text, lowX_, lowY_);
 	}
+	*/
 }
 
 void DrawText::update(const sdl::Text& text) {
@@ -30,7 +32,7 @@ void DrawText::update(const sdl::Text& text) {
 void DrawText::update(std::string text, float x, float y) {
 	lowX_ = x;
 	lowY_ = y;
-	text_.setText(text);
+	//text_.setText(text);
 	vertexes_.clear();
 	updateVertexes();
 }
@@ -38,7 +40,7 @@ void DrawText::update(std::string text, float x, float y) {
 void DrawText::update(float x, float y) {
 	lowX_ = x;
 	lowY_ = x;
-	update(text_.getText(), x, y);
+	//update(text_.getText(), x, y);
 }
 
 void DrawText::bindTexture() {
@@ -46,10 +48,12 @@ void DrawText::bindTexture() {
 }
 
 void DrawText::updateVertexes() {
+	/*
 	addRectangle(vertexes_,
 		getLowX(), getLowY(),
 		text_.getWidth(),
 		text_.getHeight(),
 		sdl::Sprite(text_.getTexture())
 	);
+	*/
 }

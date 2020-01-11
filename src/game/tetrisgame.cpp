@@ -20,11 +20,14 @@ using namespace tetris;
 
 const double TetrisGame::FIXED_TIMESTEP = 1.0 / 60;
 
-TetrisGame::TetrisGame() :
-	status_(WAITING_TO_CONNECT),
-	width_(TETRIS_WIDTH), height_(TETRIS_HEIGHT), maxLevel_(TETRIS_MAX_LEVEL),
-	timeLeftToStart_(-0.0),
-	wholeTimeLeft_(0), game_(std::make_unique<LocalGame>(eventHandler_)) {
+TetrisGame::TetrisGame()
+	: status_{WAITING_TO_CONNECT}
+	, width_{TETRIS_WIDTH}
+	, height_{TETRIS_HEIGHT}
+	, maxLevel_{TETRIS_MAX_LEVEL}
+	, timeLeftToStart_{-0.0}
+	, wholeTimeLeft_{0}
+	, game_{std::make_unique<LocalGame>(eventHandler_)} {
 }
 
 TetrisGame::~TetrisGame() {
@@ -159,7 +162,7 @@ void TetrisGame::initGame() {
 
 	if (game_->isPaused()) {
 		game_->setPaused(false);
-		eventHandler_(GamePause(game_->isPaused(), false));
+		eventHandler_(GamePause{game_->isPaused(), false});
 	}
 
 	triggerTriggerInitGameEvent();
@@ -172,7 +175,7 @@ void TetrisGame::startNewCountDown() {
 	if (currentGameHasCountDown()) {
 		timeLeftToStart_ = COUNT_DOWN_TIME;
 		wholeTimeLeft_ = COUNT_DOWN_TIME;
-		eventHandler_(CountDown(wholeTimeLeft_));
+		eventHandler_(CountDown{wholeTimeLeft_});
 	}
 }
 
@@ -195,8 +198,7 @@ bool TetrisGame::isPaused() const {
 
 void TetrisGame::pause() {
 	game_->setPaused(!game_->isPaused());
-	GamePause gamePause(game_->isPaused(), true);
-	eventHandler_(gamePause);
+	eventHandler_(GamePause{game_->isPaused(), true});
 }
 
 int TetrisGame::getNbrOfPlayers() const {
@@ -235,7 +237,7 @@ void TetrisGame::updateCurrentCountDown(double deltaTime) {
 		&& wholeTimeLeft_ > timeLeftToStart_ + 1) {
 
 		wholeTimeLeft_ = (int) (timeLeftToStart_ + 1);
-		eventHandler_(CountDown(wholeTimeLeft_));
+		eventHandler_(CountDown{wholeTimeLeft_});
 	}
 }
 
@@ -270,13 +272,13 @@ bool TetrisGame::isCurrentGameActive() const {
 void TetrisGame::triggerGameStartEvent() {
 	switch (status_) {
 		case TetrisGame::LOCAL:
-			eventHandler_(GameStart(GameStart::LOCAL));
+			eventHandler_(GameStart{GameStart::LOCAL});
 			break;
 		case TetrisGame::CLIENT:
-			eventHandler_(GameStart(GameStart::CLIENT));
+			eventHandler_(GameStart{GameStart::CLIENT});
 			break;
 		case TetrisGame::SERVER:
-			eventHandler_(GameStart(GameStart::SERVER));
+			eventHandler_(GameStart{GameStart::SERVER});
 			break;
 	}
 }
@@ -286,5 +288,5 @@ void TetrisGame::triggerTriggerInitGameEvent() {
 	for (const auto& p : players_) {
 		players.push_back(p);
 	}
-	eventHandler_(InitGame(players));
+	eventHandler_(InitGame{players});
 }

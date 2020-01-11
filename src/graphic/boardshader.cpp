@@ -29,24 +29,21 @@ BoardShader::BoardShader(std::string vShaderFile, std::string fShaderFile) {
 }
 
 void BoardShader::setVertexAttribPointer() const {
-	if (sdl::Window::getOpenGlMajorVersion() >= 2) {
-		short size = 0;
-		glEnableVertexAttribArray(aPosIndex_);		
-		glVertexAttribPointer(aPosIndex_, sizeof(Vertex::pos_)/sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(size));
-		size += sizeof(Vertex::pos_);
+	short size = 0;
+	glEnableVertexAttribArray(aPosIndex_);		
+	glVertexAttribPointer(aPosIndex_, sizeof(Vertex::pos_)/sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(size));
+	size += sizeof(Vertex::pos_);
 
-		glEnableVertexAttribArray(aTexIndex_);
-		glVertexAttribPointer(aTexIndex_, sizeof(Vertex::tex_) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(size));
-		size += sizeof(Vertex::tex_);
+	glEnableVertexAttribArray(aTexIndex_);
+	glVertexAttribPointer(aTexIndex_, sizeof(Vertex::tex_) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(size));
+	size += sizeof(Vertex::tex_);
 
-		glEnableVertexAttribArray(aTextureIndex_);
-		glVertexAttribPointer(aTextureIndex_, sizeof(Vertex::texture_) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(size));
-		size += sizeof(Vertex::texture_);
+	glEnableVertexAttribArray(aTextureIndex_);
+	glVertexAttribPointer(aTextureIndex_, sizeof(Vertex::texture_) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(size));
+	size += sizeof(Vertex::texture_);
 
-		glEnableVertexAttribArray(aColorIndex_);
-		glVertexAttribPointer(aColorIndex_, sizeof(Vertex::color_) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(size));
-		sdl::checkGlError();
-	}
+	glEnableVertexAttribArray(aColorIndex_);
+	glVertexAttribPointer(aColorIndex_, sizeof(Vertex::color_) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(size));
 }
 
 void BoardShader::useProgram() const {

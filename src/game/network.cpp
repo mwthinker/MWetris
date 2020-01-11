@@ -17,7 +17,7 @@ void ServerGame::close() {
 
 void ServerGame::connect(int port) {
 	if (!server_) {
-		server_ = net::Server::create();
+		server_ = net::Server::create(ioContext_);
 
 		server_->setConnectHandler([&](const net::RemoteClientPtr& remoteClientPtr) {
 			remoteClientPtr->setReceiveHandler<tetris_protocol::Wrapper>([&](const tetris_protocol::Wrapper& message, std::error_code ec) {
@@ -167,7 +167,7 @@ void ClientGame::close() {
 
 void ClientGame::connect(const std::string& ip, int port) {
 	if (!client_) {
-		client_ = net::Client::create();
+		client_ = net::Client::create(ioContext_);
 		client_->setReceiveHandler<tetris_protocol::Wrapper>([&](const tetris_protocol::Wrapper& wrapper, std::error_code ec) {
 			receiveMessage(wrapper);
 		});

@@ -1,8 +1,5 @@
 #include "tetriswindow.h"
 
-#include "imgui_impl_sdl.h"
-#include "imgui_impl_opengl3.h"
-
 #include "imguiextra.h"
 #include "../tetrisdata.h"
 

@@ -31,7 +31,7 @@ namespace tetris {
 		}
 
 		bool isEmpty() const {
-			return text_.getText().empty();
+			return text_.getSprite().isValid();
 		}
 
 		float getLowX() const {

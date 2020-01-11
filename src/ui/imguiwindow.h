@@ -1,12 +1,9 @@
 #ifndef IMGUIWINDOW_H
 #define IMGUIWINDOW_H
 
-#include "imgui_impl_sdl.h"
-#include "imgui_impl_opengl3.h"
-
 #include "../game/tetrisgame.h"
 
-#include <sdl/window.h>
+#include <sdl/imguiwindow.h>
 #include <sdl/sprite.h>
 #include <sdl/textureatlas.h>
 
@@ -14,7 +11,7 @@
 
 namespace tetris {
 
-	class ImGuiWindow : public sdl::Window {
+	class ImGuiWindow : public sdl::ImGuiWindow {
 	public:
 		ImGuiWindow();
 
@@ -57,9 +54,9 @@ namespace tetris {
 
 		void endMain();
 
-		void update(double deltaTime);
+		void imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) override;
 
-		void eventUpdate(const SDL_Event& windowEvent);
+		void eventUpdate(const SDL_Event& windowEvent) override;
 
 		void resize(int width, int height);
 
@@ -78,9 +75,6 @@ namespace tetris {
 		bool show_demo_window;
 		bool show_another_window;
 		float menuHeight_;
-
-		bool initiatedOpenGl_;
-		bool initiatedSdl_;
 	};
 
 } // Namespace tetris.

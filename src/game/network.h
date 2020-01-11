@@ -58,6 +58,7 @@ namespace tetris {
 		std::map<net::RemoteClientPtr, IPlayerPtr> players_;
 
 		std::queue<std::function<void()>> callbacks_;
+		asio::io_context ioContext_;
 	};
 
 	class ClientGame : public IGameManager {
@@ -95,6 +96,7 @@ namespace tetris {
 		std::unique_ptr<GameRules> gameRules_;
 		std::shared_ptr<net::Client> client_;
 		tetris_protocol::Wrapper wrapper_;
+		asio::io_context ioContext_;
 	};
 
 }

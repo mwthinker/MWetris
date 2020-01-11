@@ -1,8 +1,5 @@
 #include "imguiwindow.h"
 
-#include "imgui_impl_sdl.h"
-#include "imgui_impl_opengl3.h"
-
 #include "imguiextra.h"
 #include "../logger.h"
 #include "../tetrisdata.h"
@@ -83,8 +80,6 @@ namespace tetris {
 	ImGuiWindow::ImGuiWindow() {
 		show_demo_window = true;
 		show_another_window = false;
-		initiatedOpenGl_ = false;
-		initiatedSdl_ = false;
 		menuHeight_ = tetris::TetrisData::getInstance().getWindowBarHeight();
 
 		manTexture_ = tetris::TetrisData::getInstance().getHumanSprite();
@@ -112,37 +107,21 @@ namespace tetris {
 	}
 
 	ImGuiWindow::~ImGuiWindow() {
-		if (initiatedOpenGl_) {
-			ImGui_ImplOpenGL3_Shutdown();
-		}
-		if (initiatedSdl_) {
-			ImGui_ImplSDL2_Shutdown();
-			ImGui::DestroyContext();
-		}
 	}
 
 	void ImGuiWindow::initOpenGl() {
-		Window::setOpenGlVersion(3, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-		Window::initOpenGl();
+		sdl::ImGuiWindow::initOpenGl();
 	}
 
 	void ImGuiWindow::initPreLoop() {
-		// Setup Dear ImGui context
-		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO();
+		sdl::ImGuiWindow::initPreLoop();
+		auto& io{ImGui::GetIO()};
 
-		ImGui_ImplSDL2_Init(sdl::Window::getSdlWindow());
-		initiatedSdl_ = true;
-		const char* glsl_version = "#version 130";
-		ImGui_ImplOpenGL3_Init(glsl_version);
-		initiatedOpenGl_ = true;
-
-		//defaultFont_ = io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 16);
+		
+		defaultFont_ = io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 16);
 		headerFont_ = io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 50);
 		buttonFont_ = io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 35);
-		defaultFont_ = io.Fonts->AddFontDefault();
 
 		tetris::TetrisData::getInstance().bindTextureFromAtlas();
 
@@ -188,18 +167,12 @@ namespace tetris {
 		ImGui::PopStyleVar();
 	}
 
-	void ImGuiWindow::update(double deltaTime) {
+	void ImGuiWindow::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
 		ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 		auto context = SDL_GL_GetCurrentContext();
-
-		// Start the Dear ImGui frame
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplSDL2_NewFrame(sdl::Window::getSdlWindow());
-		ImGui::NewFrame();
 	
 		ImGui::PushFont(defaultFont_);
-		if (show_demo_window)
-			ImGui::ShowDemoWindow(&show_demo_window);
+		sdl::ImGuiWindow::setShowDemoWindow(show_demo_window);
 		ImGui::PopFont();
 
 		const ImGuiWindowFlags ImGuiNoWindow = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoMove;
@@ -230,13 +203,10 @@ namespace tetris {
 				break;
 		}
 		endMain();
-
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
 
 	void ImGuiWindow::eventUpdate(const SDL_Event& windowEvent) {
-		ImGui_ImplSDL2_ProcessEvent(windowEvent);
+		sdl::ImGuiWindow::eventUpdate(windowEvent);
 
 		switch (windowEvent.type) {
 			case SDL_WINDOWEVENT:
@@ -348,7 +318,7 @@ namespace tetris {
 		ImGui::Text("Date"); ImGui::NextColumn();
 		ImGui::Separator();
 
-		auto& highscores = TetrisData::getInstance().getHighscoreRecordVector();
+		auto highscores = TetrisData::getInstance().getHighscoreRecordVector();
 
 		int rankNbr = 1;
 		for (const auto& highscore : highscores) {

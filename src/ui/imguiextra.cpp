@@ -34,7 +34,8 @@ namespace ImGui {
 		void addImageQuad(ImDrawList* drawList, const sdl::Sprite& sprite,
 			const ImVec2& pos, ImVec2& size, const ImColor& color) {
 
-			auto[texW, texH] = sprite.getTexture().getSize();
+			auto texW = sprite.getTextureWidth();
+			auto texH = sprite.getTextureHeight();
 
 			ImVec2 a = {pos.x, pos.y};
 			ImVec2 b = {pos.x + size.x, pos.y};
@@ -64,7 +65,7 @@ namespace ImGui {
 	IMGUI_API void ImageBackground(const sdl::Sprite& sprite) {
 		ImVec2 size = ImGui::GetWindowSize();
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
-		drawList->PushTextureID((ImTextureID)(intptr_t) sprite.getTexture().getGlTexture());
+		drawList->PushTextureID((ImTextureID)(intptr_t) sprite.getTextureView());
 		drawList->PrimReserve(6, 4);
 		addImageQuad(drawList, sprite, {0, 0}, size, { 1.f, 1.f, 1.f, 1.f });
 		drawList->PopTextureID();
@@ -102,7 +103,7 @@ namespace ImGui {
 		ImGui::PopID();
 
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
-		drawList->PushTextureID((ImTextureID)(intptr_t) noMan.getTexture().getGlTexture());
+		drawList->PushTextureID((ImTextureID)(intptr_t) noMan.getTextureView());
 		buttons = (nbr > 0 ? nbr : 2);
 		drawList->PrimReserve(6 * buttons, 4 * buttons);
 		

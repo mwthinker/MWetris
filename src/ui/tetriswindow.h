@@ -1,9 +1,7 @@
 #ifndef TETRISWINDOW_H
 #define TETRISWINDOW_H
 
-#include "imgui_impl_sdl.h"
-#include "imgui_impl_opengl3.h"
-
+#include "../ui/imguiwindow.h"
 #include "../game/tetrisgame.h"
 
 #include <sdl/window.h>

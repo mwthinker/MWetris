@@ -19,6 +19,10 @@ project(MWetris
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if (MSVC)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4275") # non - DLL-interface class 'class_1' used as base for DLL-interface class 'class_2'
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251") # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
+endif ()
 
 set(SOURCES
 	src/graphic/boardbatch.h
@@ -60,10 +64,6 @@ set(SOURCES
 	src/game/tetrisgameevent.h
 	src/game/tetrisgame.h
 
-	src/ui/imgui_impl_opengl3.cpp
-	src/ui/imgui_impl_opengl3.h
-	src/ui/imgui_impl_sdl.cpp
-	src/ui/imgui_impl_sdl.h
 	src/ui/imguiextra.cpp
 	src/ui/imguiextra.h
 	src/ui/imguishader.cpp
@@ -93,10 +93,10 @@ source_group(TREE
 add_subdirectory(TetrisEngine)
 add_subdirectory(Protocol)
 
-find_package(imgui CONFIG REQUIRED)
 find_package(Threads REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
 
 include(FetchContent)
 # Load external github projects
@@ -171,7 +171,6 @@ target_link_libraries(MWetris
 	PRIVATE
 		glm
 		Threads::Threads
-		imgui::imgui
 		TetrisEngineLib
 		nlohmann_json
 		nlohmann_json::nlohmann_json		

@@ -194,6 +194,7 @@ namespace tetris {
 		stream << jsonObject_.dump(1);
 	}
 
+	/*
 	sdl::Font TetrisData::loadFont(const std::string& file, unsigned int fontSize) {
 		size_t size = fonts_.size();
 		std::string key = file;
@@ -206,7 +207,7 @@ namespace tetris {
 		}
 
 		return font;
-	}
+	}*/
 
 	sdl::Sound TetrisData::loadSound(const std::string& file) {
 		size_t size = sounds_.size();
@@ -257,11 +258,11 @@ namespace tetris {
 	}
 
 	sdl::Font TetrisData::getDefaultFont(int size) {
-		return loadFont(jsonObject_["window"]["font"].get<std::string>(), size);
+		return {};// loadFont(jsonObject_["window"]["font"].get<std::string>(), size);
 	}
 
 	void TetrisData::bindTextureFromAtlas() const {
-		textureAtlas_.getTexture().bindTexture();
+		textureAtlas_.get().bindTexture();
 	}
 
 	ImColor TetrisData::getOuterSquareColor() const {

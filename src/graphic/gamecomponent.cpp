@@ -122,7 +122,7 @@ namespace tetris {
 				GameGraphic& graphic = pair.second;
 				graphic.drawMiddleText(*dynamicBoardBatch_);
 			}
-			sdl::checkGlError();
+			sdl::assertGlError();
 		}
 	}
 
@@ -153,9 +153,9 @@ namespace tetris {
 			auto& countDown = dynamic_cast<CountDown&>(tetrisEvent);
 
 			if (countDown.timeLeft_ > 0) {
-				middleText_.setText("Start in " + std::to_string(countDown.timeLeft_));
+				//middleText_.setText("Start in " + std::to_string(countDown.timeLeft_));
 			} else {
-				middleText_.setText("");
+				//middleText_.setText("");
 			}
 
 			// Update the text for the active players.
@@ -173,9 +173,9 @@ namespace tetris {
 
 			if (gamePause.printPause_) {
 				if (!gamePause.pause_) {
-					middleText_.setText("");
+					//middleText_.setText("");
 				} else {
-					middleText_.setText("Paused");
+					//middleText_.setText("Paused");
 				}
 
 				// Update the text for the active players.
@@ -190,7 +190,7 @@ namespace tetris {
 
 		// Handle InitGame event.
 		try {
-			middleText_ = sdl::Text("", TetrisData::getInstance().getDefaultFont(50), 20);
+			//middleText_ = sdl::Text("", TetrisData::getInstance().getDefaultFont(50), 20);
 			auto& initGameVar = dynamic_cast<InitGame&>(tetrisEvent);
 			initGame(initGameVar.players_);
 
@@ -249,16 +249,16 @@ namespace tetris {
 	}
 
 	void GameComponent::handleMiddleText(const IPlayerPtr& player, int lastPostion) {
-		sdl::Text middleText("", TetrisData::getInstance().getDefaultFont(50), 20);
+		//sdl::Text middleText("", TetrisData::getInstance().getDefaultFont(50), 20);
 
 		// Test if the player is a local player, exception otherwise.
 		if (tetrisGame_.getNbrOfPlayers() == 1) {
-			middleText.setText("Game over");
+			//middleText.setText("Game over");
 		} else {
-			middleText.setText(gamePosition(lastPostion));
+			//middleText.setText(gamePosition(lastPostion));
 		}
 
-		graphicPlayers_[player].setMiddleMessage(middleText);
+		//graphicPlayers_[player].setMiddleMessage(middleText);
 	}
 
 } // Namespace mw.

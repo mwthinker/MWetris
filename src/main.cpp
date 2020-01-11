@@ -1,6 +1,3 @@
-#include "ui/imgui_impl_sdl.h"
-#include "ui/imgui_impl_opengl3.h"
-
 #include "ui/tetriswindow.h"
 #include "logger.h"
 

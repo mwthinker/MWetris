@@ -24,10 +24,10 @@ namespace tetris {
 	}
 
 	inline void addRectangle(std::vector<BoardShader::Vertex>& vertexes,
-		float x, float y, float w, float h, const sdl::Sprite& sprite, const Color& color = Color(1, 1, 1, 1)) {
+		float x, float y, float w, float h, const sdl::Sprite& sprite, const Color& color = Color{1, 1, 1, 1}) {
 
-		int textureW = sprite.getTexture().getWidth();
-		int textureH = sprite.getTexture().getHeight();
+		float textureW = sprite.getWidth();
+		float textureH = sprite.getHeight();
 
 		vertexes.push_back(BoardShader::Vertex(x, y, sprite.getX() / textureW, sprite.getY() / textureH, color));
 		vertexes.push_back(BoardShader::Vertex(x + w, y, (sprite.getX() + sprite.getWidth()) / textureW, sprite.getY() / textureH, color));
@@ -41,12 +41,14 @@ namespace tetris {
 	class BoardBatch {
 	public:
 		BoardBatch(const std::shared_ptr<BoardShader>& shader, int maxVertexes)
-			: batch_(GL_TRIANGLES, GL_DYNAMIC_DRAW, maxVertexes),
-			shader_(shader) {
+			: batch_{GL_DYNAMIC_DRAW}
+			, shader_(shader) {
+
 			logger()->info("[BoardBatch] {} Mib\n", batch_.getVboSizeInMiB());
 		}
 
-		BoardBatch(const std::shared_ptr<BoardShader>& shader) : batch_(GL_TRIANGLES) {
+		BoardBatch(const std::shared_ptr<BoardShader>& shader)
+			: batch_{GL_TRIANGLES} {
 		}
 
 		virtual ~BoardBatch() = default;
@@ -60,7 +62,7 @@ namespace tetris {
 		}
 
 		void add(const std::vector<BoardShader::Vertex>& data) {
-			batch_.add(data);
+			//batch_.add(data);
 		}
 
 		void draw() {
@@ -68,9 +70,9 @@ namespace tetris {
 		}
 
 		void addTriangle(const BoardShader::Vertex& v1, const BoardShader::Vertex& v2, const BoardShader::Vertex& v3) {
-			batch_.add(v1);
-			batch_.add(v2);
-			batch_.add(v3);
+			//batch_.add(v1);
+			//batch_.add(v2);
+			//batch_.add(v3);
 		}
 
 		void addRectangle(float x, float y, float w, float h, const Color& color) {
@@ -83,9 +85,10 @@ namespace tetris {
 		}
 
 		void addRectangle(float x, float y, float w, float h, const sdl::Sprite& sprite) {
-			int textureW = sprite.getTexture().getWidth();
-			int textureH = sprite.getTexture().getHeight();
+			//int textureW = sprite.getTexture().getWidth();
+			//int textureH = sprite.getTexture().getHeight();
 
+			/*
 			addTriangle(BoardShader::Vertex(x, y, sprite.getX() / textureW, sprite.getY() / textureH),
 				BoardShader::Vertex(x + w, y, (sprite.getX() + sprite.getWidth()) / textureW, sprite.getY() / textureH),
 				BoardShader::Vertex(x, y + h, sprite.getX() / textureW, (sprite.getY() + sprite.getHeight()) / textureH));
@@ -93,6 +96,7 @@ namespace tetris {
 			addTriangle(BoardShader::Vertex(x, y + h, sprite.getX() / textureW, (sprite.getY() + sprite.getHeight()) / textureH),
 				BoardShader::Vertex(x + w, y, (sprite.getX() + sprite.getWidth()) / textureW, sprite.getY() / textureH),
 				BoardShader::Vertex(x + w, y + h, (sprite.getX() + sprite.getWidth()) / textureW, (sprite.getY() + sprite.getHeight()) / textureH));
+			*/
 		}
 
 		void addSquare(float x, float y, float size, const sdl::Sprite& sprite, const Color& color) {
@@ -100,8 +104,8 @@ namespace tetris {
 		}
 
 		void addRectangle(float x, float y, float w, float h, const sdl::Sprite& sprite, const Color& color) {
-			int textureW = sprite.getTexture().getWidth();
-			int textureH = sprite.getTexture().getHeight();
+			int textureW = sprite.getTextureWidth();
+			int textureH = sprite.getTextureHeight();
 
 			addTriangle(BoardShader::Vertex(x, y, sprite.getX() / textureW, sprite.getY() / textureH, color),
 				BoardShader::Vertex(x + w, y, (sprite.getX() + sprite.getWidth()) / textureW, sprite.getY() / textureH, color),
