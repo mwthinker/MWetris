@@ -131,9 +131,9 @@ namespace tetris {
 	}
 
 	void ImGuiWindow::endBar() {
-		ImGui::Dummy({ 0.0f, tetris::TetrisData::getInstance().getWindowBarHeight() });
+		ImGui::Dummy({0.f, tetris::TetrisData::getInstance().getWindowBarHeight()});
 
-		ImGui::SetCursorPos({ 0.0f, tetris::TetrisData::getInstance().getWindowBarHeight() });
+		ImGui::SetCursorPos({0.f, tetris::TetrisData::getInstance().getWindowBarHeight()});
 
 		ImGui::PopStyleColor();
 		ImGui::PopStyleVar();
@@ -141,13 +141,13 @@ namespace tetris {
 	}
 
 	void ImGuiWindow::beginMain() {
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
 	
-		ImGui::SetNextWindowPos({ 0.f, 0.f });
+		ImGui::SetNextWindowPos({0.f,0.f});
 		auto [width, height] = sdl::Window::getSize();
-		ImGui::SetNextWindowSize({ (float)width, (float)height });
+		ImGui::SetNextWindowSize({static_cast<float>(width), static_cast<float>(height)});
 
 		ImGui::Begin("Main", nullptr, ImGuiNoWindow);
 	}
@@ -161,7 +161,7 @@ namespace tetris {
 	}
 
 	void ImGuiWindow::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
-		ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+		ImVec4 clear_color{0.45f, 0.55f, 0.6f, 1.f};
 		auto context = SDL_GL_GetCurrentContext();
 	
 		ImGui::PushFont(defaultFont_);
@@ -283,7 +283,7 @@ namespace tetris {
 	void ImGuiWindow::highscorePage() {
 		beginBar();
 		pushButtonStyle();
-		if (ImGui::Button("Menu", { 100.5f, menuHeight_ })) {
+		if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
 			changePage(Page::MENU);
 		}
 		popButtonStyle();
@@ -403,7 +403,7 @@ namespace tetris {
 	void ImGuiWindow::customGamePage() {
 		beginBar();
 		ImGui::PushFont(buttonFont_);
-		if (ImGui::Button("Menu", { 100.5f, menuHeight_ })) {
+		if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
 			changePage(Page::MENU);
 		}
 		ImGui::PopFont();
@@ -413,14 +413,14 @@ namespace tetris {
 	void ImGuiWindow::networkPage() {
 		beginBar();
 		pushButtonStyle();
-		if (ImGui::Button("Menu", { 100.5f, menuHeight_ })) {
+		if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
 			changePage(Page::MENU);
 		}
 		popButtonStyle();
 		endBar();
 
 		ImGui::Indent(10.f);
-		ImGui::Dummy({ 0.0f, 5.0f });
+		ImGui::Dummy({0.0f, 5.0f});
 
 		ImGui::PushFont(defaultFont_);
 		static int radioNbr = 0;
@@ -445,9 +445,9 @@ namespace tetris {
 		ImGui::InputInt("The port-number for the server", &port);	
 
 		ImGui::PopItemWidth();
-		ImGui::Dummy({ 0.0f, 5.0f });
+		ImGui::Dummy({0.f, 5.f});
 
-		if (ImGui::Button("Connect", { 100.5f, menuHeight_ })) {
+		if (ImGui::Button("Connect", {100.5f, menuHeight_})) {
 
 		}
 		ImGui::LoadingBar();
