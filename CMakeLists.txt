@@ -37,7 +37,9 @@ set(SOURCES
 	src/graphic/gamecomponent.cpp
 	src/graphic/gamecomponent.h
 	src/graphic/gamegraphic.cpp
-	src/graphic/gamegraphic.h	
+	src/graphic/gamegraphic.h
+	src/graphic/graphic.cpp
+	src/graphic/graphic.h
 
 	src/game/actionhandler.cpp
 	src/game/actionhandler.h

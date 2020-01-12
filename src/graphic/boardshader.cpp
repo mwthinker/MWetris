@@ -52,7 +52,7 @@ void BoardShader::useProgram() const {
 
 // Uniforms. -------------------------------------------
 
-void BoardShader::setMatrix(const Mat44& matrix) const {
+void BoardShader::setMatrix(const Mat4& matrix) const {
 	shader_.useProgram();
 	glUniformMatrix4fv(uMatrixIndex_, 1, false, glm::value_ptr(matrix));
 }

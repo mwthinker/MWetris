@@ -22,7 +22,7 @@ namespace tetris {
 		void setVertexAttribPointer() const;
 
 		// Uniforms. -------------------------------------------
-		void setMatrix(const Mat44& matrix) const;
+		void setMatrix(const Mat4& matrix) const;
 
 		class Vertex {
 		public:

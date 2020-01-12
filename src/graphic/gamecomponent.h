@@ -50,9 +50,9 @@ namespace tetris {
 		Uint32 accumulator_;
 
 		// Updated in initGame().
-		Mat44 matrix_;
-		Mat44 model_;
-		Mat44 projMatrix_;
+		Mat4 matrix_;
+		Mat4 model_;
+		Mat4 projMatrix_;
 		bool updateMatrix_;
 
 		// Font related.

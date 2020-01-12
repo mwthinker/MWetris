@@ -135,27 +135,7 @@ namespace tetris {
 		ImGui::PopStyleVar();
 		ImGui::PopStyleVar();
 	}
-
-	void TetrisWindow::beginMain() {
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
 	
-		ImGui::SetNextWindowPos({0.f,0.f});
-		auto [width, height] = sdl::Window::getSize();
-		ImGui::SetNextWindowSize({static_cast<float>(width), static_cast<float>(height)});
-
-		ImGui::Begin("Main", nullptr, ImGuiNoWindow);
-	}
-
-	void TetrisWindow::endMain() {
-		ImGui::End();
-
-		ImGui::PopStyleVar();
-		ImGui::PopStyleVar();
-		ImGui::PopStyleVar();
-	}
-
 	void TetrisWindow::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
 		ImVec4 clear_color{0.45f, 0.55f, 0.6f, 1.f};
 		auto context = SDL_GL_GetCurrentContext();
@@ -163,31 +143,39 @@ namespace tetris {
 		ImGui::PushFont(defaultFont_);
 		ImGui::PopFont();
 
-		beginMain();
-		ImGui::ImageBackground(background_);
-		switch (currentPage_) {
-			case Page::MENU:
-				menuPage();
-				break;
-			case Page::PLAY:
-				playPage();
-				break;
-			case Page::HIGHSCORE:
-				highscorePage();
-				break;
-			case Page::CUSTOM:
-				customGamePage();
-				break;
-			case Page::SETTINGS:
-				settingsPage();
-				break;
-			case Page::NEW_HIGHSCORE:
-				break;
-			case Page::NETWORK:
-				networkPage();
-				break;
-		}
-		endMain();
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
+
+		ImGui::SetNextWindowPos({0.f,0.f});
+		auto [width, height] = sdl::Window::getSize();
+		ImGui::SetNextWindowSize({static_cast<float>(width), static_cast<float>(height)});
+		ImGui::Window("Main", nullptr, ImGuiNoWindow, [&]() {
+			ImGui::ImageBackground(background_);
+			switch (currentPage_) {
+				case Page::MENU:
+					menuPage();
+					break;
+				case Page::PLAY:
+					playPage();
+					break;
+				case Page::HIGHSCORE:
+					highscorePage();
+					break;
+				case Page::CUSTOM:
+					customGamePage();
+					break;
+				case Page::SETTINGS:
+					settingsPage();
+					break;
+				case Page::NEW_HIGHSCORE:
+					break;
+				case Page::NETWORK:
+					networkPage();
+					break;
+			}
+		});
+		ImGui::PopStyleVar(3);
 	}
 
 	void TetrisWindow::eventUpdate(const SDL_Event& windowEvent) {
@@ -271,6 +259,17 @@ namespace tetris {
 
 		endBar();
 		ImGui::Dummy({0.0f, tetris::TetrisData::getInstance().getWindowBarHeight()});
+		
+		imGuiCanvas({300, 300}, [&]() {
+			glEnable(GL_BLEND);
+			glBlendEquation(GL_FUNC_ADD);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			
+			graphic.clearDraw();
+			graphic.addCircle({0, 0}, 1, sdl::RED);
+			graphic.addRectangle({-1.f, 0.9f}, {2.f, 0.1f}, sdl::BLUE);
+			graphic.draw(getShader());
+		});
 	}
 
 	void TetrisWindow::highscorePage() {
@@ -435,7 +434,7 @@ namespace tetris {
 			}
 		}
 		static int port = 5012;
-		ImGui::InputInt("The port-number for the server", &port);	
+		ImGui::InputInt("The port-number for the server", &port);
 
 		ImGui::PopItemWidth();
 		ImGui::Dummy({0.f, 5.f});

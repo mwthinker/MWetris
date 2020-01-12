@@ -74,7 +74,7 @@ namespace tetris {
 
 			// Centers the game and holds the correct proportions.
 			// The sides are transparent.
-			Mat44 model = model_;
+			Mat4 model = model_;
 			if (width / windowWidth > height / windowHeight) {
 				// Blank sides, up and down.
 				scale_ = windowWidth / width;

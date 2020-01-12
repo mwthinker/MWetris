@@ -2,6 +2,8 @@
 #define TETRISWINDOW_H
 
 #include "../game/tetrisgame.h"
+#include "../graphic/gamecomponent.h"
+#include "../graphic/graphic.h"
 
 #include <sdl/imguiwindow.h>
 #include <sdl/sprite.h>
@@ -48,10 +50,6 @@ namespace tetris {
 
 		void endBar();	
 
-		void beginMain();
-
-		void endMain();
-
 		void imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) override;
 
 		void eventUpdate(const SDL_Event& windowEvent) override;
@@ -67,9 +65,10 @@ namespace tetris {
 		void settingsPage();
 
 		void networkPage();
-		
+	
 		float menuHeight_;
 		TetrisGame game_;
+		Graphic graphic;
 	};
 
 } // Namespace tetris.
