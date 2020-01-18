@@ -2,7 +2,6 @@
 #define REMOTEPLAYER_H
 
 #include "player.h"
-#include "protocol.h"
 #include "tetrisboard.h"
 
 namespace tetris {

@@ -14,7 +14,7 @@ using namespace tetris;
 namespace sdl {
 
 	void from_json(const json& j, Color& color) {
-		std::stringstream stream(j.get<std::string>());
+		std::stringstream stream{j.get<std::string>()};
 		float r;
 		if (!(stream >> r)) {
 			throw std::runtime_error("Red value invalid");
@@ -41,46 +41,30 @@ namespace sdl {
 
 namespace tetris {
 
-	BlockType charToBlockType(char key) {
+	constexpr BlockType charToBlockType(char key) {
 		switch (key) {
-			case 'z':
-				// Fall through.
-			case 'Z':
+			case 'z': case 'Z':
 				return BlockType::Z;
-			case 'w':
-				// Fall through.
-			case 'W':
+			case 'w': case 'W':
 				return BlockType::WALL;
-			case 't':
-				// Fall through.
-			case 'T':
+			case 't': case 'T':
 				return BlockType::T;
-			case 's':
-				// Fall through.
-			case 'S':
+			case 's': case 'S':
 				return BlockType::S;
-			case 'o':
-				// Fall through.
-			case 'O':
+			case 'o': case 'O':
 				return BlockType::O;
-			case 'l':
-				// Fall through.
-			case 'L':
+			case 'l': case 'L':
 				return BlockType::L;
-			case 'j':
-				// Fall through.
-			case 'J':
+			case 'j': case 'J':
 				return BlockType::J;
-			case 'I':
-				// Fall through.
-			case 'i':
+			case 'I': case 'i':
 				return BlockType::I;
 			default:
 				return BlockType::EMPTY;
 		}
 	}
 
-	std::string blockTypeToString(BlockType blocktype) {
+	constexpr const char* blockTypeToString(BlockType blocktype) {
 		switch (blocktype) {
 			case BlockType::Z:
 				return "Z";
@@ -98,15 +82,13 @@ namespace tetris {
 				return "J";
 			case BlockType::I:
 				return "I";
-			case BlockType::EMPTY:
-				return "E";
 			default:
 				return "E";
 		}
 	}
 
 	void from_json(const json& j, Ai& ai) {
-		ai = Ai(j.at("name").get<std::string>(), j.at("valueFunction").get<std::string>());
+		ai = Ai{j.at("name").get<std::string>(), j.at("valueFunction").get<std::string>()};
 	}
 
 	void from_json(const json& j, BlockType& blockType) {
@@ -114,28 +96,28 @@ namespace tetris {
 	}
 
 	void to_json(json& j, const BlockType& blockType) {
-		j = json(blockTypeToString(blockType));
+		j = json{blockTypeToString(blockType)};
 	}
 
 	void from_json(const json& j, Block& block) {
-		block = Block(j.at("blockType").get<BlockType>(),
+		block = Block{j.at("blockType").get<BlockType>(),
 			j.at("leftColumn").get<int>(),
 			j.at("bottomRow").get<int>(),
-			j.at("currentRotation").get<int>());
+			j.at("currentRotation").get<int>()};
 	}
 
 	void to_json(json& j, const Block& block) {
-		j = json({
+		j = json{{
 			{"bottomRow", block.getLowestStartRow()},
 			{"blockType", block.getBlockType()},
 			{"leftColumn", block.getStartColumn()},
 			{"currentRotation", block.getCurrentRotation()}
-		});
+		}};
 	}
 
 	std::string convertBlockTypesToString(const std::vector<BlockType>& board) {
 		std::stringstream stream;
-		for (BlockType chr : board) {
+		for (auto chr : board) {
 			stream << blockTypeToString(chr);
 		}
 		return stream.str();
@@ -143,7 +125,7 @@ namespace tetris {
 
 	std::vector<BlockType> convertStringToBlockTypes(const std::string& str) {
 		std::vector<BlockType> blocktypes_;
-		for (char key : str) {
+		for (auto key : str) {
 			blocktypes_.push_back(charToBlockType(key));
 		}
 		return blocktypes_;
@@ -181,10 +163,10 @@ namespace tetris {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}) {
-		std::ifstream defaultStream("USE_APPLICATION_JSON");
+		std::ifstream defaultStream{"USE_APPLICATION_JSON"};
 		bool applicationJson;
 		defaultStream >> applicationJson;
-		const std::string APPLICATION_JSON = "tetris.json";
+		const std::string APPLICATION_JSON{"tetris.json"};
 		if (applicationJson) {
 			jsonPath_ = APPLICATION_JSON;
 		} else {
@@ -200,7 +182,7 @@ namespace tetris {
 	}
 
 	void TetrisData::save() {
-		std::ofstream stream(jsonPath_);
+		std::ofstream stream{jsonPath_};
 		stream << jsonObject_.dump(1);
 	}
 	
@@ -235,7 +217,7 @@ namespace tetris {
 
 		// Music not found?
 		if (musics_.size() > size) {
-			music = sdl::Music(file);
+			music = sdl::Music{file};
 		}
 
 		return music;
@@ -262,7 +244,7 @@ namespace tetris {
 			case BlockType::Z:
 				return loadSprite(jsonObject_["window"]["tetrisBoard"]["sprites"]["squareZ"].get<std::string>());
 		}
-		return sdl::Sprite();
+		return {};
 	}
 
 	const sdl::Font& TetrisData::getDefaultFont(int size) {
@@ -297,7 +279,7 @@ namespace tetris {
 	bool TetrisData::isShowDownBlock() const {
 		try {
 			return jsonObject_.at("window").at("tetrisBoard").at("showDownBlock").get<bool>();
-		} catch (nlohmann::detail::out_of_range) {
+		} catch (nlohmann::detail::out_of_range&) {
 			return true;
 		}
 	}
@@ -325,7 +307,7 @@ namespace tetris {
 	bool TetrisData::isLimitFps() const {
 		try {
 			return jsonObject_.at("window").at("limitFps").get<bool>();
-		} catch (nlohmann::detail::out_of_range) {
+		} catch (const nlohmann::detail::out_of_range&) {
 			return false;
 		}
 	}
@@ -397,7 +379,7 @@ namespace tetris {
 	bool TetrisData::isWindowPauseOnLostFocus() const {
 		try {
 			return jsonObject_.at("window").at("pauseOnLostFocus").get<bool>();
-		} catch (nlohmann::detail::out_of_range) {
+		} catch (const nlohmann::detail::out_of_range&) {
 			return true;
 		}
 	}
@@ -680,7 +662,7 @@ namespace tetris {
 	sdl::Color TetrisData::getMiddleTextColor() const {
 		try {
 			return jsonObject_.at("window").at("tetrisBoard").at("middleTextColor").get<sdl::Color>();
-		} catch (nlohmann::detail::out_of_range) {
+		} catch (const nlohmann::detail::out_of_range&) {
 			return sdl::Color{0.2f, 0.2f, 0.2f, 0.5f};
 		}
 	}
@@ -688,7 +670,7 @@ namespace tetris {
 	int TetrisData::getMiddleTextBoxSize() const {
 		try {
 			return jsonObject_.at("window").at("tetrisBoard").at("middleTextBoxSize").get<int>();
-		} catch (nlohmann::detail::out_of_range) {
+		} catch (const nlohmann::detail::out_of_range&) {
 			return 7;
 		}
 	}

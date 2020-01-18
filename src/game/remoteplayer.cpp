@@ -1,7 +1,5 @@
 #include "remoteplayer.h"
 
-#include "protocol.h"
-
 using namespace tetris;
 
 RemotePlayer::RemotePlayer()

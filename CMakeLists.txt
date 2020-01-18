@@ -58,8 +58,6 @@ set(SOURCES
 	src/game/player.cpp
 	src/game/playerdata.h
 	src/game/player.h
-	src/game/protocol.cpp
-	src/game/protocol.h
 	src/game/remoteplayer.cpp
 	src/game/remoteplayer.h
 	src/game/tetrisgame.cpp
@@ -73,7 +71,6 @@ set(SOURCES
 
 	src/logger.h
 	src/types.h
-	src/taskqueue.h
 	src/tetrisdata.cpp
 	src/tetrisdata.h
 	src/main.cpp
@@ -101,18 +98,24 @@ include(FetchContent)
 FetchContent_Declare(CppSdl2
 	GIT_REPOSITORY
 		https://github.com/mwthinker/CppSdl2.git
+	GIT_TAG
+		0b29a75af0e861dba27094ac37a5d57c726af0e9
 )
 FetchContent_MakeAvailable(CppSdl2)
 
 FetchContent_Declare(CppProtoNetwork
 	GIT_REPOSITORY
 		https://github.com/mwthinker/CppProtoNetwork.git
+	GIT_TAG
+		6211440420ef56402e1944c4639ac355141ef70d
 )
 FetchContent_MakeAvailable(CppProtoNetwork)
 
 FetchContent_Declare(Signal
 	GIT_REPOSITORY
 		https://github.com/mwthinker/Signal.git
+	GIT_TAG
+		76054e3797c62247910adb83e05f32cc47885faa
 )
 FetchContent_MakeAvailable(Signal)
 
@@ -120,6 +123,8 @@ FetchContent_MakeAvailable(Signal)
 FetchContent_Declare(MWetrisData
 	GIT_REPOSITORY
 		https://github.com/mwthinker/MWetrisData.git
+	GIT_TAG
+		d9bfd28c799b71e6048b51ae7f591f4853b7e887
 )
 FetchContent_MakeAvailable(MWetrisData)
 FetchContent_GetProperties(MWetrisData
@@ -132,14 +137,20 @@ set(ExternalDependencies
 	CppProtoNetwork
 	Calculator
 )
-if (CppSdl2Test)
-	set(ExternalDependencieTests "CppSdl2Test")
+if (CppSdl2_Test)
+	set(ExternalDependencieTests "CppSdl2_Test")
 endif ()
-if (CalculatorTest)
-	set(ExternalDependencieTests "${ExternalDependencieTests};CalculatorTest")
+if (CppSdl2_Example)
+	set(ExternalDependencieTests "CppSdl2_Example")
 endif ()
-if (CppProtoNetworkTest)
-	set(ExternalDependencieTests "${ExternalDependencieTests};CppProtoNetworkTest")
+if (Calculator_Test)
+	set(ExternalDependencieTests "${ExternalDependencieTests};Calculator_Test")
+endif ()
+if (CppProtoNetwork_Test)
+	set(ExternalDependencieTests "${ExternalDependencieTests};CppProtoNetwork_Test")
+endif ()
+if (Signal_Test)
+	set(ExternalDependencieTests "${ExternalDependencieTests};Signal_Test")
 endif ()
 
 set_target_properties(
@@ -167,8 +178,6 @@ endif ()
 
 target_link_libraries(MWetris
 	PRIVATE
-		glm
-		Threads::Threads
 		TetrisEngineLib
 		nlohmann_json
 		nlohmann_json::nlohmann_json		

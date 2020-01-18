@@ -4,12 +4,12 @@
 #include "../game/tetrisparameters.h"
 #include "../game/tetrisgameevent.h"
 #include "../tetrisdata.h"
+#include <fmt/format.h>
 
 #include <sdl/opengl.h>
 
 #include <queue>
 #include <map>
-#include <sstream>
 #include <cassert>
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -19,23 +19,15 @@ namespace tetris {
 	namespace {
 
 		std::string gamePosition(int position) {
-			std::stringstream stream;
-			stream << position;
 			switch (position) {
 			case 1:
-				stream << ":st place!";
-				break;
+				return fmt::format("{}:st place!", position);
 			case 2:
-				stream << ":nd place!";
-				break;
+				return fmt::format("{}:nd place!", position);
 			case 3:
-				stream << ":rd place!";
-				break;
-			default:
-				stream << ":th place!";
-				break;
+				return fmt::format("{}:rd place!", position);
 			}
-			return stream.str();
+			return fmt::format("{}:th place!", position);
 		}
 
 	}

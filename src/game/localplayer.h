@@ -7,8 +7,6 @@
 #include "device.h"
 #include "playerdata.h"
 
-#include "protocol.h"
-
 namespace tetris {
 
 //#include <net/connection.h>

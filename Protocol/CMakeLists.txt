@@ -13,6 +13,15 @@ mark_as_advanced(FORCE Protobuf_DIR)
 
 PROTOBUF_GENERATE_CPP(PROTO_SRC PROTO_HEADER ${PROTO_FILES})
 add_library(Protocol ${PROTO_HEADER} ${PROTO_SRC} ${PROTO_FILES})
+if (MSVC)
+	target_compile_options(Protocol
+		PUBLIC
+			"/wd4005" # 'identifier' : macro redefinition
+			"/wd4251" # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
+			"/wd4244" # An integer type is converted to a smaller integer type
+	)
+endif ()
+
 
 target_include_directories(Protocol
 	PUBLIC

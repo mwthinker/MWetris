@@ -1,7 +1,6 @@
 #ifndef TETRISGAME_H
 #define TETRISGAME_H
 
-#include "protocol.h"
 #include "device.h"
 #include "playerdata.h"
 #include "localgame.h"

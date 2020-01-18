@@ -21,8 +21,8 @@
 
 namespace tetris {
 
-	BlockType charToBlockType(char key);
-	std::string blockTypeToString(BlockType blocktype);
+	constexpr BlockType charToBlockType(char key);
+	constexpr const char* blockTypeToString(BlockType blocktype);
 
 	class HighscoreRecord {
 	public:

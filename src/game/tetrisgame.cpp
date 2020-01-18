@@ -5,7 +5,6 @@
 #include "localplayer.h"
 #include "remoteplayer.h"
 #include "tetrisparameters.h"
-#include "protocol.h"
 #include "gamerules.h"
 #include "network.h"
 
