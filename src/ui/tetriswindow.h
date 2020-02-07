@@ -46,9 +46,7 @@ namespace tetris {
 
 		void popButtonStyle();
 
-		void beginBar();
-
-		void endBar();	
+		void imGuiPreUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) override;
 
 		void imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) override;
 
@@ -66,7 +64,7 @@ namespace tetris {
 
 		void networkPage();
 	
-		float menuHeight_;
+		float menuHeight_{};
 		TetrisGame game_;
 		Graphic graphic;
 	};

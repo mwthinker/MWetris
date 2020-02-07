@@ -4,6 +4,8 @@
 #include "../logger.h"
 #include "../tetrisdata.h"
 
+#include <sdl/imguiauxiliary.h>
+
 namespace tetris {
 
 	namespace {
@@ -117,23 +119,15 @@ namespace tetris {
 		//ImGui::GetStyle().WindowBorderSize = 0;
 	}
 
-	void TetrisWindow::beginBar() {
-		//ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(2, 2));
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, tetris::TetrisData::getInstance().getWindowBarColor().toImU32());
+	void TetrisWindow::imGuiPreUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
+		glEnable(GL_BLEND);
+		glBlendEquation(GL_FUNC_ADD);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		ImGui::Bar(menuHeight_, tetris::TetrisData::getInstance().getWindowBarColor().toImU32());
-	}
-
-	void TetrisWindow::endBar() {
-		ImGui::Dummy({0.f, tetris::TetrisData::getInstance().getWindowBarHeight()});
-
-		ImGui::SetCursorPos({0.f, tetris::TetrisData::getInstance().getWindowBarHeight()});
-
-		ImGui::PopStyleColor();
-		ImGui::PopStyleVar();
-		ImGui::PopStyleVar();
+		graphic.clearDraw();
+		graphic.addCircle({0, 0}, 1, sdl::RED);
+		graphic.addRectangle({-1.f, 0.9f}, {2.f, 0.1f}, sdl::BLUE);
+		graphic.draw(getShader());
 	}
 	
 	void TetrisWindow::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
@@ -151,7 +145,7 @@ namespace tetris {
 		auto [width, height] = sdl::Window::getSize();
 		ImGui::SetNextWindowSize({static_cast<float>(width), static_cast<float>(height)});
 		ImGui::Window("Main", nullptr, ImGuiNoWindow, [&]() {
-			ImGui::ImageBackground(background_);
+			ImGui::ImageBackground(background_.getTextureView());
 			switch (currentPage_) {
 				case Page::MENU:
 					menuPage();
@@ -199,8 +193,7 @@ namespace tetris {
 	}
 
 	void TetrisWindow::menuPage() {
-		beginBar();
-		endBar();
+		ImGui::Bar(menuHeight_, []() {});
 
 		ImGui::PushFont(headerFont_);
 		ImGui::TextColored(labelColor_, "MWetris");
@@ -240,46 +233,33 @@ namespace tetris {
 	}
 
 	void TetrisWindow::playPage() {
-		beginBar();
-		pushButtonStyle();
-		ImGui::PushFont(buttonFont_);
+		ImGui::Bar(menuHeight_, [&]() {
+			pushButtonStyle();
+			ImGui::PushFont(buttonFont_);
 	
-		if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
-			changePage(Page::MENU);
-		}
-		ImGui::SameLine();
-		ImGui::Button("Restart", {120.5f, menuHeight_});
-		ImGui::SameLine();
-		ImGui::ManButton("Human2", nbrHumans_, 4, noManTexture_, manTexture_, {menuHeight_, menuHeight_});
-		ImGui::SameLine();
-		ImGui::ManButton("Ai2", nbrAis_, 4, noManTexture_, aiTexture_, {menuHeight_, menuHeight_});
-		ImGui::PopFont();
+			if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
+				changePage(Page::MENU);
+			}
+			ImGui::SameLine();
+			ImGui::Button("Restart", {120.5f, menuHeight_});
+			ImGui::SameLine();
+			ImGui::ManButton("Human2", nbrHumans_, 4, noManTexture_.getTextureView(), manTexture_.getTextureView(), {menuHeight_, menuHeight_});
+			ImGui::SameLine();
+			ImGui::ManButton("Ai2", nbrAis_, 4, noManTexture_.getTextureView(), aiTexture_.getTextureView(), {menuHeight_, menuHeight_});
+			ImGui::PopFont();
 
-		popButtonStyle();
-
-		endBar();
-		ImGui::Dummy({0.0f, tetris::TetrisData::getInstance().getWindowBarHeight()});
-		
-		imGuiCanvas([&](Vec2 size) {
-			glEnable(GL_BLEND);
-			glBlendEquation(GL_FUNC_ADD);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			
-			graphic.clearDraw();
-			graphic.addCircle({0, 0}, 1, sdl::RED);
-			graphic.addRectangle({-1.f, 0.9f}, {2.f, 0.1f}, sdl::BLUE);
-			graphic.draw(getShader());
+			popButtonStyle();
 		});
 	}
 
 	void TetrisWindow::highscorePage() {
-		beginBar();
-		pushButtonStyle();
-		if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
-			changePage(Page::MENU);
-		}
-		popButtonStyle();
-		endBar();
+		ImGui::Bar(menuHeight_, [&]() {
+			pushButtonStyle();
+			if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
+				changePage(Page::MENU);
+			}
+			popButtonStyle();
+		});
 
 		ImGui::PushFont(headerFont_);
 		ImGui::TextColored(labelColor_, "Highscore");
@@ -312,13 +292,13 @@ namespace tetris {
 	}	
 
 	void TetrisWindow::settingsPage() {
-		beginBar();
-		pushButtonStyle();
-		if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
-			changePage(Page::MENU);
-		}
-		popButtonStyle();
-		endBar();
+		ImGui::Bar(menuHeight_, [&]() {
+			pushButtonStyle();
+			if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
+				changePage(Page::MENU);
+			}
+			popButtonStyle();
+		});
 	
 		ImGui::PushFont(headerFont_);
 		ImGui::TextColored(labelColor_, "Settings");
@@ -393,23 +373,23 @@ namespace tetris {
 
 
 	void TetrisWindow::customGamePage() {
-		beginBar();
-		ImGui::PushFont(buttonFont_);
-		if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
-			changePage(Page::MENU);
-		}
-		ImGui::PopFont();
-		endBar();
+		ImGui::Bar(menuHeight_, [&]() {
+			ImGui::PushFont(buttonFont_);
+			if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
+				changePage(Page::MENU);
+			}
+			ImGui::PopFont();
+		});
 	}
 
 	void TetrisWindow::networkPage() {
-		beginBar();
-		pushButtonStyle();
-		if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
-			changePage(Page::MENU);
-		}
-		popButtonStyle();
-		endBar();
+		ImGui::Bar(menuHeight_, [&]() {
+			pushButtonStyle();
+			if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
+				changePage(Page::MENU);
+			}
+			popButtonStyle();
+		});
 
 		ImGui::Indent(10.f);
 		ImGui::Dummy({0.0f, 5.0f});

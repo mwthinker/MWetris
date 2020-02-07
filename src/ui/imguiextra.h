@@ -1,23 +1,38 @@
 #ifndef MWETRIS_IMGUIEXTRA_H
 #define MWETRIS_IMGUIEXTRA_H
 
-#include <imgui.h>
+#include "../types.h"
+
+#include <sdl/imguiwindow.h>
 
 #include <sdl/sprite.h>
 
 namespace ImGui {
 
-	IMGUI_API void Bar(float height, const ImColor& color);
+	template <class T>
+	bool Bar(float height, T&& t) {
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, tetris::TetrisData::getInstance().getWindowBarColor().toImU32());
+		ImGui::ChildWindow("Bar", ImVec2{ImGui::GetWindowWidth(), height}, [&]() {
+			ImGui::GetWindowDrawList()->AddRectFilled({0, 0},
+				ImGui::GetWindowSize(),
+				tetris::TetrisData::getInstance().getWindowBarColor().toImU32());
+			t();
+		});
+		
+		//ImGui::Dummy({0.f, tetris::TetrisData::getInstance().getWindowBarHeight()});
+		ImGui::SetCursorPos({0.f, tetris::TetrisData::getInstance().getWindowBarHeight()});
+		ImGui::PopStyleColor();
+		ImGui::PopStyleVar(2);
+		return true;
+	}
 
-	IMGUI_API void Image(const sdl::Sprite& sprite, const ImVec2& size, const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
+	bool ManButton(const char* idStr, int& nbr, int max, const sdl::TextureView& noMan,
+		const sdl::TextureView& man, const glm::vec2& size, const sdl::Color& color = sdl::WHITE);
 
-	IMGUI_API void ImageBackground(const sdl::Sprite& sprite);
-
-	IMGUI_API bool ManButton(const char* idStr, int& nbr, int max, const sdl::Sprite& noMan, const sdl::Sprite& man,
-		const ImVec2& size = {64.f, 64.f}, ImColor color = {1.f, 1.f, 1.f, 1.f});
-
-	IMGUI_API void LoadingBar(const ImColor& color1 = {0.8f, 0.8f, 0.8f, 1.f},
-		const ImColor& color2 = {0.5f, 0.5f, 0.5f, 1.f},
+	void LoadingBar(const sdl::Color& color1 = {0.8f, 0.8f, 0.8f, 1.f},
+		const sdl::Color& color2 = {0.5f, 0.5f, 0.5f, 1.f},
 		const ImVec2& size = {150.f, 25.f});
 
 } // Namespace ImGui.

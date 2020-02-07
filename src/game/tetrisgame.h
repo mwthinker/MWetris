@@ -26,7 +26,7 @@ namespace tetris {
 	// Handle all communication between game and gui.
 	class TetrisGame {
 	public:
-		enum Status {WAITING_TO_CONNECT, LOCAL, SERVER, CLIENT};
+		enum class Status {WAITING_TO_CONNECT, LOCAL, SERVER, CLIENT};
 
 		TetrisGame();
 		~TetrisGame();
@@ -93,7 +93,7 @@ namespace tetris {
 		}
 
 		bool isCustomGame() const {
-			return status_ == TetrisGame::LOCAL && !(width_ == TETRIS_WIDTH && height_ == TETRIS_HEIGHT);
+			return status_ == Status::LOCAL && !(width_ == TETRIS_WIDTH && height_ == TETRIS_HEIGHT);
 		}
 
 	private:
@@ -112,16 +112,18 @@ namespace tetris {
 
 		std::vector<ILocalPlayerPtr> players_;
 
-		static const double FIXED_TIMESTEP;
+		static constexpr double FIXED_TIMESTEP = 1.0 / 60.0;
 
 		mw::Signal<TetrisGameEvent&> eventHandler_;
 		std::unique_ptr<IGameManager> game_;
 
-		Status status_;
-		int width_, height_, maxLevel_;
+		Status status_{Status::WAITING_TO_CONNECT};
+		int width_{TETRIS_WIDTH};
+		int height_{TETRIS_HEIGHT};
+		int maxLevel_{TETRIS_MAX_LEVEL};
 
-		double timeLeftToStart_; // Time left for the count down.
-		int wholeTimeLeft_; // Time left in whole seconds. E.g. timeLeftToStart_ = 1.4s means that wholeTimeLeft_ = 2s;
+		double timeLeftToStart_{-0.0}; // Time left for the count down.
+		int wholeTimeLeft_{0}; // Time left in whole seconds. E.g. timeLeftToStart_ = 1.4s means that wholeTimeLeft_ = 2s;
 	};
 
 }

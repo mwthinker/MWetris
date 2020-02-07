@@ -99,7 +99,7 @@ FetchContent_Declare(CppSdl2
 	GIT_REPOSITORY
 		https://github.com/mwthinker/CppSdl2.git
 	GIT_TAG
-		0b29a75af0e861dba27094ac37a5d57c726af0e9
+		3499c69df16b4fdd3efc49846189c8a11284a15a
 )
 FetchContent_MakeAvailable(CppSdl2)
 
@@ -180,7 +180,7 @@ target_link_libraries(MWetris
 	PRIVATE
 		TetrisEngineLib
 		nlohmann_json
-		nlohmann_json::nlohmann_json		
+		nlohmann_json::nlohmann_json
 		Protocol
 		Signal
 		${ExternalDependencies}

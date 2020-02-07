@@ -17,16 +17,8 @@
 
 using namespace tetris;
 
-const double TetrisGame::FIXED_TIMESTEP = 1.0 / 60;
-
 TetrisGame::TetrisGame()
-	: status_{WAITING_TO_CONNECT}
-	, width_{TETRIS_WIDTH}
-	, height_{TETRIS_HEIGHT}
-	, maxLevel_{TETRIS_MAX_LEVEL}
-	, timeLeftToStart_{-0.0}
-	, wholeTimeLeft_{0}
-	, game_{std::make_unique<LocalGame>(eventHandler_)} {
+	: game_{std::make_unique<LocalGame>(eventHandler_)} {
 }
 
 TetrisGame::~TetrisGame() {
@@ -36,7 +28,7 @@ TetrisGame::~TetrisGame() {
 void TetrisGame::resumeGame(int columns, int rows, const std::vector<PlayerData>& playersData) {
 	width_ = columns;
 	height_ = rows;
-	status_ = LOCAL;
+	status_ = Status::LOCAL;
 	
 	players_.clear();
 	for (const PlayerData& data : playersData) {
@@ -108,7 +100,7 @@ void TetrisGame::receiveRemotePlayers(const std::vector<std::shared_ptr<RemotePl
 }
 
 void TetrisGame::createLocalGame(int columns, int rows, const std::vector<IDevicePtr>& devices) {
-	status_ = LOCAL;
+	status_ = Status::LOCAL;
 
 	width_ = columns;
 	height_ = rows;
@@ -133,7 +125,7 @@ void TetrisGame::createGame(const std::vector<IDevicePtr>& devices) {
 }
 
 void TetrisGame::createServerGame(int port, int columns, int rows, const std::vector<IDevicePtr>& devices) {
-	if (status_ == WAITING_TO_CONNECT) {
+	if (status_ == Status::WAITING_TO_CONNECT) {
 		auto serverGame = std::make_unique<ServerGame>(eventHandler_);
 		serverGame->connect(port);
 		game_ = std::move(serverGame);
@@ -141,7 +133,7 @@ void TetrisGame::createServerGame(int port, int columns, int rows, const std::ve
 		// game_ 
 		width_ = columns;
 		height_ = rows;
-		status_ = SERVER;
+		status_ = Status::SERVER;
 
 		createLocalPlayers(width_, height_, devices);
 		game_->createGame(players_);
@@ -150,9 +142,9 @@ void TetrisGame::createServerGame(int port, int columns, int rows, const std::ve
 }
 
 void TetrisGame::createClientGame(int port, std::string ip) {
-	if (status_ == WAITING_TO_CONNECT) {
+	if (status_ == Status::WAITING_TO_CONNECT) {
 		auto clientGame = std::make_unique<ServerGame>(eventHandler_);
-		status_ = CLIENT;
+		status_ = Status::CLIENT;
 	}
 }
 
@@ -187,7 +179,7 @@ void TetrisGame::restartGame() {
 
 // Stop the game and abort any active connection.
 void TetrisGame::closeGame() {
-	status_ = WAITING_TO_CONNECT;
+	status_ = Status::WAITING_TO_CONNECT;
 	
 }
 
@@ -270,13 +262,13 @@ bool TetrisGame::isCurrentGameActive() const {
 
 void TetrisGame::triggerGameStartEvent() {
 	switch (status_) {
-		case TetrisGame::LOCAL:
+		case Status::LOCAL:
 			eventHandler_(GameStart{GameStart::LOCAL});
 			break;
-		case TetrisGame::CLIENT:
+		case Status::CLIENT:
 			eventHandler_(GameStart{GameStart::CLIENT});
 			break;
-		case TetrisGame::SERVER:
+		case Status::SERVER:
 			eventHandler_(GameStart{GameStart::SERVER});
 			break;
 	}
