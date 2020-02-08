@@ -14,8 +14,7 @@ namespace tetris {
 
 		bool ComboAi(const char* name, int& item, const std::vector<Ai>& ais, ImGuiComboFlags flags = 0) {
 			int oldItem = item;
-			if (ImGui::BeginCombo(name, ais[item].getName().c_str(), flags))
-			{
+			ImGui::ComboScoped(name, ais[item].getName().c_str(), flags, [&]() {
 				size_t size = ais.size();
 				for (int n = 0; n < size; ++n)
 				{
@@ -23,11 +22,11 @@ namespace tetris {
 					if (ImGui::Selectable(ais[n].getName().c_str(), is_selected)) {
 						item = n;
 					}
-					if (is_selected)
+					if (is_selected) {
 						ImGui::SetItemDefaultFocus();
+					}
 				}
-				ImGui::EndCombo();
-			}
+			});
 			return oldItem != item;
 		}
 
@@ -113,20 +112,25 @@ namespace tetris {
 		defaultFont_ = io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 16);
 		headerFont_ = io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 50);
 		buttonFont_ = io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 35);
-
+		background_.bindTexture();
 		tetris::TetrisData::getInstance().bindTextureFromAtlas();
 
 		//ImGui::GetStyle().WindowBorderSize = 0;
 	}
 
 	void TetrisWindow::imGuiPreUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
+		if (currentPage_ != Page::PLAY) {
+			return;
+		}
 		glEnable(GL_BLEND);
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+		
+		//glOrtho(1, -1, -1, 1, -1, 1);
 		graphic.clearDraw();
-		graphic.addCircle({0, 0}, 1, sdl::RED);
-		graphic.addRectangle({-1.f, 0.9f}, {2.f, 0.1f}, sdl::BLUE);
+		graphic.addRectangleImage({-1.f, -1.f}, {2.f, 2.f}, background_.getTextureView());
+		//graphic.addCircle({0, 0}, 1, sdl::RED);
+		//graphic.addRectangle({-1.f, 0.9f}, {2.f, 0.1f}, sdl::BLUE);
 		graphic.draw(getShader());
 	}
 	
@@ -140,40 +144,49 @@ namespace tetris {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, {0, 0, 0, 0});
 
 		ImGui::SetNextWindowPos({0.f,0.f});
 		auto [width, height] = sdl::Window::getSize();
 		ImGui::SetNextWindowSize({static_cast<float>(width), static_cast<float>(height)});
 		ImGui::Window("Main", nullptr, ImGuiNoWindow, [&]() {
-			ImGui::ImageBackground(background_.getTextureView());
 			switch (currentPage_) {
 				case Page::MENU:
+					ImGui::ImageBackground(background_.getTextureView());
 					menuPage();
 					break;
 				case Page::PLAY:
 					playPage();
 					break;
 				case Page::HIGHSCORE:
+					ImGui::ImageBackground(background_.getTextureView());
 					highscorePage();
 					break;
 				case Page::CUSTOM:
+					ImGui::ImageBackground(background_.getTextureView());
 					customGamePage();
 					break;
 				case Page::SETTINGS:
+					ImGui::ImageBackground(background_.getTextureView());
 					settingsPage();
 					break;
 				case Page::NEW_HIGHSCORE:
+					ImGui::ImageBackground(background_.getTextureView());
 					break;
 				case Page::NETWORK:
+					ImGui::ImageBackground(background_.getTextureView());
 					networkPage();
 					break;
 			}
 		});
+		ImGui::PopStyleColor();
 		ImGui::PopStyleVar(3);
 	}
 
 	void TetrisWindow::eventUpdate(const SDL_Event& windowEvent) {
 		sdl::ImGuiWindow::eventUpdate(windowEvent);
+
+		auto& io = ImGui::GetIO();
 
 		switch (windowEvent.type) {
 			case SDL_WINDOWEVENT:
@@ -184,6 +197,24 @@ namespace tetris {
 						break;
 					case SDL_WINDOWEVENT_CLOSE:
 						sdl::Window::quit();
+				}
+				break;
+			case SDL_MOUSEBUTTONUP: [[fallthrough]];
+			case SDL_MOUSEBUTTONDOWN: [[fallthrough]];
+			case SDL_MOUSEMOTION: [[fallthrough]];
+			case SDL_MOUSEWHEEL:
+				if (!io.WantCaptureMouse) {
+					//hexCanvas_.eventUpdate(windowEvent);
+				}
+				break;
+			case SDL_KEYUP:
+				if (!io.WantCaptureKeyboard) {
+					//hexCanvas_.eventUpdate(windowEvent);
+				}
+				break;
+			case SDL_KEYDOWN:
+				if (!io.WantCaptureKeyboard) {
+					//hexCanvas_.eventUpdate(windowEvent);
 				}
 				break;
 			case SDL_QUIT:
@@ -200,10 +231,10 @@ namespace tetris {
 		ImGui::PopFont();
 
 		pushButtonStyle();
-		
+
 		//ImGui::Indent(10.f);
 		ImVec2 dummy{0.0f, 5.0f};
-	
+
 		if (ImGui::Button("Play")) {
 			changePage(Page::PLAY);
 		}

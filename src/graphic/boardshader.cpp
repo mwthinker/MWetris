@@ -30,7 +30,7 @@ BoardShader::BoardShader(std::string vShaderFile, std::string fShaderFile) {
 
 void BoardShader::setVertexAttribPointer() const {
 	short size = 0;
-	glEnableVertexAttribArray(aPosIndex_);		
+	glEnableVertexAttribArray(aPosIndex_);
 	glVertexAttribPointer(aPosIndex_, sizeof(Vertex::pos_)/sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(size));
 	size += sizeof(Vertex::pos_);
 

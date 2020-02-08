@@ -44,23 +44,27 @@ namespace tetris {
 		currentMatrix_ = currentMatrix;
 	}
 
-	void Graphic::addRectangle(Vec2 pos, Vec2 size, Color color) {
+	void Graphic::addRectangle(const Vec2& pos, const Vec2& size, Color color) {
 		batches_.emplace_back(sdlg::addRectangle(batch_, pos, size, color), currentMatrix_);
 	}
 
-	void Graphic::addFilledHexagon(Vec2 center, float radius, Color color, float startAngle) {
+	void Graphic::addRectangleImage(const Vec2& pos, const Vec2& size, const sdl::TextureView& textureView) {
+		batches_.emplace_back(sdlg::addRectangleImage(batch_, pos, size, textureView), textureView, currentMatrix_);
+	}
+
+	void Graphic::addFilledHexagon(const Vec2& center, float radius, Color color, float startAngle) {
 		addCircle(center, radius, color, 6, startAngle);
 	}
 
-	void Graphic::addHexagonImage(Vec2 center, float radius, const sdl::TextureView& sprite, float startAngle) {
-		batches_.emplace_back(sdlg::addHexagonImage(batch_, center, radius, sprite, startAngle), sprite, currentMatrix_);
+	void Graphic::addHexagonImage(const Vec2& center, float radius, const sdl::TextureView& textureView, float startAngle) {
+		batches_.emplace_back(sdlg::addHexagonImage(batch_, center, radius, textureView, startAngle), textureView, currentMatrix_);
 	}
 
-	void Graphic::addHexagon(Vec2 center, float innerRadius, float outerRadius, Color color, float startAngle) {
+	void Graphic::addHexagon(const Vec2& center, float innerRadius, float outerRadius, Color color, float startAngle) {
 		batches_.emplace_back(sdlg::addHexagon(batch_, center, innerRadius, outerRadius, color, startAngle), currentMatrix_);
 	}
 
-	void Graphic::addCircle(Vec2 center, float radius, Color color, const int iterations, float startAngle) {
+	void Graphic::addCircle(const Vec2& center, float radius, Color color, const int iterations, float startAngle) {
 		batches_.emplace_back(sdlg::addCircle(batch_, center, radius, color, iterations, startAngle), currentMatrix_);
 	}
 

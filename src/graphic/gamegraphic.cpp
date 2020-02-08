@@ -293,12 +293,9 @@ namespace tetris {
 			case BoardEvent::NEXT_BLOCK_UPDATED:
 				nextBlock_.update(Block(tetrisBoard.getNextBlockType(), 0, 0));
 				break;
-			case BoardEvent::CURRENT_BLOCK_UPDATED:
-				// Fall through!
-			case BoardEvent::PLAYER_MOVES_BLOCK_ROTATE:
-				// Fall through!		
-			case BoardEvent::PLAYER_MOVES_BLOCK_LEFT:
-				// Fall through!
+			case BoardEvent::CURRENT_BLOCK_UPDATED: [[fallthrough]];
+			case BoardEvent::PLAYER_MOVES_BLOCK_ROTATE: [[fallthrough]];
+			case BoardEvent::PLAYER_MOVES_BLOCK_LEFT: [[fallthrough]];
 			case BoardEvent::PLAYER_MOVES_BLOCK_RIGHT:
 				currentBlock_.update(tetrisBoard.getBlock());
 				{
@@ -316,7 +313,7 @@ namespace tetris {
 					currentBlock_.updateDown(tetrisBoard.getBlock());
 					blockDownGround_ = false;
 				}
-				// Fall through!
+				[[fallthrough]];
 			case BoardEvent::GRAVITY_MOVES_BLOCK:
 				currentBlock_.update(tetrisBoard.getBlock());
 				break;

@@ -99,7 +99,7 @@ FetchContent_Declare(CppSdl2
 	GIT_REPOSITORY
 		https://github.com/mwthinker/CppSdl2.git
 	GIT_TAG
-		3499c69df16b4fdd3efc49846189c8a11284a15a
+		4ddb8f9ab857ca039a3d671c77e608d7c5895ceb
 )
 FetchContent_MakeAvailable(CppSdl2)
 

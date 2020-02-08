@@ -23,15 +23,17 @@ namespace tetris {
 
 		void pushMatrix(const Mat4& matrix);
 
-		void addFilledHexagon(Vec2 center, float radius, Color color, float startAngle = 0);
+		void addFilledHexagon(const Vec2& center, float radius, Color color, float startAngle = 0);
 
-		void addRectangle(Vec2 pos, Vec2 size, Color color);
+		void addRectangle(const Vec2& pos, const Vec2& size, Color color);
 
-		void addCircle(Vec2 center, float radius, Color color, const int iterations = 40, float startAngle = 0);
+		void addRectangleImage(const Vec2& pos, const Vec2& size, const sdl::TextureView& textureView);
 
-		void addHexagonImage(Vec2 center, float radius, const sdl::TextureView& sprite, float startAngle = 0);
+		void addCircle(const Vec2& center, float radius, Color color, const int iterations = 40, float startAngle = 0);
+
+		void addHexagonImage(const Vec2& center, float radius, const sdl::TextureView& textureView, float startAngle = 0);
 		
-		void addHexagon(Vec2 center, float innerRadius, float outerRadius, Color color, float startAngle = 0);
+		void addHexagon(const Vec2& center, float innerRadius, float outerRadius, Color color, float startAngle = 0);
 
 		void draw(const sdl::Shader& shader);
 
