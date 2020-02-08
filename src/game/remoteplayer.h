@@ -6,7 +6,7 @@
 
 namespace tetris {
 
-	class RemotePlayer : public IPlayer {
+	class RemotePlayer : public Player {
 	public:
 		virtual ~RemotePlayer() = default;
 

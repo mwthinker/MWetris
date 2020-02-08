@@ -11,8 +11,7 @@ namespace tetris {
 
 	class TetrisGameEvent {
 	public:
-		virtual ~TetrisGameEvent() {
-		}
+		virtual ~TetrisGameEvent() = default;
 	};
 
 	class NewConnection : public TetrisGameEvent {
@@ -21,7 +20,7 @@ namespace tetris {
 
 	class GameStart : public TetrisGameEvent {
 	public:
-		enum Status {
+		enum class Status {
 			LOCAL,
 			SERVER,
 			CLIENT
@@ -56,20 +55,20 @@ namespace tetris {
 
 	class GameOver : public TetrisGameEvent {
 	public:
-		GameOver(const std::shared_ptr<IPlayer>& player)
+		GameOver(const PlayerPtr& player)
 			: player_{player} {
 		}
 
-		std::shared_ptr<IPlayer> player_;
+		PlayerPtr player_;
 	};
 
 	class InitGame : public TetrisGameEvent {
 	public:
-		InitGame(const std::vector<std::shared_ptr<IPlayer>>& players)
+		InitGame(const std::vector<PlayerPtr>& players)
 			: players_{players} {
 		}
 
-		std::vector<std::shared_ptr<IPlayer>> players_;
+		std::vector<PlayerPtr> players_;
 	};
 
 	/*
@@ -84,7 +83,7 @@ namespace tetris {
 
 	class LevelChange : public TetrisGameEvent {
 	public:
-		LevelChange(const std::shared_ptr<IPlayer>& player, int newLevel, int oldLevel)
+		LevelChange(const PlayerPtr& player, int newLevel, int oldLevel)
 			: player_{player}
 			, newLevel_{newLevel}
 			, oldLevel_{oldLevel} {
@@ -92,12 +91,12 @@ namespace tetris {
 
 		int newLevel_;
 		int oldLevel_;
-		std::shared_ptr<IPlayer> player_;
+		PlayerPtr player_;
 	};
 
 	class PointsChange : public TetrisGameEvent {
 	public:
-		PointsChange(const std::shared_ptr<IPlayer>& player, int newPoints, int oldPoints)
+		PointsChange(const PlayerPtr& player, int newPoints, int oldPoints)
 			: player_{player}
 			, newPoints_{newPoints}
 			, oldPoints_{oldPoints} {
@@ -105,7 +104,7 @@ namespace tetris {
 
 		int newPoints_;
 		int oldPoints_;
-		std::shared_ptr<IPlayer> player_;
+		PlayerPtr player_;
 	};
 
 }

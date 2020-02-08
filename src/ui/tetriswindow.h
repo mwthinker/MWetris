@@ -2,22 +2,26 @@
 #define TETRISWINDOW_H
 
 #include "../game/tetrisgame.h"
-#include "../graphic/gamecomponent.h"
 #include "../graphic/graphic.h"
 
+#include "../game/device.h"
 #include <sdl/imguiwindow.h>
 #include <sdl/sprite.h>
 #include <sdl/textureatlas.h>
 
 #include <imgui.h>
 
+#include <array>
+
 namespace tetris {
+
+	class GameComponent;
 
 	class TetrisWindow : public sdl::ImGuiWindow {
 	public:
 		TetrisWindow();
 
-		virtual ~TetrisWindow();
+		~TetrisWindow();
 
 		enum class Page { MENU, PLAY, HIGHSCORE, CUSTOM, SETTINGS, NEW_HIGHSCORE, NETWORK };
 	
@@ -66,6 +70,8 @@ namespace tetris {
 	
 		float menuHeight_{};
 		TetrisGame game_;
+		std::array<DevicePtr, 4> activeAis_;
+		std::unique_ptr<GameComponent> gameComponent_;
 		Graphic graphic;
 	};
 

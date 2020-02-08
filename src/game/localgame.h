@@ -7,9 +7,9 @@
 
 namespace tetris {
 
-	class IGameManager {
+	class GameManager {
 	public:
-		virtual ~IGameManager() = default;
+		virtual ~GameManager() = default;
 
 		//svirtual int getWidth() const = 0;
 		//virtual int getHeight() const = 0;
@@ -18,7 +18,7 @@ namespace tetris {
 		//virtual bool setPause(bool pause);
 		//virtual bool getPause() const;
 
-		virtual void createGame(const std::vector<ILocalPlayerPtr>& players) = 0;
+		virtual void createGame(const std::vector<LocalPlayerPtr>& players) = 0;
 
 		virtual void restartGame() = 0;
 
@@ -35,11 +35,11 @@ namespace tetris {
 
 	class GameRules;
 
-	class LocalGame : public IGameManager {
+	class LocalGame : public GameManager {
 	public:
 		LocalGame(mw::Signal<TetrisGameEvent&>& gameEventSignal);
 
-		void createGame(const std::vector<ILocalPlayerPtr>& players) override;
+		void createGame(const std::vector<LocalPlayerPtr>& players) override;
 
 		void restartGame() override;
 
@@ -64,15 +64,15 @@ namespace tetris {
 		bool pause_{};
 	};
 
-	class IGameFactory {
+	class GameFactory {
 	public:
-		virtual ~IGameFactory() = default;
+		virtual ~GameFactory() = default;
 
-		virtual std::unique_ptr<IGameManager> createLocalGame() const = 0;
+		virtual std::unique_ptr<GameManager> createLocalGame() const = 0;
 
-		virtual std::unique_ptr<IGameManager> createClientGame() const = 0;
+		virtual std::unique_ptr<GameManager> createClientGame() const = 0;
 
-		virtual std::unique_ptr<IGameManager> createServerGame() const = 0;
+		virtual std::unique_ptr<GameManager> createServerGame() const = 0;
 	};
 
 	class PlayerFactory {

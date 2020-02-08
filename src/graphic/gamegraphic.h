@@ -28,9 +28,9 @@ namespace tetris {
 
 		~GameGraphic();
 
-		void restart(BoardBatch& boardBatch, IPlayer& player, float x, float y, bool showPoints);
+		void restart(BoardBatch& boardBatch, Player& player, float x, float y, bool showPoints);
 
-		void restart(IPlayer& player);
+		void restart(Player& player);
 
 		void update(int clearedRows, int points, int level);
 
@@ -63,7 +63,7 @@ namespace tetris {
 		void drawMiddleText(BoardBatch& batch);
 
 	private:
-		void initStaticBackground(BoardBatch& boardBatch, float lowX, float lowY, IPlayer& player);
+		void initStaticBackground(BoardBatch& boardBatch, float lowX, float lowY, Player& player);
 
 		void addDrawRowAtTheTop(const TetrisBoard& tetrisBoard, int nbr);
 

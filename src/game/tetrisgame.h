@@ -35,11 +35,11 @@ namespace tetris {
 		void update(double deltaTime);
 
 		// Uses the same settings as last call.
-		void createGame(const std::vector<IDevicePtr>& devices);
+		void createGame(const std::vector<DevicePtr>& devices);
 
-		void createLocalGame(int columns, int rows, const std::vector<IDevicePtr>& devices);
+		void createLocalGame(int columns, int rows, const std::vector<DevicePtr>& devices);
 
-		void createServerGame(int port, int columns, int rows, const std::vector<IDevicePtr>& devices);
+		void createServerGame(int port, int columns, int rows, const std::vector<DevicePtr>& devices);
 
 		void createClientGame(int port, std::string ip);
 
@@ -97,7 +97,7 @@ namespace tetris {
 		}
 
 	private:
-		void createLocalPlayers(int columns, int rows, const std::vector<IDevicePtr>& devices);
+		void createLocalPlayers(int columns, int rows, const std::vector<DevicePtr>& devices);
 		void receiveRemotePlayers(const std::vector<std::shared_ptr<RemotePlayer>>& players);
 
 		void initGame();
@@ -110,12 +110,12 @@ namespace tetris {
 		void triggerGameStartEvent();
 		void triggerTriggerInitGameEvent();
 
-		std::vector<ILocalPlayerPtr> players_;
+		std::vector<LocalPlayerPtr> players_;
 
 		static constexpr double FIXED_TIMESTEP = 1.0 / 60.0;
 
 		mw::Signal<TetrisGameEvent&> eventHandler_;
-		std::unique_ptr<IGameManager> game_;
+		std::unique_ptr<GameManager> game_;
 
 		Status status_{Status::WAITING_TO_CONNECT};
 		int width_{TETRIS_WIDTH};

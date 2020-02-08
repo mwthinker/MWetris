@@ -14,7 +14,7 @@
 
 namespace tetris {
 
-	class Computer : public IDevice {
+	class Computer : public Device {
 	public:
 		Computer() = default;
 

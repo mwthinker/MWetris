@@ -54,8 +54,7 @@ void TetrisGame::resumeGame(int columns, int rows, const std::vector<PlayerData>
 
 std::vector<PlayerData> TetrisGame::getPlayerData() const {
 	std::vector<PlayerData> playerData;
-	
-	for (const std::shared_ptr<ILocalPlayer>& player : players_) {
+	for (const auto& player : players_) {
 		playerData.emplace_back();
 		const TetrisBoard& tetrisBoard = player->getTetrisBoard();
 		playerData.back().current_ = tetrisBoard.getBlock();
@@ -69,11 +68,10 @@ std::vector<PlayerData> TetrisGame::getPlayerData() const {
 		playerData.back().points_ = player->getPoints();
 		playerData.back().device_ = player->getDevice();
 	}
-
 	return playerData;
 }
 
-void TetrisGame::createLocalPlayers(int columns, int rows, const std::vector<IDevicePtr>& devices) {
+void TetrisGame::createLocalPlayers(int columns, int rows, const std::vector<DevicePtr>& devices) {
 	players_.clear();
 	LocalPlayerBuilder builder;
 	for (const auto& device : devices) {
@@ -99,7 +97,7 @@ void TetrisGame::receiveRemotePlayers(const std::vector<std::shared_ptr<RemotePl
 
 }
 
-void TetrisGame::createLocalGame(int columns, int rows, const std::vector<IDevicePtr>& devices) {
+void TetrisGame::createLocalGame(int columns, int rows, const std::vector<DevicePtr>& devices) {
 	status_ = Status::LOCAL;
 
 	width_ = columns;
@@ -110,7 +108,7 @@ void TetrisGame::createLocalGame(int columns, int rows, const std::vector<IDevic
 	initGame();
 }
 
-void TetrisGame::createGame(const std::vector<IDevicePtr>& devices) {
+void TetrisGame::createGame(const std::vector<DevicePtr>& devices) {
 	switch (status_) {
 		case TetrisGame::Status::LOCAL:
 			createLocalGame(width_, height_, devices);
@@ -124,7 +122,7 @@ void TetrisGame::createGame(const std::vector<IDevicePtr>& devices) {
 	}
 }
 
-void TetrisGame::createServerGame(int port, int columns, int rows, const std::vector<IDevicePtr>& devices) {
+void TetrisGame::createServerGame(int port, int columns, int rows, const std::vector<DevicePtr>& devices) {
 	if (status_ == Status::WAITING_TO_CONNECT) {
 		auto serverGame = std::make_unique<ServerGame>(eventHandler_);
 		serverGame->connect(port);
@@ -193,7 +191,7 @@ void TetrisGame::pause() {
 }
 
 int TetrisGame::getNbrOfPlayers() const {
-	return players_.size();
+	return static_cast<int>(players_.size());
 }
 
 void TetrisGame::resizeBoard(int width, int height) {
@@ -263,19 +261,19 @@ bool TetrisGame::isCurrentGameActive() const {
 void TetrisGame::triggerGameStartEvent() {
 	switch (status_) {
 		case Status::LOCAL:
-			eventHandler_(GameStart{GameStart::LOCAL});
+			eventHandler_(GameStart{GameStart::Status::LOCAL});
 			break;
 		case Status::CLIENT:
-			eventHandler_(GameStart{GameStart::CLIENT});
+			eventHandler_(GameStart{GameStart::Status::CLIENT});
 			break;
 		case Status::SERVER:
-			eventHandler_(GameStart{GameStart::SERVER});
+			eventHandler_(GameStart{GameStart::Status::SERVER});
 			break;
 	}
 }
 
 void TetrisGame::triggerTriggerInitGameEvent() {
-	std::vector<IPlayerPtr> players;
+	std::vector<PlayerPtr> players;
 	for (const auto& p : players_) {
 		players.push_back(p);
 	}

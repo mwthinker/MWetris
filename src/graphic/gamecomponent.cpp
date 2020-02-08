@@ -119,7 +119,7 @@ namespace tetris {
 		}
 	}
 
-	void GameComponent::initGame(std::vector<IPlayerPtr>& players) {
+	void GameComponent::initGame(std::vector<PlayerPtr>& players) {
 		bool showPoints = false;
 		if (players.size() == 1) {
 			showPoints = true;
@@ -186,7 +186,7 @@ namespace tetris {
 			auto& initGameVar = dynamic_cast<InitGame&>(tetrisEvent);
 			initGame(initGameVar.players_);
 
-			for (const IPlayerPtr& player : initGameVar.players_) {
+			for (const PlayerPtr& player : initGameVar.players_) {
 				if (player->isGameOver()) {
 					handleMiddleText(player, player->getGameOverPosition());
 				}
@@ -240,7 +240,7 @@ namespace tetris {
 		} catch (std::bad_cast exp) {}
 	}
 
-	void GameComponent::handleMiddleText(const IPlayerPtr& player, int lastPostion) {
+	void GameComponent::handleMiddleText(const PlayerPtr& player, int lastPostion) {
 		//sdl::Text middleText("", TetrisData::getInstance().getDefaultFont(50), 20);
 
 		// Test if the player is a local player, exception otherwise.

@@ -11,13 +11,13 @@
 namespace tetris {
 
 	struct RowRoughness {
-		int holes_{};
-		int rowSum_{};
+		int holes;
+		int rowSum;
 	};
 
 	struct ColumnRoughness {
-		int holes_{};
-		int bumpiness{};
+		int holes_;
+		int bumpiness;
 	};
 
 	RowRoughness calculateRowRoughness(const RawTetrisBoard& board, int highestUsedRow);
@@ -36,13 +36,13 @@ namespace tetris {
 	int calculateRowHoles(const RawTetrisBoard& board);
 
 	struct AiParameters {
-		bool landingHeight_{};
-		bool erodedPieces_{};
-		bool rowHoles_{};
-		bool columnHoles_{};
-		bool holes_{};
-		bool cumulativeWells_{};
-		bool holeDepth_{};
+		bool landingHeight;
+		bool erodedPieces;
+		bool rowHoles;
+		bool columnHoles;
+		bool holes;
+		bool cumulativeWells;
+		bool holeDepth;
 	};
 
 	class Ai {
@@ -68,8 +68,8 @@ namespace tetris {
 
 			State(int left, int rotations);
 
-			int left_{};
-			int rotationLeft_{};
+			int left{};
+			int rotationLeft{};
 			float value_{std::numeric_limits<float>::lowest()};
 		};
 
@@ -91,7 +91,7 @@ namespace tetris {
 
 		calc::Calculator calculator_;
 		calc::Cache cache_;
-		AiParameters parameters_;
+		AiParameters parameters_{};
 	};
 
 	void moveBlockToBeforeImpact(const Ai::State& state, RawTetrisBoard& board);

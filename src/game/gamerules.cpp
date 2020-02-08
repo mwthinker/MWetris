@@ -10,7 +10,7 @@ GameRules::GameRules(mw::Signal<TetrisGameEvent&>& gameEventSignal)
 	: gameEventSignal_{gameEventSignal} {
 }
 
-void GameRules::createGame(const std::vector<ILocalPlayerPtr>& players) {
+void GameRules::createGame(const std::vector<LocalPlayerPtr>& players) {
 	localPlayers_ = players;
 	for (const auto& player : players) {
 		if (player->isGameOver()) {
@@ -32,7 +32,7 @@ void GameRules::restartGame() {
 	nbrOfAlivePlayers_ = localPlayers_.size();
 }
 
-void GameRules::addPlayer(const ILocalPlayerPtr& player) {
+void GameRules::addPlayer(const LocalPlayerPtr& player) {
 	player->addGameEventListener([&](BoardEvent gameEvent, const TetrisBoard& board) {
 		applyRules(gameEvent, player);
 	});
@@ -41,7 +41,7 @@ void GameRules::addPlayer(const ILocalPlayerPtr& player) {
 	++nbrOfAlivePlayers_;
 }
 
-void GameRules::applyRules(BoardEvent gameEvent, ILocalPlayerPtr player) {
+void GameRules::applyRules(BoardEvent gameEvent, LocalPlayerPtr player) {
 	switch (gameEvent) {
 		case BoardEvent::ONE_ROW_REMOVED:
 			handleRowClearedEvent(player, 1);
@@ -62,7 +62,7 @@ void GameRules::applyRules(BoardEvent gameEvent, ILocalPlayerPtr player) {
 	}
 }
 
-void GameRules::handleGameOverEvent(ILocalPlayerPtr player) {
+void GameRules::handleGameOverEvent(LocalPlayerPtr player) {
 	if (nbrOfAlivePlayers_ > 0) {
 		player->updateGameOverPosition(nbrOfAlivePlayers_);
 		--nbrOfAlivePlayers_;
@@ -79,7 +79,7 @@ void GameRules::handleGameOverEvent(ILocalPlayerPtr player) {
 	}
 }
 
-void GameRules::handleRowClearedEvent(ILocalPlayerPtr player, int rows) {
+void GameRules::handleRowClearedEvent(LocalPlayerPtr player, int rows) {
 	if (isMultiplayerGame()) {
 		for (auto& opponent : localPlayers_) {
 			if (player != opponent && !opponent->isGameOver()) {
@@ -99,22 +99,22 @@ void GameRules::handleRowClearedEvent(ILocalPlayerPtr player, int rows) {
 	}
 }
 
-void GameRules::triggerPointEvent(ILocalPlayerPtr player, int newPoints, int oldPoints) {
+void GameRules::triggerPointEvent(LocalPlayerPtr player, int newPoints, int oldPoints) {
 	PointsChange pointsChange(player, newPoints, oldPoints);
 	gameEventSignal_(pointsChange);
 }
 
-void GameRules::triggerGameOverEvent(ILocalPlayerPtr player) {
+void GameRules::triggerGameOverEvent(LocalPlayerPtr player) {
 	GameOver gameOver(player);
 	gameEventSignal_(gameOver);
 }
 
-void GameRules::triggerLevelUpEvent(ILocalPlayerPtr player, int newLevel, int oldLevel) {
+void GameRules::triggerLevelUpEvent(LocalPlayerPtr player, int newLevel, int oldLevel) {
 	LevelChange levelChange(player, newLevel, oldLevel);
 	gameEventSignal_(levelChange);
 }
 
-void GameRules::addRowsToOpponents(ILocalPlayerPtr player) {
+void GameRules::addRowsToOpponents(LocalPlayerPtr player) {
 	for (auto& opponent : localPlayers_) {
 		if (player != opponent && !opponent->isGameOver()) {
 			for (int i = 0; i < 2; ++i) {
@@ -125,7 +125,7 @@ void GameRules::addRowsToOpponents(ILocalPlayerPtr player) {
 	}
 }
 
-int GameRules::generateNbrHoles(const IPlayerPtr& player) {
+int GameRules::generateNbrHoles(const PlayerPtr& player) {
 	int holes = (int) (player->getTetrisBoard().getColumns() * HOLES_PERCENT);
 	if (holes < 1) {
 		return holes;

@@ -12,12 +12,12 @@ namespace tetris {
 
 	class TetrisBoard;
 
-	class IDevice;
-	using IDevicePtr = std::shared_ptr<IDevice>;
+	class Device;
+	using DevicePtr = std::shared_ptr<Device>;
 
-	class IDevice {
+	class Device {
 	public:
-		virtual ~IDevice() = default;
+		virtual ~Device() = default;
 
 		virtual Input getInput() const = 0;
 

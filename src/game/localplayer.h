@@ -9,17 +9,14 @@
 
 namespace tetris {
 
-//#include <net/connection.h>
-//#include <net/packet.h>
-
-	class ILocalPlayer;
-	using ILocalPlayerPtr = std::shared_ptr<ILocalPlayer>;
+	class LocalPlayer;
+	using LocalPlayerPtr = std::shared_ptr<LocalPlayer>;
 
 	class LocalPlayerBuilder {
 	public:
 		LocalPlayerBuilder() = default;
 
-		ILocalPlayerPtr build();
+		LocalPlayerPtr build();
 
 		LocalPlayerBuilder withWidth(int width) {
 			width_ = width;
@@ -47,7 +44,7 @@ namespace tetris {
 			return *this;
 		}
 
-		LocalPlayerBuilder& widthDevice(IDevicePtr device) {
+		LocalPlayerBuilder& widthDevice(DevicePtr device) {
 			device_ = device;
 			return *this;
 		}
@@ -88,7 +85,7 @@ namespace tetris {
 		}
 
 	private:
-		IDevicePtr device_;
+		DevicePtr device_;
 		std::string name_{"PLAYER"};
 		int points_{0}, level_{1}, levelUpCounter_{0}, clearedRows_{0};
 		int width_{10}, height_{24};
@@ -99,14 +96,14 @@ namespace tetris {
 		int gameOverPosition_{};
 	};
 
-	class ILocalPlayer : public IPlayer {
+	class LocalPlayer : public Player {
 	public:
-		ILocalPlayer(const RawTetrisBoard& board, const IDevicePtr& device);
+		LocalPlayer(const RawTetrisBoard& board, const DevicePtr& device);
 
-		virtual ~ILocalPlayer();
+		virtual ~LocalPlayer();
 
-		ILocalPlayer(const ILocalPlayer&) = delete;
-		ILocalPlayer& operator=(const ILocalPlayer&) = delete;
+		LocalPlayer(const LocalPlayer&) = delete;
+		LocalPlayer& operator=(const LocalPlayer&) = delete;
 
 		virtual void update(double deltaTime);
 
@@ -159,7 +156,7 @@ namespace tetris {
 			return gameOverPosition_;
 		}
 
-		inline IDevicePtr getDevice() const override {
+		inline DevicePtr getDevice() const override {
 			return device_;
 		}
 
@@ -174,7 +171,7 @@ namespace tetris {
 	private:
 		void boardListener(BoardEvent gameEvent);
 
-		IDevicePtr device_;
+		DevicePtr device_;
 		std::string name_;
 		int points_, level_, levelUpCounter_;
 		TetrisBoard tetrisBoard_;

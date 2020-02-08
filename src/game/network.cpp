@@ -85,7 +85,7 @@ namespace {
 		return BlockType::EMPTY;
 	}
 
-	void updateProtoPlayer(tetris_protocol::Player* updatePlayer, const ILocalPlayerPtr& player) {
+	void updateProtoPlayer(tetris_protocol::Player* updatePlayer, const LocalPlayerPtr& player) {
 		updatePlayer->set_id(1);
 		updatePlayer->set_ai(player->getDevice()->isAi());
 		updatePlayer->set_name(player->getName());
@@ -97,7 +97,7 @@ namespace {
 
 }
 
-void ServerGame::createGame(const std::vector<ILocalPlayerPtr>& players) {
+void ServerGame::createGame(const std::vector<LocalPlayerPtr>& players) {
 	gameRules_->createGame(players);
 
 	tetris_protocol::ConnectionInfo connection;
@@ -188,7 +188,7 @@ void ClientGame::connect(const std::string& ip, int port) {
 	}
 }
 
-void ClientGame::createGame(const std::vector<ILocalPlayerPtr>& players) {
+void ClientGame::createGame(const std::vector<LocalPlayerPtr>& players) {
 	gameRules_->createGame(players);
 
 	tetris_protocol::ConnectionInfo connection;

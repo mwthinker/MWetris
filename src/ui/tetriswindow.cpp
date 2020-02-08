@@ -3,6 +3,7 @@
 #include "imguiextra.h"
 #include "../logger.h"
 #include "../tetrisdata.h"
+#include "../graphic/gamecomponent.h"
 
 #include <sdl/imguiauxiliary.h>
 
@@ -18,11 +19,11 @@ namespace tetris {
 				size_t size = ais.size();
 				for (int n = 0; n < size; ++n)
 				{
-					bool is_selected = (item == n);
-					if (ImGui::Selectable(ais[n].getName().c_str(), is_selected)) {
+					bool isSelected = (item == n);
+					if (ImGui::Selectable(ais[n].getName().c_str(), isSelected)) {
 						item = n;
 					}
-					if (is_selected) {
+					if (isSelected) {
 						ImGui::SetItemDefaultFocus();
 					}
 				}
@@ -47,7 +48,7 @@ namespace tetris {
 			case TetrisWindow::Page::NETWORK:
 				return "NETWORK";
 			}
-			return "Unknown";
+			return "UNKNOWN";
 		}
 
 	}
@@ -78,7 +79,6 @@ namespace tetris {
 
 	TetrisWindow::TetrisWindow() {
 		menuHeight_ = tetris::TetrisData::getInstance().getWindowBarHeight();
-
 		manTexture_ = tetris::TetrisData::getInstance().getHumanSprite();
 		noManTexture_ = tetris::TetrisData::getInstance().getCrossSprite();
 		aiTexture_ = tetris::TetrisData::getInstance().getComputerSprite();
@@ -114,7 +114,7 @@ namespace tetris {
 		buttonFont_ = io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 35);
 		background_.bindTexture();
 		tetris::TetrisData::getInstance().bindTextureFromAtlas();
-
+		gameComponent_ = std::make_unique<GameComponent>(game_);
 		//ImGui::GetStyle().WindowBorderSize = 0;
 	}
 
@@ -132,6 +132,8 @@ namespace tetris {
 		//graphic.addCircle({0, 0}, 1, sdl::RED);
 		//graphic.addRectangle({-1.f, 0.9f}, {2.f, 0.1f}, sdl::BLUE);
 		graphic.draw(getShader());
+
+		gameComponent_->draw(getWidth(), getHeight(), std::chrono::duration<double>(deltaTime).count());
 	}
 	
 	void TetrisWindow::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {

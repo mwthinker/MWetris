@@ -50,7 +50,7 @@ namespace tetris {
 		connection_.disconnect();
 	}
 
-	void GameGraphic::restart(BoardBatch& boardBatch, IPlayer& player, float x, float y, bool showPoints) {
+	void GameGraphic::restart(BoardBatch& boardBatch, Player& player, float x, float y, bool showPoints) {
 		level_ = -1;
 		points_ = -1;
 		clearedRows_ = -1;
@@ -64,7 +64,7 @@ namespace tetris {
 		update(player.getClearedRows(), player.getPoints(), player.getLevel());
 	}
 
-	void GameGraphic::restart(IPlayer& player) {
+	void GameGraphic::restart(Player& player) {
 		level_ = player.getLevel();
 		points_ = player.getPoints();
 		clearedRows_ = player.getClearedRows();
@@ -101,7 +101,7 @@ namespace tetris {
 		showDownBlock_ = TetrisData::getInstance().isShowDownBlock();
 	}
 
-	void GameGraphic::initStaticBackground(BoardBatch& staticBoardBatch, float lowX, float lowY, IPlayer& player) {
+	void GameGraphic::initStaticBackground(BoardBatch& staticBoardBatch, float lowX, float lowY, Player& player) {
 		const float squareSize = TetrisData::getInstance().getTetrisSquareSize();
 		const float borderSize = TetrisData::getInstance().getTetrisBorderSize();
 

@@ -11,12 +11,12 @@
 
 namespace tetris {
 
-	class IPlayer;
-	using IPlayerPtr = std::shared_ptr<IPlayer>;
+	class Player;
+	using PlayerPtr = std::shared_ptr<Player>;
 
-	class IPlayer {
+	class Player {
 	public:
-		virtual ~IPlayer() = default;
+		virtual ~Player() = default;
 
 		virtual std::string getName() const = 0;
 
@@ -32,7 +32,7 @@ namespace tetris {
 
 		virtual int getGameOverPosition() const = 0;
 
-		virtual IDevicePtr getDevice() const = 0;
+		virtual DevicePtr getDevice() const = 0;
 
 		virtual const TetrisBoard& getTetrisBoard() const = 0;
 

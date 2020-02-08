@@ -13,7 +13,7 @@ namespace tetris {
 	public:
 		GameRules(mw::Signal<TetrisGameEvent&>& gameEventSignal);
 
-		void createGame(const std::vector<ILocalPlayerPtr>& players);
+		void createGame(const std::vector<LocalPlayerPtr>& players);
 
 		void restartGame();
 
@@ -22,23 +22,23 @@ namespace tetris {
 		}
 
 	private:
-		void addPlayer(const ILocalPlayerPtr& player);
+		void addPlayer(const LocalPlayerPtr& player);
 
-		void applyRules(BoardEvent gameEvent, ILocalPlayerPtr player);
+		void applyRules(BoardEvent gameEvent, LocalPlayerPtr player);
 
-		void handleGameOverEvent(ILocalPlayerPtr player);
+		void handleGameOverEvent(LocalPlayerPtr player);
 
-		void handleRowClearedEvent(ILocalPlayerPtr player, int rows);
+		void handleRowClearedEvent(LocalPlayerPtr player, int rows);
 
-		void triggerPointEvent(ILocalPlayerPtr player, int newPoints, int oldPoints);
+		void triggerPointEvent(LocalPlayerPtr player, int newPoints, int oldPoints);
 
-		void triggerGameOverEvent(ILocalPlayerPtr player);
+		void triggerGameOverEvent(LocalPlayerPtr player);
 
-		void triggerLevelUpEvent(ILocalPlayerPtr player, int newLevel, int oldLevel);
+		void triggerLevelUpEvent(LocalPlayerPtr player, int newLevel, int oldLevel);
 
-		void addRowsToOpponents(ILocalPlayerPtr player);
+		void addRowsToOpponents(LocalPlayerPtr player);
 
-		static int generateNbrHoles(const IPlayerPtr& player);
+		static int generateNbrHoles(const PlayerPtr& player);
 
 		inline bool isMultiplayerGame() const {
 			return localPlayers_.size() > 1;
@@ -47,15 +47,15 @@ namespace tetris {
 		struct Pair {
 			Pair() = default;
 
-			Pair(const mw::signals::Connection& connection, const ILocalPlayerPtr& player) :
+			Pair(const mw::signals::Connection& connection, const LocalPlayerPtr& player) :
 				connection_(connection), player_(player) {
 			}
 
 			mw::signals::Connection connection_;
-			ILocalPlayerPtr player_;
+			LocalPlayerPtr player_;
 		};
 
-		std::vector<ILocalPlayerPtr> localPlayers_;
+		std::vector<LocalPlayerPtr> localPlayers_;
 		mw::Signal<TetrisGameEvent&>& gameEventSignal_;
 		int nbrOfAlivePlayers_{};
 		static const double HOLES_PERCENT;

@@ -27,15 +27,15 @@ namespace tetris {
 		void draw(int width, int height, double deltaTime);
 
 	private:
-		void initGame(std::vector<IPlayerPtr>& player);
+		void initGame(std::vector<PlayerPtr>& player);
 
 		void eventHandler(TetrisGameEvent& tetrisGameEvent);
 		
 		void validate();
 
-		void handleMiddleText(const IPlayerPtr& player, int lastPostion);
+		void handleMiddleText(const PlayerPtr& player, int lastPostion);
 
-		std::map<IPlayerPtr, GameGraphic> graphicPlayers_;
+		std::map<PlayerPtr, GameGraphic> graphicPlayers_;
 		BoardShaderPtr boardShader_;
 
 		std::shared_ptr<BoardBatch> staticBoardBatch_;

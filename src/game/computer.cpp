@@ -37,12 +37,12 @@ void Computer::update(const TetrisBoard& board) {
 		Square currentSq = current.getRotationSquare();
 		Square sq = latestBlock_.getRotationSquare();
 
-		if (latestState_.left_ == sq.column_ - currentSq.column_) {
-			latestState_.left_ = 0;
+		if (latestState_.left == sq.column_ - currentSq.column_) {
+			latestState_.left = 0;
 		}
 
-		if (latestState_.rotationLeft_ == current.getCurrentRotation() - latestBlock_.getCurrentRotation()) {
-			latestState_.rotationLeft_ = 0;
+		if (latestState_.rotationLeft == current.getCurrentRotation() - latestBlock_.getCurrentRotation()) {
+			latestState_.rotationLeft = 0;
 		}
 
 		input_ = calculateInput(latestState_);
@@ -55,17 +55,17 @@ Ai::State Computer::calculateBestState(RawTetrisBoard board, Ai ai, int depth) {
 
 // Calculate and return the best input to achieve the current state.
 Input Computer::calculateInput(Ai::State state) const {
-	Input input;
-	if (state.rotationLeft_ > 0) {
-		input.rotate_ = !input_.rotate_;
+	Input input{};
+	if (state.rotationLeft > 0) {
+		input.rotate = !input_.rotate;
 	}
-	if (state.left_ > 0) {
-		input.left_ = true;
-	} else if (state.left_ < 0) {
-		input.right_ = true;
+	if (state.left > 0) {
+		input.left = true;
+	} else if (state.left < 0) {
+		input.right = true;
 	}
-	if (state.left_ == 0 && state.rotationLeft_ == 0) {
-		input.down_ = true;
+	if (state.left == 0 && state.rotationLeft == 0) {
+		input.down = true;
 	}
 	return input;
 }

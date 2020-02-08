@@ -7,18 +7,18 @@
 
 using namespace tetris;
 
-ILocalPlayer::~ILocalPlayer() {
+LocalPlayer::~LocalPlayer() {
 	connection_.disconnect();
 }
 
-ILocalPlayerPtr LocalPlayerBuilder::build() {
-	ILocalPlayerPtr player;
+LocalPlayerPtr LocalPlayerBuilder::build() {
+	LocalPlayerPtr player;
 	if (board_.size() > 0 || movingBlockType_ == BlockType::EMPTY) {
 		RawTetrisBoard board(board_, width_, height_, movingBlock_, next_);
-		player = std::make_shared<ILocalPlayer>(board, device_);
+		player = std::make_shared<LocalPlayer>(board, device_);
 	} else {
 		RawTetrisBoard board(width_, height_, movingBlockType_, next_);
-		player = std::make_shared<ILocalPlayer>(board, device_);
+		player = std::make_shared<LocalPlayer>(board, device_);
 	}
 	player->updateName(name_);
 	player->updateLevelUpCounter(levelUpCounter_);
@@ -29,7 +29,7 @@ ILocalPlayerPtr LocalPlayerBuilder::build() {
 	return player;
 }
 
-ILocalPlayer::ILocalPlayer(const RawTetrisBoard& board, const IDevicePtr& device)
+LocalPlayer::LocalPlayer(const RawTetrisBoard& board, const DevicePtr& device)
 	: leftHandler_{0.09, false}
 	, rightHandler_{0.09, false}
 	, rotateHandler_{0.0, true}
@@ -47,7 +47,7 @@ ILocalPlayer::ILocalPlayer(const RawTetrisBoard& board, const IDevicePtr& device
 	name_ = device_->getName();
 }
 
-void ILocalPlayer::update(double deltaTime) {
+void LocalPlayer::update(double deltaTime) {
 	Input input = device_->getInput();
 
 	// The time beetween each "gravity" move.
@@ -59,27 +59,27 @@ void ILocalPlayer::update(double deltaTime) {
 		tetrisBoard_.update(Move::DOWN_GRAVITY);
 	}
 
-	leftHandler_.update(deltaTime, input.left_ && !input.right_);
+	leftHandler_.update(deltaTime, input.left && !input.right);
 	if (leftHandler_.doAction()) {
 		tetrisBoard_.update(Move::LEFT);
 	}
 
-	rightHandler_.update(deltaTime, input.right_ && !input.left_);
+	rightHandler_.update(deltaTime, input.right && !input.left);
 	if (rightHandler_.doAction()) {
 		tetrisBoard_.update(Move::RIGHT);
 	}
 
-	downHandler_.update(deltaTime, input.down_);
+	downHandler_.update(deltaTime, input.down);
 	if (downHandler_.doAction()) {
 		tetrisBoard_.update(Move::DOWN);
 	}
 
-	rotateHandler_.update(deltaTime, input.rotate_);
+	rotateHandler_.update(deltaTime, input.rotate);
 	if (rotateHandler_.doAction()) {
 		tetrisBoard_.update(Move::ROTATE_LEFT);
 	}
 
-	downGroundHandler_.update(deltaTime, input.downGround_);
+	downGroundHandler_.update(deltaTime, input.downGround);
 	if (downGroundHandler_.doAction()) {
 		tetrisBoard_.update(Move::DOWN_GROUND);
 	}
@@ -87,32 +87,32 @@ void ILocalPlayer::update(double deltaTime) {
 	device_->update(tetrisBoard_);
 }
 
-void ILocalPlayer::addRow(int holes) {
+void LocalPlayer::addRow(int holes) {
 	std::vector<BlockType> blockTypes = generateRow(tetrisBoard_.getColumns(), 2);
 	tetrisBoard_.addRows(blockTypes);
 }
 
-void ILocalPlayer::updateName(const std::string& name) {
+void LocalPlayer::updateName(const std::string& name) {
 	name_ = name;
 }
 
-void ILocalPlayer::updatePoints(int points) {
+void LocalPlayer::updatePoints(int points) {
 	points_ = points;
 }
 
-void ILocalPlayer::updateLevelUpCounter(int counter) {
+void LocalPlayer::updateLevelUpCounter(int counter) {
 	levelUpCounter_ = counter;
 }
 
-void ILocalPlayer::updateLevel(int level) {
+void LocalPlayer::updateLevel(int level) {
 	level_ = level;
 }
 
-void ILocalPlayer::updateGameOverPosition(int gameOverPosition) {
+void LocalPlayer::updateGameOverPosition(int gameOverPosition) {
 	gameOverPosition_ = gameOverPosition;
 }
 
-void ILocalPlayer::updateRestart() {
+void LocalPlayer::updateRestart() {
 	level_ = 1;
 	points_ = 0;
 	gameOverPosition_ = 0;
@@ -120,11 +120,11 @@ void ILocalPlayer::updateRestart() {
 	tetrisBoard_.updateRestart(randomBlockType(), randomBlockType());
 }
 
-void ILocalPlayer::updateGameOver() {
+void LocalPlayer::updateGameOver() {
 	tetrisBoard_.update(Move::GAME_OVER);
 }
 
-void ILocalPlayer::boardListener(BoardEvent gameEvent) {
+void LocalPlayer::boardListener(BoardEvent gameEvent) {
 	if (gameEvent == BoardEvent::CURRENT_BLOCK_UPDATED) {
 		tetrisBoard_.updateNextBlock(randomBlockType());
 

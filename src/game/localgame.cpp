@@ -6,7 +6,7 @@
 
 using namespace tetris;
 
-void LocalGame::createGame(const std::vector<ILocalPlayerPtr>& players) {
+void LocalGame::createGame(const std::vector<LocalPlayerPtr>& players) {
 	gameRules_->createGame(players);
 }
 

@@ -80,11 +80,11 @@ namespace tetris {
 			for (int column = 0; column < board.getColumns(); ++column) {
 				bool hole = board.getBlockType(column, row) == BlockType::EMPTY;
 				if (lastHole != hole) {
-					rowRoughness.holes_ += 1;
+					rowRoughness.holes += 1;
 					lastHole = hole;
 				}
 				if (!hole) {
-					rowRoughness.rowSum_ += row;
+					rowRoughness.rowSum += row;
 					++holes;
 				}
 			}
@@ -330,8 +330,8 @@ namespace tetris {
 	}
 	
 	Ai::State::State(int left, int rotations)
-		: left_{left}
-		, rotationLeft_{rotations} {
+		: left{left}
+		, rotationLeft{rotations} {
 	}
 
 	Ai::Ai()
@@ -393,16 +393,16 @@ namespace tetris {
 
 	void moveBlockToBeforeImpact(const Ai::State& state, RawTetrisBoard& board) {
 		// Rotate.
-		for (int i = 0; i < state.rotationLeft_; ++i) {
+		for (int i = 0; i < state.rotationLeft; ++i) {
 			board.update(Move::ROTATE_LEFT);
 		}
 
 		// Move left.
-		for (int i = 0; i < state.left_; ++i) {
+		for (int i = 0; i < state.left; ++i) {
 			board.update(Move::LEFT);
 		}
 		// Move right.
-		for (int i = 0; i < -1 * state.left_; ++i) {
+		for (int i = 0; i < -1 * state.left; ++i) {
 			board.update(Move::RIGHT);
 		}
 
@@ -412,26 +412,26 @@ namespace tetris {
 
 	float Ai::moveBlockToGroundCalculateValue(const State& state, RawTetrisBoard& board) {
 		moveBlockToBeforeImpact(state, board);
-		if (parameters_.landingHeight_) {
+		if (parameters_.landingHeight) {
 			calculator_.updateVariable("landingHeight", (float) calculateLandingHeight(board.getBlock()));
 		}
-		if (parameters_.erodedPieces_) {
+		if (parameters_.erodedPieces) {
 			calculator_.updateVariable("erodedPieces", (float) calculateErodedPieces(board));
 		}
 		board.update(Move::DOWN_GRAVITY);
-		if (parameters_.rowHoles_) {
+		if (parameters_.rowHoles) {
 			calculator_.updateVariable("rowHoles", (float) calculateRowTransitions(board));
 		}
-		if (parameters_.columnHoles_) {
+		if (parameters_.columnHoles) {
 			calculator_.updateVariable("columnHoles", (float) calculateColumnTransitions(board));
 		}
-		if (parameters_.holes_) {
+		if (parameters_.holes) {
 			calculator_.updateVariable("holes", (float) calculateNumberOfHoles(board));
 		}
-		if (parameters_.cumulativeWells_) {
+		if (parameters_.cumulativeWells) {
 			calculator_.updateVariable("cumulativeWells", (float) calculateCumulativeWells(board));
 		}
-		if (parameters_.holeDepth_) {
+		if (parameters_.holeDepth) {
 			calculator_.updateVariable("holeDepth", (float) calculateHoleDepth(board));
 		}
 		return calculator_.excecute(cache_);
@@ -462,13 +462,13 @@ namespace tetris {
 	}
 
 	void Ai::initAiParameters(const calc::Calculator& calculator, const calc::Cache& cache) {
-		parameters_.landingHeight_ = calculator_.hasVariable("landingHeight", cache_);
-		parameters_.erodedPieces_ = calculator_.hasVariable("erodedPieces", cache_);
-		parameters_.rowHoles_ = calculator_.hasVariable("rowHoles", cache_);
-		parameters_.columnHoles_ = calculator_.hasVariable("columnHoles", cache_);
-		parameters_.holes_ = calculator_.hasVariable("holes", cache_);
-		parameters_.cumulativeWells_ = calculator_.hasVariable("cumulativeWells", cache_);
-		parameters_.holeDepth_ = calculator_.hasVariable("holeDepth", cache_);
+		parameters_.landingHeight = calculator_.hasVariable("landingHeight", cache_);
+		parameters_.erodedPieces = calculator_.hasVariable("erodedPieces", cache_);
+		parameters_.rowHoles = calculator_.hasVariable("rowHoles", cache_);
+		parameters_.columnHoles = calculator_.hasVariable("columnHoles", cache_);
+		parameters_.holes = calculator_.hasVariable("holes", cache_);
+		parameters_.cumulativeWells = calculator_.hasVariable("cumulativeWells", cache_);
+		parameters_.holeDepth = calculator_.hasVariable("holeDepth", cache_);
 	}
 
 } // Namespace tetris.

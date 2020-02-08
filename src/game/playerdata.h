@@ -10,7 +10,7 @@
 namespace tetris {
 
 	struct PlayerData {
-		IDevicePtr device_{};
+		DevicePtr device_{};
 		std::string name_;
 		std::string deviceName_;
 		bool ai_{};

@@ -22,7 +22,7 @@ namespace tetris {
 
 	class GameRules;
 
-	class ServerGame : public IGameManager {
+	class ServerGame : public GameManager {
 	public:
 		ServerGame(mw::Signal<TetrisGameEvent&>& gameEventSignal);
 
@@ -32,7 +32,7 @@ namespace tetris {
 
 		void connect(int port);
 
-		void createGame(const std::vector<ILocalPlayerPtr>& players) override;
+		void createGame(const std::vector<LocalPlayerPtr>& players) override;
 
 		void restartGame() override;
 
@@ -55,13 +55,13 @@ namespace tetris {
 		std::unique_ptr<GameRules> gameRules_;
 		std::shared_ptr<net::Server> server_;
 		tetris_protocol::Wrapper wrapper_;
-		std::map<net::RemoteClientPtr, IPlayerPtr> players_;
+		std::map<net::RemoteClientPtr, PlayerPtr> players_;
 
 		std::queue<std::function<void()>> callbacks_;
 		asio::io_context ioContext_;
 	};
 
-	class ClientGame : public IGameManager {
+	class ClientGame : public GameManager {
 	public:
 		ClientGame(mw::Signal<TetrisGameEvent&>& gameEventSignal);
 
@@ -71,7 +71,7 @@ namespace tetris {
 
 		void connect(const std::string& ip, int port);
 
-		void createGame(const std::vector<ILocalPlayerPtr>& players) override;
+		void createGame(const std::vector<LocalPlayerPtr>& players) override;
 
 		void restartGame() override;
 
