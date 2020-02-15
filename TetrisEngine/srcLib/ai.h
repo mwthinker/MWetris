@@ -22,7 +22,7 @@ namespace tetris {
 
 	RowRoughness calculateRowRoughness(const RawTetrisBoard& board, int highestUsedRow);
 	ColumnRoughness calculateColumnHoles(const RawTetrisBoard& board, int highestUsedRow);
-	size_t calculateHighestUsedRow(const RawTetrisBoard& board);
+	int calculateHighestUsedRow(const RawTetrisBoard& board);
 	float calculateBlockMeanHeight(const Block& block);
 	int calculateBlockEdges(const RawTetrisBoard& board, const Block& block);
 

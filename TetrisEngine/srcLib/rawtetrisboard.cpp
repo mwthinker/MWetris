@@ -34,10 +34,7 @@ namespace tetris {
 		: gameboard_{rows * columns, BlockType::EMPTY}
 		, next_{next}
 		, columns_{columns}
-		, rows_{rows}
-		, isGameOver_{false}
-		, externalRowsAdded_{0}
-		, rowToBeRemoved_{-1} {
+		, rows_{rows} {
 
 		// Uses the size of the board. I.e. rows_ and columns_.
 		current_ = createBlock(current);
@@ -48,8 +45,8 @@ namespace tetris {
 
 		gameboard_.insert(gameboard_.begin(), board.begin(), board.end());
 
-		int calcRows = gameboard_.size() / columns_; // Number of whole rows.
-		int nbr = gameboard_.size() - calcRows * columns_; // The number of elements in the unfilled row.
+		int calcRows = static_cast<int>(gameboard_.size()) / columns_; // Number of whole rows.
+		int nbr = static_cast<int>(gameboard_.size()) - calcRows * columns_; // The number of elements in the unfilled row.
 
 		// To make all rows filled. Remove elements in the unfilled row.
 		for (int i = 0; i < nbr; ++i) {
@@ -145,7 +142,7 @@ namespace tetris {
 						// Add rows due to some external event.
 						std::vector<BlockType> squares = addExternalRows();
 						if (squares.size() > 0) {
-							externalRowsAdded_ = squares.size() / columns_;
+							externalRowsAdded_ = static_cast<int>(squares.size()) / columns_;
 							gameboard_.insert(gameboard_.begin(), squares.begin(), squares.end());
 							triggerEvent(BoardEvent::EXTERNAL_ROWS_ADDED);
 						}
@@ -209,7 +206,7 @@ namespace tetris {
 	void RawTetrisBoard::addBlockToBoard(const Block& block) {
 		// All squares in the block is added to the gameboard.
 		for (const Square& sq : block) {
-			board(sq.column_, sq.row_) = block.getBlockType();
+			board(sq.column, sq.row) = block.getBlockType();
 		}
 	}
 
@@ -231,7 +228,7 @@ namespace tetris {
 		bool collision = false;
 
 		for (const Square& sq : block) {
-			if (getBlockType(sq.column_, sq.row_) != BlockType::EMPTY) {
+			if (getBlockType(sq.column, sq.row) != BlockType::EMPTY) {
 				collision = true;
 				break;
 			}
@@ -248,7 +245,7 @@ namespace tetris {
 	int RawTetrisBoard::removeFilledRows(const Block& block) {
 		int row = block.getLowestRow();
 		int nbr = 0; // Number of rows filled.
-		const int nbrOfSquares = current_.getSize();
+		const int nbrOfSquares = static_cast<int>(current_.getSize());
 		for (int i = 0; i < nbrOfSquares; ++i) {
 			bool filled = false;
 			if (row >= 0 && row * columns_ < (int) gameboard_.size()) { // Check only rows inside the board.			

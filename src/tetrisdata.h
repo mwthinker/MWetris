@@ -4,7 +4,7 @@
 #include "square.h"
 #include "block.h"
 #include "ai.h"
-//#include "tetrisgame.h"
+#include "game/playerdata.h"
 
 #include <sdl/sound.h>
 #include <sdl/sprite.h>
@@ -199,7 +199,7 @@ namespace tetris {
 		int getMiddleTextBoxSize() const;
 
 		//void setActiveLocalGame(int columns, int rows, const std::vector<PlayerData>& playerDataVector);
-		//std::vector<PlayerData> getActiveLocalGamePlayers();
+		std::vector<PlayerData> getActiveLocalGamePlayers();
 		int getActiveLocalGameRows() const;
 		int getActiveLocalGameColumns() const;
 

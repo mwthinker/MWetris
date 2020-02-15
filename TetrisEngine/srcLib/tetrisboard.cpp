@@ -86,8 +86,15 @@ namespace tetris {
 		: RawTetrisBoard{board}
 		, turns_{board.turns_}
 		, rowsRemoved_{board.rowsRemoved_} {
-
 		// No copy of the listener_.
+	}
+
+	TetrisBoard& TetrisBoard::operator=(const TetrisBoard& board) {
+		RawTetrisBoard::operator=(board);
+		turns_ = board.turns_;
+		rowsRemoved_ = board.rowsRemoved_;
+		// No copy of the listener_.
+		return *this;
 	}
 
 	void TetrisBoard::restart(BlockType current, BlockType next) {

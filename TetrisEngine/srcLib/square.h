@@ -15,25 +15,13 @@ namespace tetris {
 		WALL
 	};
 
-	class Square {
-	public:
-		Square() = default;
+	struct Square {
+		bool operator==(const Square& square) const = default;
 
-		Square(int column, int row)
-			: column_{column}
-			, row_{row} {
-		}
+		bool operator!=(const Square& square) const = default;
 
-		bool operator==(const Square& square) const {
-			return square.column_ == column_ && square.row_ == row_;
-		}
-
-		bool operator!=(const Square& square) const {
-			return square.column_ != column_ || square.row_ != row_;
-		}
-
-		int column_{};
-		int row_{};
+		int column;
+		int row;
 	};
 
 } // Namespace tetris.

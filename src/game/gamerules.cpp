@@ -29,7 +29,7 @@ void GameRules::restartGame() {
 	for (auto& player : localPlayers_) {
 		player->updateRestart();
 	}
-	nbrOfAlivePlayers_ = localPlayers_.size();
+	nbrOfAlivePlayers_ = static_cast<int>(localPlayers_.size());
 }
 
 void GameRules::addPlayer(const LocalPlayerPtr& player) {

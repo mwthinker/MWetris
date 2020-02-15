@@ -49,6 +49,8 @@ set(SOURCES
 	src/game/gamerules.cpp
 	src/game/gamerules.h
 	src/game/input.h
+	src/game/keyboard.cpp
+	src/game/keyboard.h
 	src/game/localgame.cpp
 	src/game/localgame.h
 	src/game/localplayer.cpp
@@ -60,6 +62,7 @@ set(SOURCES
 	src/game/player.h
 	src/game/remoteplayer.cpp
 	src/game/remoteplayer.h
+	src/game/sdldevice.h
 	src/game/tetrisgame.cpp
 	src/game/tetrisgameevent.h
 	src/game/tetrisgame.h

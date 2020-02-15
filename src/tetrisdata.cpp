@@ -702,6 +702,7 @@ namespace tetris {
 		}
 		jsonObject_["activeGames"]["localGame"]["players"] = playerJson;
 	}
+	*/
 
 	std::vector<PlayerData> TetrisData::getActiveLocalGamePlayers() {
 		nlohmann::json players = jsonObject_["activeGames"]["localGame"]["players"];
@@ -724,6 +725,5 @@ namespace tetris {
 		}
 		return playerDataVector;
 	}
-	*/
 
 }

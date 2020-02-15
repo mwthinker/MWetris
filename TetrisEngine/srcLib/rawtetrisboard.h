@@ -7,7 +7,7 @@
 
 namespace tetris {
 
-// The events triggered by the tetris board.
+	// The events triggered by the tetris board.
 	enum class BoardEvent {
 		RESTARTED,
 		BLOCK_COLLISION,
@@ -54,6 +54,12 @@ namespace tetris {
 		RawTetrisBoard(int columns, int rows, BlockType current, BlockType next);
 		RawTetrisBoard(const std::vector<BlockType>& board,
 			int columns, int rows, const Block& current, BlockType next);
+
+		RawTetrisBoard(const RawTetrisBoard&) = default;
+		RawTetrisBoard& operator=(const RawTetrisBoard&) = default;
+
+		RawTetrisBoard(RawTetrisBoard&& other) = default;
+		RawTetrisBoard& operator=(RawTetrisBoard&& other) = default;
 
 		virtual ~RawTetrisBoard() = default;
 
@@ -184,10 +190,11 @@ namespace tetris {
 		std::vector<BlockType> gameboard_;	// Containing all non moving squares on the board.
 		BlockType next_;					// Next block for the player to control.
 		Block current_;						// The current block for the player to control.
-		int columns_, rows_;
-		bool isGameOver_;
-		int externalRowsAdded_;
-		int rowToBeRemoved_;
+		int columns_;
+		int rows_;
+		bool isGameOver_{false};
+		int externalRowsAdded_{0};
+		int rowToBeRemoved_{-1};
 	};
 
 } // Namespace tetris.

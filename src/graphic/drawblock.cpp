@@ -39,9 +39,9 @@ void DrawBlock::update(const Block& block) {
 
 	vertexes_.clear();
 	for (Square sq : block) {
-		if (sq.row_ < boardHeight_ - 2) {
+		if (sq.row < boardHeight_ - 2) {
 			addRectangle(vertexes_,
-				lowX_ + sq.column_ * squareSize_ + deltaX_, lowY_ + sq.row_ * squareSize_ + deltaY_,
+				lowX_ + sq.column * squareSize_ + deltaX_, lowY_ + sq.row * squareSize_ + deltaY_,
 				squareSize_, squareSize_,
 				sprite,
 				color_
@@ -73,8 +73,8 @@ void DrawBlock::updateVertexData() {
 	sdl::Sprite sprite = getSprite(block_.getBlockType());
 	for (Square sq : block_) {
 		addRectangle(vertexes_,
-			lowX_ + sq.column_ * squareSize_,
-			lowY_ + (row_ - sq.row_) * timeLeft_ / movingTime_ * squareSize_ + sq.row_ *  squareSize_,
+			lowX_ + sq.column * squareSize_,
+			lowY_ + (row_ - sq.row) * timeLeft_ / movingTime_ * squareSize_ + sq.row *  squareSize_,
 			squareSize_, squareSize_,
 			sprite,
 			color_
@@ -100,8 +100,8 @@ void DrawBlock::calculateCenterOfMass(const Block& block, float& x, float& y) {
 	x = 0;
 	y = 0;
 	for (const Square& sq : block) {
-		x += sq.column_;
-		y += sq.row_;
+		x += sq.column;
+		y += sq.row;
 	}
 	x = x / block.getSize();
 	y = y / block.getSize();

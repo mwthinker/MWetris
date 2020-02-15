@@ -33,7 +33,7 @@ void printBoard(const RawTetrisBoard& board) {
 
 			bool newSquare = false;
 			for (Square sq : block) {
-				if (sq.column_ == column && sq.row_ == row) {
+				if (sq.column == column && sq.row == row) {
 					std::cout << "X|";
 					newSquare = true;
 					break;

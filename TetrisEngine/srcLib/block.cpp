@@ -87,42 +87,42 @@ namespace tetris {
 	void Block::moveLeft() {
 		--startColumn_;
 		for (Square& sq : squares_) {
-			--sq.column_;
+			--sq.column;
 		}
 	}
 
 	void Block::moveRight() {
 		++startColumn_;
 		for (Square& sq : squares_) {
-			++sq.column_;
+			++sq.column;
 		}
 	}
 
 	void Block::moveUp() {
 		++lowestStartRow_;
 		for (Square& sq : squares_) {
-			++sq.row_;
+			++sq.row;
 		}
 	}
 
 	void Block::moveDown() {
 		--lowestStartRow_;
 		for (Square& sq : squares_) {
-			--sq.row_;
+			--sq.row;
 		}
 	}
 
 	void Block::rotate(int rotate) {
-		int row = squares_[rotationSquareIndex_].row_;
-		int column = squares_[rotationSquareIndex_].column_;
+		int row = squares_[rotationSquareIndex_].row;
+		int column = squares_[rotationSquareIndex_].column;
 
 		if (rotate > 0) {
 			// Rotate left.
 			for (int i = 0; i < rotate; ++i) {
 				for (Square& sq : squares_) {
 					Square tmp = sq;
-					tmp.column_ = column + row - sq.row_;
-					tmp.row_ = sq.column_ + row - column;
+					tmp.column = column + row - sq.row;
+					tmp.row = sq.column + row - column;
 					sq = tmp;
 				}
 			}
@@ -132,8 +132,8 @@ namespace tetris {
 				// Rotate right.
 				for (Square& sq : squares_) {
 					Square tmp = sq;
-					tmp.column_ = sq.row_ + column - row;
-					tmp.row_ = column + row - sq.column_;
+					tmp.column = sq.row + column - row;
+					tmp.row = column + row - sq.column;
 					sq = tmp;
 				}
 			}
@@ -141,8 +141,8 @@ namespace tetris {
 	}
 
 	void Block::rotateLeft() {
-		int row = squares_[rotationSquareIndex_].row_;
-		int column = squares_[rotationSquareIndex_].column_;
+		int row = squares_[rotationSquareIndex_].row;
+		int column = squares_[rotationSquareIndex_].column;
 		currentRotation_ = (currentRotation_ + 1) % 4;
 
 		// Rotate back to start orientation?
@@ -157,8 +157,8 @@ namespace tetris {
 	}
 
 	void Block::rotateRight() {
-		int row = squares_[rotationSquareIndex_].row_;
-		int column = squares_[rotationSquareIndex_].column_;
+		int row = squares_[rotationSquareIndex_].row;
+		int column = squares_[rotationSquareIndex_].column;
 		currentRotation_ = (currentRotation_ + 3) % 4;
 
 		// Rotate back to start orientation?

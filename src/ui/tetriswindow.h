@@ -5,6 +5,7 @@
 #include "../graphic/graphic.h"
 
 #include "../game/device.h"
+#include "../game/sdldevice.h"
 #include <sdl/imguiwindow.h>
 #include <sdl/sprite.h>
 #include <sdl/textureatlas.h>
@@ -25,8 +26,12 @@ namespace tetris {
 
 		enum class Page { MENU, PLAY, HIGHSCORE, CUSTOM, SETTINGS, NEW_HIGHSCORE, NETWORK };
 	
-	protected:
+	private:
 		void initPreLoop() override;
+	
+		DevicePtr findHumanDevice(std::string name) const;
+		DevicePtr findAiDevice(std::string name) const;
+		void resumeGame();
 
 		ImFontAtlas fontAtlas_;
 		ImFont* headerFont_;
@@ -73,6 +78,7 @@ namespace tetris {
 		std::array<DevicePtr, 4> activeAis_;
 		std::unique_ptr<GameComponent> gameComponent_;
 		Graphic graphic;
+		std::vector<SdlDevicePtr> devices_;
 	};
 
 } // Namespace tetris.

@@ -14,11 +14,11 @@ namespace tetris {
 			int min = std::numeric_limits<int>::max();
 			int max = 0;
 			for (const Square& sq : block) {
-				if (sq.column_ > max) {
-					max = sq.column_;
+				if (sq.column > max) {
+					max = sq.column;
 				}
-				if (sq.column_ < min) {
-					min = sq.column_;
+				if (sq.column < min) {
+					min = sq.column;
 				}
 			}
 			return max + 1 - min;
@@ -27,8 +27,8 @@ namespace tetris {
 		int calculateHighest(const Block& block) {
 			int max = 0;
 			for (const Square& sq : block) {
-				if (sq.row_ > max) {
-					max = sq.row_;
+				if (sq.row > max) {
+					max = sq.row;
 				}
 			}
 			return max;
@@ -37,8 +37,8 @@ namespace tetris {
 		int calculateLeftColumn(const Block& block) {
 			int min = std::numeric_limits<int>::max();
 			for (const Square& sq : block) {
-				if (sq.column_ < min) {
-					min = sq.column_;
+				if (sq.column < min) {
+					min = sq.column;
 				}
 			}
 			return min;
@@ -371,7 +371,7 @@ namespace tetris {
 		name_.bindTexture();
 		batch.add(name_.getVertexes());
 		batch.uploadToGraphicCard();
-		batch.draw();
+		//batch.draw();
 
 		if (showPoints_) {
 			// Show points only in single player game.
@@ -379,20 +379,20 @@ namespace tetris {
 			textPoints_.bindTexture();
 			batch.add(textPoints_.getVertexes());
 			batch.uploadToGraphicCard();
-			batch.draw();
+			//batch.draw();
 		}
 
 		batch.clear();
 		textLevel_.bindTexture();
 		batch.add(textLevel_.getVertexes());
 		batch.uploadToGraphicCard();
-		batch.draw();
+		//batch.draw();
 
 		batch.clear();
 		textClearedRows_.bindTexture();
 		batch.add(textClearedRows_.getVertexes());
 		batch.uploadToGraphicCard();
-		batch.draw();
+		//batch.draw();
 	}
 
 	void GameGraphic::drawMiddleText(BoardBatch& batch) {
@@ -407,7 +407,7 @@ namespace tetris {
 			);
 			batch.add(middleText_.getVertexes());
 			batch.uploadToGraphicCard();
-			batch.draw();
+			//batch.draw();
 		}
 	}
 
@@ -439,7 +439,7 @@ namespace tetris {
 		if (!freeRows_.empty()) { // Just in case empty, but the game should be over anyway.
 			auto drawRow = freeRows_.back();
 			freeRows_.pop_back();
-			drawRow->init(rows_.size(), tetrisBoard);
+			drawRow->init(static_cast<int>(rows_.size()), tetrisBoard);
 			rows_.push_back(drawRow);
 		}
 	}

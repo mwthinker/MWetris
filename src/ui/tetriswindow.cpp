@@ -4,6 +4,8 @@
 #include "../logger.h"
 #include "../tetrisdata.h"
 #include "../graphic/gamecomponent.h"
+#include "../game/computer.h"
+#include "../game/keyboard.h"
 
 #include <sdl/imguiauxiliary.h>
 
@@ -100,9 +102,58 @@ namespace tetris {
 		//ImGui::GetStyle().
 
 		//ImGui::PushStyleColor(ImGuiCol_Button, buttonTextColor_.Value);
+
+		activeAis_[0] = findAiDevice(TetrisData::getInstance().getAi1Name());
+		activeAis_[1] = findAiDevice(TetrisData::getInstance().getAi2Name());
+		activeAis_[2] = findAiDevice(TetrisData::getInstance().getAi3Name());
+		activeAis_[3] = findAiDevice(TetrisData::getInstance().getAi4Name());
+
+		devices_.push_back(std::make_shared<Keyboard>("Keyboard 1", SDLK_DOWN, SDLK_LEFT, SDLK_RIGHT, SDLK_UP, SDLK_RCTRL));
+		devices_.push_back(std::make_shared<Keyboard>("Keyboard 2", SDLK_s, SDLK_a, SDLK_d, SDLK_w, SDLK_LCTRL));
 	}
 
 	TetrisWindow::~TetrisWindow() {
+	}
+
+	DevicePtr TetrisWindow::findHumanDevice(std::string name) const {
+		for (const auto& device : devices_) {
+			if (device->getName() == name) {
+				return device;
+			}
+		}
+		return devices_[0];
+	}
+
+	DevicePtr TetrisWindow::findAiDevice(std::string name) const {
+		auto ais = TetrisData::getInstance().getAiVector();
+		for (const Ai& ai : ais) {
+			if (ai.getName() == name) {
+				return std::make_shared<Computer>(ai);
+			}
+		}
+		return std::make_shared<Computer>(ais.back());
+	}
+
+	void TetrisWindow::resumeGame() {
+		int rows = TetrisData::getInstance().getActiveLocalGameRows();
+		int columns = TetrisData::getInstance().getActiveLocalGameColumns();
+
+		int ais = 0;
+		int humans = 0;
+
+		std::vector<PlayerData> playerDataVector = TetrisData::getInstance().getActiveLocalGamePlayers();
+		for (PlayerData& playerData : playerDataVector) {
+			if (playerData.ai_) {
+				playerData.device_ = findAiDevice(playerData.deviceName_);
+				++ais;
+			} else {
+				playerData.device_ = findHumanDevice(playerData.deviceName_);
+				++humans;
+			}
+		}
+		game_.resumeGame(columns, rows, playerDataVector);
+		nbrAis_ = ais;
+		nbrHumans_ = humans;
 	}
 
 	void TetrisWindow::initPreLoop() {
@@ -239,6 +290,7 @@ namespace tetris {
 
 		if (ImGui::Button("Play")) {
 			changePage(Page::PLAY);
+			resumeGame();
 		}
 		ImGui::Dummy(dummy);
 		if (ImGui::Button("Custom Play")) {

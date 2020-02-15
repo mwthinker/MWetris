@@ -23,7 +23,7 @@ void Computer::update(const TetrisBoard& board) {
 	// New block appears?
 	if (currentTurn_ != board.getTurns() && !activeThread_) {
 		activeThread_ = true;
-		input_ = Input();
+		input_ = {};
 		currentTurn_ = board.getTurns();
 		handle_ = std::async(std::launch::async | std::launch::deferred, Computer::calculateBestState, board, ai_, 1);
 	} else {
@@ -37,7 +37,7 @@ void Computer::update(const TetrisBoard& board) {
 		Square currentSq = current.getRotationSquare();
 		Square sq = latestBlock_.getRotationSquare();
 
-		if (latestState_.left == sq.column_ - currentSq.column_) {
+		if (latestState_.left == sq.column - currentSq.column) {
 			latestState_.left = 0;
 		}
 

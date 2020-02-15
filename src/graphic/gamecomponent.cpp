@@ -99,10 +99,10 @@ namespace tetris {
 				GameGraphic& graphic = pair.second;
 				graphic.update(static_cast<float>(deltaTime), *dynamicBoardBatch_);
 			}
-			dynamicBoardBatch_->uploadToGraphicCard();
+//			dynamicBoardBatch_->uploadToGraphicCard();
 
-			staticBoardBatch_->draw();
-			dynamicBoardBatch_->draw();
+//			staticBoardBatch_->draw();
+//			dynamicBoardBatch_->draw();
 
 			// Draw text.
 			for (auto& pair : graphicPlayers_) {

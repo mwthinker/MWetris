@@ -14,13 +14,9 @@ set(SOURCES_LIB
 	srcLib/ai.h
 	srcLib/block.cpp
 	srcLib/block.h
-	srcLib/block2.cpp
-	srcLib/block2.h
 	srcLib/random.h
 	srcLib/rawtetrisboard.cpp
 	srcLib/rawtetrisboard.h
-	srcLib/rawtetrisboard2.cpp
-	srcLib/rawtetrisboard2.h
 	srcLib/square.h
 	srcLib/tetrisboard.cpp
 	srcLib/tetrisboard.h
@@ -51,6 +47,12 @@ target_link_libraries(TetrisEngineLib
 		Calculator
 		Signal
 )
+
+message(STATUS "TetrisEngine_Test is available to add: -DTetrisEngine_Test=1")
+option(TetrisEngine_Test "Add TetrisEngine_Test to project." OFF)
+if (TetrisEngine_Test)
+	add_subdirectory(TetrisEngine_Test)
+endif (TetrisEngine_Test)
 
 # ----- TetrisEngine -------------
 set(SOURCES_MAIN

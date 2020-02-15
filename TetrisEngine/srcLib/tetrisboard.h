@@ -29,6 +29,10 @@ namespace tetris {
 
 		// Copy a tetrisboard except the connected gameEventListener.
 		TetrisBoard(const TetrisBoard&);
+		TetrisBoard& operator=(const TetrisBoard&);
+
+		TetrisBoard(TetrisBoard&& other) = default;
+		TetrisBoard& operator=(TetrisBoard&& other) = default;
 
 		// Restarts the board. Resets all states. Current and next represents the two starting blocks.
 		void restart(BlockType current, BlockType next);

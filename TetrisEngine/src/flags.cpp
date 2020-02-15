@@ -187,8 +187,8 @@ void Flags::printHelpFunction() const {
 	std::cout << "\t" << programName_ << "\n\n";
 
 	std::cout << "\tShow the tetrisboard each turn and delay 250 ms between each turn.\n";
-	std::cout << "\t" << programName_ << "--play -d 250\n\n";
+	std::cout << "\t" << programName_ << " --play -d 250\n\n";
 
 	std::cout << "\tList the time and number of four-rows cleared.\n";
-	std::cout << "\t" << programName_ << "-T --cleared-row-4\n";
+	std::cout << "\t" << programName_ << " -T --cleared-row-4\n";
 }
