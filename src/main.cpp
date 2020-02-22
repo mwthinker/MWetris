@@ -22,6 +22,7 @@ int main(int, char**) {
 	try {
 		const sdl::InitSdl SDL;
 		tetris::TetrisWindow tetris;
+		tetris.setStartPage(tetris::TetrisWindow::Page::PLAY);
 		tetris.startLoop();
 	} catch (std::exception&) {
 		tetris::logger()->error("[Main] Fatal error has occured.");

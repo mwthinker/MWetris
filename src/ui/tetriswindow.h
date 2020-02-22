@@ -3,6 +3,7 @@
 
 #include "../game/tetrisgame.h"
 #include "../graphic/graphic.h"
+#include "../graphic/drawboard.h"
 
 #include "../game/device.h"
 #include "../game/sdldevice.h"
@@ -20,11 +21,15 @@ namespace tetris {
 
 	class TetrisWindow : public sdl::ImGuiWindow {
 	public:
+		enum class Page { MENU, PLAY, HIGHSCORE, CUSTOM, SETTINGS, NEW_HIGHSCORE, NETWORK, TEST };
+
 		TetrisWindow();
 
 		~TetrisWindow();
 
-		enum class Page { MENU, PLAY, HIGHSCORE, CUSTOM, SETTINGS, NEW_HIGHSCORE, NETWORK };
+		void setStartPage(Page page) {
+			currentPage_ = page;
+		}
 	
 	private:
 		void initPreLoop() override;
@@ -78,6 +83,7 @@ namespace tetris {
 		std::array<DevicePtr, 4> activeAis_;
 		std::unique_ptr<GameComponent> gameComponent_;
 		Graphic graphic;
+		DrawBoard drawBoard_;
 		std::vector<SdlDevicePtr> devices_;
 	};
 

@@ -37,15 +37,17 @@ void DrawBlock::update(const Block& block) {
 		deltaY_ = (-0.5f - deltaY_) * squareSize_;
 	}
 
-	vertexes_.clear();
+	//vertexes_.clear();
 	for (Square sq : block) {
 		if (sq.row < boardHeight_ - 2) {
+			/*
 			addRectangle(vertexes_,
 				lowX_ + sq.column * squareSize_ + deltaX_, lowY_ + sq.row * squareSize_ + deltaY_,
 				squareSize_, squareSize_,
 				sprite,
 				color_
 			);
+			*/
 		}
 	}
 }
@@ -69,9 +71,10 @@ void DrawBlock::update(float deltaTime) {
 }
 
 void DrawBlock::updateVertexData() {
-	vertexes_.clear();
+	//vertexes_.clear();
 	sdl::Sprite sprite = getSprite(block_.getBlockType());
 	for (Square sq : block_) {
+		/*
 		addRectangle(vertexes_,
 			lowX_ + sq.column * squareSize_,
 			lowY_ + (row_ - sq.row) * timeLeft_ / movingTime_ * squareSize_ + sq.row *  squareSize_,
@@ -79,6 +82,7 @@ void DrawBlock::updateVertexData() {
 			sprite,
 			color_
 		);
+		*/
 	}
 }
 

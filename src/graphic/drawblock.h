@@ -2,8 +2,9 @@
 #define DRAWBLOCK_H
 
 #include "tetrisboard.h"
-#include "boardshader.h"
-#include "boardbatch.h"
+#include "../types.h"
+
+#include <sdl/sprite.h>
 
 #include <vector>
 
@@ -21,9 +22,11 @@ namespace tetris {
 
 		void update(float deltaTime);
 
+		/*
 		const std::vector<BoardShader::Vertex>& getVertexes() {
 			return vertexes_;
 		}
+		*/
 
 		void setColor(const Color& color) {
 			color_ = color;
@@ -35,7 +38,7 @@ namespace tetris {
 
 		void updateVertexData();
 
-		std::vector<BoardShader::Vertex> vertexes_;
+		//std::vector<BoardShader::Vertex> vertexes_;
 		bool center_;
 		float squareSize_;
 		float lowX_, lowY_;

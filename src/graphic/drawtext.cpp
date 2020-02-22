@@ -28,7 +28,7 @@ void DrawText::update(std::string text) {
 void DrawText::update(const sdl::Text& text) {
 	if (text_ != text) {
 		text_ = text;
-		vertexes_.clear();
+		//vertexes_.clear();
 		updateVertexes();
 	}
 }
@@ -37,7 +37,7 @@ void DrawText::update(std::string text, float x, float y) {
 	lowX_ = x;
 	lowY_ = y;
 	//text_.setText(text);
-	vertexes_.clear();
+	//vertexes_.clear();
 	updateVertexes();
 }
 

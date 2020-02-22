@@ -9,6 +9,8 @@
 
 #include <sdl/imguiauxiliary.h>
 
+#include <string_view>
+
 namespace tetris {
 
 	namespace {
@@ -18,7 +20,7 @@ namespace tetris {
 		bool ComboAi(const char* name, int& item, const std::vector<Ai>& ais, ImGuiComboFlags flags = 0) {
 			int oldItem = item;
 			ImGui::ComboScoped(name, ais[item].getName().c_str(), flags, [&]() {
-				size_t size = ais.size();
+				auto size = ais.size();
 				for (int n = 0; n < size; ++n)
 				{
 					bool isSelected = (item == n);
@@ -33,7 +35,7 @@ namespace tetris {
 			return oldItem != item;
 		}
 
-		constexpr const char* toString(TetrisWindow::Page page) {
+		constexpr std::string_view toString(TetrisWindow::Page page) {
 			switch (page) {
 			case TetrisWindow::Page::MENU:
 				return "MENU";
@@ -165,26 +167,36 @@ namespace tetris {
 		buttonFont_ = io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 35);
 		background_.bindTexture();
 		tetris::TetrisData::getInstance().bindTextureFromAtlas();
-		gameComponent_ = std::make_unique<GameComponent>(game_);
+		drawBoard_.setFont(headerFont_);
+		//gameComponent_ = std::make_unique<GameComponent>(game_);
 		//ImGui::GetStyle().WindowBorderSize = 0;
 	}
 
 	void TetrisWindow::imGuiPreUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
+		const auto& shader = getShader();
+		getShader().useProgram();
+		
 		if (currentPage_ != Page::PLAY) {
 			return;
 		}
 		glEnable(GL_BLEND);
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		
-		//glOrtho(1, -1, -1, 1, -1, 1);
+				
 		graphic.clearDraw();
-		graphic.addRectangleImage({-1.f, -1.f}, {2.f, 2.f}, background_.getTextureView());
-		//graphic.addCircle({0, 0}, 1, sdl::RED);
-		//graphic.addRectangle({-1.f, 0.9f}, {2.f, 0.1f}, sdl::BLUE);
-		graphic.draw(getShader());
+		graphic.setMatrix(glm::ortho(0.f, (float) getWidth(), 0.f, (float) getHeight()));
+		//graphic.setMatrix(glm::ortho(0.f, (float) 800, 0.f, (float) 800));
+		//graphic.setMatrix(glm::ortho(-2.0, 2.0, -2.0, 2.0));
+		graphic.addRectangleImage({0.f, 0.f}, {getWidth(), getHeight()}, background_.getTextureView());
+		graphic.addCircle({0, 0}, 1, sdl::RED);
+		graphic.addRectangle({-1.f, 0.9f}, {2.f, 0.1f}, sdl::BLUE);
 
-		gameComponent_->draw(getWidth(), getHeight(), std::chrono::duration<double>(deltaTime).count());
+		graphic.addRectangle({400, 400}, {100, 100}, sdl::BLUE);
+		graphic.draw(getShader());
+		drawBoard_.draw(graphic);
+		graphic.draw(shader);
+		
+		//gameComponent_->draw(getWidth(), getHeight(), std::chrono::duration<double>(deltaTime).count());
 	}
 	
 	void TetrisWindow::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
@@ -245,6 +257,7 @@ namespace tetris {
 			case SDL_WINDOWEVENT:
 				switch (windowEvent.window.event) {
 					case SDL_WINDOWEVENT_RESIZED:
+						glViewport(0, 0, windowEvent.window.data1, windowEvent.window.data2);
 						break;
 					case SDL_WINDOWEVENT_LEAVE:
 						break;
@@ -335,6 +348,7 @@ namespace tetris {
 
 			popButtonStyle();
 		});
+		drawBoard_.imGui((float) getWidth());
 	}
 
 	void TetrisWindow::highscorePage() {

@@ -1,8 +1,6 @@
 #ifndef DRAWTEXT_H
 #define DRAWTEXT_H
 
-#include "boardbatch.h"
-
 #include <sdl/text.h>
 
 namespace tetris {
@@ -26,9 +24,11 @@ namespace tetris {
 
 		void bindTexture();
 
+		/*
 		const std::vector<BoardShader::Vertex>& getVertexes() {
 			return vertexes_;
 		}
+		*/
 
 		bool isEmpty() const {
 			return text_.getSprite().isValid();
@@ -65,7 +65,7 @@ namespace tetris {
 		float lowX_{};
 		float lowY_{};
 		bool center_{};
-		std::vector<BoardShader::Vertex> vertexes_;
+		//std::vector<BoardShader::Vertex> vertexes_;
 	};
 
 }

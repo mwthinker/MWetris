@@ -21,7 +21,14 @@ namespace tetris {
 
 		void setMatrix(const Mat4& matrix);
 
+		Mat4& backMatrix() {
+			return matrixes_.back();
+		}
+
+		void pushMatrix();
 		void pushMatrix(const Mat4& matrix);
+
+		void multMatrix(const Mat4& matrix);
 
 		void addFilledHexagon(const Vec2& center, float radius, Color color, float startAngle = 0);
 

@@ -99,7 +99,7 @@ void DrawRow::clear() {
 	for (int column = 0; column < columns_; ++column) {
 		blockTypes_.push_back(BlockType::EMPTY);
 	}
-	vertexes_.clear();
+	//vertexes_.clear();
 }
 
 bool DrawRow::isAlive() const {
@@ -119,6 +119,7 @@ void DrawRow::updateVertexData(const TetrisBoard& tetrisBoard) {
 }
 
 void DrawRow::updateVertexData() {
+	/*
 	vertexes_.clear();
 	if (row_ < highestBoardRow_ - 2) {
 		for (int column = 0; column < columns_; ++column) {
@@ -133,6 +134,7 @@ void DrawRow::updateVertexData() {
 			}
 		}
 	}
+	*/
 }
 
 sdl::Sprite DrawRow::getSprite(BlockType blockType) const {

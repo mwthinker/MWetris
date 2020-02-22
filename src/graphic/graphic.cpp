@@ -102,9 +102,18 @@ namespace tetris {
 		currentMatrix_ = 0;
 	}
 
+	void Graphic::pushMatrix() {
+		currentMatrix_ = static_cast<int>(matrixes_.size());
+		matrixes_.push_back(matrixes_.back());
+	}
+
 	void Graphic::pushMatrix(const Mat4& model) {
 		currentMatrix_ = static_cast<int>(matrixes_.size());
 		matrixes_.push_back(model);
+	}
+
+	void Graphic::multMatrix(const Mat4& model) {
+		matrixes_.back() = matrixes_.back() * model;
 	}
 
 	void Graphic::setMatrix(const Mat4& model) {

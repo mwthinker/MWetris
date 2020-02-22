@@ -25,11 +25,10 @@ if (MSVC)
 endif ()
 
 set(SOURCES
-	src/graphic/boardbatch.h
-	src/graphic/boardshader.cpp
-	src/graphic/boardshader.h
 	src/graphic/drawblock.cpp
 	src/graphic/drawblock.h
+	src/graphic/drawboard.cpp
+	src/graphic/drawboard.h
 	src/graphic/drawrow.cpp
 	src/graphic/drawrow.h
 	src/graphic/drawtext.cpp

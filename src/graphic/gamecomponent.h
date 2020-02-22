@@ -2,13 +2,13 @@
 #define GAMECOMPONENT_H
 
 #include "gamegraphic.h"
-#include "boardshader.h"
 #include "../game/player.h"
 
 #include "../types.h"
 
 #include <sdl/vertexbufferobject.h>
 #include <sdl/shaderprogram.h>
+#include <sdl/batch.h>
 #include <mw/signal.h>
 
 #include <map>
@@ -36,10 +36,10 @@ namespace tetris {
 		void handleMiddleText(const PlayerPtr& player, int lastPostion);
 
 		std::map<PlayerPtr, GameGraphic> graphicPlayers_;
-		BoardShaderPtr boardShader_;
+		//BoardShaderPtr boardShader_;
 
-		std::shared_ptr<BoardBatch> staticBoardBatch_;
-		std::shared_ptr<BoardBatch> dynamicBoardBatch_;
+		//std::shared_ptr<BoardBatch> staticBoardBatch_;
+		//std::shared_ptr<BoardBatch> dynamicBoardBatch_;
 
 		TetrisGame& tetrisGame_;
 

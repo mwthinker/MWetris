@@ -2,7 +2,8 @@
 #define DRAWROW_H
 
 #include "../game/player.h"
-#include "boardbatch.h"
+
+#include <sdl/sprite.h>
 
 namespace tetris {
 
@@ -27,9 +28,11 @@ namespace tetris {
 
 		void init(int row, const TetrisBoard& board);
 
+		/*
 		const std::vector<BoardShader::Vertex>& getVertexes() {
 			return vertexes_;
 		}
+		*/
 
 		void clear();
 
@@ -54,7 +57,7 @@ namespace tetris {
 		const float movingTime_;
 		sdl::Sprite spriteI_, spriteJ_, spriteL_, spriteO_, spriteS_, spriteT_, spriteZ_;
 
-		std::vector<BoardShader::Vertex> vertexes_;
+		//std::vector<BoardShader::Vertex> vertexes_;
 		std::vector<BlockType> blockTypes_;
 	};
 
