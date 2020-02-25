@@ -83,7 +83,6 @@ namespace tetris {
 		std::array<DevicePtr, 4> activeAis_;
 		std::unique_ptr<GameComponent> gameComponent_;
 		Graphic graphic;
-		DrawBoard drawBoard_;
 		std::vector<SdlDevicePtr> devices_;
 	};
 

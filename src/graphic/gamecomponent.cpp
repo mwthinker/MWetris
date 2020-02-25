@@ -39,8 +39,6 @@ namespace tetris {
 		eventConnection_ = tetrisGame_.addGameEventHandler([&](TetrisGameEvent& tetrisEvent) {
 			eventHandler(tetrisEvent);
 		});
-		//boardShader_ = std::make_shared<BoardShader>("board.ver.glsl", "board.fra.glsl");
-		//dynamicBoardBatch_ = std::make_shared<BoardBatch>(boardShader_, 10000);
 	}
 
 	GameComponent::~GameComponent() {
@@ -51,21 +49,20 @@ namespace tetris {
 		updateMatrix_ = true;
 	}
 
-	void GameComponent::draw(int windowWidth, int windowHeight, double deltaTime) {
-		//boardShader_->useProgram();
-
+	void GameComponent::draw(Graphic& graphic, int windowWidth, int windowHeight, double deltaTime) {
 		if (updateMatrix_) {
 			float width = 0;
 			float height = 0;
 
-			for (const auto& [player, graphic] : graphicPlayers_) {
-				width += graphic.getWidth();
-				height = graphic.getHeight();
+			for (const auto& [player, drawBoardPtr] : drawPlayers_) {
+				auto size = drawBoardPtr->getSize();
+				width += size.x;
+				height = size.y;
 			}
 
 			// Centers the game and holds the correct proportions.
 			// The sides are transparent.
-			Mat4 model = model_;
+			Mat4 model = graphic.currentMatrix();
 			if (width / windowWidth > height / windowHeight) {
 				// Blank sides, up and down.
 				scale_ = windowWidth / width;
@@ -86,39 +83,38 @@ namespace tetris {
 			updateMatrix_ = false;
 		}
 
-		if (!graphicPlayers_.empty()) {
+		if (!drawPlayers_.empty()) {
 			// Draw boards.
 			TetrisData::getInstance().bindTextureFromAtlas();
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-			//dynamicBoardBatch_->clear();
-
-			for (auto& [player, graphic] : graphicPlayers_) {
+			for (auto& [player, drawBoardPtr] : drawPlayers_) {
+				drawBoardPtr->draw(graphic);
 				//graphic.update(static_cast<float>(deltaTime), *dynamicBoardBatch_);
 			}
-//			dynamicBoardBatch_->uploadToGraphicCard();
 
-//			staticBoardBatch_->draw();
-//			dynamicBoardBatch_->draw();
 			sdl::assertGlError();
 		}
 	}
 
-	void GameComponent::initGame(std::vector<PlayerPtr>& players) {
+	void GameComponent::initGame(const std::vector<PlayerPtr>& players) {
 		bool showPoints = false;
 		if (players.size() == 1) {
 			showPoints = true;
 		}
 
 		//staticBoardBatch_ = std::make_shared<BoardBatch>(boardShader_);
-		graphicPlayers_.clear();
+		drawPlayers_.clear();
 
 		float w = 0;
 		for (auto& player : players) {
-			auto& graphic = graphicPlayers_[player];
+			auto& drawBoardPtr = drawPlayers_[player];
+			if (drawBoardPtr == nullptr) {
+				drawBoardPtr = std::make_unique<DrawBoard>(*player);
+			}
 			//graphic.restart(*staticBoardBatch_, *player, w, 0, tetrisGame_.isDefaultGame());
-			w += graphic.getWidth();
+			w += drawBoardPtr->getSize().x;
 		}
 		//staticBoardBatch_->uploadToGraphicCard();
 
@@ -137,13 +133,13 @@ namespace tetris {
 			}
 
 			// Update the text for the active players.
-			for (auto& graphic : graphicPlayers_) {
+			for (auto& graphic : drawPlayers_) {
 				if (!graphic.first->getTetrisBoard().isGameOver()) {
 					//graphic.second.setMiddleMessage(middleText_);
 				}
 			}
 			return;
-		} catch (std::bad_cast exp) {}
+		} catch (std::bad_cast&) {}
 
 		// Handle GamePause event.
 		try {
@@ -157,14 +153,14 @@ namespace tetris {
 				}
 
 				// Update the text for the active players.
-				for (auto& graphic : graphicPlayers_) {
+				for (auto& graphic : drawPlayers_) {
 					if (!graphic.first->isGameOver()) {
 						//graphic.second.setMiddleMessage(middleText_);
 					}
 				}
 			}
 			return;
-		} catch (std::bad_cast exp) {}
+		} catch (std::bad_cast&) {}
 
 		// Handle InitGame event.
 		try {
@@ -179,7 +175,7 @@ namespace tetris {
 			}
 
 			return;
-		} catch (std::bad_cast exp) {}
+		} catch (std::bad_cast&) {}
 
 		// Handle RestartPlayer event.
 		try {
@@ -199,23 +195,23 @@ namespace tetris {
 
 			return;
 			*/
-		} catch (std::bad_cast exp) {}
+		} catch (std::bad_cast&) {}
 
 		// Handle LevelChange event.
 		try {
 			auto& levelChange = dynamic_cast<LevelChange&>(tetrisEvent);
-			GameGraphic& gg = graphicPlayers_[levelChange.player_];
+			//GameGraphic& gg = drawPlayers_[levelChange.player_];
 			//gg.update(levelChange.player_->getClearedRows(), levelChange.player_->getPoints(), levelChange.newLevel_);
 			return;
-		} catch (std::bad_cast exp) {}
+		} catch (std::bad_cast&) {}
 
 		// Handle PointsChange event.
 		try {
 			auto& pointsChange = dynamic_cast<PointsChange&>(tetrisEvent);
-			GameGraphic& gg = graphicPlayers_[pointsChange.player_];
+			//GameGraphic& gg = graphicPlayers_[pointsChange.player_];
 			//gg.update(pointsChange.player_->getClearedRows(), pointsChange.player_->getPoints(), pointsChange.player_->getLevel());
 			return;
-		} catch (std::bad_cast exp) {}
+		} catch (std::bad_cast&) {}
 
 		// Handle GameOver event.
 		try {
@@ -223,7 +219,7 @@ namespace tetris {
 			handleMiddleText(gameOver.player_, gameOver.player_->getGameOverPosition());
 
 			return;
-		} catch (std::bad_cast exp) {}
+		} catch (std::bad_cast&) {}
 	}
 
 	void GameComponent::handleMiddleText(const PlayerPtr& player, int lastPostion) {
@@ -239,4 +235,4 @@ namespace tetris {
 		//graphicPlayers_[player].setMiddleMessage(middleText);
 	}
 
-} // Namespace mw.
+} // Namespace tetris.

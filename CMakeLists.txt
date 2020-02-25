@@ -25,8 +25,6 @@ if (MSVC)
 endif ()
 
 set(SOURCES
-	src/graphic/drawblock.cpp
-	src/graphic/drawblock.h
 	src/graphic/drawboard.cpp
 	src/graphic/drawboard.h
 	src/graphic/drawrow.cpp

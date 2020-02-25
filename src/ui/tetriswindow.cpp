@@ -167,8 +167,7 @@ namespace tetris {
 		buttonFont_ = io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 35);
 		background_.bindTexture();
 		tetris::TetrisData::getInstance().bindTextureFromAtlas();
-		drawBoard_.setFont(headerFont_);
-		//gameComponent_ = std::make_unique<GameComponent>(game_);
+		gameComponent_ = std::make_unique<GameComponent>(game_);
 		//ImGui::GetStyle().WindowBorderSize = 0;
 	}
 
@@ -184,18 +183,19 @@ namespace tetris {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 				
 		graphic.clearDraw();
-		graphic.setMatrix(glm::ortho(0.f, (float) getWidth(), 0.f, (float) getHeight()));
-		//graphic.setMatrix(glm::ortho(0.f, (float) 800, 0.f, (float) 800));
-		//graphic.setMatrix(glm::ortho(-2.0, 2.0, -2.0, 2.0));
+		graphic.pushMatrix(glm::ortho(0.f, (float) getWidth(), 0.f, (float) getHeight()));
 		graphic.addRectangleImage({0.f, 0.f}, {getWidth(), getHeight()}, background_.getTextureView());
 		graphic.addCircle({0, 0}, 1, sdl::RED);
 		graphic.addRectangle({-1.f, 0.9f}, {2.f, 0.1f}, sdl::BLUE);
 
 		graphic.addRectangle({400, 400}, {100, 100}, sdl::BLUE);
 		graphic.draw(getShader());
-		drawBoard_.draw(graphic);
+		auto deltaTimeSeconds = std::chrono::duration<double>(deltaTime).count();
+		gameComponent_->draw(graphic, getWidth(), getHeight() - menuHeight_, deltaTimeSeconds);
 		graphic.draw(shader);
 		
+		game_.update(deltaTimeSeconds);
+
 		//gameComponent_->draw(getWidth(), getHeight(), std::chrono::duration<double>(deltaTime).count());
 	}
 	
@@ -287,6 +287,9 @@ namespace tetris {
 				sdl::Window::quit();
 				break;
 		}
+		for (auto& device : devices_) {
+			device->eventUpdate(windowEvent);
+		}
 	}
 
 	void TetrisWindow::menuPage() {
@@ -341,14 +344,14 @@ namespace tetris {
 			ImGui::SameLine();
 			ImGui::Button("Restart", {120.5f, menuHeight_});
 			ImGui::SameLine();
-			ImGui::ManButton("Human2", nbrHumans_, 4, noManTexture_.getTextureView(), manTexture_.getTextureView(), {menuHeight_, menuHeight_});
+			if (ImGui::ManButton("Human2", nbrHumans_, 4, noManTexture_.getTextureView(), manTexture_.getTextureView(), {menuHeight_, menuHeight_})) {
+			}
 			ImGui::SameLine();
 			ImGui::ManButton("Ai2", nbrAis_, 4, noManTexture_.getTextureView(), aiTexture_.getTextureView(), {menuHeight_, menuHeight_});
 			ImGui::PopFont();
 
 			popButtonStyle();
 		});
-		drawBoard_.imGui((float) getWidth());
 	}
 
 	void TetrisWindow::highscorePage() {

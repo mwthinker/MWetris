@@ -21,7 +21,7 @@ namespace tetris {
 
 		void setMatrix(const Mat4& matrix);
 
-		Mat4& backMatrix() {
+		const Mat4& currentMatrix() const {
 			return matrixes_.back();
 		}
 

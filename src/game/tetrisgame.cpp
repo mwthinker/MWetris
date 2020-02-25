@@ -10,8 +10,6 @@
 
 #include "localgame.h"
 
-//#include <net/packet.h>
-
 #include <vector>
 #include <algorithm>
 

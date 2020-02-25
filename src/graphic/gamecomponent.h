@@ -3,12 +3,16 @@
 
 #include "gamegraphic.h"
 #include "../game/player.h"
+#include "drawboard.h"
+#include "graphic.h"
 
 #include "../types.h"
 
 #include <sdl/vertexbufferobject.h>
 #include <sdl/shaderprogram.h>
 #include <sdl/batch.h>
+
+#include <sdl/graphic.h>
 #include <mw/signal.h>
 
 #include <map>
@@ -24,10 +28,10 @@ namespace tetris {
 		GameComponent(TetrisGame& tetrisGame);
 		~GameComponent();
 
-		void draw(int width, int height, double deltaTime);
+		void draw(Graphic& graphic, int width, int height, double deltaTime);
 
 	private:
-		void initGame(std::vector<PlayerPtr>& player);
+		void initGame(const std::vector<PlayerPtr>& player);
 
 		void eventHandler(TetrisGameEvent& tetrisGameEvent);
 		
@@ -35,11 +39,8 @@ namespace tetris {
 
 		void handleMiddleText(const PlayerPtr& player, int lastPostion);
 
-		std::map<PlayerPtr, GameGraphic> graphicPlayers_;
-		//BoardShaderPtr boardShader_;
-
-		//std::shared_ptr<BoardBatch> staticBoardBatch_;
-		//std::shared_ptr<BoardBatch> dynamicBoardBatch_;
+		using DrawBoardPtr = std::unique_ptr<DrawBoard>;
+		std::map<PlayerPtr, DrawBoardPtr> drawPlayers_;
 
 		TetrisGame& tetrisGame_;
 

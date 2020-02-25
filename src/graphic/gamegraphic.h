@@ -4,7 +4,6 @@
 #include "../game/player.h"
 #include "drawrow.h"
 #include "tetrisboard.h"
-#include "drawblock.h"
 #include "../types.h"
 
 #include <sdl/font.h>
@@ -55,7 +54,6 @@ namespace tetris {
 		std::list<DrawRowPtr> freeRows_;
 		
 		sdl::SubBatch<sdl::Vertex> backGroundBatch_;
-		DrawBlock currentBlock_, nextBlock_, downBlock_;
 		Block latestBlockDownGround_;
 		bool blockDownGround_;
 		bool showDownBlock_;

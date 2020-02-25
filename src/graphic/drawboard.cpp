@@ -5,6 +5,8 @@
 #include "tetrisboard.h"
 #include "graphic.h"
 
+#include "../game/player.h"
+
 #include <sdl/imguiauxiliary.h>
 
 #include <vector>
@@ -12,6 +14,14 @@
 namespace tetris {
 
 	namespace {
+
+		Vec2 calculateCenterOfMass(const Block& block) {
+			Vec2 pos{};
+			for (const auto& sq : block) {
+				pos += Vec2{sq.column, sq.row};
+			}
+			return 1.f / block.getSize() * pos;
+		}
 
 		void addRectangle(Graphic& graphic, float x, float y, float w, float h, Color color) {
 			graphic.addRectangle({x, y}, {w, h}, color);
@@ -21,12 +31,36 @@ namespace tetris {
 			graphic.addRectangle({x, y}, {size, size}, color);
 		}
 
+		void addSquare(Graphic& graphic, float x, float y, float size, sdl::Sprite& sprite) {
+			graphic.addRectangleImage({x, y}, {size, size}, sprite.getTextureView());
+		}
+
 		constexpr float middleDistance = 5.f;
 		constexpr float rightDistance = 5.f;
 
 	}
 
-	DrawBoard::DrawBoard() {
+	DrawBoard::DrawBoard(Player& player)
+		: tetrisBoard_{player.getTetrisBoard()} {
+
+		spriteZ_ = TetrisData::getInstance().getSprite(BlockType::Z);
+		spriteS_ = TetrisData::getInstance().getSprite(BlockType::S);
+		spriteJ_ = TetrisData::getInstance().getSprite(BlockType::J);
+		spriteI_ = TetrisData::getInstance().getSprite(BlockType::I);
+		spriteL_ = TetrisData::getInstance().getSprite(BlockType::L);
+		spriteT_ = TetrisData::getInstance().getSprite(BlockType::T);
+		spriteO_ = TetrisData::getInstance().getSprite(BlockType::O);
+
+		squareSize_ = TetrisData::getInstance().getTetrisSquareSize();
+		borderSize_ = TetrisData::getInstance().getTetrisBorderSize();
+		infoSize_ = squareSize_ * 5.f;
+
+		connection_.disconnect();
+		connection_ = player.addGameEventListener([&](BoardEvent gameEvent, const TetrisBoard& tetrisBoard) {
+			callback(gameEvent, tetrisBoard);
+		});
+
+		imGui(800.f);
 	}
 
 	Vec2 DrawBoard::imGuiToGame(Vec2 pos) const {
@@ -34,131 +68,110 @@ namespace tetris {
 	}
 
 	void DrawBoard::imGui(float width) {
-		const float squareSize = TetrisData::getInstance().getTetrisSquareSize();
-		const float borderSize = TetrisData::getInstance().getTetrisBorderSize();
-		
-		const float infoSize = squareSize * 5.f;
-		width_ = squareSize * tetrisBoard_.getColumns() + infoSize + borderSize * 2 + middleDistance + rightDistance;
-		height_ = squareSize * (tetrisBoard_.getRows() - 2) + borderSize * 2;
+		width_ = squareSize_ * tetrisBoard_.getColumns() + infoSize_ + borderSize_ * 2 + middleDistance + rightDistance;
+		height_ = squareSize_ * (tetrisBoard_.getRows() - 2) + borderSize_ * 2;
 
 		imGuiSize_ = {width, height_ / width_ * width};
-		ImGui::ChildWindow("", imGuiSize_, [&]() {
-			ImGui::Columns(2, nullptr, false);
-			const float boardSize = squareSize * tetrisBoard_.getColumns() + borderSize;
-			ImGui::SetColumnWidth(-1, boardSize * imGuiSize_.x / width_);
-			//ImGui::SetColumnOffset
-			
-			//ImGui::Button("HAHA", {boardSize * imGuiSize_.x / width_, imGuiSize_.y});
-			ImGui::NextColumn();
-			ImGui::Dummy({4,  imGuiSize_.y * 0.5f});
-			ImGui::PushFont(font_);
-			ImGui::Text("Marcus");
-			
-			ImGui::Text("Points");
-			ImGui::Text("Level");
-			ImGui::Text("Rows");
-
-			ImGui::PopFont();
-			//ImGui::SameLine(50);
-			//ImGui::TextColored(tetris::TetrisData::getInstance().getLabelTextColor(), "Marcus");
-			//ImGui::Button("ASDAS", {50,50});
-		});
 		
-		
-		pos_ = imGuiToGame(ImGui::GetCursorScreenPos());
-	}
-
-	Vec2 DrawBoard::calculateSize(float width) const {
-		const float squareSize = TetrisData::getInstance().getTetrisSquareSize();
-		const float borderSize = TetrisData::getInstance().getTetrisBorderSize();
-
-		const float infoSize = squareSize * 5.f;
-		float w = squareSize * tetrisBoard_.getColumns() + infoSize + borderSize * 2 + middleDistance + rightDistance;
-		float h = squareSize * (tetrisBoard_.getRows() - 2) + borderSize * 2;
-		return {w, h};
+		//pos_ = imGuiToGame({0, 0});
+		pos_ = {0.f, 0.f};
 	}
 
 	Vec2 DrawBoard::getSize() const {
 		return imGuiSize_;
 	}
 
+	void DrawBoard::drawBlock(Graphic& graphic, const Block& block, Vec2 pos, bool center) {
+		Vec2 delta{};
+		if (center) {
+			delta = (-Vec2{0.5f, 0.5f} - calculateCenterOfMass(block)) * squareSize_;
+		}
+
+		for (const auto& sq : block) {
+			auto x = pos.x + borderSize_ + squareSize_ * sq.column + delta.x;
+			auto y = pos.y + borderSize_ + squareSize_ * sq.row + delta.y;
+			addSquare(graphic,
+				x, y,
+				squareSize_,
+				getSprite(block.getBlockType()));
+		}
+	}
+
 	void DrawBoard::draw(Graphic& graphic) {
-		const float squareSize = TetrisData::getInstance().getTetrisSquareSize();
-		const float borderSize = TetrisData::getInstance().getTetrisBorderSize();
-			
 		const int columns = tetrisBoard_.getColumns();
 		const int rows = tetrisBoard_.getRows();
-
-		const float infoSize = squareSize * 5.f;
-		const float boardWidth = squareSize * columns;
-			
-		graphic.backMatrix() = glm::translate(graphic.backMatrix(), {pos_, 0});
-		graphic.backMatrix() = glm::scale(graphic.backMatrix(), {imGuiSize_.x / width_, imGuiSize_.x / width_, 1.f});
+		
+		const float boardWidth = squareSize_ * columns;
+		auto model = glm::translate(graphic.currentMatrix(), {pos_, 0});
+		model = glm::scale(model, {imGuiSize_.x / width_, imGuiSize_.x / width_, 1.f});
+		graphic.pushMatrix(model);
 
 		//restart(player); // Must be called after variables are defined.
 
 		// Draw the player area.
-		float x = borderSize;
-		float y = borderSize;
+		float x = borderSize_;
+		float y = borderSize_;
 		addRectangle(graphic,
 			x, y,
-			boardWidth + infoSize + middleDistance + rightDistance, squareSize * (rows - 2),
+			boardWidth + infoSize_ + middleDistance + rightDistance, squareSize_ * (rows - 2),
 			TetrisData::getInstance().getPlayerAreaColor());
 
 		// Draw the outer square.
-		x = borderSize;
-		y = borderSize;
+		x = borderSize_;
+		y = borderSize_;
 		addRectangle(graphic,
 			x, y,
-			squareSize * columns, squareSize * (rows - 2),
+			squareSize_ * columns, squareSize_ * (rows - 2),
 			TetrisData::getInstance().getOuterSquareColor());
 
 		// Draw the inner squares.
 		for (int row = 0; row < rows - 2; ++row) {
 			for (int column = 0; column < columns; ++column) {
-				x = borderSize + squareSize * column + squareSize * 0.1f;
-				y = borderSize + squareSize * row + squareSize * 0.1f;
+				x = borderSize_ + squareSize_ * column + squareSize_ * 0.1f;
+				y = borderSize_ + squareSize_ * row + squareSize_ * 0.1f;
 				addRectangle(graphic,
 					x, y,
-					squareSize * 0.8f, squareSize * 0.8f,
+					squareSize_ * 0.8f, squareSize_ * 0.8f,
 					TetrisData::getInstance().getInnerSquareColor());
 			}
 		}
 
 		// Draw the block start area.
-		x = borderSize;
-		y = borderSize + squareSize * (rows - 4);
+		x = borderSize_;
+		y = borderSize_ + squareSize_ * (rows - 4);
 		addRectangle(graphic,
 			x, y,
-			squareSize * columns, squareSize * 2,
+			squareSize_ * columns, squareSize_ * 2,
 			TetrisData::getInstance().getStartAreaColor());
 			
 
 		// Draw the preview block area.
-		x = borderSize + boardWidth + middleDistance;
-		y = borderSize + squareSize * (rows - 4) - (squareSize * 5 + middleDistance);
-		addRectangle(graphic,
+		x = borderSize_ + boardWidth + middleDistance;
+		y = borderSize_ + squareSize_ * (rows - 4) - (squareSize_ * 5 + middleDistance);
+		addSquare(graphic,
 			x, y,
-			infoSize, infoSize,
+			infoSize_,
 			TetrisData::getInstance().getStartAreaColor());
+
+		drawBlock(graphic, Block{tetrisBoard_.getBlockType(), 0, 0}, Vec2{x, y} + squareSize_ * 2.5f, true);
 
 		const Color borderColor = TetrisData::getInstance().getBorderColor();
 
 		// Add border.
 		// Left-up corner.
 		x = 0.f;
-		y = height_ - borderSize;
+		y = height_ - borderSize_;
 		addSquare(graphic,
 			x, y,
-			borderSize,
+			borderSize_,
 			borderColor);
 
 		// Right-up corner.
-		x = width_ - borderSize;
-		y = height_ - borderSize;
+		x = width_ - borderSize_;
+		y = height_ - borderSize_;
 		addSquare(graphic,
 			x, y,
-			borderSize,
+			borderSize_,
 			borderColor);
 
 		// Left-down corner.
@@ -166,63 +179,168 @@ namespace tetris {
 		y = 0.f;
 		addSquare(graphic,
 			x, y,
-			borderSize,
+			borderSize_,
 			borderColor);
 
 		// Right-down corner.
-		x = width_ - borderSize;
+		x = width_ - borderSize_;
 		y = 0.f;
 		addSquare(graphic,
 			x, y,
-			borderSize,
+			borderSize_,
 			borderColor);
 
 		// Up.
-		x = borderSize;
-		y = height_ - borderSize;
+		x = borderSize_;
+		y = height_ - borderSize_;
 		addRectangle(graphic,
 			x, y,
-			width_ - 2 * borderSize, borderSize,
+			width_ - 2 * borderSize_, borderSize_,
 			borderColor);
 
 		// Down.
-		x = borderSize;
+		x = borderSize_;
 		y = 0.f;
 		addRectangle(graphic,
 			x, y,
-			width_ - 2 * borderSize, borderSize,
+			width_ - 2 * borderSize_, borderSize_,
 			borderColor);
 
 		// Left.
 		x = 0.f;
-		y = borderSize;
+		y = borderSize_;
 		addRectangle(graphic,
 			x, y,
-			borderSize, height_ - 2 * borderSize,
+			borderSize_, height_ - 2 * borderSize_,
 			borderColor);
 
 		// Right.
-		x = width_ - borderSize;
-		y = borderSize;
+		x = width_ - borderSize_;
+		y = borderSize_;
 		addRectangle(graphic,
 			x, y,
-			borderSize, height_ - 2 * borderSize,
+			borderSize_, height_ - 2 * borderSize_,
 			borderColor);
+
+		drawBlock(graphic, tetrisBoard_.getBlock());
 
 		for (int i = 0; i < tetrisBoard_.getRows(); ++i) {
 			for (int j = 0; j < tetrisBoard_.getColumns(); ++j) {
-				x = borderSize + squareSize * j;
-				y = borderSize + squareSize * i;
-				if (tetrisBoard_.getBlockType(i, j) != BlockType::EMPTY
-					&& tetrisBoard_.getBlockType(i, j) != BlockType::WALL) {
+				x = borderSize_ + squareSize_ * j;
+				y = borderSize_ + squareSize_ * i;
+
+				auto blockType = tetrisBoard_.getBlockType(j, i);
+				if (blockType != BlockType::EMPTY
+					&& blockType != BlockType::WALL) {
 					
 					addSquare(graphic,
 						x, y,
-						squareSize,
-						sdl::WHITE);
+						squareSize_,
+						getSprite(blockType));
 				}
 			}
 		}
+	}
+
+	void DrawBoard::callback(BoardEvent gameEvent, const TetrisBoard& tetrisBoard) {
+		/*
+		for (auto& row : rows_) {
+			row->handleEvent(gameEvent, tetrisBoard);
+		}
+		rows_.remove_if([&](const DrawRowPtr& row) {
+			if (!row->isAlive()) {
+				freeRows_.push_front(row);
+				return true;
+			}
+			return false;
+		});
+		switch (gameEvent) {
+			case BoardEvent::GAME_OVER:
+				break;
+			case BoardEvent::BLOCK_COLLISION:
+				break;
+			case BoardEvent::RESTARTED:
+				break;
+			case BoardEvent::EXTERNAL_ROWS_ADDED:
+			{
+				int rows = tetrisBoard.getNbrExternalRowsAdded();
+				for (int row = 0; row < rows; ++row) {
+					addDrawRowBottom(tetrisBoard, rows - row - 1);
+				}
+				int highestRow = tetrisBoard.getBoardVector().size() / tetrisBoard.getColumns();
+				assert(rows_.size() - highestRow >= 0); // Something is wrong. Should not be posssible.
+				for (int i = 0; i < (int) rows_.size() - highestRow; ++i) { // Remove unneeded empty rows at the top.
+					rows_.pop_back();
+				}
+			}
+			break;
+			case BoardEvent::NEXT_BLOCK_UPDATED:
+				nextBlock_.update(Block(tetrisBoard.getNextBlockType(), 0, 0));
+				break;
+			case BoardEvent::CURRENT_BLOCK_UPDATED:
+				// Fall through!
+			case BoardEvent::PLAYER_MOVES_BLOCK_ROTATE:
+				// Fall through!		
+			case BoardEvent::PLAYER_MOVES_BLOCK_LEFT:
+				// Fall through!
+			case BoardEvent::PLAYER_MOVES_BLOCK_RIGHT:
+				currentBlock_.update(tetrisBoard.getBlock());
+				{
+					RawTetrisBoard board = tetrisBoard;
+					board.update(Move::DOWN_GROUND);
+					downBlock_.update(board.getBlock());
+				}
+				break;
+			case BoardEvent::PLAYER_MOVES_BLOCK_DOWN_GROUND:
+				blockDownGround_ = true;
+				latestBlockDownGround_ = tetrisBoard.getBlock();
+				break;
+			case BoardEvent::PLAYER_MOVES_BLOCK_DOWN:
+				if (blockDownGround_) {
+					currentBlock_.updateDown(tetrisBoard.getBlock());
+					blockDownGround_ = false;
+				}
+				// Fall through!
+			case BoardEvent::GRAVITY_MOVES_BLOCK:
+				currentBlock_.update(tetrisBoard.getBlock());
+				break;
+			case BoardEvent::ROW_TO_BE_REMOVED:
+				textClearedRows_.update("Rows " + std::to_string(tetrisBoard.getRemovedRows()));
+				break;
+			case BoardEvent::ONE_ROW_REMOVED:
+				addDrawRowAtTheTop(tetrisBoard, 1);
+				break;
+			case BoardEvent::TWO_ROW_REMOVED:
+				addDrawRowAtTheTop(tetrisBoard, 2);
+				break;
+			case BoardEvent::THREE_ROW_REMOVED:
+				addDrawRowAtTheTop(tetrisBoard, 3);
+				break;
+			case BoardEvent::FOUR_ROW_REMOVED:
+				addDrawRowAtTheTop(tetrisBoard, 4);
+				break;
+		}
+		*/
+	}
+
+	sdl::Sprite DrawBoard::getSprite(BlockType blockType) const {
+		switch (blockType) {
+			case BlockType::I:
+				return spriteI_;
+			case BlockType::J:
+				return spriteJ_;
+			case BlockType::L:
+				return spriteL_;
+			case BlockType::O:
+				return spriteO_;
+			case BlockType::S:
+				return spriteS_;
+			case BlockType::T:
+				return spriteT_;
+			case BlockType::Z:
+				return spriteZ_;
+		}
+		return spriteI_;
 	}
 
 }
