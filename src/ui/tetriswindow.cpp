@@ -116,6 +116,18 @@ namespace tetris {
 
 	TetrisWindow::~TetrisWindow() {
 	}
+	
+	std::vector<DevicePtr> TetrisWindow::getCurrentDevices() const {
+		std::vector<DevicePtr> playerDevices(devices_.begin(), devices_.begin() + nbrHumans_);
+
+		for (unsigned int i = 0; i < nbrAis_; ++i) {
+			if (activeAis_[i]) {
+				playerDevices.push_back(activeAis_[i]);
+			}
+		}
+
+		return playerDevices;
+	}
 
 	DevicePtr TetrisWindow::findHumanDevice(std::string name) const {
 		for (const auto& device : devices_) {
@@ -172,9 +184,6 @@ namespace tetris {
 	}
 
 	void TetrisWindow::imGuiPreUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
-		const auto& shader = getShader();
-		getShader().useProgram();
-		
 		if (currentPage_ != Page::PLAY) {
 			return;
 		}
@@ -183,20 +192,18 @@ namespace tetris {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 				
 		graphic.clearDraw();
-		graphic.pushMatrix(glm::ortho(0.f, (float) getWidth(), 0.f, (float) getHeight()));
-		graphic.addRectangleImage({0.f, 0.f}, {getWidth(), getHeight()}, background_.getTextureView());
-		graphic.addCircle({0, 0}, 1, sdl::RED);
-		graphic.addRectangle({-1.f, 0.9f}, {2.f, 0.1f}, sdl::BLUE);
+		auto w = (float) getWidth();
+		auto h = (float) getHeight();
 
-		graphic.addRectangle({400, 400}, {100, 100}, sdl::BLUE);
-		graphic.draw(getShader());
 		auto deltaTimeSeconds = std::chrono::duration<double>(deltaTime).count();
-		gameComponent_->draw(graphic, getWidth(), getHeight() - menuHeight_, deltaTimeSeconds);
-		graphic.draw(shader);
+		if (h > 0 && w > 0) {
+			graphic.pushMatrix(glm::ortho(0.f, w, 0.f, h));
+			graphic.addRectangleImage({0.f, 0.f}, {w, h}, background_.getTextureView());
+			gameComponent_->draw(graphic, getWidth(), getHeight() - menuHeight_, deltaTimeSeconds);
+			graphic.draw(getShader());
+		}
 		
 		game_.update(deltaTimeSeconds);
-
-		//gameComponent_->draw(getWidth(), getHeight(), std::chrono::duration<double>(deltaTime).count());
 	}
 	
 	void TetrisWindow::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
@@ -281,6 +288,11 @@ namespace tetris {
 			case SDL_KEYDOWN:
 				if (!io.WantCaptureKeyboard) {
 					//hexCanvas_.eventUpdate(windowEvent);
+					switch (windowEvent.key.keysym.sym) {
+						case SDLK_ESCAPE:
+							sdl::Window::quit();
+							break;
+					}
 				}
 				break;
 			case SDL_QUIT:
@@ -342,12 +354,18 @@ namespace tetris {
 				changePage(Page::MENU);
 			}
 			ImGui::SameLine();
-			ImGui::Button("Restart", {120.5f, menuHeight_});
+			if (ImGui::Button("Restart", {120.5f, menuHeight_})) {
+				game_.restartGame();
+			}
+
 			ImGui::SameLine();
-			if (ImGui::ManButton("Human2", nbrHumans_, 4, noManTexture_.getTextureView(), manTexture_.getTextureView(), {menuHeight_, menuHeight_})) {
+			if (ImGui::ManButton("Human", nbrHumans_, devices_.size(), noManTexture_.getTextureView(), manTexture_.getTextureView(), {menuHeight_, menuHeight_})) {
+				game_.createGame(getCurrentDevices());
 			}
 			ImGui::SameLine();
-			ImGui::ManButton("Ai2", nbrAis_, 4, noManTexture_.getTextureView(), aiTexture_.getTextureView(), {menuHeight_, menuHeight_});
+			if (ImGui::ManButton("Ai", nbrAis_, 4, noManTexture_.getTextureView(), aiTexture_.getTextureView(), {menuHeight_, menuHeight_})) {
+				game_.createGame(getCurrentDevices());
+			}
 			ImGui::PopFont();
 
 			popButtonStyle();

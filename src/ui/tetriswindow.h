@@ -34,6 +34,7 @@ namespace tetris {
 	private:
 		void initPreLoop() override;
 	
+		std::vector<DevicePtr> getCurrentDevices() const;
 		DevicePtr findHumanDevice(std::string name) const;
 		DevicePtr findAiDevice(std::string name) const;
 		void resumeGame();

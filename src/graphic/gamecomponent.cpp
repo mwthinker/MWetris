@@ -13,6 +13,7 @@
 #include <cassert>
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
 
 namespace tetris {
 
@@ -33,8 +34,7 @@ namespace tetris {
 	}
 
 	GameComponent::GameComponent(TetrisGame& tetrisGame)
-		: tetrisGame_{tetrisGame}
-		, updateMatrix_{true} {
+		: tetrisGame_{tetrisGame} {
 
 		eventConnection_ = tetrisGame_.addGameEventHandler([&](TetrisGameEvent& tetrisEvent) {
 			eventHandler(tetrisEvent);
@@ -45,53 +45,49 @@ namespace tetris {
 		eventConnection_.disconnect();
 	}
 
-	void GameComponent::validate() {
-		updateMatrix_ = true;
+	Mat4 GameComponent::calculateBoardMatrix(int windowWidth, int windowHeight) const {
+		float width = 0;
+		float height = 0;
+
+		for (const auto& [player, drawBoardPtr] : drawPlayers_) {
+			auto size = drawBoardPtr->getSize();
+			width += size.x;
+			height = size.y;
+		}
+		
+		float dx{}, dy{};
+		float scale{};
+		if (width / windowWidth > height / windowHeight) {
+			// Blank sides, up and down.
+			scale = windowWidth / width;
+			dx = 0;
+			dy = (windowHeight - scale * height) * 0.5f;
+		} else {
+			// Blank sides, left and right.
+			scale = windowHeight / height;
+			dx = (windowWidth - scale * width) * 0.5f;
+			dy = 0;
+		}
+
+		return glm::translate(Vec3{dx, dy, 0.f}) * glm::scale(Vec3{scale, scale, 1.f});
 	}
 
 	void GameComponent::draw(Graphic& graphic, int windowWidth, int windowHeight, double deltaTime) {
-		if (updateMatrix_) {
-			float width = 0;
-			float height = 0;
-
-			for (const auto& [player, drawBoardPtr] : drawPlayers_) {
-				auto size = drawBoardPtr->getSize();
-				width += size.x;
-				height = size.y;
-			}
-
-			// Centers the game and holds the correct proportions.
-			// The sides are transparent.
-			Mat4 model = graphic.currentMatrix();
-			if (width / windowWidth > height / windowHeight) {
-				// Blank sides, up and down.
-				scale_ = windowWidth / width;
-				dx_ = 0;
-				dy_ = (windowHeight - scale_ * height) * 0.5f;
-			} else {
-				// Blank sides, left and right.
-				scale_ = windowHeight / height;
-				dx_ = (windowWidth - scale_ * width) * 0.5f;
-				dy_ = 0;
-			}
-
-			model = glm::translate(model, Vec3{dx_, dy_, 0});
-			model = glm::scale(model, Vec3{scale_, scale_, 0});
-
-			//boardShader_->setMatrix(projMatrix_ * model);
-			//boardShader_->useProgram();
-			updateMatrix_ = false;
-		}
+		graphic.pushMatrix();
+		graphic.multMatrix(calculateBoardMatrix(windowWidth, windowHeight));
 
 		if (!drawPlayers_.empty()) {
-			// Draw boards.
 			TetrisData::getInstance().bindTextureFromAtlas();
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+			
+			auto model = graphic.currentMatrix();
+			float delta = 0;
 			for (auto& [player, drawBoardPtr] : drawPlayers_) {
+				model = glm::translate(model, Vec3{delta, 0.f, 0.f});
+				graphic.pushMatrix(model);
 				drawBoardPtr->draw(graphic);
-				//graphic.update(static_cast<float>(deltaTime), *dynamicBoardBatch_);
+				delta += drawBoardPtr->getSize().x;
 			}
 
 			sdl::assertGlError();
@@ -117,8 +113,6 @@ namespace tetris {
 			w += drawBoardPtr->getSize().x;
 		}
 		//staticBoardBatch_->uploadToGraphicCard();
-
-		updateMatrix_ = true;
 	}
 
 	void GameComponent::eventHandler(TetrisGameEvent& tetrisEvent) {

@@ -31,12 +31,12 @@ namespace tetris {
 		void draw(Graphic& graphic, int width, int height, double deltaTime);
 
 	private:
+		Mat4 calculateBoardMatrix(int windowWidth, int windowHeight) const;
+
 		void initGame(const std::vector<PlayerPtr>& player);
 
 		void eventHandler(TetrisGameEvent& tetrisGameEvent);
 		
-		void validate();
-
 		void handleMiddleText(const PlayerPtr& player, int lastPostion);
 
 		using DrawBoardPtr = std::unique_ptr<DrawBoard>;
@@ -50,17 +50,9 @@ namespace tetris {
 		Uint32 timeStep_;
 		Uint32 accumulator_;
 
-		// Updated in initGame().
-		Mat4 matrix_;
-		Mat4 model_;
-		Mat4 projMatrix_;
-		bool updateMatrix_;
-
 		// Font related.
 		sdl::Text middleText_;
 		float fontSize_{};
-		float dx_{}, dy_{};
-		float scale_{};
 		float borderSize_{};
 	};
 
