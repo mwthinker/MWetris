@@ -29,8 +29,6 @@ set(SOURCES
 	src/graphic/drawboard.h
 	src/graphic/drawrow.cpp
 	src/graphic/drawrow.h
-	src/graphic/drawtext.cpp
-	src/graphic/drawtext.h
 	src/graphic/gamecomponent.cpp
 	src/graphic/gamecomponent.h
 	src/graphic/gamegraphic.cpp
@@ -99,7 +97,7 @@ FetchContent_Declare(CppSdl2
 	GIT_REPOSITORY
 		https://github.com/mwthinker/CppSdl2.git
 	GIT_TAG
-		4ddb8f9ab857ca039a3d671c77e608d7c5895ceb
+		e3dfaf48f5a443b6c74cf66bb080df56c9d8c0e3
 )
 FetchContent_MakeAvailable(CppSdl2)
 

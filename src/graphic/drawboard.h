@@ -21,11 +21,7 @@ namespace tetris {
 	public:
 		DrawBoard(Player& player);
 
-		Vec2 imGuiToGame(Vec2 pos) const;
-
 		Vec2 getSize() const;
-
-		void imGui(float width);
 
 		void draw(Graphic& graphic);
 
@@ -36,18 +32,16 @@ namespace tetris {
 
 		sdl::Sprite getSprite(BlockType blockType) const;
 
-		Vec2 imGuiSize_;
 		float squareSize_;
 		float borderSize_;
 		float infoSize_;
 		
 		const TetrisBoard& tetrisBoard_;
-		Mat4 imGuiToGame_{1};
 		mw::signals::Connection connection_;
-
-		Vec2 pos_;
+		
 		float width_, height_;
 		sdl::Sprite spriteI_, spriteJ_, spriteL_, spriteO_, spriteS_, spriteT_, spriteZ_;
+		sdl::Sprite name_;
 	};
 
 }

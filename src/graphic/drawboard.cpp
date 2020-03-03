@@ -31,8 +31,13 @@ namespace tetris {
 			graphic.addRectangle({x, y}, {size, size}, color);
 		}
 
-		void addSquare(Graphic& graphic, float x, float y, float size, sdl::Sprite& sprite) {
+		void addSquare(Graphic& graphic, float x, float y, float size, const sdl::Sprite& sprite) {
 			graphic.addRectangleImage({x, y}, {size, size}, sprite.getTextureView());
+		}
+
+		void addText(Graphic& graphic, float x, float y, const sdl::Sprite& text) {
+			auto view = text.getTextureView();
+			graphic.addRectangleImage(Vec2{x, y} + view.getPosition(), 0.5f * text.getSize(), view);
 		}
 
 		constexpr float middleDistance = 5.f;
@@ -60,25 +65,15 @@ namespace tetris {
 			callback(gameEvent, tetrisBoard);
 		});
 
-		imGui(800.f);
-	}
+		name_ = sdl::Sprite{"Test", TetrisData::getInstance().getDefaultFont(50)};
+		name_.bindTexture();
 
-	Vec2 DrawBoard::imGuiToGame(Vec2 pos) const {
-		return {pos.x, ImGui::GetIO().DisplaySize.y - pos.y + TetrisData::getInstance().getTetrisBorderSize() + 1};
-	}
-
-	void DrawBoard::imGui(float width) {
 		width_ = squareSize_ * tetrisBoard_.getColumns() + infoSize_ + borderSize_ * 2 + middleDistance + rightDistance;
 		height_ = squareSize_ * (tetrisBoard_.getRows() - 2) + borderSize_ * 2;
-
-		imGuiSize_ = {width, height_ / width_ * width};
-		
-		//pos_ = imGuiToGame({0, 0});
-		pos_ = {0.f, 0.f};
 	}
 
 	Vec2 DrawBoard::getSize() const {
-		return imGuiSize_;
+		return {width_, height_};
 	}
 
 	void DrawBoard::drawBlock(Graphic& graphic, const Block& block, Vec2 pos, bool center) {
@@ -102,10 +97,6 @@ namespace tetris {
 		const int rows = tetrisBoard_.getRows();
 		
 		const float boardWidth = squareSize_ * columns;
-		auto model = glm::translate(graphic.currentMatrix(), {pos_, 0});
-		model = glm::scale(model, {imGuiSize_.x / width_, imGuiSize_.x / width_, 1.f});
-		graphic.pushMatrix(model);
-
 		//restart(player); // Must be called after variables are defined.
 
 		// Draw the player area.
@@ -240,6 +231,9 @@ namespace tetris {
 				}
 			}
 		}
+
+		addText(graphic, 100, 100, name_);
+		
 	}
 
 	void DrawBoard::callback(BoardEvent gameEvent, const TetrisBoard& tetrisBoard) {

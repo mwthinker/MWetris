@@ -51,7 +51,6 @@ namespace tetris {
 		Uint32 accumulator_;
 
 		// Font related.
-		sdl::Text middleText_;
 		float fontSize_{};
 		float borderSize_{};
 	};

@@ -7,7 +7,6 @@
 #include "../types.h"
 
 #include <sdl/font.h>
-#include <sdl/text.h>
 #include <sdl/sprite.h>
 #include <sdl/batch.h>
 #include <sdl/vertex.h>

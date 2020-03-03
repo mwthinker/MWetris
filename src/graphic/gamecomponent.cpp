@@ -99,8 +99,6 @@ namespace tetris {
 		if (players.size() == 1) {
 			showPoints = true;
 		}
-
-		//staticBoardBatch_ = std::make_shared<BoardBatch>(boardShader_);
 		drawPlayers_.clear();
 
 		float w = 0;
@@ -112,7 +110,6 @@ namespace tetris {
 			//graphic.restart(*staticBoardBatch_, *player, w, 0, tetrisGame_.isDefaultGame());
 			w += drawBoardPtr->getSize().x;
 		}
-		//staticBoardBatch_->uploadToGraphicCard();
 	}
 
 	void GameComponent::eventHandler(TetrisGameEvent& tetrisEvent) {

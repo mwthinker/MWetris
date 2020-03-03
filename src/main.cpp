@@ -1,5 +1,6 @@
 #include "ui/tetriswindow.h"
 #include "logger.h"
+#include "tetrisdata.h"
 
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h> // or "../stdout_sinks.h" if no colors needed
@@ -24,6 +25,7 @@ int main(int, char**) {
 		tetris::TetrisWindow tetris;
 		//tetris.setStartPage(tetris::TetrisWindow::Page::PLAY);
 		tetris.startLoop();
+		tetris::TetrisData::getInstance().quit();
 	} catch (std::exception&) {
 		tetris::logger()->error("[Main] Fatal error has occured.");
 	}

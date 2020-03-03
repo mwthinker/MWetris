@@ -50,6 +50,12 @@ namespace tetris {
 			return instance;
 		}
 
+		void quit() {
+			sounds_.clear();
+			fonts_.clear();
+			musics_.clear();
+		}
+
 		TetrisData(TetrisData const&) = delete;
 		TetrisData& operator=(const TetrisData&) = delete;
 
