@@ -2,8 +2,9 @@
 #define MWETRIS_IMGUIEXTRA_H
 
 #include "../types.h"
+#include "../tetrisdata.h"
 
-#include <sdl/imguiwindow.h>
+#include <sdl/imguiauxiliary.h>
 
 #include <sdl/sprite.h>
 

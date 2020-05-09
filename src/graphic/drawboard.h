@@ -2,14 +2,14 @@
 #define DRAWBOARD_H
 
 #include "../tetrisdata.h"
-#include "../logger.h"
 #include "../game/player.h"
-
 #include "tetrisboard.h"
 #include "graphic.h"
 
 #include <sdl/imguiauxiliary.h>
 #include <sdl/sprite.h>
+
+#include <spdlog/spdlog.h>
 
 #include <vector>
 

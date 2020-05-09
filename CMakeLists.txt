@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.11...3.14)
 # 3.14 support for Visual Studio 2019
 
 set(VCPKG_ROOT $ENV{VCPKG_ROOT})
-if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+if (DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
 	set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
 		CACHE STRING ""
 	)
@@ -12,13 +12,16 @@ endif()
 
 project(MWetris
 	DESCRIPTION
-		"A C++ wrapper of SDL2 and OpenGl"
+		"A C++ clone of Tetris"
+	VERSION
+		0.1.0
 	LANGUAGES
 		CXX
 )
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 if (MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4275") # non - DLL-interface class 'class_1' used as base for DLL-interface class 'class_2'
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251") # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
@@ -66,7 +69,8 @@ set(SOURCES
 	src/ui/imguiextra.h
 	src/ui/tetriswindow.cpp
 	src/ui/tetriswindow.h
-
+	
+	src/logger.cpp
 	src/logger.h
 	src/types.h
 	src/tetrisdata.cpp
@@ -91,44 +95,14 @@ find_package(glm CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 
-include(FetchContent)
-# Load external github projects
-FetchContent_Declare(CppSdl2
-	GIT_REPOSITORY
-		https://github.com/mwthinker/CppSdl2.git
-	GIT_TAG
-		e3dfaf48f5a443b6c74cf66bb080df56c9d8c0e3
-)
-FetchContent_MakeAvailable(CppSdl2)
+include(ExternalFetchContent.cmake)
 
-FetchContent_Declare(CppProtoNetwork
-	GIT_REPOSITORY
-		https://github.com/mwthinker/CppProtoNetwork.git
-	GIT_TAG
-		6211440420ef56402e1944c4639ac355141ef70d
-)
-FetchContent_MakeAvailable(CppProtoNetwork)
+extract_git_hash()
+create_guid()
 
-FetchContent_Declare(Signal
-	GIT_REPOSITORY
-		https://github.com/mwthinker/Signal.git
-	GIT_TAG
-		76054e3797c62247910adb83e05f32cc47885faa
-)
-FetchContent_MakeAvailable(Signal)
-
-# Load data.
-FetchContent_Declare(MWetrisData
-	GIT_REPOSITORY
-		https://github.com/mwthinker/MWetrisData.git
-	GIT_TAG
-		d9bfd28c799b71e6048b51ae7f591f4853b7e887
-)
-FetchContent_MakeAvailable(MWetrisData)
-FetchContent_GetProperties(MWetrisData
-	SOURCE_DIR
-		MWetrisData_SOURCE_DIR
-)
+message(STATUS "GIT_HASH: ${GIT_HASH}")
+message(STATUS "PROJECT_VERSION: ${PROJECT_VERSION}")
+message(STATUS "GUID: ${GUID}")
 
 set(ExternalDependencies
 	CppSdl2
@@ -172,6 +146,10 @@ if (MSVC)
 		PUBLIC
 			_CRT_SECURE_NO_WARNINGS
 	)
+	target_compile_options(MWetris
+		PUBLIC
+			"/permissive-"
+	)
 endif ()
 
 target_link_libraries(MWetris
@@ -183,3 +161,16 @@ target_link_libraries(MWetris
 		Signal
 		${ExternalDependencies}
 )
+
+target_compile_definitions(MWetris
+	PRIVATE
+		GIT_VERSION="${GIT_HASH}"
+		PROJECT_VERSION="${PROJECT_VERSION}"
+)
+
+if (MSVC)
+	target_compile_options(MWetris
+		PRIVATE
+			"/permissive-"
+	)
+endif (MSVC)

@@ -1,13 +1,11 @@
 #ifndef MWETRIS_SDL_LOGGER_H
 #define MWETRIS_SDL_LOGGER_H
 
-#include <sdl/logger.h>
+#include <spdlog/spdlog.h>
 
-namespace tetris {
+namespace tetris::logger {
 	
-	static std::shared_ptr<spdlog::logger> logger() {
-		return sdl::logger("tetris");
-	}
+	bool init(const std::string& folderPath = "");
 
 } // Namespace sdl.
 

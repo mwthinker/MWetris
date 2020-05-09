@@ -2,32 +2,21 @@
 #include "logger.h"
 #include "tetrisdata.h"
 
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h> // or "../stdout_sinks.h" if no colors needed
-#include <spdlog/sinks/basic_file_sink.h>
-
 #include <sdl/initsdl.h>
 
 int main(int, char**) {
-	//auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-	//console_sink->set_color(spdlog::level::level_enum::info, 0xffff0000);
-	
-	//auto console = spdlog::stdout_color_mt("MW");
-	//spdlog::register_logger(console);
-	//spdlog::get("MW");
-		
-	//spdlog::set_default_logger(console);
-	//spdlog::set_automatic_registration(true);
-	//spdlog::create (console_sink, "logger_name", "daylylog", 11, 59);
-
 	try {
+		tetris::logger::init();
+		spdlog::info("[main] MWetris Version:  {}", PROJECT_VERSION);
+		spdlog::info("[main] MWetris git hash:  {}", GIT_VERSION);
+
 		const sdl::InitSdl SDL;
 		tetris::TetrisWindow tetris;
 		//tetris.setStartPage(tetris::TetrisWindow::Page::PLAY);
 		tetris.startLoop();
 		tetris::TetrisData::getInstance().quit();
 	} catch (std::exception&) {
-		tetris::logger()->error("[Main] Fatal error has occured.");
+		spdlog::error("[Main] Fatal error has occured.");
 	}
 
 	return 0;

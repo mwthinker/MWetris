@@ -16,9 +16,13 @@ namespace tetris {
 	};
 
 	struct Square {
-		bool operator==(const Square& square) const = default;
+		bool operator==(const Square& square) const {
+			return row == square.row && column == square.column;
+		}
 
-		bool operator!=(const Square& square) const = default;
+		bool operator!=(const Square& square) const {
+			return row != square.row || column != square.column;
+		}
 
 		int column;
 		int row;

@@ -120,4 +120,4 @@ namespace tetris {
 		matrixes_[0] = model;
 	}
 
-} // vin.
+} // tetris.

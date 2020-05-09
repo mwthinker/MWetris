@@ -1,13 +1,13 @@
 #include "tetriswindow.h"
-
 #include "imguiextra.h"
-#include "../logger.h"
 #include "../tetrisdata.h"
 #include "../graphic/gamecomponent.h"
 #include "../game/computer.h"
 #include "../game/keyboard.h"
 
 #include <sdl/imguiauxiliary.h>
+
+#include <spdlog/spdlog.h>
 
 #include <string_view>
 
@@ -58,7 +58,7 @@ namespace tetris {
 	}
 
 	void TetrisWindow::changePage(Page page) {
-		logger()->info("[TetrisWindow] open {} page", toString(page));
+		spdlog::info("[TetrisWindow] open {} page", toString(page));
 		currentPage_ = page;
 	}
 
@@ -120,7 +120,7 @@ namespace tetris {
 	std::vector<DevicePtr> TetrisWindow::getCurrentDevices() const {
 		std::vector<DevicePtr> playerDevices(devices_.begin(), devices_.begin() + nbrHumans_);
 
-		for (unsigned int i = 0; i < nbrAis_; ++i) {
+		for (int i = 0; i < nbrAis_; ++i) {
 			if (activeAis_[i]) {
 				playerDevices.push_back(activeAis_[i]);
 			}
@@ -338,7 +338,7 @@ namespace tetris {
 		}
 		ImGui::Dummy(dummy);
 		if (ImGui::Button("Exit")) {
-			logger()->info("[ImGuiWindow] pushed exit button");
+			spdlog::info("[ImGuiWindow] pushed exit button");
 			sdl::Window::quit();
 		}
 
@@ -359,11 +359,11 @@ namespace tetris {
 			}
 
 			ImGui::SameLine();
-			if (ImGui::ManButton("Human", nbrHumans_, devices_.size(), noManTexture_.getTextureView(), manTexture_.getTextureView(), {menuHeight_, menuHeight_})) {
+			if (ImGui::ManButton("Human", nbrHumans_, static_cast<int>(devices_.size()), noManTexture_.getTextureView(), manTexture_.getTextureView(), {menuHeight_, menuHeight_})) {
 				game_.createGame(getCurrentDevices());
 			}
 			ImGui::SameLine();
-			if (ImGui::ManButton("Ai", nbrAis_, 4, noManTexture_.getTextureView(), aiTexture_.getTextureView(), {menuHeight_, menuHeight_})) {
+			if (ImGui::ManButton("Ai", nbrAis_, static_cast<int>(activeAis_.size()), noManTexture_.getTextureView(), aiTexture_.getTextureView(), {menuHeight_, menuHeight_})) {
 				game_.createGame(getCurrentDevices());
 			}
 			ImGui::PopFont();
@@ -400,12 +400,12 @@ namespace tetris {
 
 		int rankNbr = 1;
 		for (const auto& highscore : highscores) {
-			ImGui::Text(std::to_string(rankNbr++).c_str()); ImGui::NextColumn();
-			ImGui::Text(std::to_string(highscore.points_).c_str()); ImGui::NextColumn();
-			ImGui::Text(highscore.name_.c_str()); ImGui::NextColumn();
-			ImGui::Text(std::to_string(highscore.rows_).c_str()); ImGui::NextColumn();
-			ImGui::Text(std::to_string(highscore.level_).c_str()); ImGui::NextColumn();
-			ImGui::Text(highscore.date_.c_str()); ImGui::NextColumn();
+			ImGui::Text("%i", rankNbr++); ImGui::NextColumn();
+			ImGui::Text("%i", highscore.points_); ImGui::NextColumn();
+			ImGui::TextUnformatted(highscore.name_.c_str()); ImGui::NextColumn();
+			ImGui::Text("%i", highscore.rows_); ImGui::NextColumn();
+			ImGui::Text("%i", highscore.level_); ImGui::NextColumn();
+			ImGui::TextUnformatted(highscore.date_.c_str()); ImGui::NextColumn();
 		}
 		ImGui::Separator();
 		ImGui::PopFont();
