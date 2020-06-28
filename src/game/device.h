@@ -1,16 +1,15 @@
-#ifndef DEVICE_H
-#define DEVICE_H
+#ifndef MWETRIS_GAME_DEVICE_H
+#define MWETRIS_GAME_DEVICE_H
 
 #include "input.h"
+#include "tetrisboard.h"
 
 #include <SDL.h>
 
 #include <string>
 #include <memory>
 
-namespace tetris {
-
-	class TetrisBoard;
+namespace tetris::game {
 
 	class Device;
 	using DevicePtr = std::shared_ptr<Device>;
@@ -30,4 +29,4 @@ namespace tetris {
 
 }
 
-#endif // DEVICE_H
+#endif

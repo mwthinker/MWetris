@@ -1,3 +1,7 @@
 #include "player.h"
 
-using namespace tetris;
+namespace tetris::game {
+
+
+}
+

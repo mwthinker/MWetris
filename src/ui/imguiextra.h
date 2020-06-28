@@ -10,11 +10,19 @@
 
 namespace ImGui {
 
+	void PushButtonStyle();
+
+
+	void PopButtonStyle();
+
+
 	template <class T>
-	bool Bar(float height, T&& t) {
+	bool Bar(T&& t) {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, tetris::TetrisData::getInstance().getWindowBarColor().toImU32());
+
+		float height = tetris::TetrisData::getInstance().getWindowBarHeight();
 		ImGui::ChildWindow("Bar", ImVec2{ImGui::GetWindowWidth(), height}, [&]() {
 			ImGui::GetWindowDrawList()->AddRectFilled({0, 0},
 				ImGui::GetWindowSize(),

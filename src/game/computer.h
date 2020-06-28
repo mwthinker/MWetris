@@ -1,10 +1,11 @@
-#ifndef COMPUTER_H
-#define COMPUTER_H
+#ifndef MWETRIS_GAME_COMPUTER_H
+#define MWETRIS_GAME_COMPUTER_H
 
 #include "device.h"
 #include "block.h"
 #include "rawtetrisboard.h"
 #include "ai.h"
+#include "tetrisboard.h"
 
 #include <calc/calculator.h>
 
@@ -12,7 +13,7 @@
 #include <string>
 #include <future>
 
-namespace tetris {
+namespace tetris::game {
 
 	class Computer : public Device {
 	public:
@@ -47,4 +48,4 @@ namespace tetris {
 
 }
 
-#endif // COMPUTER_H
+#endif

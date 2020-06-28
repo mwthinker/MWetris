@@ -11,7 +11,7 @@ int main(int, char**) {
 		spdlog::info("[main] MWetris git hash:  {}", GIT_VERSION);
 
 		const sdl::InitSdl SDL;
-		tetris::TetrisWindow tetris;
+		tetris::ui::TetrisWindow tetris;
 		//tetris.setStartPage(tetris::TetrisWindow::Page::PLAY);
 		tetris.startLoop();
 		tetris::TetrisData::getInstance().quit();

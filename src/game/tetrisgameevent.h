@@ -1,13 +1,11 @@
-#ifndef TETRISGAMEEVENT_H
-#define TETRISGAMEEVENT_H
+#ifndef MWETRIS_GAME_TETRISGAMEEVENT_H
+#define MWETRIS_GAME_TETRISGAMEEVENT_H
 
 #include <vector>
 
 #include "player.h"
 
-namespace tetris {
-
-	class Connection;
+namespace tetris::game {
 
 	class TetrisGameEvent {
 	public:
@@ -109,4 +107,4 @@ namespace tetris {
 
 }
 
-#endif // TETRISGAMEEVENT_H
+#endif

@@ -1,5 +1,5 @@
-#ifndef DRAWBOARD_H
-#define DRAWBOARD_H
+#ifndef MWETRIS_GRAPHIC_DRAWBOARD_H
+#define MWETRIS_GRAPHIC_DRAWBOARD_H
 
 #include "../tetrisdata.h"
 #include "../game/player.h"
@@ -13,13 +13,11 @@
 
 #include <vector>
 
-namespace tetris {
-
-	class Player;
+namespace tetris::graphic {
 
 	class DrawBoard {
 	public:
-		DrawBoard(Player& player);
+		DrawBoard(game::Player& player);
 
 		Vec2 getSize() const;
 
@@ -46,4 +44,4 @@ namespace tetris {
 
 }
 
-#endif // DRAWBOARD_H
+#endif

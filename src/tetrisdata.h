@@ -70,6 +70,10 @@ namespace tetris {
 
 		const sdl::Font& getDefaultFont(int size);
 
+		ImFont* getImGuiDefaultFont() const;
+		ImFont* getImGuiHeaderFont() const;
+		ImFont* getImGuiButtonFont() const;
+
 		sdl::Color getOuterSquareColor() const;
 		sdl::Color getInnerSquareColor() const;
 		sdl::Color getStartAreaColor() const;
@@ -205,7 +209,7 @@ namespace tetris {
 		int getMiddleTextBoxSize() const;
 
 		//void setActiveLocalGame(int columns, int rows, const std::vector<PlayerData>& playerDataVector);
-		std::vector<PlayerData> getActiveLocalGamePlayers();
+		std::vector<game::PlayerData> getActiveLocalGamePlayers();
 		int getActiveLocalGameRows() const;
 		int getActiveLocalGameColumns() const;
 
@@ -218,6 +222,10 @@ namespace tetris {
 		std::map<std::string, sdl::Font> fonts_;
 		std::map<std::string, sdl::Music> musics_;
 		nlohmann::json jsonObject_;
+
+		mutable ImFont* defaultFont_{};
+		mutable ImFont* headerFont_{};
+		mutable ImFont* buttonFont_{};
 	};
 
 }

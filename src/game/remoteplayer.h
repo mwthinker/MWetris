@@ -1,10 +1,10 @@
-#ifndef REMOTEPLAYER_H
-#define REMOTEPLAYER_H
+#ifndef MWETRIS_GAME_REMOTEPLAYER_H
+#define MWETRIS_GAME_REMOTEPLAYER_H
 
 #include "player.h"
 #include "tetrisboard.h"
 
-namespace tetris {
+namespace tetris::game {
 
 	class RemotePlayer : public Player {
 	public:
@@ -50,4 +50,4 @@ namespace tetris {
 
 }
 
-#endif // REMOTEPLAYER_H
+#endif

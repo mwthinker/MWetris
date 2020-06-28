@@ -1,5 +1,4 @@
-cmake_minimum_required(VERSION 3.11...3.14)
-# 3.11 support for FetchContent
+cmake_minimum_required(VERSION 3.14)
 # 3.14 support for Visual Studio 2019
 
 set(VCPKG_ROOT $ENV{VCPKG_ROOT})
@@ -64,6 +63,23 @@ set(SOURCES
 	src/game/tetrisgame.cpp
 	src/game/tetrisgameevent.h
 	src/game/tetrisgame.h
+	
+	src/ui/scene/custom.cpp
+	src/ui/scene/custom.h
+	src/ui/scene/highscore.cpp
+	src/ui/scene/highscore.h
+	src/ui/scene/settings.cpp
+	src/ui/scene/settings.h
+	src/ui/scene/event.h
+	src/ui/scene/play.cpp
+	src/ui/scene/play.h
+	src/ui/scene/menu.cpp
+	src/ui/scene/menu.h
+	src/ui/scene/network.cpp
+	src/ui/scene/network.h
+	src/ui/scene/scene.h
+	src/ui/scene/statemachine.cpp
+	src/ui/scene/statemachine.h
 
 	src/ui/imguiextra.cpp
 	src/ui/imguiextra.h
@@ -76,6 +92,8 @@ set(SOURCES
 	src/tetrisdata.cpp
 	src/tetrisdata.h
 	src/main.cpp
+
+	ExternalFetchContent.cmake
 )
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On) 
@@ -94,6 +112,7 @@ find_package(Threads REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+find_package(EnTT CONFIG REQUIRED)
 
 include(ExternalFetchContent.cmake)
 
@@ -146,9 +165,11 @@ if (MSVC)
 		PUBLIC
 			_CRT_SECURE_NO_WARNINGS
 	)
+
 	target_compile_options(MWetris
 		PUBLIC
 			"/permissive-"
+			"/MP"
 	)
 endif ()
 
@@ -159,6 +180,7 @@ target_link_libraries(MWetris
 		nlohmann_json::nlohmann_json
 		Protocol
 		Signal
+		EnTT::EnTT
 		${ExternalDependencies}
 )
 
@@ -167,10 +189,3 @@ target_compile_definitions(MWetris
 		GIT_VERSION="${GIT_HASH}"
 		PROJECT_VERSION="${PROJECT_VERSION}"
 )
-
-if (MSVC)
-	target_compile_options(MWetris
-		PRIVATE
-			"/permissive-"
-	)
-endif (MSVC)

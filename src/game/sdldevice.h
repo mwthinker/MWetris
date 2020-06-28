@@ -1,5 +1,5 @@
-#ifndef SDLDEVICE_H
-#define SDLDEVICE_H
+#ifndef MWETRIS_GAME_SDLDEVICE_H
+#define MWETRIS_GAME_SDLDEVICE_H
 
 #include "device.h"
 
@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace tetris {
+namespace tetris::game {
 
 	class SdlDevice;
 	typedef std::shared_ptr<SdlDevice> SdlDevicePtr;
@@ -29,4 +29,4 @@ namespace tetris {
 
 }
 
-#endif // SDLDEVICE_H
+#endif

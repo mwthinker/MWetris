@@ -15,7 +15,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
-namespace tetris {
+namespace tetris::graphic {
 
 	namespace {
 
@@ -33,10 +33,10 @@ namespace tetris {
 
 	}
 
-	GameComponent::GameComponent(TetrisGame& tetrisGame)
+	GameComponent::GameComponent(game::TetrisGame& tetrisGame)
 		: tetrisGame_{tetrisGame} {
 
-		eventConnection_ = tetrisGame_.addGameEventHandler([&](TetrisGameEvent& tetrisEvent) {
+		eventConnection_ = tetrisGame_.addGameEventHandler([&](game::TetrisGameEvent& tetrisEvent) {
 			eventHandler(tetrisEvent);
 		});
 	}
@@ -94,7 +94,7 @@ namespace tetris {
 		}
 	}
 
-	void GameComponent::initGame(const std::vector<PlayerPtr>& players) {
+	void GameComponent::initGame(const std::vector<game::PlayerPtr>& players) {
 		bool showPoints = false;
 		if (players.size() == 1) {
 			showPoints = true;
@@ -112,10 +112,10 @@ namespace tetris {
 		}
 	}
 
-	void GameComponent::eventHandler(TetrisGameEvent& tetrisEvent) {
+	void GameComponent::eventHandler(game::TetrisGameEvent& tetrisEvent) {
 		// Handle CountDown event.
 		try {
-			auto& countDown = dynamic_cast<CountDown&>(tetrisEvent);
+			auto& countDown = dynamic_cast<game::CountDown&>(tetrisEvent);
 
 			if (countDown.timeLeft_ > 0) {
 				//middleText_.setText("Start in " + std::to_string(countDown.timeLeft_));
@@ -134,7 +134,7 @@ namespace tetris {
 
 		// Handle GamePause event.
 		try {
-			auto& gamePause = dynamic_cast<GamePause&>(tetrisEvent);
+			auto& gamePause = dynamic_cast<game::GamePause&>(tetrisEvent);
 
 			if (gamePause.printPause_) {
 				if (!gamePause.pause_) {
@@ -156,10 +156,10 @@ namespace tetris {
 		// Handle InitGame event.
 		try {
 			//middleText_ = sdl::Text("", TetrisData::getInstance().getDefaultFont(50), 20);
-			auto& initGameVar = dynamic_cast<InitGame&>(tetrisEvent);
+			auto& initGameVar = dynamic_cast<game::InitGame&>(tetrisEvent);
 			initGame(initGameVar.players_);
 
-			for (const PlayerPtr& player : initGameVar.players_) {
+			for (const auto& player : initGameVar.players_) {
 				if (player->isGameOver()) {
 					handleMiddleText(player, player->getGameOverPosition());
 				}
@@ -190,7 +190,7 @@ namespace tetris {
 
 		// Handle LevelChange event.
 		try {
-			auto& levelChange = dynamic_cast<LevelChange&>(tetrisEvent);
+			auto& levelChange = dynamic_cast<game::LevelChange&>(tetrisEvent);
 			//GameGraphic& gg = drawPlayers_[levelChange.player_];
 			//gg.update(levelChange.player_->getClearedRows(), levelChange.player_->getPoints(), levelChange.newLevel_);
 			return;
@@ -198,7 +198,7 @@ namespace tetris {
 
 		// Handle PointsChange event.
 		try {
-			auto& pointsChange = dynamic_cast<PointsChange&>(tetrisEvent);
+			auto& pointsChange = dynamic_cast<game::PointsChange&>(tetrisEvent);
 			//GameGraphic& gg = graphicPlayers_[pointsChange.player_];
 			//gg.update(pointsChange.player_->getClearedRows(), pointsChange.player_->getPoints(), pointsChange.player_->getLevel());
 			return;
@@ -206,14 +206,14 @@ namespace tetris {
 
 		// Handle GameOver event.
 		try {
-			auto& gameOver = dynamic_cast<GameOver&>(tetrisEvent);
+			auto& gameOver = dynamic_cast<game::GameOver&>(tetrisEvent);
 			handleMiddleText(gameOver.player_, gameOver.player_->getGameOverPosition());
 
 			return;
 		} catch (std::bad_cast&) {}
 	}
 
-	void GameComponent::handleMiddleText(const PlayerPtr& player, int lastPostion) {
+	void GameComponent::handleMiddleText(const game::PlayerPtr& player, int lastPostion) {
 		//sdl::Text middleText("", TetrisData::getInstance().getDefaultFont(50), 20);
 
 		// Test if the player is a local player, exception otherwise.

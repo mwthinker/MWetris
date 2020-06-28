@@ -1,5 +1,5 @@
-#ifndef NETWORK_H
-#define NETWORK_H
+#ifndef MWETRIS_GAME_NETWORK_H
+#define MWETRIS_GAME_NETWORK_H
 
 #include "player.h"
 #include "localplayer.h"
@@ -18,7 +18,7 @@
 #include <memory>
 #include <map>
 
-namespace tetris {
+namespace tetris::game {
 
 	class GameRules;
 
@@ -101,4 +101,4 @@ namespace tetris {
 
 }
 
-#endif // NETWORK_H
+#endif

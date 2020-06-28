@@ -1,5 +1,5 @@
-#ifndef VINLANDVIKINGS_VIN_GRAPHIC_H
-#define VINLANDVIKINGS_VIN_GRAPHIC_H
+#ifndef MWETRIS_GRAPHIC_GRAPHIC_H
+#define MWETRIS_GRAPHIC_GRAPHIC_H
 
 #include "../types.h"
 
@@ -13,7 +13,7 @@
 #include <array>
 #include <functional>
 
-namespace tetris {
+namespace tetris::graphic {
 
     class Graphic {
     public:
@@ -73,6 +73,6 @@ namespace tetris {
 		bool initiated_{};
     };
 
-} // Namespace vin.
+}
 
-#endif // VINLANDVIKINGS_VIN_GRAPHIC_H
+#endif

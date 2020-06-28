@@ -8,7 +8,7 @@
 
 #include <sdl/graphic.h>
 
-namespace tetris {
+namespace tetris::graphic {
 
 	namespace {
 
@@ -61,7 +61,7 @@ namespace tetris {
 	}
 	*/
 
-	void GameGraphic::restart(Player& player) {
+	void GameGraphic::restart(game::Player& player) {
 		const float squareSize = TetrisData::getInstance().getTetrisSquareSize();
 		const int rows = player.getTetrisBoard().getRows();
 		const float borderSize = TetrisData::getInstance().getTetrisBorderSize();

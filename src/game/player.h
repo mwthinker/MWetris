@@ -1,5 +1,5 @@
-#ifndef PLAYER_H
-#define PLAYER_H
+#ifndef MWETRIS_GAME_PLAYER_H
+#define MWETRIS_GAME_PLAYER_H
 
 #include "tetrisboard.h"
 #include "playerdata.h"
@@ -9,7 +9,7 @@
 #include <string>
 #include <memory>
 
-namespace tetris {
+namespace tetris::game {
 
 	class Player;
 	using PlayerPtr = std::shared_ptr<Player>;
@@ -42,4 +42,4 @@ namespace tetris {
 
 }
 
-#endif // PLAYER_H
+#endif

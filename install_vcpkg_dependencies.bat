@@ -1,9 +1,15 @@
-vcpkg install nlohmann-json:x64-windows
-vcpkg install sdl2-image:x64-windows
-vcpkg install sdl2-mixer:x64-windows
-vcpkg install sdl2-ttf:x64-windows
-vcpkg install sdl2:x64-windows
-vcpkg install glew:x64-windows
-vcpkg install spdlog:x64-windows
-vcpkg install protobuf:x64-windows
-vcpkg install asio:x64-windows
+vcpkg install nlohmann-json
+vcpkg install sdl2-image
+vcpkg install sdl2-mixer
+vcpkg install sdl2-ttf
+vcpkg install sdl2
+vcpkg install glad
+vcpkg install spdlog
+vcpkg install protobuf
+vcpkg install asio
+vcpkg install magic-enum
+vcpkg install entt
+vcpkg install glm
+vcpkg install imgui
+vcpkg install catch2
+

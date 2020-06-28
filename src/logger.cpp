@@ -32,7 +32,7 @@ namespace tetris::logger {
 			auto rotatingSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(folderPath + LOG_FILE, 1024 * 1024, 10);
 			auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 
-			auto logger = std::make_shared<spdlog::logger>("vin", spdlog::sinks_init_list({consoleSink, rotatingSink}));
+			auto logger = std::make_shared<spdlog::logger>("tetris", spdlog::sinks_init_list({consoleSink, rotatingSink}));
 			logger->set_level(spdlog::level::trace);
 			spdlog::set_default_logger(logger);
 			return true;

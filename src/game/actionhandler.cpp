@@ -1,39 +1,41 @@
 #include "actionhandler.h"
 
-using namespace tetris;
+namespace tetris::game {
 
-ActionHandler::ActionHandler(double waitingTime, bool rebound)
-	: waitingTime_{waitingTime}
-	, rebound_{rebound} {
-}
+	ActionHandler::ActionHandler(double waitingTime, bool rebound)
+		: waitingTime_{waitingTime}
+		, rebound_{rebound} {
+	}
 
-void ActionHandler::update(double timeStep, bool action) {
-    time_ += timeStep;
-    if (action) {
-		if ( time_ - lastTime_ >= waitingTime_ && ( !rebound_ || (rebound_ && !lastAction_) ) ) {
-			lastTime_ = time_;
-			action_ = true;
+	void ActionHandler::update(double timeStep, bool action) {
+		time_ += timeStep;
+		if (action) {
+			if (time_ - lastTime_ >= waitingTime_ && (!rebound_ || (rebound_ && !lastAction_))) {
+				lastTime_ = time_;
+				action_ = true;
+			}
 		}
+		lastAction_ = action;
 	}
-	lastAction_ = action;
-}
 
-bool ActionHandler::doAction() {
-    if (action_ ) {
-		action_ = false;
-		return true;
+	bool ActionHandler::doAction() {
+		if (action_) {
+			action_ = false;
+			return true;
+		}
+		return false;
 	}
-	return false;
-}
 
-double ActionHandler::getWaitingTime() const {
-    return waitingTime_;
-}
+	double ActionHandler::getWaitingTime() const {
+		return waitingTime_;
+	}
 
-void ActionHandler::setWaitingTime(double waitingTime) {
-	waitingTime_ = waitingTime;
-}
+	void ActionHandler::setWaitingTime(double waitingTime) {
+		waitingTime_ = waitingTime;
+	}
 
-void ActionHandler::reset() {
-	lastTime_ = time_;
+	void ActionHandler::reset() {
+		lastTime_ = time_;
+	}
+
 }

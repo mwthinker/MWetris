@@ -10,7 +10,7 @@
 
 #include <vector>
 
-namespace tetris {
+namespace tetris::graphic {
 
 	namespace {
 
@@ -44,7 +44,7 @@ namespace tetris {
 
 	}
 
-	DrawBoard::DrawBoard(Player& player)
+	DrawBoard::DrawBoard(game::Player& player)
 		: tetrisBoard_{player.getTetrisBoard()} {
 
 		spriteZ_ = TetrisData::getInstance().getSprite(BlockType::Z);

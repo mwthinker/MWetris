@@ -1,13 +1,14 @@
-#ifndef LOCALPLAYER_H
-#define LOCALPLAYER_H
+#ifndef MWETRIS_GAME_LOCALPLAYER_H
+#define MWETRIS_GAME_LOCALPLAYER_H
 
 #include "player.h"
 #include "tetrisboard.h"
 #include "actionhandler.h"
 #include "device.h"
 #include "playerdata.h"
+#include "tetrisboard.h"
 
-namespace tetris {
+namespace tetris::game {
 
 	class LocalPlayer;
 	using LocalPlayerPtr = std::shared_ptr<LocalPlayer>;
@@ -183,4 +184,4 @@ namespace tetris {
 
 }
 
-#endif // LOCALPLAYER_H
+#endif

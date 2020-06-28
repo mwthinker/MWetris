@@ -1,7 +1,7 @@
-#ifndef INPUT_H
-#define INPUT_H
+#ifndef MWETRIS_GAME_INPUT_H
+#define MWETRIS_GAME_INPUT_H
 
-namespace tetris {
+namespace tetris::game {
 
 	struct Input {
 		bool rotate : 1;
@@ -13,4 +13,4 @@ namespace tetris {
 
 }
 
-#endif // INPUT_H
+#endif

@@ -1,12 +1,12 @@
-#ifndef KEYBOARD_H
-#define KEYBOARD_H
+#ifndef MWETRIS_GAME_KEYBOARD_H
+#define MWETRIS_GAME_KEYBOARD_H
 
 #include "sdldevice.h"
 
 #include <SDL.h>
 #include <SDL.h>
 
-namespace tetris {
+namespace tetris::game {
 
 	class Keyboard : public SdlDevice {
 	public:
@@ -26,4 +26,4 @@ namespace tetris {
 
 }
 
-#endif // KEYBOARD_H
+#endif

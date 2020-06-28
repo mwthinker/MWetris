@@ -1,5 +1,5 @@
-#ifndef PLAYERDATA_H
-#define PLAYERDATA_H
+#ifndef MWETRIS_GAME_PLAYERDATA_H
+#define MWETRIS_GAME_PLAYERDATA_H
 
 #include "device.h"
 #include "block.h"
@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace tetris {
+namespace tetris::game {
 
 	struct PlayerData {
 		DevicePtr device_{};
@@ -23,4 +23,4 @@ namespace tetris {
 
 }
 
-#endif // PLAYERDATA_H
+#endif

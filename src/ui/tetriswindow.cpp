@@ -5,51 +5,40 @@
 #include "../game/computer.h"
 #include "../game/keyboard.h"
 
+#include "scene/menu.h"
+#include "scene/play.h"
+#include "scene/network.h"
+#include "scene/settings.h"
+#include "scene/highscore.h"
+#include "scene/custom.h"
+
 #include <sdl/imguiauxiliary.h>
 
 #include <spdlog/spdlog.h>
 
 #include <string_view>
 
-namespace tetris {
+namespace tetris::ui {
 
 	namespace {
 
 		const ImGuiWindowFlags ImGuiNoWindow = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoMove;
 
-		bool ComboAi(const char* name, int& item, const std::vector<Ai>& ais, ImGuiComboFlags flags = 0) {
-			int oldItem = item;
-			ImGui::ComboScoped(name, ais[item].getName().c_str(), flags, [&]() {
-				auto size = ais.size();
-				for (int n = 0; n < size; ++n)
-				{
-					bool isSelected = (item == n);
-					if (ImGui::Selectable(ais[n].getName().c_str(), isSelected)) {
-						item = n;
-					}
-					if (isSelected) {
-						ImGui::SetItemDefaultFocus();
-					}
-				}
-			});
-			return oldItem != item;
-		}
-
-		constexpr std::string_view toString(TetrisWindow::Page page) {
-			switch (page) {
-			case TetrisWindow::Page::MENU:
+		constexpr std::string_view toString(scene::Event event) {
+			switch (event) {
+			case scene::Event::Menu:
 				return "MENU";
-			case TetrisWindow::Page::PLAY:
+			case scene::Event::Play:
 				return "PLAY";
-			case TetrisWindow::Page::HIGHSCORE:
+			case scene::Event::HighScore:
 				return "HIGHSCORE";
-			case TetrisWindow::Page::CUSTOM:
+			case scene::Event::CustomPlay:
 				return "CUSTOM";
-			case TetrisWindow::Page::SETTINGS:
+			case scene::Event::Settings:
 				return "SETTINGS";
-			case TetrisWindow::Page::NEW_HIGHSCORE:
-				return "NEW_HIGHSCORE";
-			case TetrisWindow::Page::NETWORK:
+			//case scene::Event::Menu:
+				//return "NEW_HIGHSCORE";
+			case scene::Event::NetworkPlay:
 				return "NETWORK";
 			}
 			return "UNKNOWN";
@@ -57,31 +46,15 @@ namespace tetris {
 
 	}
 
-	void TetrisWindow::changePage(Page page) {
-		spdlog::info("[TetrisWindow] open {} page", toString(page));
-		currentPage_ = page;
+	void TetrisWindow::changePage(scene::Event event) {
+		spdlog::info("[TetrisWindow] open {} page", toString(event));
+		dispatcher_->trigger(event);
 	}
 
-	void TetrisWindow::pushButtonStyle() {
-		ImGui::PushFont(buttonFont_);
-		ImGui::PushStyleColor(ImGuiCol_Text, tetris::TetrisData::getInstance().getButtonTextColor().toImU32());
-		ImGui::PushStyleColor(ImGuiCol_Border, tetris::TetrisData::getInstance().getButtonBorderColor().toImU32());
-		ImGui::PushStyleColor(ImGuiCol_Button, tetris::TetrisData::getInstance().getButtonBackgroundColor().toImU32());
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, tetris::TetrisData::getInstance().getButtonHoverColor().toImU32());
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, tetris::TetrisData::getInstance().getButtonFocusColor().toImU32());
-	}
+	TetrisWindow::TetrisWindow()
+		: dispatcher_{std::make_shared<entt::dispatcher>()}
+		, sceneStateMachine_{dispatcher_} {
 
-	void TetrisWindow::popButtonStyle() {
-		ImGui::PopStyleColor();
-		ImGui::PopStyleColor();
-		ImGui::PopStyleColor();
-		ImGui::PopStyleColor();
-		ImGui::PopStyleColor();
-
-		ImGui::PopFont();
-	}
-
-	TetrisWindow::TetrisWindow() {
 		menuHeight_ = tetris::TetrisData::getInstance().getWindowBarHeight();
 		manTexture_ = tetris::TetrisData::getInstance().getHumanSprite();
 		noManTexture_ = tetris::TetrisData::getInstance().getCrossSprite();
@@ -92,10 +65,9 @@ namespace tetris {
 
 		nbrHumans_ = 1;
 		nbrAis_ = 2;
-		changePage(Page::MENU);
 
 		setPosition(tetris::TetrisData::getInstance().getWindowPositionX(), tetris::TetrisData::getInstance().getWindowPositionY());
-		setWindowSize(tetris::TetrisData::getInstance().getWindowWidth(), tetris::TetrisData::getInstance().getWindowHeight());
+		setSize(tetris::TetrisData::getInstance().getWindowWidth(), tetris::TetrisData::getInstance().getWindowHeight());
 		setResizeable(tetris::TetrisData::getInstance().getWindowWidth());
 		setTitle("MWetris");
 		setIcon(tetris::TetrisData::getInstance().getWindowIcon());
@@ -110,15 +82,23 @@ namespace tetris {
 		activeAis_[2] = findAiDevice(TetrisData::getInstance().getAi3Name());
 		activeAis_[3] = findAiDevice(TetrisData::getInstance().getAi4Name());
 
-		devices_.push_back(std::make_shared<Keyboard>("Keyboard 1", SDLK_DOWN, SDLK_LEFT, SDLK_RIGHT, SDLK_UP, SDLK_RCTRL));
-		devices_.push_back(std::make_shared<Keyboard>("Keyboard 2", SDLK_s, SDLK_a, SDLK_d, SDLK_w, SDLK_LCTRL));
+		devices_.push_back(std::make_shared<game::Keyboard>("Keyboard 1", SDLK_DOWN, SDLK_LEFT, SDLK_RIGHT, SDLK_UP, SDLK_RCTRL));
+		devices_.push_back(std::make_shared<game::Keyboard>("Keyboard 2", SDLK_s, SDLK_a, SDLK_d, SDLK_w, SDLK_LCTRL));
+		
+		menuScene_ = sceneStateMachine_.emplace<scene::Menu>();
+		playScene_ = sceneStateMachine_.emplace<scene::Play>();
+		networkScene_ = sceneStateMachine_.emplace<scene::Network>();
+		settingsScene_ = sceneStateMachine_.emplace<scene::Settings>();
+		highscoreScene_ = sceneStateMachine_.emplace<scene::HighScore>();
+		
+		dispatcher_->sink<scene::Event>().connect<&TetrisWindow::handleSceneMenuEvent>(*this);
 	}
 
 	TetrisWindow::~TetrisWindow() {
 	}
 	
-	std::vector<DevicePtr> TetrisWindow::getCurrentDevices() const {
-		std::vector<DevicePtr> playerDevices(devices_.begin(), devices_.begin() + nbrHumans_);
+	std::vector<game::DevicePtr> TetrisWindow::getCurrentDevices() const {
+		std::vector<game::DevicePtr> playerDevices(devices_.begin(), devices_.begin() + nbrHumans_);
 
 		for (int i = 0; i < nbrAis_; ++i) {
 			if (activeAis_[i]) {
@@ -129,7 +109,7 @@ namespace tetris {
 		return playerDevices;
 	}
 
-	DevicePtr TetrisWindow::findHumanDevice(std::string name) const {
+	game::DevicePtr TetrisWindow::findHumanDevice(std::string name) const {
 		for (const auto& device : devices_) {
 			if (device->getName() == name) {
 				return device;
@@ -138,14 +118,14 @@ namespace tetris {
 		return devices_[0];
 	}
 
-	DevicePtr TetrisWindow::findAiDevice(std::string name) const {
+	game::DevicePtr TetrisWindow::findAiDevice(std::string name) const {
 		auto ais = TetrisData::getInstance().getAiVector();
 		for (const Ai& ai : ais) {
 			if (ai.getName() == name) {
-				return std::make_shared<Computer>(ai);
+				return std::make_shared<game::Computer>(ai);
 			}
 		}
-		return std::make_shared<Computer>(ais.back());
+		return std::make_shared<game::Computer>(ais.back());
 	}
 
 	void TetrisWindow::resumeGame() {
@@ -155,8 +135,8 @@ namespace tetris {
 		int ais = 0;
 		int humans = 0;
 
-		std::vector<PlayerData> playerDataVector = TetrisData::getInstance().getActiveLocalGamePlayers();
-		for (PlayerData& playerData : playerDataVector) {
+		std::vector<game::PlayerData> playerDataVector = TetrisData::getInstance().getActiveLocalGamePlayers();
+		for (auto& playerData : playerDataVector) {
 			if (playerData.ai_) {
 				playerData.device_ = findAiDevice(playerData.deviceName_);
 				++ais;
@@ -173,18 +153,19 @@ namespace tetris {
 	void TetrisWindow::initPreLoop() {
 		sdl::ImGuiWindow::initPreLoop();
 		auto& io{ImGui::GetIO()};
-		
-		defaultFont_ = io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 16);
-		headerFont_ = io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 50);
-		buttonFont_ = io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 35);
+
 		background_.bindTexture();
 		tetris::TetrisData::getInstance().bindTextureFromAtlas();
-		gameComponent_ = std::make_unique<GameComponent>(game_);
+		gameComponent_ = std::make_unique<graphic::GameComponent>(game_);
 		//ImGui::GetStyle().WindowBorderSize = 0;
+
+		TetrisData::getInstance().getImGuiButtonFont();
+		TetrisData::getInstance().getImGuiDefaultFont();
+		TetrisData::getInstance().getImGuiHeaderFont();
 	}
 
 	void TetrisWindow::imGuiPreUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
-		if (currentPage_ != Page::PLAY) {
+		if (true) {
 			return;
 		}
 		glEnable(GL_BLEND);
@@ -210,7 +191,7 @@ namespace tetris {
 		ImVec4 clear_color{0.45f, 0.55f, 0.6f, 1.f};
 		auto context = SDL_GL_GetCurrentContext();
 	
-		ImGui::PushFont(defaultFont_);
+		ImGui::PushFont(tetris::TetrisData::getInstance().getImGuiDefaultFont());
 		ImGui::PopFont();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
@@ -221,38 +202,17 @@ namespace tetris {
 		ImGui::SetNextWindowPos({0.f,0.f});
 		auto [width, height] = sdl::Window::getSize();
 		ImGui::SetNextWindowSize({static_cast<float>(width), static_cast<float>(height)});
+		
 		ImGui::Window("Main", nullptr, ImGuiNoWindow, [&]() {
-			switch (currentPage_) {
-				case Page::MENU:
-					ImGui::ImageBackground(background_.getTextureView());
-					menuPage();
-					break;
-				case Page::PLAY:
-					playPage();
-					break;
-				case Page::HIGHSCORE:
-					ImGui::ImageBackground(background_.getTextureView());
-					highscorePage();
-					break;
-				case Page::CUSTOM:
-					ImGui::ImageBackground(background_.getTextureView());
-					customGamePage();
-					break;
-				case Page::SETTINGS:
-					ImGui::ImageBackground(background_.getTextureView());
-					settingsPage();
-					break;
-				case Page::NEW_HIGHSCORE:
-					ImGui::ImageBackground(background_.getTextureView());
-					break;
-				case Page::NETWORK:
-					ImGui::ImageBackground(background_.getTextureView());
-					networkPage();
-					break;
-			}
+			ImGui::ImageBackground(background_.getTextureView());
+			sceneStateMachine_.imGuiUpdate(deltaTime);
 		});
 		ImGui::PopStyleColor();
 		ImGui::PopStyleVar(3);
+	}
+
+	void TetrisWindow::imGuiPostUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
+		dispatcher_->update();
 	}
 
 	void TetrisWindow::eventUpdate(const SDL_Event& windowEvent) {
@@ -277,17 +237,17 @@ namespace tetris {
 			case SDL_MOUSEMOTION: [[fallthrough]];
 			case SDL_MOUSEWHEEL:
 				if (!io.WantCaptureMouse) {
-					//hexCanvas_.eventUpdate(windowEvent);
+					sceneStateMachine_.eventUpdate(windowEvent);
 				}
 				break;
 			case SDL_KEYUP:
 				if (!io.WantCaptureKeyboard) {
-					//hexCanvas_.eventUpdate(windowEvent);
+					sceneStateMachine_.eventUpdate(windowEvent);
 				}
 				break;
 			case SDL_KEYDOWN:
 				if (!io.WantCaptureKeyboard) {
-					//hexCanvas_.eventUpdate(windowEvent);
+					sceneStateMachine_.eventUpdate(windowEvent);
 					switch (windowEvent.key.keysym.sym) {
 						case SDLK_ESCAPE:
 							sdl::Window::quit();
@@ -304,247 +264,27 @@ namespace tetris {
 		}
 	}
 
-	void TetrisWindow::menuPage() {
-		ImGui::Bar(menuHeight_, []() {});
-
-		ImGui::PushFont(headerFont_);
-		ImGui::TextColored(labelColor_, "MWetris");
-		ImGui::PopFont();
-
-		pushButtonStyle();
-
-		//ImGui::Indent(10.f);
-		ImVec2 dummy{0.0f, 5.0f};
-
-		if (ImGui::Button("Play")) {
-			changePage(Page::PLAY);
-			resumeGame();
+	void TetrisWindow::handleSceneMenuEvent(const scene::Event& menuEvent) {
+		switch (menuEvent) {
+			case scene::Event::Menu:
+				sceneStateMachine_.switchTo(menuScene_);
+				break;
+			case scene::Event::Play:
+				sceneStateMachine_.switchTo(playScene_);
+				break;
+			case scene::Event::NetworkPlay:
+				sceneStateMachine_.switchTo(networkScene_);
+				break;
+			case scene::Event::Settings:
+				sceneStateMachine_.switchTo(settingsScene_);
+				break;
+			case scene::Event::HighScore:
+				sceneStateMachine_.switchTo(highscoreScene_);
+				break;
+			case scene::Event::Exit:
+				quit();
+				return;
 		}
-		ImGui::Dummy(dummy);
-		if (ImGui::Button("Custom Play")) {
-			changePage(Page::CUSTOM);
-		}
-		ImGui::Dummy(dummy);
-		if (ImGui::Button("Network Play")) {
-			changePage(Page::NETWORK);
-		}
-		ImGui::Dummy(dummy);
-		if (ImGui::Button("Highscore")) {
-			changePage(Page::HIGHSCORE);
-		}
-		ImGui::Dummy(dummy);
-		if (ImGui::Button("Settings")) {
-			changePage(Page::SETTINGS);
-		}
-		ImGui::Dummy(dummy);
-		if (ImGui::Button("Exit")) {
-			spdlog::info("[ImGuiWindow] pushed exit button");
-			sdl::Window::quit();
-		}
-
-		popButtonStyle();
-	}
-
-	void TetrisWindow::playPage() {
-		ImGui::Bar(menuHeight_, [&]() {
-			pushButtonStyle();
-			ImGui::PushFont(buttonFont_);
-	
-			if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
-				changePage(Page::MENU);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Restart", {120.5f, menuHeight_})) {
-				game_.restartGame();
-			}
-
-			ImGui::SameLine();
-			if (ImGui::ManButton("Human", nbrHumans_, static_cast<int>(devices_.size()), noManTexture_.getTextureView(), manTexture_.getTextureView(), {menuHeight_, menuHeight_})) {
-				game_.createGame(getCurrentDevices());
-			}
-			ImGui::SameLine();
-			if (ImGui::ManButton("Ai", nbrAis_, static_cast<int>(activeAis_.size()), noManTexture_.getTextureView(), aiTexture_.getTextureView(), {menuHeight_, menuHeight_})) {
-				game_.createGame(getCurrentDevices());
-			}
-			ImGui::PopFont();
-
-			popButtonStyle();
-		});
-	}
-
-	void TetrisWindow::highscorePage() {
-		ImGui::Bar(menuHeight_, [&]() {
-			pushButtonStyle();
-			if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
-				changePage(Page::MENU);
-			}
-			popButtonStyle();
-		});
-
-		ImGui::PushFont(headerFont_);
-		ImGui::TextColored(labelColor_, "Highscore");
-		ImGui::PopFont();
-
-		ImGui::PushFont(defaultFont_);
-		ImGui::Columns(6, "Highscore");
-		ImGui::Separator();
-		ImGui::Text("Ranking"); ImGui::NextColumn();
-		ImGui::Text("Points"); ImGui::NextColumn();
-		ImGui::Text("Name"); ImGui::NextColumn();
-		ImGui::Text("Rows"); ImGui::NextColumn();
-		ImGui::Text("Level"); ImGui::NextColumn();
-		ImGui::Text("Date"); ImGui::NextColumn();
-		ImGui::Separator();
-
-		auto highscores = TetrisData::getInstance().getHighscoreRecordVector();
-
-		int rankNbr = 1;
-		for (const auto& highscore : highscores) {
-			ImGui::Text("%i", rankNbr++); ImGui::NextColumn();
-			ImGui::Text("%i", highscore.points_); ImGui::NextColumn();
-			ImGui::TextUnformatted(highscore.name_.c_str()); ImGui::NextColumn();
-			ImGui::Text("%i", highscore.rows_); ImGui::NextColumn();
-			ImGui::Text("%i", highscore.level_); ImGui::NextColumn();
-			ImGui::TextUnformatted(highscore.date_.c_str()); ImGui::NextColumn();
-		}
-		ImGui::Separator();
-		ImGui::PopFont();
-	}	
-
-	void TetrisWindow::settingsPage() {
-		ImGui::Bar(menuHeight_, [&]() {
-			pushButtonStyle();
-			if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
-				changePage(Page::MENU);
-			}
-			popButtonStyle();
-		});
-	
-		ImGui::PushFont(headerFont_);
-		ImGui::TextColored(labelColor_, "Settings");
-		ImGui::PopFont();
-
-		ImGui::Indent(10.f);
-		ImGui::Dummy({0.0f, 5.0f});
-
-		ImGui::PushFont(defaultFont_);	
-		bool check = tetris::TetrisData::getInstance().isWindowBordered();
-		if (ImGui::Checkbox("Border around window", &check)) {
-			tetris::TetrisData::getInstance().setWindowBordered(check);
-		}
-
-		check = tetris::TetrisData::getInstance().isFullscreenOnDoubleClick();
-		if (ImGui::Checkbox("Fullscreen on double click", &check)) {
-			tetris::TetrisData::getInstance().setFullscreenOnDoubleClick(check);
-		}
-
-		check = tetris::TetrisData::getInstance().isMoveWindowByHoldingDownMouse();
-		if (ImGui::Checkbox("Move the window by holding down left mouse button", &check)) {
-			tetris::TetrisData::getInstance().setMoveWindowByHoldingDownMouse(check);
-		}
-	
-		check = tetris::TetrisData::getInstance().isWindowVsync();
-		if (ImGui::Checkbox("Vsync", &check)) {
-			tetris::TetrisData::getInstance().setWindowVsync(check);
-		}
-
-		check = tetris::TetrisData::getInstance().isLimitFps();
-		if (ImGui::Checkbox("FpsLimiter", &check)) {
-			tetris::TetrisData::getInstance().setLimitFps(check);
-		}
-
-		check = tetris::TetrisData::getInstance().isWindowPauseOnLostFocus();
-		if (ImGui::Checkbox("Paus on lost focus", &check)) {
-			tetris::TetrisData::getInstance().setWindowPauseOnLostFocus(check);
-		}
-
-		check = tetris::TetrisData::getInstance().isShowDownBlock();
-		if (ImGui::Checkbox("Show down block", &check)) {
-			tetris::TetrisData::getInstance().setShowDownBlock(check);
-		}
-
-		ImGui::PushFont(headerFont_);
-		ImGui::TextColored(labelColor_, "Ai players");
-		ImGui::PopFont();
-
-		ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.20f);
-
-		const auto& ais = TetrisData::getInstance().getAiVector();
-		int nbrAi1 = std::find_if(ais.begin(), ais.end(), [](const Ai& ai) { return ai.getName() == TetrisData::getInstance().getAi1Name(); }) - ais.begin();
-		if (ComboAi("Ai1", nbrAi1, ais)) {
-			TetrisData::getInstance().setAi1Name(ais[nbrAi1].getName());
-		}
-		int nbrAi2 = std::find_if(ais.begin(), ais.end(), [](const Ai & ai) { return ai.getName() == TetrisData::getInstance().getAi2Name(); }) - ais.begin();
-		if (ComboAi("Ai2", nbrAi2, ais)) {
-			TetrisData::getInstance().setAi2Name(ais[nbrAi2].getName());
-		}
-		int nbrAi3 = std::find_if(ais.begin(), ais.end(), [](const Ai & ai) { return ai.getName() == TetrisData::getInstance().getAi3Name(); }) - ais.begin();
-		if (ComboAi("Ai3", nbrAi3, ais)) {
-			TetrisData::getInstance().setAi4Name(ais[nbrAi3].getName());
-		}
-		int nbrAi4 = std::find_if(ais.begin(), ais.end(), [](const Ai & ai) { return ai.getName() == TetrisData::getInstance().getAi4Name(); }) - ais.begin();
-		if (ComboAi("Ai4", nbrAi4, ais)) {
-			TetrisData::getInstance().setAi4Name(ais[nbrAi4].getName());
-		}
-
-		ImGui::PopItemWidth();
-		ImGui::PopFont();
-	}
-
-
-	void TetrisWindow::customGamePage() {
-		ImGui::Bar(menuHeight_, [&]() {
-			ImGui::PushFont(buttonFont_);
-			if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
-				changePage(Page::MENU);
-			}
-			ImGui::PopFont();
-		});
-	}
-
-	void TetrisWindow::networkPage() {
-		ImGui::Bar(menuHeight_, [&]() {
-			pushButtonStyle();
-			if (ImGui::Button("Menu", {100.5f, menuHeight_})) {
-				changePage(Page::MENU);
-			}
-			popButtonStyle();
-		});
-
-		ImGui::Indent(10.f);
-		ImGui::Dummy({0.0f, 5.0f});
-
-		ImGui::PushFont(defaultFont_);
-		static int radioNbr = 0;
-		ImGui::RadioButton("Server", &radioNbr, 0);
-		ImGui::RadioButton("Client", &radioNbr, 1);	
-
-		ImGui::PushItemWidth(150);
-		if (radioNbr == 0) {
-			static char ipField[30] = "";
-			ImGui::InputText("The ip-number for the server", ipField, 30);
-			if (ImGui::BeginPopupContextItem("item context menu", 1)) {
-				if (ImGui::Selectable("Copy")) {
-					ImGui::SetClipboardText(ipField);
-				}
-				if (ImGui::Selectable("Paste")) {
-					std::strcpy(ipField, ImGui::GetClipboardText());
-				}
-				ImGui::EndPopup();
-			}
-		}
-		static int port = 5012;
-		ImGui::InputInt("The port-number for the server", &port);
-
-		ImGui::PopItemWidth();
-		ImGui::Dummy({0.f, 5.f});
-
-		if (ImGui::Button("Connect", {100.5f, menuHeight_})) {
-
-		}
-		ImGui::LoadingBar();
-
-		ImGui::PopFont();
 	}
 
 } // Namespace tetris.

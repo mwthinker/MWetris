@@ -1,11 +1,11 @@
-#ifndef GAMERULES_H
-#define GAMERULES_H
+#ifndef MWETRIS_GAME_GAMERULES_H
+#define MWETRIS_GAME_GAMERULES_H
 
 #include "localplayer.h"
 
 #include <vector>
 
-namespace tetris {
+namespace tetris::game {
 
 	class TetrisGameEvent;
 
@@ -64,4 +64,4 @@ namespace tetris {
 
 }
 
-#endif // GAMERULES_H
+#endif

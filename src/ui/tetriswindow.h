@@ -1,48 +1,53 @@
-#ifndef TETRISWINDOW_H
-#define TETRISWINDOW_H
+#ifndef TETRIS_UI_TETRISWINDOW_H
+#define TETRIS_UI_TETRISWINDOW_H
 
 #include "../game/tetrisgame.h"
 #include "../graphic/graphic.h"
+#include "../graphic/gamecomponent.h"
 #include "../graphic/drawboard.h"
+#include "scene/scene.h"
+#include "scene/menu.h"
+#include "scene/statemachine.h"
+#include "scene/event.h"
 
 #include "../game/device.h"
 #include "../game/sdldevice.h"
+
 #include <sdl/imguiwindow.h>
 #include <sdl/sprite.h>
 #include <sdl/textureatlas.h>
 
 #include <imgui.h>
-
 #include <array>
+#include <entt/entt.hpp>
 
 namespace tetris {
 
 	class GameComponent;
 
+}
+
+namespace tetris::ui {
+
 	class TetrisWindow : public sdl::ImGuiWindow {
 	public:
-		enum class Page { MENU, PLAY, HIGHSCORE, CUSTOM, SETTINGS, NEW_HIGHSCORE, NETWORK, TEST };
-
 		TetrisWindow();
 
 		~TetrisWindow();
 
-		void setStartPage(Page page) {
-			currentPage_ = page;
+		void setStartPage(scene::Event event) {
+			handleSceneMenuEvent(event);
 		}
 	
 	private:
 		void initPreLoop() override;
 	
-		std::vector<DevicePtr> getCurrentDevices() const;
-		DevicePtr findHumanDevice(std::string name) const;
-		DevicePtr findAiDevice(std::string name) const;
+		std::vector<game::DevicePtr> getCurrentDevices() const;
+		game::DevicePtr findHumanDevice(std::string name) const;
+		game::DevicePtr findAiDevice(std::string name) const;
 		void resumeGame();
 
 		ImFontAtlas fontAtlas_;
-		ImFont* headerFont_;
-		ImFont* defaultFont_;
-		ImFont* buttonFont_;
 		sdl::Sprite manTexture_;
 		sdl::Sprite noManTexture_;
 		sdl::Sprite aiTexture_;
@@ -50,43 +55,39 @@ namespace tetris {
 		ImColor labelColor_;
 		ImColor buttonTextColor_;
 
-		void changePage(Page page);
+		void changePage(scene::Event event);
 		
 		int nbrHumans_;
 		int nbrAis_;
-		Page currentPage_;
 
 	private:
-		void pushButtonStyle();
-
-		void popButtonStyle();
-
 		void imGuiPreUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) override;
 
 		void imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) override;
 
+		void imGuiPostUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) override;
+
 		void eventUpdate(const SDL_Event& windowEvent) override;
 
-		void playPage();
-
-		void menuPage();
-
-		void highscorePage();
-
-		void customGamePage();
-
-		void settingsPage();
-
-		void networkPage();
+		void handleSceneMenuEvent(const scene::Event& menuEvent);
 	
+		std::shared_ptr<entt::dispatcher> dispatcher_{};
 		float menuHeight_{};
-		TetrisGame game_;
-		std::array<DevicePtr, 4> activeAis_;
-		std::unique_ptr<GameComponent> gameComponent_;
-		Graphic graphic;
-		std::vector<SdlDevicePtr> devices_;
+		game::TetrisGame game_;
+		std::array<game::DevicePtr, 4> activeAis_;
+		std::unique_ptr<graphic::GameComponent> gameComponent_;
+		graphic::Graphic graphic;
+		std::vector<game::SdlDevicePtr> devices_;
+		scene::StateMachine sceneStateMachine_;
+
+		std::shared_ptr<scene::Scene> menuScene_;
+		std::shared_ptr<scene::Scene> playScene_;
+		std::shared_ptr<scene::Scene> networkScene_;
+		std::shared_ptr<scene::Scene> settingsScene_;
+		std::shared_ptr<scene::Scene> highscoreScene_;
+		std::shared_ptr<scene::Scene> customScene_;
 	};
 
-} // Namespace tetris.
+}
 
-#endif // TETRISWINDOW_H
+#endif

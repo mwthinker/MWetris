@@ -1,5 +1,5 @@
-#ifndef GAMECOMPONENT_H
-#define GAMECOMPONENT_H
+#ifndef MWETRIS_GRAPHIC_GAMECOMPONENT_H
+#define MWETRIS_GRAPHIC_GAMECOMPONENT_H
 
 #include "gamegraphic.h"
 #include "../game/player.h"
@@ -17,15 +17,19 @@
 
 #include <map>
 
-namespace tetris {
+namespace tetris::game {
 
 	class TetrisGame;
 	class GameData;
 	class TetrisGameEvent;
 
+}
+
+namespace tetris::graphic {
+
 	class GameComponent {
 	public:
-		GameComponent(TetrisGame& tetrisGame);
+		GameComponent(game::TetrisGame& tetrisGame);
 		~GameComponent();
 
 		void draw(Graphic& graphic, int width, int height, double deltaTime);
@@ -33,16 +37,16 @@ namespace tetris {
 	private:
 		Mat4 calculateBoardMatrix(int windowWidth, int windowHeight) const;
 
-		void initGame(const std::vector<PlayerPtr>& player);
+		void initGame(const std::vector<game::PlayerPtr>& player);
 
-		void eventHandler(TetrisGameEvent& tetrisGameEvent);
+		void eventHandler(game::TetrisGameEvent& tetrisGameEvent);
 		
-		void handleMiddleText(const PlayerPtr& player, int lastPostion);
+		void handleMiddleText(const game::PlayerPtr& player, int lastPostion);
 
 		using DrawBoardPtr = std::unique_ptr<DrawBoard>;
-		std::map<PlayerPtr, DrawBoardPtr> drawPlayers_;
+		std::map<game::PlayerPtr, DrawBoardPtr> drawPlayers_;
 
-		TetrisGame& tetrisGame_;
+		game::TetrisGame& tetrisGame_;
 
 		mw::signals::Connection eventConnection_;
 
@@ -57,4 +61,4 @@ namespace tetris {
 
 }
 
-#endif // GAMECOMPONENT_H
+#endif

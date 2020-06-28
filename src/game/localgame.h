@@ -1,11 +1,11 @@
-#ifndef LOCALGAME_H
-#define LOCALGAME_H
+#ifndef MWETRIS_GAME_LOCALGAME_H
+#define MWETRIS_GAME_LOCALGAME_H
 
 #include "player.h"
 #include "localplayer.h"
 #include "tetrisgameevent.h"
 
-namespace tetris {
+namespace tetris::game {
 
 	class GameManager {
 	public:
@@ -86,4 +86,4 @@ namespace tetris {
 
 }
 
-#endif // LOCALGAME_H
+#endif

@@ -7,7 +7,7 @@
 
 namespace sdlg = sdl::graphic::indexed;
 
-namespace tetris {	
+namespace tetris::graphic {
 
 	Graphic::BatchData::BatchData(BatchView&& batchView, int matrixIndex)
 		: batchView{batchView}

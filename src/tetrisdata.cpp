@@ -251,6 +251,30 @@ namespace tetris {
 		return loadFont(jsonObject_["window"]["font"].get<std::string>(), size);
 	}
 
+	ImFont* TetrisData::getImGuiDefaultFont() const {
+		if (!defaultFont_) {
+			defaultFont_ = ImGui::GetIO().Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 16);
+		}
+
+		return defaultFont_;
+	}
+
+	ImFont* TetrisData::getImGuiHeaderFont() const {
+		if (!headerFont_) {
+			headerFont_ = ImGui::GetIO().Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 50);
+		}
+
+		return headerFont_;
+	}
+
+	ImFont* TetrisData::getImGuiButtonFont() const {
+		if (!buttonFont_) {
+			buttonFont_ = ImGui::GetIO().Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 35);
+		}
+
+		return buttonFont_;
+	}
+
 	void TetrisData::bindTextureFromAtlas() const {
 		textureAtlas_.get().bindTexture();
 	}
@@ -704,12 +728,12 @@ namespace tetris {
 	}
 	*/
 
-	std::vector<PlayerData> TetrisData::getActiveLocalGamePlayers() {
+	std::vector<game::PlayerData> TetrisData::getActiveLocalGamePlayers() {
 		nlohmann::json players = jsonObject_["activeGames"]["localGame"]["players"];
 
-		std::vector<PlayerData> playerDataVector;
+		std::vector<game::PlayerData> playerDataVector;
 		for (nlohmann::json& player : players) {
-			PlayerData playerData;
+			game::PlayerData playerData;
 			playerData.name_ = player["name"].get<std::string>();
 			playerData.lastPosition_ = player["lastPosition"].get<int>();
 			playerData.next_ = player["nextBlockType"].get<BlockType>();

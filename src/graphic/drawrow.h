@@ -1,11 +1,11 @@
-#ifndef DRAWROW_H
+#ifndef MWETRIS_GRAPHIC_DRAWROW_H
 #define DRAWROW_H
 
 #include "../game/player.h"
 
 #include <sdl/sprite.h>
 
-namespace tetris {
+namespace tetris::graphic {
 
 	class DrawRow;
 	using DrawRowPtr = std::shared_ptr<DrawRow>;
@@ -63,4 +63,4 @@ namespace tetris {
 
 }
 
-#endif // DRAWROW_H
+#endif

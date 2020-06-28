@@ -1,10 +1,14 @@
-#ifndef TETRISGAME_H
-#define TETRISGAME_H
+#ifndef MWETRIS_GAME_TETRISGAME_H
+#define MWETRIS_GAME_TETRISGAME_H
 
 #include "device.h"
 #include "playerdata.h"
 #include "localgame.h"
 #include "tetrisparameters.h"
+#include "tetrisgameevent.h"
+#include "player.h"
+#include "gamerules.h"
+#include "remoteplayer.h"
 
 #include <mw/signal.h>
 
@@ -15,13 +19,7 @@
 #include <vector>
 #include <memory>
 
-namespace tetris {
-
-	class TetrisGameEvent;
-	class Player;
-	class GameRules;
-	class IGameManager;
-	class RemotePlayer;
+namespace tetris::game {
 
 	// Handle all communication between game and gui.
 	class TetrisGame {
@@ -128,4 +126,4 @@ namespace tetris {
 
 }
 
-#endif // TETRISGAME_H
+#endif

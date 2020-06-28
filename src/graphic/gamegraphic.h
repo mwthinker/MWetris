@@ -1,5 +1,5 @@
-#ifndef GRAPHICBOARD_H
-#define GRAPHICBOARD_H
+#ifndef MWETRIS_GRAPHIC_GRAPHICBOARD_H
+#define MWETRIS_GRAPHIC_GRAPHICBOARD_H
 
 #include "../game/player.h"
 #include "drawrow.h"
@@ -16,7 +16,7 @@
 #include <string>
 #include <list>
 
-namespace tetris {
+namespace tetris::graphic {
 
 	class GameGraphic {
 	public:
@@ -26,7 +26,7 @@ namespace tetris {
 
 		//void restart(BoardBatch& boardBatch, Player& player, float x, float y, bool showPoints);
 
-		void restart(Player& player);
+		void restart(game::Player& player);
 
 		float getWidth() const {
 			return width_;
@@ -64,4 +64,4 @@ namespace tetris {
 
 }
 
-#endif // GRAPHICBOARD_H
+#endif
