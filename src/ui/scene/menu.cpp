@@ -9,7 +9,10 @@ namespace tetris::ui::scene {
 	void Menu::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
 		auto menuHeight = tetris::TetrisData::getInstance().getWindowBarHeight();
 
-		ImGui::Bar([]() {});
+		ImGui::Bar([&]() {
+			ImGui::PushButtonStyle();
+			ImGui::PopButtonStyle();
+		});
 
 		ImGui::PushFont(tetris::TetrisData::getInstance().getImGuiHeaderFont());
 		ImGui::TextColored(tetris::TetrisData::getInstance().getLabelTextColor(), "MWetris");

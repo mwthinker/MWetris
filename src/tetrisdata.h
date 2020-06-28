@@ -1,5 +1,5 @@
-#ifndef TETRISDATA_H
-#define TETRISDATA_H
+#ifndef MWETRIS_TETRISDATA_H
+#define MWETRIS_TETRISDATA_H
 
 #include "square.h"
 #include "block.h"
@@ -230,4 +230,4 @@ namespace tetris {
 
 }
 
-#endif // TETRISDATA_H
+#endif

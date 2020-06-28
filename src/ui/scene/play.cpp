@@ -1,4 +1,5 @@
 #include "play.h"
+#include "event.h"
 
 namespace tetris::ui::scene {
 
@@ -11,10 +12,11 @@ namespace tetris::ui::scene {
 
 		ImGui::Bar([&]() {
 			ImGui::PushButtonStyle();
-
+			
 			if (ImGui::Button("Menu", {100.5f, menuHeight})) {
-				//changePage(Page::MENU);
+				emitEvent<Event>(Event::Menu);
 			}
+			
 			ImGui::SameLine();
 			//if (ImGui::Button("Restart", {120.5f, menuHeight_})) {
 				//game_.restartGame();

@@ -104,4 +104,4 @@ namespace ImGui {
 		ImGui::GetWindowDrawList()->AddRectFilled({ x, pos.y }, { x + width, pos.y + size.y }, color2.toImU32());
 	}
 
-} // Namespace ImGui.
+}

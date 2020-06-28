@@ -8,7 +8,8 @@
 #include <spdlog/spdlog.h>
 
 #include <memory>
-#include <set>
+#include <map>
+#include <typeindex>
 
 namespace tetris::ui::scene {
 
@@ -27,13 +28,12 @@ namespace tetris::ui::scene {
 
 		template <class Type, class... Args>
 		std::shared_ptr<Type> emplace(Args&&... args);
-
-		void switchTo(const std::shared_ptr<Scene>& scene);
-
-		void remove(const std::shared_ptr<Scene>& scene);
+		
+		template <class Type>
+		void switchTo();
 
 	private:
-		std::set<std::shared_ptr<Scene>> scenes_;
+		std::map<std::type_index, std::shared_ptr<Scene>> scenes_;
 		
 		std::shared_ptr<Scene> currentScene_;
 		std::shared_ptr<entt::dispatcher> dispatcher_;
@@ -50,7 +50,13 @@ namespace tetris::ui::scene {
 			}
 
 			static_cast<Scene&>(*scene).dispatcher_ = dispatcher_;
-			scenes_.insert(scene);
+			auto key = std::type_index{typeid(Type)};
+			auto it = scenes_.find(key);
+			if (it == scenes_.end()) {
+				scenes_[key] = scene;
+			} else {
+				spdlog::warn("[SceneStateMachine] Tried to add, scene {} already added!", typeid(Type).name());
+			}
 			return std::move(scene);
 		} else {
 			spdlog::warn("[SceneStateMachine] Tried to add empty scene!");
@@ -61,6 +67,15 @@ namespace tetris::ui::scene {
 	template <class Type, class... Args>
 	std::shared_ptr<Type> StateMachine::emplace(Args&&... args) {
 		return add(std::make_shared<Type>(std::forward<Args>(args)...));
+	}
+
+	template <class Type>
+	void StateMachine::switchTo() {
+		if (auto it = scenes_.find(std::type_index{typeid(Type)}); it != scenes_.end()) {
+			currentScene_ = it->second;
+		} else {
+			spdlog::warn("[SceneStateMachine] Failed to switch to scene {}.", typeid(Type).name());
+		}
 	}
 
 }

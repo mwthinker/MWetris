@@ -42,4 +42,4 @@ namespace tetris::logger {
 		}
 	}
 
-} // Namespace vin.
+}

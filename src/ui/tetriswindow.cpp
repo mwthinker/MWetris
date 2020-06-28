@@ -26,20 +26,20 @@ namespace tetris::ui {
 
 		constexpr std::string_view toString(scene::Event event) {
 			switch (event) {
-			case scene::Event::Menu:
-				return "MENU";
-			case scene::Event::Play:
-				return "PLAY";
-			case scene::Event::HighScore:
-				return "HIGHSCORE";
-			case scene::Event::CustomPlay:
-				return "CUSTOM";
-			case scene::Event::Settings:
-				return "SETTINGS";
-			//case scene::Event::Menu:
-				//return "NEW_HIGHSCORE";
-			case scene::Event::NetworkPlay:
-				return "NETWORK";
+				case scene::Event::Menu:
+					return "MENU";
+				case scene::Event::Play:
+					return "PLAY";
+				case scene::Event::HighScore:
+					return "HIGHSCORE";
+				case scene::Event::CustomPlay:
+					return "CUSTOM";
+				case scene::Event::Settings:
+					return "SETTINGS";
+					//case scene::Event::Menu:
+						//return "NEW_HIGHSCORE";
+				case scene::Event::NetworkPlay:
+					return "NETWORK";
 			}
 			return "UNKNOWN";
 		}
@@ -85,11 +85,11 @@ namespace tetris::ui {
 		devices_.push_back(std::make_shared<game::Keyboard>("Keyboard 1", SDLK_DOWN, SDLK_LEFT, SDLK_RIGHT, SDLK_UP, SDLK_RCTRL));
 		devices_.push_back(std::make_shared<game::Keyboard>("Keyboard 2", SDLK_s, SDLK_a, SDLK_d, SDLK_w, SDLK_LCTRL));
 		
-		menuScene_ = sceneStateMachine_.emplace<scene::Menu>();
-		playScene_ = sceneStateMachine_.emplace<scene::Play>();
-		networkScene_ = sceneStateMachine_.emplace<scene::Network>();
-		settingsScene_ = sceneStateMachine_.emplace<scene::Settings>();
-		highscoreScene_ = sceneStateMachine_.emplace<scene::HighScore>();
+		sceneStateMachine_.emplace<scene::Menu>();
+		sceneStateMachine_.emplace<scene::Play>();
+		sceneStateMachine_.emplace<scene::Network>();
+		sceneStateMachine_.emplace<scene::Settings>();
+		sceneStateMachine_.emplace<scene::HighScore>();
 		
 		dispatcher_->sink<scene::Event>().connect<&TetrisWindow::handleSceneMenuEvent>(*this);
 	}
@@ -267,19 +267,19 @@ namespace tetris::ui {
 	void TetrisWindow::handleSceneMenuEvent(const scene::Event& menuEvent) {
 		switch (menuEvent) {
 			case scene::Event::Menu:
-				sceneStateMachine_.switchTo(menuScene_);
+				sceneStateMachine_.switchTo<scene::Menu>();
 				break;
 			case scene::Event::Play:
-				sceneStateMachine_.switchTo(playScene_);
+				sceneStateMachine_.switchTo<scene::Play>();
 				break;
 			case scene::Event::NetworkPlay:
-				sceneStateMachine_.switchTo(networkScene_);
+				sceneStateMachine_.switchTo<scene::Network>();
 				break;
 			case scene::Event::Settings:
-				sceneStateMachine_.switchTo(settingsScene_);
+				sceneStateMachine_.switchTo<scene::Settings>();
 				break;
 			case scene::Event::HighScore:
-				sceneStateMachine_.switchTo(highscoreScene_);
+				sceneStateMachine_.switchTo<scene::HighScore>();
 				break;
 			case scene::Event::Exit:
 				quit();
@@ -287,4 +287,4 @@ namespace tetris::ui {
 		}
 	}
 
-} // Namespace tetris.
+}

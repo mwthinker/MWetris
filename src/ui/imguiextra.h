@@ -12,9 +12,7 @@ namespace ImGui {
 
 	void PushButtonStyle();
 
-
 	void PopButtonStyle();
-
 
 	template <class T>
 	bool Bar(T&& t) {
@@ -44,6 +42,6 @@ namespace ImGui {
 		const sdl::Color& color2 = {0.5f, 0.5f, 0.5f, 1.f},
 		const ImVec2& size = {150.f, 25.f});
 
-} // Namespace ImGui.
+}
 
-#endif // MWETRIS_IMGUIEXTRA_H
+#endif

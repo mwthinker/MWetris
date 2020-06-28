@@ -1,5 +1,5 @@
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef MWETRIS_TYPES_H
+#define MWETRIS_TYPES_H
 
 #include <glm/glm.hpp>
 #include <glm/mat4x2.hpp>
@@ -17,6 +17,6 @@ namespace tetris {
 	using Vec4 = glm::vec4;
 	using Color = sdl::Color;
 
-} // Namespace tetris.
+}
 
-#endif // TYPES_H
+#endif

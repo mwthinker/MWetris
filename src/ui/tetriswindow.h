@@ -79,13 +79,6 @@ namespace tetris::ui {
 		graphic::Graphic graphic;
 		std::vector<game::SdlDevicePtr> devices_;
 		scene::StateMachine sceneStateMachine_;
-
-		std::shared_ptr<scene::Scene> menuScene_;
-		std::shared_ptr<scene::Scene> playScene_;
-		std::shared_ptr<scene::Scene> networkScene_;
-		std::shared_ptr<scene::Scene> settingsScene_;
-		std::shared_ptr<scene::Scene> highscoreScene_;
-		std::shared_ptr<scene::Scene> customScene_;
 	};
 
 }

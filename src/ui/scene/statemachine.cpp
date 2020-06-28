@@ -23,24 +23,5 @@ namespace tetris::ui::scene {
 			currentScene_->draw(deltaTime);
 		}
 	}
-	
-	void StateMachine::switchTo(const std::shared_ptr<Scene>& scene) {
-		if (auto it = scenes_.find(scene); it != scenes_.end()) {
-			currentScene_ = scene;
-		} else {
-			spdlog::warn("[SceneStateMachine] Failed to switch scene.");
-		}
-	}
-
-	void StateMachine::remove(const std::shared_ptr<Scene>& scene) {
-		if (auto it = scenes_.find(scene); it != scenes_.end()) {
-			if (currentScene_ == scene) {
-				currentScene_ = nullptr;
-			}
-			scenes_.erase(it);
-		} else {
-			spdlog::warn("[SceneStateMachine] Failed to remove scene.");
-		}
-	}
 
 }
