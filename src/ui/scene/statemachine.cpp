@@ -7,20 +7,20 @@ namespace tetris::ui::scene {
 	}
 
 	void StateMachine::eventUpdate(const SDL_Event& windowEvent) {
-		if (currentScene_) {
-			currentScene_->eventUpdate(windowEvent);
+		if (currentKey_) {
+			scenes_[currentKey_]->eventUpdate(windowEvent);
 		}
 	};
 
 	void StateMachine::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
-		if (currentScene_) {
-			currentScene_->imGuiUpdate(deltaTime);
+		if (currentKey_) {
+			scenes_[currentKey_]->imGuiUpdate(deltaTime);
 		}
 	}
 
-	void StateMachine::draw(const std::chrono::high_resolution_clock::duration& deltaTime) {
-		if (currentScene_) {
-			currentScene_->draw(deltaTime);
+	void StateMachine::draw(const sdl::Shader& shader, const std::chrono::high_resolution_clock::duration& deltaTime) {
+		if (currentKey_) {
+			scenes_[currentKey_]->draw(shader, deltaTime);
 		}
 	}
 

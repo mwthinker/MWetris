@@ -12,7 +12,7 @@ int main(int, char**) {
 
 		const sdl::InitSdl SDL;
 		tetris::ui::TetrisWindow tetris;
-		//tetris.setStartPage(tetris::TetrisWindow::Page::PLAY);
+		//tetris.setStartPage(tetris::ui::scene::Event::Play);
 		tetris.startLoop();
 		tetris::TetrisData::getInstance().quit();
 	} catch (std::exception&) {

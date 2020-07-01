@@ -31,26 +31,7 @@ namespace tetris::ui {
 	
 	private:
 		void initPreLoop() override;
-	
-		std::vector<game::DevicePtr> getCurrentDevices() const;
-		game::DevicePtr findHumanDevice(std::string name) const;
-		game::DevicePtr findAiDevice(std::string name) const;
-		void resumeGame();
 
-		ImFontAtlas fontAtlas_;
-		sdl::Sprite manTexture_;
-		sdl::Sprite noManTexture_;
-		sdl::Sprite aiTexture_;
-		sdl::Sprite background_;
-		ImColor labelColor_;
-		ImColor buttonTextColor_;
-
-		void changePage(scene::Event event);
-		
-		int nbrHumans_;
-		int nbrAis_;
-
-	private:
 		void imGuiPreUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) override;
 
 		void imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) override;
@@ -62,12 +43,7 @@ namespace tetris::ui {
 		void handleSceneMenuEvent(const scene::Event& menuEvent);
 	
 		std::shared_ptr<entt::dispatcher> dispatcher_{};
-		float menuHeight_{};
-		game::TetrisGame game_;
-		std::array<game::DevicePtr, 4> activeAis_;
-		std::unique_ptr<graphic::GameComponent> gameComponent_;
-		graphic::Graphic graphic;
-		std::vector<game::SdlDevicePtr> devices_;
+		sdl::Sprite background_;
 		scene::StateMachine sceneStateMachine_;
 	};
 

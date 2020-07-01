@@ -3,6 +3,8 @@
 
 #include "scene.h"
 
+#include <sdl/shader.h>
+
 #include <entt/entt.hpp>
 #include <SDL_events.h>
 #include <spdlog/spdlog.h>
@@ -10,6 +12,7 @@
 #include <memory>
 #include <map>
 #include <typeindex>
+#include <algorithm>
 
 namespace tetris::ui::scene {
 
@@ -21,7 +24,7 @@ namespace tetris::ui::scene {
 
 		void imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime);
 
-		void draw(const std::chrono::high_resolution_clock::duration& deltaTime);
+		void draw(const sdl::Shader& shader, const std::chrono::high_resolution_clock::duration& deltaTime);
 		
 		template <class Type>
 		std::shared_ptr<Type> add(std::shared_ptr<Type> scene);
@@ -32,10 +35,19 @@ namespace tetris::ui::scene {
 		template <class Type>
 		void switchTo();
 
+		template <class Type>
+		bool isCurrentScene() const;
+
 	private:
-		std::map<std::type_index, std::shared_ptr<Scene>> scenes_;
-		
-		std::shared_ptr<Scene> currentScene_;
+		using Key = entt::id_type;
+
+		template <class Type>
+		static Key getKey();
+
+		using Map = std::map<std::type_index, std::shared_ptr<Scene>>;
+
+		std::map<Key, std::shared_ptr<Scene>> scenes_;
+		Key currentKey_;
 		std::shared_ptr<entt::dispatcher> dispatcher_;
 	};
 
@@ -45,12 +57,11 @@ namespace tetris::ui::scene {
 			"Type must have Scene as base class");
 
 		if (scene) {
+			auto key = getKey<Type>();
 			if (scenes_.empty()) {
-				currentScene_ = scene;
+				currentKey_ = key;
 			}
-
 			static_cast<Scene&>(*scene).dispatcher_ = dispatcher_;
-			auto key = std::type_index{typeid(Type)};
 			auto it = scenes_.find(key);
 			if (it == scenes_.end()) {
 				scenes_[key] = scene;
@@ -71,11 +82,21 @@ namespace tetris::ui::scene {
 
 	template <class Type>
 	void StateMachine::switchTo() {
-		if (auto it = scenes_.find(std::type_index{typeid(Type)}); it != scenes_.end()) {
-			currentScene_ = it->second;
+		if (auto it = scenes_.find(getKey<Type>()); it != scenes_.end()) {
+			currentKey_ = it->first;
 		} else {
 			spdlog::warn("[SceneStateMachine] Failed to switch to scene {}.", typeid(Type).name());
 		}
+	}
+
+	template <class Type>
+	bool StateMachine::isCurrentScene() const {
+		return getKey<Type>() == currentKey_;
+	}
+
+	template <class Type>
+	StateMachine::Key StateMachine::getKey() {
+		return entt::type_info<Type>::id();
 	}
 
 }
