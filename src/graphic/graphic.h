@@ -1,7 +1,7 @@
 #ifndef MWETRIS_GRAPHIC_GRAPHIC_H
 #define MWETRIS_GRAPHIC_GRAPHIC_H
 
-#include "../types.h"
+#include "types.h"
 
 #include <sdl/shader.h>
 #include <sdl/vertex.h>

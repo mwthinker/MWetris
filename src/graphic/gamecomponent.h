@@ -2,11 +2,11 @@
 #define MWETRIS_GRAPHIC_GAMECOMPONENT_H
 
 #include "gamegraphic.h"
-#include "../game/player.h"
+#include "game/player.h"
 #include "drawboard.h"
 #include "graphic.h"
 
-#include "../types.h"
+#include "types.h"
 
 #include <sdl/vertexbufferobject.h>
 #include <sdl/shaderprogram.h>

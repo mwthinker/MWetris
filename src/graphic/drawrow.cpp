@@ -1,5 +1,5 @@
 #include "drawrow.h"
-#include "../tetrisdata.h"
+#include "tetrisdata.h"
 
 namespace tetris::graphic {
 

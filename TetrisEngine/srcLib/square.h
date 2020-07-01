@@ -28,6 +28,6 @@ namespace tetris {
 		int row;
 	};
 
-} // Namespace tetris.
+}
 
-#endif	// SQUARE_H
+#endif

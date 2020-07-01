@@ -1,9 +1,6 @@
 #include "tetriswindow.h"
 #include "imguiextra.h"
-#include "../tetrisdata.h"
-#include "../graphic/gamecomponent.h"
-#include "../game/computer.h"
-#include "../game/keyboard.h"
+#include "tetrisdata.h"
 
 #include "scene/menu.h"
 #include "scene/play.h"

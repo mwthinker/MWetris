@@ -1,9 +1,9 @@
 #include "gamecomponent.h"
-#include "../game/tetrisgame.h"
+#include "game/tetrisgame.h"
 #include "gamegraphic.h"
-#include "../game/tetrisparameters.h"
-#include "../game/tetrisgameevent.h"
-#include "../tetrisdata.h"
+#include "game/tetrisparameters.h"
+#include "game/tetrisgameevent.h"
+#include "tetrisdata.h"
 #include <fmt/format.h>
 
 #include <sdl/opengl.h>

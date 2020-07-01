@@ -160,6 +160,11 @@ file(COPY data/. DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(MWetris ${SOURCES})
 
+target_include_directories(MWetris
+	PRIVATE
+		src
+)
+
 if (MSVC)
 	target_compile_definitions(MWetris
 		PUBLIC

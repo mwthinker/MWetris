@@ -144,4 +144,4 @@ namespace tetris {
 		return listener_.connect(callback);
 	}
 
-} // Namespace tetris.
+}

@@ -1,8 +1,8 @@
 #include "drawboard.h"
-#include "../tetrisdata.h"
+#include "tetrisdata.h"
 #include "tetrisboard.h"
 #include "graphic.h"
-#include "../game/player.h"
+#include "game/player.h"
 
 #include <sdl/imguiauxiliary.h>
 

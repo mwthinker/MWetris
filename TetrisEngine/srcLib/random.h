@@ -30,6 +30,6 @@ namespace tetris {
 		mutable std::mt19937 engine_{std::random_device{}()};
 	};
 
-} // Namespace tetris.
+}
 
-#endif // RANDOM_H
+#endif

@@ -96,6 +96,6 @@ namespace tetris {
 
 	void moveBlockToBeforeImpact(const Ai::State& state, RawTetrisBoard& board);
 
-} // Namespace tetris.
+}
 
-#endif // AI_H
+#endif

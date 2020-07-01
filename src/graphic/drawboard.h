@@ -1,8 +1,8 @@
 #ifndef MWETRIS_GRAPHIC_DRAWBOARD_H
 #define MWETRIS_GRAPHIC_DRAWBOARD_H
 
-#include "../tetrisdata.h"
-#include "../game/player.h"
+#include "tetrisdata.h"
+#include "game/player.h"
 #include "tetrisboard.h"
 #include "graphic.h"
 

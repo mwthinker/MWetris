@@ -64,6 +64,6 @@ namespace tetris {
 		int rowsRemoved_{};
 	};
 
-} // Namespace tetris.
+}
 
-#endif // TETRISBOARD_H
+#endif

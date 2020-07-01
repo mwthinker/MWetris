@@ -1,10 +1,10 @@
 #ifndef MWETRIS_GRAPHIC_GRAPHICBOARD_H
 #define MWETRIS_GRAPHIC_GRAPHICBOARD_H
 
-#include "../game/player.h"
+#include "game/player.h"
 #include "drawrow.h"
 #include "tetrisboard.h"
-#include "../types.h"
+#include "types.h"
 
 #include <sdl/font.h>
 #include <sdl/sprite.h>

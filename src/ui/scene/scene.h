@@ -1,6 +1,10 @@
 #ifndef MWETRIS_UI_SCENE_SCENE_H
 #define MWETRIS_UI_SCENE_SCENE_H
 
+#include "graphic/graphic.h"
+
+#include <sdl/shader.h>
+
 #include <SDL_events.h>
 #include <spdlog/spdlog.h>
 #include <entt/entt.hpp>
@@ -19,7 +23,7 @@ namespace tetris::ui::scene {
 
 		virtual void imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {};
 
-		virtual void draw(const std::chrono::high_resolution_clock::duration& deltaTime) {};
+		virtual void draw(const sdl::Shader& shader, const std::chrono::high_resolution_clock::duration& deltaTime) {};
 
 		template <class Event, class... Args>
 		void emitEvent(Args&&... args) {

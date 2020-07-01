@@ -81,6 +81,6 @@ namespace tetris {
 		BlockType blockType_{BlockType::EMPTY};
 	};
 
-} // Namespace tetris.
+}
 
-#endif	// BLOCK_H
+#endif

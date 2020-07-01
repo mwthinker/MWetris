@@ -1,5 +1,5 @@
 #ifndef MWETRIS_GRAPHIC_DRAWROW_H
-#define DRAWROW_H
+#define MWETRIS_GRAPHIC_DRAWROW_H
 
 #include "../game/player.h"
 

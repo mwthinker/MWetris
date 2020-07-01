@@ -1,7 +1,7 @@
 #include "gamegraphic.h"
 #include "tetrisboard.h"
-#include "../game/player.h"
-#include "../tetrisdata.h"
+#include "game/player.h"
+#include "tetrisdata.h"
 
 #include <limits>
 #include <string>

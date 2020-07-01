@@ -3,9 +3,9 @@
 
 #include "scene.h"
 
-#include "../../types.h"
-#include "../../tetrisdata.h"
-#include "../imguiextra.h"
+#include "types.h"
+#include "tetrisdata.h"
+#include "ui/imguiextra.h"
 
 namespace tetris::ui::scene {
 

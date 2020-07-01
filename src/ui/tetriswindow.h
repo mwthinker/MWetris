@@ -1,24 +1,14 @@
 #ifndef TETRIS_UI_TETRISWINDOW_H
 #define TETRIS_UI_TETRISWINDOW_H
 
-#include "../game/tetrisgame.h"
-#include "../graphic/graphic.h"
-#include "../graphic/gamecomponent.h"
-#include "../graphic/drawboard.h"
 #include "scene/scene.h"
 #include "scene/menu.h"
 #include "scene/statemachine.h"
 #include "scene/event.h"
 
-#include "../game/device.h"
-#include "../game/sdldevice.h"
-
 #include <sdl/imguiwindow.h>
-#include <sdl/sprite.h>
-#include <sdl/textureatlas.h>
 
 #include <imgui.h>
-#include <array>
 #include <entt/entt.hpp>
 
 namespace tetris {

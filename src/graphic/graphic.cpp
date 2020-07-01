@@ -37,7 +37,7 @@ namespace tetris::graphic {
 			batch_.uploadToGraphicCard();
 			shader.setMatrix(matrixes_.front());
 			
-			for (auto& batchData : batches_) {
+			for (const auto& batchData : batches_) {
 				draw(shader, batchData);
 			}
 		}

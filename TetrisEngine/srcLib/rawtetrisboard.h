@@ -197,6 +197,6 @@ namespace tetris {
 		int rowToBeRemoved_{-1};
 	};
 
-} // Namespace tetris.
+}
 
-#endif // RAWTETRISBOARD_H
+#endif
