@@ -5,6 +5,8 @@
 #include <limits>
 #include <iostream>
 
+#include <fmt/format.h>
+
 using namespace std::chrono_literals;
 using namespace tetris;
 
@@ -15,21 +17,22 @@ namespace {
 			std::size_t size;
 			int positiveNbr = std::stoi(str, &size);
 			if (positiveNbr < 0 || size != str.size()) {
-				throw FlagsException(std::string("Argument ") + str + std::string(" expects a positive integer\n"));
+				throw FlagsException{fmt::format("Argument {} expects a positive integer\n", str)};
 			}
 			return positiveNbr;
 		} catch (std::invalid_argument) {
-			throw FlagsException(std::string("Argument ") + str + std::string(" expects a positive integer\n"));
+			throw FlagsException{fmt::format("Argument {} expects a positive integer\n", str)};
 		}
 	}
 }
 
-Flags::Flags() : Flags(0, nullptr) {
+Flags::Flags()
+	: Flags{0, nullptr} {
 }
 
-Flags::Flags(const int argc, const char* const argv[]) : programName_("TetrisEngine"), printHelp_(false),
-delay_(0), maxNbrBlocks_(std::numeric_limits<int>::max()), play_(false),
-useRandomFile_(false), verbose_(false), depth_(1), width_(10), height_(24) {
+Flags::Flags(const int argc, const char* const argv[])
+	: programName_("TetrisEngine")
+	, maxNbrBlocks_{std::numeric_limits<int>::max()} {
 
 	for (int i = 0; i < argc; ++i) {
 		std::string arg = argv[i];
@@ -38,36 +41,36 @@ useRandomFile_(false), verbose_(false), depth_(1), width_(10), height_(24) {
 			return;
 		} else if (arg == "-d" || arg == "--delay") {
 			if (i + 1 < argc) {
-				delay_ = std::chrono::milliseconds(extractArgumentPositiveInteger(argv[i + 1]));
+				delay_ = std::chrono::milliseconds{extractArgumentPositiveInteger(argv[i + 1])};
 				++i;
 			} else {
-				throw FlagsException(std::string("Missing argument after ") + arg + std::string("flag\n"));
+				throw FlagsException{fmt::format("Missing argument after {} {} flag\n", arg)};
 			}
 		} else if (arg == "-D" || arg == "--depth") {
 			if (i + 1 < argc) {
 				depth_ = extractArgumentPositiveInteger(argv[i + 1]);
 				++i;
 			} else {
-				throw FlagsException(std::string("Missing argument after ") + arg + std::string("flag\n"));
+				throw FlagsException{fmt::format("Missing argument after {} flag\n", arg)};
 			}
 		} else if (arg == "-a" || arg == "--ai") {
 			if (i + 1 < argc) {
 				std::string valueFunction = argv[i + 1];
 				try {
-					ai_ = Ai("AI", valueFunction, true);
-				} catch (calc::CalculatorException exception) {
-					throw FlagsException(std::string("Value function error. ") + exception.what() + std::string("\n"));
+					ai_ = Ai{"AI", valueFunction, true};
+				} catch (const calc::CalculatorException& exception) {
+					throw FlagsException{fmt::format("Value function error. {}\n", exception.what())};
 				}
 				++i;
 			} else {
-				throw FlagsException(std::string("Missing argument after ") + arg + std::string("flag\n"));
+				throw FlagsException{fmt::format("Missing argument after {} flag\n", arg)};
 			}
 		} else if (arg == "-m" || arg == "--max-nbr-blocks") {
 			if (i + 1 < argc) {
 				maxNbrBlocks_ = extractArgumentPositiveInteger(argv[i + 1]);
 				++i;
 			} else {
-				throw FlagsException(std::string("Missing argument after ") + arg + std::string("flag\n"));
+				throw FlagsException{fmt::format("Missing argument after {} flag\n", arg)};
 			}
 		} else if (arg == "-f" || arg == "--file-data") {
 			if (i + 1 < argc) {
@@ -75,7 +78,7 @@ useRandomFile_(false), verbose_(false), depth_(1), width_(10), height_(24) {
 				useRandomFile_ = true;
 				++i;
 			} else {
-				throw FlagsException(std::string("Missing argument after ") + arg + std::string("flag\n"));
+				throw FlagsException{fmt::format("Missing argument after {} flag\n", arg)};
 			}
 		} else if (arg == "-s" || arg == "--board-size") {
 			if (i + 2 < argc) {
@@ -86,19 +89,13 @@ useRandomFile_(false), verbose_(false), depth_(1), width_(10), height_(24) {
 				stream >> height_;
 				i += 2;
 				if (width_ < 5 || width_ > 99) {
-					std::stringstream stream;
-					stream << "Argument with flag " << arg << ", width " << width_ << " must be within [5, 99]\n";
-					throw FlagsException(stream.str());
+					throw FlagsException{fmt::format("Argument with flag {}, width {} must be within [5, 99]\n", arg, width_)};
 				}
 				if (height_ < 5 || height_ > 99) {
-					std::stringstream stream;
-					stream << "Argument with flag " << arg << ", height " << width_ << " must be within [5, 99]\n";
-					throw FlagsException(stream.str());
+					throw FlagsException{fmt::format("Argument with flag {}, height {} must be within [5, 99]\n", arg, width_)};
 				}
 			} else {
-				std::stringstream stream;
-				stream << "Missing argument after " << arg << " flag\n";
-				throw FlagsException(stream.str());
+				throw FlagsException{fmt::format("Missing argument after {} flag\n", arg)};
 			}
 		} else if (arg == "-v" || arg == "--verbose") {
 			verbose_ = true;
@@ -132,7 +129,6 @@ useRandomFile_(false), verbose_(false), depth_(1), width_(10), height_(24) {
 }
 
 void Flags::printHelpFunction() const {
-	Ai ai; // Use default ai.
 	std::cout << "Usage: " << programName_ << "\n";
 	std::cout << "\t" << "Simulate a tetris game, using a ai value-funtion.\n";
 	std::cout << "\t" << programName_ << " -d <DELAY>\n";
@@ -142,6 +138,7 @@ void Flags::printHelpFunction() const {
 	std::cout << "\t" << programName_ << " -f <FILE>\n";
 	std::cout << "\t" << programName_ << " -s <WIDTH> <HEIGHT>\n\n";
 
+	Ai ai{};
 	std::cout << "\t" << "Default ai value function is \"" << ai.getValueFunction() << "\".\n";
 	std::cout << "\t" << "Variables available in the value function:\n";
 	for (std::string var : ai.getCalculator().getVariables()) {

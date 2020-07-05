@@ -42,10 +42,17 @@ fetchcontent_declare(Calculator
 )
 FetchContent_MakeAvailable(Calculator)
 
+target_compile_definitions(TetrisEngineLib
+	PUBLIC
+		NOMINMAX
+)
+
 target_link_libraries(TetrisEngineLib
 	PUBLIC
 		Calculator
+
 		Signal
+		EnTT::EnTT
 )
 
 message(STATUS "TetrisEngine_Test is available to add: -DTetrisEngine_Test=1")
@@ -67,6 +74,7 @@ add_executable(TetrisEngine ${SOURCES_MAIN})
 target_link_libraries(TetrisEngine
 	PRIVATE
 		TetrisEngineLib
+		fmt::fmt fmt::fmt-header-only
 )
 
 # Copy data to build folder.

@@ -78,7 +78,7 @@ namespace tetris {
 		int maxRotations_{}, currentRotation_{};
 		int lowestStartRow_{};
 		int startColumn_{};
-		BlockType blockType_{BlockType::EMPTY};
+		BlockType blockType_{BlockType::Empty};
 	};
 
 }

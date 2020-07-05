@@ -10,28 +10,28 @@ namespace tetris {
 
 		constexpr inline BoardEvent gameEventToMove(Move move) {
 			switch (move) {
-				case Move::ROTATE_LEFT:
-					return BoardEvent::MOVE_ROTATE_LEFT;
-				case Move::ROTATE_RIGHT:
-					return BoardEvent::MOVE_ROTATE_RIGHT;
-				case Move::DOWN_GRAVITY:
-					return BoardEvent::MOVE_DOWN_GRAVITY;
-				case Move::DOWN:
-					return BoardEvent::MOVE_DOWN;
-				case Move::DOWN_GROUND:
-					return BoardEvent::MOVE_DOWN_GROUND;
-				case Move::LEFT:
-					return BoardEvent::MOVE_LEFT;
-				case Move::RIGHT:
-					return BoardEvent::MOVE_RIGHT;
+				case Move::RotateLeft:
+					return BoardEvent::MoveRotateLeft;
+				case Move::RotateRight:
+					return BoardEvent::MoveRotateRight;
+				case Move::DownGravity:
+					return BoardEvent::MoveDownGravity;
+				case Move::Down:
+					return BoardEvent::MoveDown;
+				case Move::DownGround:
+					return BoardEvent::MoveDownGround;
+				case Move::Left:
+					return BoardEvent::MoveLeft;
+				case Move::Right:
+					return BoardEvent::MoveRigh;
 				default:
-					return BoardEvent::GAME_OVER;
+					return BoardEvent::GameOver;
 			}
 		}
 	}
 
 	RawTetrisBoard::RawTetrisBoard(int columns, int rows, BlockType current, BlockType next)
-		: gameboard_{rows * columns, BlockType::EMPTY}
+		: gameboard_{rows * columns, BlockType::Empty}
 		, next_{next}
 		, columns_{columns}
 		, rows_{rows} {
@@ -75,66 +75,66 @@ namespace tetris {
 			if (!isGameOver_) {
 				// Only called once, when the game becomes game over.
 				isGameOver_ = true;
-				triggerEvent(BoardEvent::GAME_OVER);
+				triggerEvent(BoardEvent::GameOver);
 			}
 		} else {
 			Block block = current_;
 			switch (move) {
-				case Move::GAME_OVER:
+				case Move::GameOver:
 					// Only called once, when the game becomes game over.
 					isGameOver_ = true;
-					triggerEvent(BoardEvent::GAME_OVER);
+					triggerEvent(BoardEvent::GameOver);
 					break;
-				case Move::LEFT:
+				case Move::Left:
 					block.moveLeft();
 					if (!collision(block)) {
 						current_ = block;
-						triggerEvent(BoardEvent::PLAYER_MOVES_BLOCK_LEFT);
+						triggerEvent(BoardEvent::PlayerMovesBlockLeft);
 					}
 					break;
-				case Move::RIGHT:
+				case Move::Right:
 					block.moveRight();
 					if (!collision(block)) {
 						current_ = block;
-						triggerEvent(BoardEvent::PLAYER_MOVES_BLOCK_RIGHT);
+						triggerEvent(BoardEvent::PlayerMovesBlockRight);
 					}
 					break;
-				case Move::DOWN_GROUND:
-					triggerEvent(BoardEvent::PLAYER_MOVES_BLOCK_DOWN_GROUND);
+				case Move::DownGround:
+					triggerEvent(BoardEvent::PlayerMovesBlockDownGround);
 					do {
 						current_ = block;
 						block.moveDown();
 					} while (!collision(block));
-					triggerEvent(BoardEvent::PLAYER_MOVES_BLOCK_DOWN);
+					triggerEvent(BoardEvent::PlayerMovesBlockDown);
 					break;
-				case Move::DOWN:
+				case Move::Down:
 					block.moveDown();
 					if (!collision(block)) {
 						current_ = block;
-						triggerEvent(BoardEvent::PLAYER_MOVES_BLOCK_DOWN);
+						triggerEvent(BoardEvent::PlayerMovesBlockDown);
 					}
 					break;
-				case Move::ROTATE_RIGHT:
+				case Move::RotateRight:
 					block.rotateRight();
 					if (!collision(block)) {
 						current_ = block;
-						triggerEvent(BoardEvent::PLAYER_MOVES_BLOCK_ROTATE);
+						triggerEvent(BoardEvent::PlayerMovesBlockUpdated);
 					}
 					break;
-				case Move::ROTATE_LEFT:
+				case Move::RotateLeft:
 					block.rotateLeft();
 					if (!collision(block)) {
 						current_ = block;
-						triggerEvent(BoardEvent::PLAYER_MOVES_BLOCK_ROTATE);
+						triggerEvent(BoardEvent::PlayerMovesBlockUpdated);
 					}
 					break;
-				case Move::DOWN_GRAVITY:
+				case Move::DownGravity:
 					block.moveDown();
 					if (collision(block)) {
 						// Collision detected, add squares to the gameboard.
 						addBlockToBoard(current_);
 
-						triggerEvent(BoardEvent::BLOCK_COLLISION);
+						triggerEvent(BoardEvent::BlockCollision);
 
 						// Remove any filled row on the gameboard.
 						int nbr = removeFilledRows(current_);
@@ -144,30 +144,30 @@ namespace tetris {
 						if (squares.size() > 0) {
 							externalRowsAdded_ = static_cast<int>(squares.size()) / columns_;
 							gameboard_.insert(gameboard_.begin(), squares.begin(), squares.end());
-							triggerEvent(BoardEvent::EXTERNAL_ROWS_ADDED);
+							triggerEvent(BoardEvent::ExternalRowsAdded);
 						}
 
 						// Update the user controlled block.
 						current_ = createBlock(next_);
-						triggerEvent(BoardEvent::CURRENT_BLOCK_UPDATED);
+						triggerEvent(BoardEvent::CurrentBlockUpdated);
 
 						switch (nbr) {
 							case 1:
-								triggerEvent(BoardEvent::ONE_ROW_REMOVED);
+								triggerEvent(BoardEvent::OneRowRemoved);
 								break;
 							case 2:
-								triggerEvent(BoardEvent::TWO_ROW_REMOVED);
+								triggerEvent(BoardEvent::TwoRowRemoved);
 								break;
 							case 3:
-								triggerEvent(BoardEvent::THREE_ROW_REMOVED);
+								triggerEvent(BoardEvent::ThreeRowRemoved);
 								break;
 							case 4:
-								triggerEvent(BoardEvent::FOUR_ROW_REMOVED);
+								triggerEvent(BoardEvent::FourRowRemoved);
 								break;
 						}
 					} else {
 						current_ = block;
-						triggerEvent(BoardEvent::GRAVITY_MOVES_BLOCK);
+						triggerEvent(BoardEvent::GravityMovesBlock);
 					}
 					break;
 			}
@@ -176,12 +176,12 @@ namespace tetris {
 
 	void RawTetrisBoard::updateNextBlock(BlockType nextBlock) {
 		next_ = nextBlock;
-		triggerEvent(BoardEvent::NEXT_BLOCK_UPDATED);
+		triggerEvent(BoardEvent::NextBlockUpdated);
 	}
 
 	void RawTetrisBoard::updateCurrentBlock(BlockType current) {
 		current_ = createBlock(current);
-		triggerEvent(BoardEvent::CURRENT_BLOCK_UPDATED);
+		triggerEvent(BoardEvent::CurrentBlockUpdated);
 	}
 
 	void RawTetrisBoard::updateRestart(BlockType current, BlockType next) {
@@ -196,7 +196,7 @@ namespace tetris {
 		rowToBeRemoved_ = -1;
 		externalRowsAdded_ = 0;
 		clearBoard();
-		triggerEvent(BoardEvent::RESTARTED);
+		triggerEvent(BoardEvent::Restarted);
 	}
 
 	const std::vector<BlockType>& RawTetrisBoard::getBoardVector() const {
@@ -216,10 +216,10 @@ namespace tetris {
 
 	BlockType RawTetrisBoard::getBlockType(int column, int row) const {
 		if (column < 0 || column >= columns_ || row < 0) {
-			return BlockType::WALL;
+			return BlockType::Wall;
 		}
 		if (row * columns_ + column >= (int) gameboard_.size()) {
-			return BlockType::EMPTY;
+			return BlockType::Empty;
 		}
 		return board(column, row);
 	}
@@ -228,7 +228,7 @@ namespace tetris {
 		bool collision = false;
 
 		for (const Square& sq : block) {
-			if (getBlockType(sq.column, sq.row) != BlockType::EMPTY) {
+			if (getBlockType(sq.column, sq.row) != BlockType::Empty) {
 				collision = true;
 				break;
 			}
@@ -238,7 +238,7 @@ namespace tetris {
 	}
 
 	void RawTetrisBoard::clearBoard() {
-		gameboard_.assign(rows_ * columns_, BlockType::EMPTY);
+		gameboard_.assign(rows_ * columns_, BlockType::Empty);
 		isGameOver_ = false;
 	}
 
@@ -248,7 +248,7 @@ namespace tetris {
 		const int nbrOfSquares = static_cast<int>(current_.getSize());
 		for (int i = 0; i < nbrOfSquares; ++i) {
 			bool filled = false;
-			if (row >= 0 && row * columns_ < (int) gameboard_.size()) { // Check only rows inside the board.			
+			if (row >= 0 && row * columns_ < (int) gameboard_.size()) { // Check only rows inside the board.
 				filled = isRowFilled(row);
 			}
 			if (filled) {
@@ -264,7 +264,7 @@ namespace tetris {
 
 	void RawTetrisBoard::moveRowsOneStepDown(int rowToRemove) {
 		rowToBeRemoved_ = rowToRemove;
-		triggerEvent(BoardEvent::ROW_TO_BE_REMOVED);
+		triggerEvent(BoardEvent::RowToBeRemoved);
 		int indexStartOfRow = rowToRemove * columns_;
 		// Erase the row.
 		gameboard_.erase(gameboard_.begin() + indexStartOfRow, gameboard_.begin() + indexStartOfRow + columns_);
@@ -272,8 +272,8 @@ namespace tetris {
 		// Is it necessary to replace the row?
 		if ((int) gameboard_.size() < rows_ * columns_) {
 			// Replace the removed row with an empty row at the top.
-			gameboard_.insert(gameboard_.end(), columns_, BlockType::EMPTY);
+			gameboard_.insert(gameboard_.end(), columns_, BlockType::Empty);
 		}
 	}
 
-} // Namespace tetris.
+}

@@ -25,6 +25,7 @@ namespace tetris::ui::scene {
 
 		virtual void draw(const sdl::Shader& shader, const std::chrono::high_resolution_clock::duration& deltaTime) {};
 
+	protected:
 		template <class Event, class... Args>
 		void emitEvent(Args&&... args) {
 			if (!dispatcher_) {

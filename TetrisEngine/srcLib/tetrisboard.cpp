@@ -14,20 +14,20 @@ namespace tetris {
 		Random random;
 		const int BLOCK_TYPE_MIN = 0;
 		const int BLOCK_TYPE_MAX = 6;
-		static_assert((int) BlockType::EMPTY > BLOCK_TYPE_MAX &&
-			(int) BlockType::WALL > BLOCK_TYPE_MAX, "BlockType::EMPTY should not be generated");
+		static_assert((int) BlockType::Empty > BLOCK_TYPE_MAX &&
+			(int) BlockType::Wall > BLOCK_TYPE_MAX, "BlockType::EMPTY should not be generated");
 		// Generate a block type.
 		return static_cast<BlockType>(random.generateInt(BLOCK_TYPE_MIN, BLOCK_TYPE_MAX));
 	}
 
 	std::vector<BlockType> generateRow(const RawTetrisBoard& board, double squaresPerLength) {
-		const unsigned int size = board.getColumns();
+		const auto size = board.getColumns();
 
 		Random random;
 		std::vector<bool> row(size);
-		for (unsigned int i = 0; i < size * squaresPerLength; ++i) {
+		for (int i = 0; i < size * squaresPerLength; ++i) {
 			int index = random.generateInt(0, size - 1);
-			unsigned int nbr = 0;
+			int nbr = 0;
 			while (nbr < size) {
 				if (!row[(index + nbr) % size]) {
 					row[(index + nbr) % size] = true;
@@ -39,8 +39,8 @@ namespace tetris {
 
 		std::vector<BlockType> rows;
 		// Fill the rows with block types.
-		for (unsigned int i = 0; i < size; ++i) {
-			BlockType blockType = BlockType::EMPTY;
+		for (int i = 0; i < size; ++i) {
+			BlockType blockType = BlockType::Empty;
 
 			// Fill square?
 			if (row[i]) {
@@ -55,17 +55,17 @@ namespace tetris {
 
 	std::vector<BlockType> generateRow(int width, int holes) {
 		std::vector<BlockType> row(width);
-		for (auto& type : row) {
+		for (auto type : row) {
 			type = randomBlockType();;
 		}
 
 		Random random;
 		for (int i = 0; i < holes; ++i) {
 			int index = random.generateInt(0, width - 1);
-			if (row[index] == BlockType::EMPTY) {
+			if (row[index] == BlockType::Empty) {
 				--i;
 			} else {
-				row[index] = BlockType::EMPTY;
+				row[index] = BlockType::Empty;
 			}
 		}
 		return row;
@@ -86,6 +86,7 @@ namespace tetris {
 		: RawTetrisBoard{board}
 		, turns_{board.turns_}
 		, rowsRemoved_{board.rowsRemoved_} {
+		
 		// No copy of the listener_.
 	}
 
@@ -106,23 +107,23 @@ namespace tetris {
 	void TetrisBoard::triggerEvent(BoardEvent gameEvent) {
 		listener_(gameEvent, *this);
 		switch (gameEvent) {
-			case BoardEvent::NEXT_BLOCK_UPDATED:
+			case BoardEvent::NextBlockUpdated:
 				// Assumes a new turn.
 				++turns_;
 				break;
-			case BoardEvent::ONE_ROW_REMOVED:
+			case BoardEvent::OneRowRemoved:
 				rowsRemoved_ += 1;
 				break;
-			case BoardEvent::TWO_ROW_REMOVED:
+			case BoardEvent::TwoRowRemoved:
 				rowsRemoved_ += 2;
 				break;
-			case BoardEvent::THREE_ROW_REMOVED:
+			case BoardEvent::ThreeRowRemoved:
 				rowsRemoved_ += 3;
 				break;
-			case BoardEvent::FOUR_ROW_REMOVED:
+			case BoardEvent::FourRowRemoved:
 				rowsRemoved_ += 4;
 				break;
-			case BoardEvent::RESTARTED:
+			case BoardEvent::Restarted:
 				rowsRemoved_ = 0;
 				break;
 		}

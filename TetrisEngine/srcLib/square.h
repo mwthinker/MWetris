@@ -11,8 +11,8 @@ namespace tetris {
 		S,
 		T,
 		Z,
-		EMPTY,
-		WALL
+		Empty,
+		Wall
 	};
 
 	struct Square {

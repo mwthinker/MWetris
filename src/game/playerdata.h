@@ -16,7 +16,7 @@ namespace tetris::game {
 		bool ai_{};
 		int points_{}, level_{}, levelUpCounter_{}, clearedRows_{};
 		Block current_;
-		BlockType next_{BlockType::EMPTY};
+		BlockType next_{BlockType::Empty};
 		std::vector<BlockType> board_;
 		int lastPosition_{-1};
 	};

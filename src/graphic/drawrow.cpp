@@ -44,7 +44,7 @@ namespace tetris::graphic {
 		if (row_ >= 0) {
 			int rowTobeRemoved = tetrisBoard.getRowToBeRemoved();
 			switch (gameEvent) {
-				case BoardEvent::ROW_TO_BE_REMOVED:
+				case BoardEvent::RowToBeRemoved:
 					if (rowTobeRemoved < row_) {
 						--row_;
 						timeLeft_ += movingTime_;
@@ -54,15 +54,15 @@ namespace tetris::graphic {
 						alpha_ = 1.f;
 					}
 					break;
-				case BoardEvent::FOUR_ROW_REMOVED:
-				case BoardEvent::THREE_ROW_REMOVED:
-				case BoardEvent::TWO_ROW_REMOVED:
-				case BoardEvent::ONE_ROW_REMOVED:
+				case BoardEvent::FourRowRemoved:
+				case BoardEvent::ThreeRowRemoved:
+				case BoardEvent::TwoRowRemoved:
+				case BoardEvent::OneRowRemoved:
 					break;
-				case BoardEvent::EXTERNAL_ROWS_ADDED:
+				case BoardEvent::ExternalRowsAdded:
 					row_ += tetrisBoard.getNbrExternalRowsAdded();
 					break;
-				case BoardEvent::BLOCK_COLLISION:
+				case BoardEvent::BlockCollision:
 					if (row_ >= 0) {
 						updateVertexData(tetrisBoard);
 					}
@@ -97,7 +97,7 @@ namespace tetris::graphic {
 
 		blockTypes_.clear();
 		for (int column = 0; column < columns_; ++column) {
-			blockTypes_.push_back(BlockType::EMPTY);
+			blockTypes_.push_back(BlockType::Empty);
 		}
 		//vertexes_.clear();
 	}

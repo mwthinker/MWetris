@@ -32,7 +32,7 @@ void printBoard(const RawTetrisBoard& board) {
 			}
 
 			bool newSquare = false;
-			for (Square sq : block) {
+			for (const auto& sq : block) {
 				if (sq.column == column && sq.row == row) {
 					std::cout << "X|";
 					newSquare = true;
@@ -43,7 +43,7 @@ void printBoard(const RawTetrisBoard& board) {
 				continue;
 			}
 
-			if (BlockType::EMPTY == squares[row * columns + column]) {
+			if (BlockType::Empty == squares[row * columns + column]) {
 				std::cout << " |";
 			} else {
 				std::cout << "X|";
@@ -79,7 +79,7 @@ BlockType readBlockType(std::ifstream& infile) {
 		}
 	}
 	if (data >= 0 && data <= 6) {
-		return (BlockType) data;
+		return static_cast<BlockType>(data);
 	}
 	// In order for the ai to fail.
 	return badRandomBlockType();
@@ -110,7 +110,7 @@ std::chrono::duration<double> runGame(TetrisBoard& tetrisBoard, const Flags& fla
 			printBoard(playBoard);
 		}
 		
-		tetrisBoard.update(Move::DOWN_GRAVITY);
+		tetrisBoard.update(Move::DownGravity);
 		if (flags.delay_ > 1ms) {
 			std::this_thread::sleep_for(flags.delay_);
 		}
@@ -182,8 +182,8 @@ void printGameResult(const TetrisBoard& tetrisBoard, const Flags& flags, std::ch
 int main(const int argc, const char* const argv[]) {
 	Flags flags;
 	try {
-		flags = Flags(argc, argv);
-	} catch (FlagsException e) {
+		flags = Flags{argc, argv};
+	} catch (const FlagsException& e) {
 		std::cerr << e.what();
 		return 1;
 	}
@@ -202,7 +202,7 @@ int main(const int argc, const char* const argv[]) {
 	if (flags.useRandomFile_) {
 		try {
 			infile.open(flags.randomFilePath_);
-		} catch (std::ifstream::failure e) {
+		} catch (const std::ifstream::failure& e) {
 			std::cerr << "Failed to open file: " + flags.randomFilePath_;
 			if (flags.verbose_) {
 				std::cerr << "\n" << e.what() << "\n";
@@ -213,14 +213,14 @@ int main(const int argc, const char* const argv[]) {
 		next = readBlockType(infile);
 	}
 
-	TetrisBoard tetrisBoard(flags.width_, flags.height_, start, next);
+	TetrisBoard tetrisBoard{flags.width_, flags.height_, start, next};
 	int nbrOneLine = 0;
 	int nbrTwoLine = 0;
 	int nbrThreeLine = 0;
 	int nbrFourLine = 0;
 
 	tetrisBoard.addGameEventListener([&](BoardEvent gameEvent, const TetrisBoard&) {
-		if (BoardEvent::BLOCK_COLLISION == gameEvent) {
+		if (BoardEvent::BlockCollision == gameEvent) {
 			if (flags.useRandomFile_) {
 				try {
 					BlockType blockType = readBlockType(infile);
@@ -237,16 +237,16 @@ int main(const int argc, const char* const argv[]) {
 			}
 		}
 		switch (gameEvent) {
-			case BoardEvent::ONE_ROW_REMOVED:
+			case BoardEvent::OneRowRemoved:
 				++nbrOneLine;
 				break;
-			case BoardEvent::TWO_ROW_REMOVED:
+			case BoardEvent::TwoRowRemoved:
 				++nbrTwoLine;
 				break;
-			case BoardEvent::THREE_ROW_REMOVED:
+			case BoardEvent::ThreeRowRemoved:
 				++nbrThreeLine;
 				break;
-			case BoardEvent::FOUR_ROW_REMOVED:
+			case BoardEvent::FourRowRemoved:
 				++nbrFourLine;
 				break;
 		}

@@ -220,8 +220,8 @@ namespace tetris::graphic {
 				y = borderSize_ + squareSize_ * i;
 
 				auto blockType = tetrisBoard_.getBlockType(j, i);
-				if (blockType != BlockType::EMPTY
-					&& blockType != BlockType::WALL) {
+				if (blockType != BlockType::Empty
+					&& blockType != BlockType::Wall) {
 					
 					addSquare(graphic,
 						x, y,

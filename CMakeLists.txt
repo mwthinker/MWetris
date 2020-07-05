@@ -105,14 +105,14 @@ source_group(TREE
 		${SOURCES}
 )
 
-add_subdirectory(TetrisEngine)
-add_subdirectory(Protocol)
-
 find_package(Threads REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
+
+add_subdirectory(TetrisEngine)
+add_subdirectory(Protocol)
 
 include(ExternalFetchContent.cmake)
 
@@ -169,6 +169,7 @@ if (MSVC)
 	target_compile_definitions(MWetris
 		PUBLIC
 			_CRT_SECURE_NO_WARNINGS
+			NOMINMAX
 	)
 
 	target_compile_options(MWetris

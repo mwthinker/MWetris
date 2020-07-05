@@ -76,10 +76,6 @@ namespace tetris {
 		State calculateBestState(const RawTetrisBoard& board, int depth);
 		float moveBlockToGroundCalculateValue(const State& state, RawTetrisBoard& board);
 
-		static constexpr const char* getDefaultValueFunction() {
-			return "-0.2*cumulativeWells - 1*holeDepth - 1*holes - 1*landingHeight";
-		}
-
 	private:
 		void initCalculator(bool allowException);
 		void initAiParameters(const calc::Calculator& calculator, const calc::Cache& cache);

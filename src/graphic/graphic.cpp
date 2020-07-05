@@ -120,4 +120,4 @@ namespace tetris::graphic {
 		matrixes_[0] = model;
 	}
 
-} // tetris.
+}

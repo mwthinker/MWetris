@@ -18,7 +18,7 @@ namespace tetris::ui::scene {
 
 	class StateMachine {
 	public:
-		StateMachine(std::shared_ptr<entt::dispatcher> dispatcher);
+		explicit StateMachine(std::shared_ptr<entt::dispatcher> dispatcher);
 
 		void eventUpdate(const SDL_Event& windowEvent);
 

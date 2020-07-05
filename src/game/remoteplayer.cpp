@@ -56,7 +56,7 @@ namespace tetris::game {
 	}
 
 	void RemotePlayer::updateGameOver() {
-		tetrisBoard_.update(Move::GAME_OVER);
+		tetrisBoard_.update(Move::GameOver);
 	}
 
 	/*

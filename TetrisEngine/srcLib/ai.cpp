@@ -70,15 +70,19 @@ namespace tetris {
 			return result;
 		}
 
-	} // Anonymous namespace.
+		constexpr const char* getDefaultValueFunction() {
+			return "-0.2*cumulativeWells - 1*holeDepth - 1*holes - 1*landingHeight";
+		}
+
+	}
 
 	RowRoughness calculateRowRoughness(const RawTetrisBoard& board, int highestUsedRow) {
 		RowRoughness rowRoughness{};
 		int holes = 0;
 		for (int row = 0; row < highestUsedRow; ++row) {
-			bool lastHole = board.getBlockType(0, row) == BlockType::EMPTY;
+			bool lastHole = board.getBlockType(0, row) == BlockType::Empty;
 			for (int column = 0; column < board.getColumns(); ++column) {
-				bool hole = board.getBlockType(column, row) == BlockType::EMPTY;
+				bool hole = board.getBlockType(column, row) == BlockType::Empty;
 				if (lastHole != hole) {
 					rowRoughness.holes += 1;
 					lastHole = hole;
@@ -96,10 +100,10 @@ namespace tetris {
 		ColumnRoughness roughness{};
 		int lastColumnNbr;
 		for (int column = 0; column < board.getColumns(); ++column) {
-			bool lastHole = board.getBlockType(column, 0) == BlockType::EMPTY;
+			bool lastHole = board.getBlockType(column, 0) == BlockType::Empty;
 			int columnNbr = lastHole ? 0 : 1;
 			for (int row = 1; row < highestUsedRow; ++row) {
-				bool hole = board.getBlockType(column, row) == BlockType::EMPTY;
+				bool hole = board.getBlockType(column, row) == BlockType::Empty;
 				if (lastHole != hole) {
 					roughness.holes_ += 1;
 					lastHole = hole;
@@ -158,7 +162,7 @@ namespace tetris {
 		for (int y = 0; y <= highestRow; ++y) {
 			bool lastFilled = true; // Left wall counts as filled.
 			for (int x = 0; x < w; ++x) {
-				bool filled = board.getBlockType(x, y) != BlockType::EMPTY;
+				bool filled = board.getBlockType(x, y) != BlockType::Empty;
 				if (lastFilled != filled && filled) {
 					++holes;
 				}
@@ -181,7 +185,7 @@ namespace tetris {
 		for (int x = 0; x < w; ++x) {
 			bool lastFilled = true; // Upper limit counts as filled.
 			for (int y = 0; y <= highestRow; ++y) {
-				bool filled = board.getBlockType(x, y) != BlockType::EMPTY;
+				bool filled = board.getBlockType(x, y) != BlockType::Empty;
 				if (lastFilled != filled && filled) {
 					++holes;
 				}
@@ -205,7 +209,7 @@ namespace tetris {
 			bool foundFirstFilled = false; // Is always empty at the top. No hole.
 			bool lastEmpty = false;
 			for (int y = highestRow; y >= 0; --y) {
-				bool empty = board.getBlockType(x, y) == BlockType::EMPTY;
+				bool empty = board.getBlockType(x, y) == BlockType::Empty;
 				if (!empty) {
 					foundFirstFilled = true;
 				}
@@ -228,8 +232,8 @@ namespace tetris {
 		for (int x = 0; x < w; ++x) {
 			int cumulative = 0;
 			for (int y = highestRow; y >= 0; --y) {
-				bool empty = board.getBlockType(x, y) == BlockType::EMPTY;
-				bool neighborsFilled = board.getBlockType(x - 1, y) != BlockType::EMPTY && board.getBlockType(x + 1, y) != BlockType::EMPTY;
+				bool empty = board.getBlockType(x, y) == BlockType::Empty;
+				bool neighborsFilled = board.getBlockType(x - 1, y) != BlockType::Empty && board.getBlockType(x + 1, y) != BlockType::Empty;
 				if (!empty) {
 					break;
 				}
@@ -255,7 +259,7 @@ namespace tetris {
 		for (int x = 0; x < w; ++x) {
 			bool foundEmpty = false;
 			for (int y = 0; y <= highestRow; ++y) {
-				bool empty = board.getBlockType(x, y) == BlockType::EMPTY;
+				bool empty = board.getBlockType(x, y) == BlockType::Empty;
 				if (empty) {
 					foundEmpty = true;
 				}
@@ -271,7 +275,7 @@ namespace tetris {
 
 		bool isAtLeastOneFilledSquareAbowe(int x, int y, const RawTetrisBoard& board, size_t highestRow) {
 			for (++y; y <= highestRow; ++y) {
-				if (board.getBlockType(x, y) != BlockType::EMPTY) {
+				if (board.getBlockType(x, y) != BlockType::Empty) {
 					return true;
 				}
 			}
@@ -289,7 +293,7 @@ namespace tetris {
 		int rows = 0;
 		for (int y = 0; y <= highestRow; ++y) {
 			for (int x = 0; x < w; ++x) {
-				bool empty = board.getBlockType(x, y) == BlockType::EMPTY;
+				bool empty = board.getBlockType(x, y) == BlockType::Empty;
 				if (empty && isAtLeastOneFilledSquareAbowe(x, y, board, highestRow)) {
 					++rows;
 					break;
@@ -302,7 +306,7 @@ namespace tetris {
 	int calculateHighestUsedRow(const RawTetrisBoard& board) {
 		const auto& v = board.getBoardVector();
 		auto it = std::find_if(v.rbegin(), v.rend(), [](BlockType blockType) {
-			return BlockType::EMPTY != blockType;
+			return BlockType::Empty != blockType;
 		});
 		auto index = it - v.rbegin();
 		return static_cast<int>((v.size() - index - 1) / board.getColumns());
@@ -319,9 +323,9 @@ namespace tetris {
 	int calculateBlockEdges(const RawTetrisBoard& board, const Block& block) {
 		int edges = 0;
 		for (const Square& sq : block) {
-			board.getBlockType(sq.column - 1, sq.row) != BlockType::EMPTY ? ++edges : 0;
-			board.getBlockType(sq.column, sq.row - 1) != BlockType::EMPTY ? ++edges : 0;
-			board.getBlockType(sq.column + 1, sq.row) != BlockType::EMPTY ? ++edges : 0;
+			board.getBlockType(sq.column - 1, sq.row) != BlockType::Empty ? ++edges : 0;
+			board.getBlockType(sq.column, sq.row - 1) != BlockType::Empty ? ++edges : 0;
+			board.getBlockType(sq.column + 1, sq.row) != BlockType::Empty ? ++edges : 0;
 		}
 		return edges;
 	}
@@ -332,7 +336,7 @@ namespace tetris {
 	}
 
 	Ai::Ai()
-		: Ai{"Default", Ai::getDefaultValueFunction()} {
+		: Ai{"Default", getDefaultValueFunction()} {
 	}
 
 	Ai::Ai(std::string name, std::string valueFunction, bool allowException)
@@ -367,7 +371,7 @@ namespace tetris {
 					moveBlockToBeforeImpact(state, childBoard);
 
 					// Impact, the block is now a part of the board.
-					childBoard.update(Move::DOWN_GRAVITY);
+					childBoard.update(Move::DownGravity);
 
 					State childState = calculateBestStateRecursive(childBoard, 1);
 
@@ -390,15 +394,15 @@ namespace tetris {
 
 	void moveBlockToBeforeImpact(const Ai::State& state, RawTetrisBoard& board) {
 		for (int i = 0; i < state.rotationLeft; ++i) {
-			board.update(Move::ROTATE_LEFT);
+			board.update(Move::RotateLeft);
 		}
 		for (int i = 0; i < state.left; ++i) {
-			board.update(Move::LEFT);
+			board.update(Move::RotateRight);
 		}
 		for (int i = 0; i < -1 * state.left; ++i) {
-			board.update(Move::RIGHT);
+			board.update(Move::Right);
 		}
-		board.update(Move::DOWN_GROUND);
+		board.update(Move::DownGround);
 	}
 
 	float Ai::moveBlockToGroundCalculateValue(const State& state, RawTetrisBoard& board) {
@@ -409,7 +413,7 @@ namespace tetris {
 		if (parameters_.erodedPieces) {
 			calculator_.updateVariable("erodedPieces", (float) calculateErodedPieces(board));
 		}
-		board.update(Move::DOWN_GRAVITY);
+		board.update(Move::DownGround);
 		if (parameters_.rowHoles) {
 			calculator_.updateVariable("rowHoles", (float) calculateRowTransitions(board));
 		}
@@ -462,4 +466,4 @@ namespace tetris {
 		parameters_.holeDepth = calculator_.hasVariable("holeDepth", cache_);
 	}
 
-} // Namespace tetris.
+}

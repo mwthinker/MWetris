@@ -51,10 +51,8 @@ namespace tetris {
 		}
 
 	private:
-		// @RawTetrisBoard
 		void triggerEvent(BoardEvent gameEvent) override;
 
-		// @RawTetrisBoard
 		std::vector<BlockType> addExternalRows() override;
 
 		std::vector<BlockType> squaresToAdd_;

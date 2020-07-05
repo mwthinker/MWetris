@@ -17,20 +17,20 @@ namespace sdl {
 		std::stringstream stream{j.get<std::string>()};
 		float r;
 		if (!(stream >> r)) {
-			throw std::runtime_error("Red value invalid");
+			throw std::runtime_error{"Red value invalid"};
 		}
 		float g;
 		if (!(stream >> g)) {
-			throw std::runtime_error("Green value invalid");
+			throw std::runtime_error{"Green value invalid"};
 		}
 		float b;
 		if (!(stream >> b)) {
-			throw std::runtime_error("Blue value invalid");
+			throw std::runtime_error{"Blue value invalid"};
 		}
 		float a = 1.f;
 		if (!stream.eof()) {
 			if (!(stream >> a)) {
-				throw std::runtime_error("Alpha value invalid");
+				throw std::runtime_error{"Alpha value invalid"};
 			}
 		}
 
@@ -46,7 +46,7 @@ namespace tetris {
 			case 'z': case 'Z':
 				return BlockType::Z;
 			case 'w': case 'W':
-				return BlockType::WALL;
+				return BlockType::Wall;
 			case 't': case 'T':
 				return BlockType::T;
 			case 's': case 'S':
@@ -60,7 +60,7 @@ namespace tetris {
 			case 'I': case 'i':
 				return BlockType::I;
 			default:
-				return BlockType::EMPTY;
+				return BlockType::Empty;
 		}
 	}
 
@@ -68,7 +68,7 @@ namespace tetris {
 		switch (blocktype) {
 			case BlockType::Z:
 				return "Z";
-			case BlockType::WALL:
+			case BlockType::Wall:
 				return "W";
 			case BlockType::T:
 				return "T";
@@ -487,7 +487,7 @@ namespace tetris {
 
 	std::vector<Ai> TetrisData::getAiVector() const {
 		std::vector<Ai> ais;
-		ais.push_back(Ai()); // Add default ai.
+		ais.push_back({});
 		ais.insert(ais.end(), jsonObject_["ais"].begin(), jsonObject_["ais"].end());
 		return ais;
 	}
@@ -498,7 +498,7 @@ namespace tetris {
 
 	void TetrisData::setHighscoreRecordVector(const std::vector<HighscoreRecord>& highscoreVector) {
 		jsonObject_["highscore"].clear();
-		for (const HighscoreRecord& record : highscoreVector) {
+		for (const auto& record : highscoreVector) {
 			jsonObject_["highscore"].push_back(record);
 		}
 	}

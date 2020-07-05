@@ -22,7 +22,7 @@ namespace tetris {
 
 		int nbrOfSquares = 0;
 		switch (blockType) {
-			case BlockType::EMPTY:
+			case BlockType::Empty:
 				maxRotations_ = 0;
 				squares_[nbrOfSquares++] = Square{0, 0};
 				squares_[nbrOfSquares++] = Square{0, 0};
@@ -171,4 +171,4 @@ namespace tetris {
 		}
 	}
 
-} // Namespace tetris.
+}

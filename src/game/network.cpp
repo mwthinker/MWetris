@@ -37,7 +37,7 @@ namespace tetris::game {
 
 		tetris_protocol::BlockType toProtoBlockType(BlockType blockType) {
 			switch (blockType) {
-				case BlockType::EMPTY:
+				case BlockType::Empty:
 					return tetris_protocol::BlockType::EMPTY;
 				case BlockType::I:
 					return tetris_protocol::BlockType::I;
@@ -51,7 +51,7 @@ namespace tetris::game {
 					return tetris_protocol::BlockType::S;
 				case BlockType::T:
 					return tetris_protocol::BlockType::T;
-				case BlockType::WALL:
+				case BlockType::Wall:
 					return tetris_protocol::BlockType::WALL;
 				case BlockType::Z:
 					return tetris_protocol::BlockType::Z;
@@ -63,7 +63,7 @@ namespace tetris::game {
 		BlockType fromProtoBlockType(tetris_protocol::BlockType blockType) {
 			switch (blockType) {
 				case tetris_protocol::BlockType::EMPTY:
-					return BlockType::EMPTY;
+					return BlockType::Empty;
 				case tetris_protocol::BlockType::I:
 					return BlockType::I;
 				case tetris_protocol::BlockType::J:
@@ -77,12 +77,12 @@ namespace tetris::game {
 				case tetris_protocol::BlockType::T:
 					return BlockType::T;
 				case tetris_protocol::BlockType::WALL:
-					return BlockType::WALL;
+					return BlockType::Wall;
 				case tetris_protocol::BlockType::Z:
 					return BlockType::Z;
 			}
 			assert(false);
-			return BlockType::EMPTY;
+			return BlockType::Empty;
 		}
 
 		void updateProtoPlayer(tetris_protocol::Player* updatePlayer, const LocalPlayerPtr& player) {

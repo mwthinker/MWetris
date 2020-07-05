@@ -7,48 +7,48 @@
 
 namespace tetris {
 
-	// The events triggered by the tetris board.
 	enum class BoardEvent {
-		RESTARTED,
-		BLOCK_COLLISION,
-		CURRENT_BLOCK_UPDATED,
-		NEXT_BLOCK_UPDATED,
-		EXTERNAL_ROWS_ADDED,
-		PLAYER_MOVES_BLOCK_ROTATE,
-		PLAYER_MOVES_BLOCK_LEFT,
-		PLAYER_MOVES_BLOCK_RIGHT,
-		PLAYER_MOVES_BLOCK_DOWN,
-		PLAYER_MOVES_BLOCK_DOWN_GROUND,
-		GRAVITY_MOVES_BLOCK,
-		ONE_ROW_REMOVED,
-		TWO_ROW_REMOVED,
-		THREE_ROW_REMOVED,
-		FOUR_ROW_REMOVED,
-		ROW_TO_BE_REMOVED,
-		GAME_OVER,
-		MOVE_ROTATE_LEFT,
-		MOVE_ROTATE_RIGHT,
-		MOVE_DOWN_GRAVITY,
-		MOVE_DOWN,
-		MOVE_DOWN_GROUND,
-		MOVE_LEFT,
-		MOVE_RIGHT,
-		MOVE_GAME_OVER,
+		Restarted,
+		BlockCollision,
+		CurrentBlockUpdated,
+		NextBlockUpdated,
+		ExternalRowsAdded,
+		
+		PlayerMovesBlockUpdated,
+		PlayerMovesBlockLeft,
+		PlayerMovesBlockRight,
+		PlayerMovesBlockDown,
+		PlayerMovesBlockDownGround,
+		GravityMovesBlock,
+		
+		OneRowRemoved,
+		TwoRowRemoved,
+		ThreeRowRemoved,
+		FourRowRemoved,
+		RowToBeRemoved,
+		GameOver,
+		
+		MoveRotateLeft,
+		MoveRotateRight,
+		MoveDownGravity,
+		MoveDown,
+		MoveDownGround,
+		MoveLeft,
+		MoveRigh,
+		MoveGameOver
 	};
 
-	// Defines all valid ways of controlling the falling block.
 	enum class Move {
-		ROTATE_LEFT,
-		ROTATE_RIGHT,
-		DOWN_GRAVITY,
-		DOWN,
-		DOWN_GROUND,
-		LEFT,
-		RIGHT,
-		GAME_OVER
+		RotateLeft,
+		RotateRight,
+		DownGravity,
+		Down,
+		DownGround,
+		Left,
+		Right,
+		GameOver
 	};
 
-	// Represents a tetris board.
 	class RawTetrisBoard {
 	public:
 		RawTetrisBoard(int columns, int rows, BlockType current, BlockType next);
@@ -120,7 +120,7 @@ namespace tetris {
 			}
 			int filled = 0;
 			for (int x = 0; x < columns_; ++x) {
-				if (board(x, row) != BlockType::EMPTY) {
+				if (board(x, row) != BlockType::Empty) {
 					++filled;
 				}
 			}
@@ -152,7 +152,7 @@ namespace tetris {
 
 		bool isRowEmpty(int row) const {
 			for (int column = 0; column < columns_; ++column) {
-				if (board(column, row) != BlockType::EMPTY) {
+				if (board(column, row) != BlockType::Empty) {
 					return false;
 				}
 			}
@@ -161,7 +161,7 @@ namespace tetris {
 
 		bool isRowFilled(int row) const {
 			for (int column = 0; column < columns_; ++column) {
-				if (board(column, row) == BlockType::EMPTY) {
+				if (board(column, row) == BlockType::Empty) {
 					return false;
 				}
 			}

@@ -15,7 +15,7 @@ int main(int, char**) {
 		//tetris.setStartPage(tetris::ui::scene::Event::Play);
 		tetris.startLoop();
 		tetris::TetrisData::getInstance().quit();
-	} catch (std::exception&) {
+	} catch (const std::exception&) {
 		spdlog::error("[Main] Fatal error has occured.");
 	}
 

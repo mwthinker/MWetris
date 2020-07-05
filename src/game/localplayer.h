@@ -30,7 +30,7 @@ namespace tetris::game {
 		}
 
 		LocalPlayerBuilder& widthMovingBlock(const Block& block) {
-			movingBlockType_ = BlockType::EMPTY;
+			movingBlockType_ = BlockType::Empty;
 			movingBlock_ = block;
 			return *this;
 		}
@@ -91,8 +91,8 @@ namespace tetris::game {
 		int points_{0}, level_{1}, levelUpCounter_{0}, clearedRows_{0};
 		int width_{10}, height_{24};
 		Block movingBlock_;
-		BlockType movingBlockType_{BlockType::EMPTY};
-		BlockType next_{BlockType::EMPTY};
+		BlockType movingBlockType_{BlockType::Empty};
+		BlockType next_{BlockType::Empty};
 		std::vector<BlockType> board_;
 		int gameOverPosition_{};
 	};

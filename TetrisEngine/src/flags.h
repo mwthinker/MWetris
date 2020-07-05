@@ -17,18 +17,20 @@ public:
 	void printHelpFunction() const;
 
 	std::string programName_;
-	bool printHelp_;
-	std::chrono::milliseconds delay_;
+	
 	int maxNbrBlocks_;
 	tetris::Ai ai_;
-	bool play_;
-	bool useRandomFile_;
-	int width_;
-	int height_;
-	int verbose_;
-	int depth_;
 	std::string randomFilePath_;
 	std::queue<std::string> outputOrder_;
+	
+	std::chrono::milliseconds delay_{0};
+	bool printHelp_{false};
+	bool play_{false};
+	bool useRandomFile_{false};
+	int width_{10};
+	int height_{24};
+	bool verbose_{false};
+	int depth_{1};
 };
 
 #endif	// FLAGS_H

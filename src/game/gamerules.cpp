@@ -43,20 +43,20 @@ namespace tetris::game {
 
 	void GameRules::applyRules(BoardEvent gameEvent, LocalPlayerPtr player) {
 		switch (gameEvent) {
-			case BoardEvent::ONE_ROW_REMOVED:
+			case BoardEvent::OneRowRemoved:
 				handleRowClearedEvent(player, 1);
 				break;
-			case BoardEvent::TWO_ROW_REMOVED:
+			case BoardEvent::TwoRowRemoved:
 				handleRowClearedEvent(player, 2);
 				break;
-			case BoardEvent::THREE_ROW_REMOVED:
+			case BoardEvent::ThreeRowRemoved:
 				handleRowClearedEvent(player, 3);
 				break;
-			case BoardEvent::FOUR_ROW_REMOVED:
+			case BoardEvent::FourRowRemoved:
 				handleRowClearedEvent(player, 4);
 				addRowsToOpponents(player);
 				break;
-			case BoardEvent::GAME_OVER:
+			case BoardEvent::GameOver:
 				handleGameOverEvent(player);
 				break;
 		}
