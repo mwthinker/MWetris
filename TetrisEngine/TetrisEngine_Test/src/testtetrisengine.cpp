@@ -7,8 +7,8 @@ using namespace tetris;
 
 namespace {
 
-	const int TETRIS_WIDTH = 10;
-	const int TETRIS_HEIGHT = 24;
+	constexpr int TetrisWidth = 10;
+	constexpr int TetrisHeight = 24;
 
 }
 
@@ -195,7 +195,7 @@ TEST_CASE("Test tetrisboard", "[tetrisboard]") {
 
 	const BlockType firstNextBlockType = BlockType::L;
 	const BlockType firstCurrentBlockType = BlockType::S;
-	RawTetrisBoard board{TETRIS_WIDTH, TETRIS_HEIGHT, firstCurrentBlockType, firstNextBlockType};
+	RawTetrisBoard board{TetrisWidth, TetrisHeight, firstCurrentBlockType, firstNextBlockType};
 
 	int size = sizeof(RawTetrisBoard);
 
@@ -204,8 +204,8 @@ TEST_CASE("Test tetrisboard", "[tetrisboard]") {
 	}
 
 	SECTION("testing the size of the board") {
-		REQUIRE(board.getColumns() == TETRIS_WIDTH);
-		REQUIRE(board.getRows() == TETRIS_HEIGHT);
+		REQUIRE(board.getColumns() == TetrisWidth);
+		REQUIRE(board.getRows() == TetrisHeight);
 	}
 
 	SECTION("update the next block") {
@@ -214,7 +214,7 @@ TEST_CASE("Test tetrisboard", "[tetrisboard]") {
 
 		const BlockType newBlockType = BlockType::I;
 		REQUIRE(newBlockType != board.getNextBlockType());
-		board.updateNextBlock(newBlockType);
+		board.setNextBlock(newBlockType);
 		REQUIRE(newBlockType == board.getNextBlockType());
 	}
 
@@ -226,9 +226,9 @@ TEST_CASE("Test tetrisboard", "[tetrisboard]") {
 		SECTION("current block becomes the nextblock") {
 			Block startBlock = board.getBlock();
 			REQUIRE(blockEqual(startBlock, board.getBlock()));
-			board.update(Move::DOWN_GROUND);
+			board.update(Move::DownGround);
 			REQUIRE(!blockEqual(startBlock, board.getBlock()));
-			board.update(Move::DOWN_GRAVITY);
+			board.update(Move::DownGravity);
 			REQUIRE(board.getBlockType() == firstNextBlockType);
 		}
 	}
@@ -249,20 +249,20 @@ TEST_CASE("Test tetrisboard", "[tetrisboard]") {
 
 		SECTION("restart blocktypes") {
 			// Restart.
-			board.updateRestart(NEW_CURRENT, NEW_NEXT);
+			board.restart(NEW_CURRENT, NEW_NEXT);
 			// New types.
 			REQUIRE(board.getBlockType() == NEW_CURRENT);
 			REQUIRE(board.getNextBlockType() == NEW_NEXT);
 			// Same size.
-			REQUIRE(board.getColumns() == TETRIS_WIDTH);
-			REQUIRE(board.getRows() == TETRIS_HEIGHT);
+			REQUIRE(board.getColumns() == TetrisWidth);
+			REQUIRE(board.getRows() == TetrisHeight);
 		}
 		
 		SECTION("restart and resize") {
 			// Restart.
-			board.update(Move::LEFT);
-			board.update(Move::DOWN_GROUND);
-			board.updateRestart(NEW_WIDTH, NEW_HEIGHT, NEW_CURRENT, NEW_NEXT);
+			board.update(Move::Left);
+			board.update(Move::DownGround);
+			board.restart(NEW_WIDTH, NEW_HEIGHT, NEW_CURRENT, NEW_NEXT);
 			// New types.
 			REQUIRE(board.getBlockType() == restartBoard.getBlockType());
 			REQUIRE(board.getNextBlockType() == restartBoard.getNextBlockType());
@@ -306,19 +306,19 @@ TEST_CASE("Test ai", "[ai]") {
 		for (int x = 0; x < 10; ++x) {
 			int index = x + (15 - y) * 10;
 			if (intBoard[index] == 0) {
-				boardBlockTypes.push_back(BlockType::EMPTY);
+				boardBlockTypes.push_back(BlockType::Empty);
 			} else {
 				boardBlockTypes.push_back(BlockType::I);
 			}
 		}
 	}
 
-	RawTetrisBoard tetrisBoard{boardBlockTypes, TETRIS_WIDTH, TETRIS_HEIGHT, current, NEW_NEXT};
-	tetrisBoard.update(Move::DOWN_GROUND);
+	RawTetrisBoard tetrisBoard{boardBlockTypes, TetrisWidth, TetrisHeight, current, NEW_NEXT};
+	tetrisBoard.update(Move::DownGround);
 
 	SECTION("Calcualte highest used row") {
 		REQUIRE(calculateHighestUsedRow(tetrisBoard) == 15);
-		tetrisBoard.update(Move::DOWN_GRAVITY); // Two rows removed.
+		tetrisBoard.update(Move::DownGravity); // Two rows removed.
 		REQUIRE(calculateHighestUsedRow(tetrisBoard) == 13);
 	}
 
@@ -331,32 +331,32 @@ TEST_CASE("Test ai", "[ai]") {
 	}	
 
 	SECTION("Calculate row holes, f3") {
-		tetrisBoard.update(Move::DOWN_GRAVITY);
+		tetrisBoard.update(Move::DownGravity);
 		REQUIRE(calculateRowTransitions(tetrisBoard) == 29);
 	}
 	
 	SECTION("Calculate column holes, f4") {
-		tetrisBoard.update(Move::DOWN_GRAVITY);
+		tetrisBoard.update(Move::DownGravity);
 		REQUIRE(calculateColumnTransitions(tetrisBoard) == 27);
 	}
 
 	SECTION("Calculate number of holes, f5") {
-		tetrisBoard.update(Move::DOWN_GRAVITY);
+		tetrisBoard.update(Move::DownGravity);
 		REQUIRE(calculateNumberOfHoles(tetrisBoard) == 17);
 	}
 
 	SECTION("Calculate sum of cumulative wells, f6") {
-		tetrisBoard.update(Move::DOWN_GRAVITY);
+		tetrisBoard.update(Move::DownGravity);
 		REQUIRE(calculateCumulativeWells(tetrisBoard) == 8);
 	}
 
 	SECTION("Calculate sum of hole depths, f7") {
-		tetrisBoard.update(Move::DOWN_GRAVITY);
+		tetrisBoard.update(Move::DownGravity);
 		REQUIRE(calculateHoleDepth(tetrisBoard) == 62);
 	}
 
 	SECTION("Calculate the number of rows containing at least one hole, f8") {
-		tetrisBoard.update(Move::DOWN_GRAVITY);
+		tetrisBoard.update(Move::DownGravity);
 		REQUIRE(calculateRowHoles(tetrisBoard) == 9);
 	}
 }

@@ -11,15 +11,15 @@ using namespace tetris;
 
 namespace {
 
-	const int TETRIS_WIDTH = 10;
-	const int TETRIS_HEIGHT = 24;
+	constexpr int TetrisWidth = 10;
+	constexpr int TetrisHeight = 24;
 
 	constexpr BlockType charToBlockType(char key) {
 		switch (key) {
 			case 'z': case 'Z':
 				return BlockType::Z;
 			case 'w': case 'W':
-				return BlockType::WALL;
+				return BlockType::Wall;
 			case 't': case 'T':
 				return BlockType::T;
 			case 's': case 'S':
@@ -33,7 +33,7 @@ namespace {
 			case 'I': case 'i':
 				return BlockType::I;
 			default:
-				return BlockType::EMPTY;
+				return BlockType::Empty;
 		}
 	}
 
@@ -42,18 +42,10 @@ namespace {
 TEST_CASE("benchmarked", "[.][benchmark]") {
 
 	BENCHMARK("Copy RawTetrisBoard") {
-		RawTetrisBoard board{TETRIS_WIDTH, TETRIS_HEIGHT, BlockType::S, BlockType::J};
+		RawTetrisBoard board{TetrisWidth, TetrisHeight, BlockType::S, BlockType::J};
 		for (int i = 0; i < 100; ++i) {
 			RawTetrisBoard copyBoard = board;
-			board.update(Move::DOWN);
-		}
-	};
-
-	BENCHMARK("Copy TetrisBoard") {
-		TetrisBoard board{TETRIS_WIDTH, TETRIS_HEIGHT, BlockType::S, BlockType::J};
-		for (int i = 0; i < 100; ++i) {
-			TetrisBoard copyBoard = board;
-			board.update(Move::DOWN);
+			board.update(Move::Down);
 		}
 	};
 
@@ -90,11 +82,11 @@ TEST_CASE("benchmarked", "[.][benchmark]") {
 	for (char chr : std::string_view{"TTOOZZSSEIETOOSZSEEEEEESSEEEEEEEES"}) {
 		blockTypes.push_back(charToBlockType(chr));
 	}
-	RawTetrisBoard board{blockTypes, TETRIS_WIDTH, TETRIS_HEIGHT,
+	RawTetrisBoard board{blockTypes, TetrisWidth, TetrisHeight,
 		Block{BlockType::J, 4, 18, 0}, BlockType::L};
 	int highestUsedRow = calculateHighestUsedRow(board);
 	
-	board.update(Move::DOWN_GROUND);
+	board.update(Move::DownGround);
 
 	BENCHMARK("Old ai functions") {
 		calculateColumnHoles(board, highestUsedRow);
@@ -123,7 +115,7 @@ TEST_CASE("benchmarked", "[.][benchmark]") {
 	BENCHMARK("New ai functions") {
 		calculateLandingHeight(board.getBlock());
 		calculateErodedPieces(board);
-		board.update(Move::DOWN_GROUND);
+		board.update(Move::DownGround);
 		calculateRowTransitions(board);
 		calculateColumnTransitions(board);
 		calculateNumberOfHoles(board);
