@@ -224,7 +224,7 @@ int main(const int argc, const char* const argv[]) {
 			if (flags.useRandomFile_) {
 				try {
 					BlockType blockType = readBlockType(infile);
-					tetrisBoard.updateNextBlock(blockType);
+					tetrisBoard.setNextBlock(blockType);
 				} catch (std::ifstream::failure e) {
 					std::cerr << "Failed to read " << flags.randomFilePath_ << "\n";
 					if (flags.verbose_) {
@@ -233,7 +233,7 @@ int main(const int argc, const char* const argv[]) {
 					std::exit(1);
 				}
 			} else {
-				tetrisBoard.updateNextBlock(randomBlockType());
+				tetrisBoard.setNextBlock(randomBlockType());
 			}
 		}
 		switch (gameEvent) {

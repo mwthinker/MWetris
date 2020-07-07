@@ -70,125 +70,121 @@ namespace tetris {
 
 	void RawTetrisBoard::update(Move move) {
 		triggerEvent(gameEventToMove(move));
-		// Game over?
+		
 		if (isGameOver_ || collision(current_)) {
 			if (!isGameOver_) {
 				// Only called once, when the game becomes game over.
 				isGameOver_ = true;
 				triggerEvent(BoardEvent::GameOver);
 			}
-		} else {
-			Block block = current_;
-			switch (move) {
-				case Move::GameOver:
-					// Only called once, when the game becomes game over.
-					isGameOver_ = true;
-					triggerEvent(BoardEvent::GameOver);
-					break;
-				case Move::Left:
-					block.moveLeft();
-					if (!collision(block)) {
-						current_ = block;
-						triggerEvent(BoardEvent::PlayerMovesBlockLeft);
-					}
-					break;
-				case Move::Right:
-					block.moveRight();
-					if (!collision(block)) {
-						current_ = block;
-						triggerEvent(BoardEvent::PlayerMovesBlockRight);
-					}
-					break;
-				case Move::DownGround:
-					triggerEvent(BoardEvent::PlayerMovesBlockDownGround);
-					do {
-						current_ = block;
-						block.moveDown();
-					} while (!collision(block));
+			return;
+		}
+
+		Block block = current_;
+		switch (move) {
+			case Move::GameOver:
+				// Only called once, when the game becomes game over.
+				isGameOver_ = true;
+				triggerEvent(BoardEvent::GameOver);
+				break;
+			case Move::Left:
+				block.moveLeft();
+				if (!collision(block)) {
+					current_ = block;
+					triggerEvent(BoardEvent::PlayerMovesBlockLeft);
+				}
+				break;
+			case Move::Right:
+				block.moveRight();
+				if (!collision(block)) {
+					current_ = block;
+					triggerEvent(BoardEvent::PlayerMovesBlockRight);
+				}
+				break;
+			case Move::DownGround:
+				triggerEvent(BoardEvent::PlayerMovesBlockDownGround);
+				do {
+					current_ = block;
+					block.moveDown();
+				} while (!collision(block));
+				triggerEvent(BoardEvent::PlayerMovesBlockDown);
+				break;
+			case Move::Down:
+				block.moveDown();
+				if (!collision(block)) {
+					current_ = block;
 					triggerEvent(BoardEvent::PlayerMovesBlockDown);
-					break;
-				case Move::Down:
-					block.moveDown();
-					if (!collision(block)) {
-						current_ = block;
-						triggerEvent(BoardEvent::PlayerMovesBlockDown);
+				}
+				break;
+			case Move::RotateRight:
+				block.rotateRight();
+				if (!collision(block)) {
+					current_ = block;
+					triggerEvent(BoardEvent::PlayerMovesBlockUpdated);
+				}
+				break;
+			case Move::RotateLeft:
+				block.rotateLeft();
+				if (!collision(block)) {
+					current_ = block;
+					triggerEvent(BoardEvent::PlayerMovesBlockUpdated);
+				}
+				break;
+			case Move::DownGravity:
+				block.moveDown();
+				if (collision(block)) {
+					// Collision detected, add squares to the gameboard.
+					addBlockToBoard(current_);
+
+					triggerEvent(BoardEvent::BlockCollision);
+
+					// Remove any filled row on the gameboard.
+					int nbr = removeFilledRows(current_);
+
+					// Add rows due to some external event.
+					std::vector<BlockType> squares = addExternalRows();
+					if (squares.size() > 0) {
+						externalRowsAdded_ = static_cast<int>(squares.size()) / columns_;
+						gameboard_.insert(gameboard_.begin(), squares.begin(), squares.end());
+						triggerEvent(BoardEvent::ExternalRowsAdded);
 					}
-					break;
-				case Move::RotateRight:
-					block.rotateRight();
-					if (!collision(block)) {
-						current_ = block;
-						triggerEvent(BoardEvent::PlayerMovesBlockUpdated);
+
+					// Update the user controlled block.
+					current_ = createBlock(next_);
+					triggerEvent(BoardEvent::CurrentBlockUpdated);
+
+					switch (nbr) {
+						case 1:
+							triggerEvent(BoardEvent::OneRowRemoved);
+							break;
+						case 2:
+							triggerEvent(BoardEvent::TwoRowRemoved);
+							break;
+						case 3:
+							triggerEvent(BoardEvent::ThreeRowRemoved);
+							break;
+						case 4:
+							triggerEvent(BoardEvent::FourRowRemoved);
+							break;
 					}
-					break;
-				case Move::RotateLeft:
-					block.rotateLeft();
-					if (!collision(block)) {
-						current_ = block;
-						triggerEvent(BoardEvent::PlayerMovesBlockUpdated);
-					}
-					break;
-				case Move::DownGravity:
-					block.moveDown();
-					if (collision(block)) {
-						// Collision detected, add squares to the gameboard.
-						addBlockToBoard(current_);
-
-						triggerEvent(BoardEvent::BlockCollision);
-
-						// Remove any filled row on the gameboard.
-						int nbr = removeFilledRows(current_);
-
-						// Add rows due to some external event.
-						std::vector<BlockType> squares = addExternalRows();
-						if (squares.size() > 0) {
-							externalRowsAdded_ = static_cast<int>(squares.size()) / columns_;
-							gameboard_.insert(gameboard_.begin(), squares.begin(), squares.end());
-							triggerEvent(BoardEvent::ExternalRowsAdded);
-						}
-
-						// Update the user controlled block.
-						current_ = createBlock(next_);
-						triggerEvent(BoardEvent::CurrentBlockUpdated);
-
-						switch (nbr) {
-							case 1:
-								triggerEvent(BoardEvent::OneRowRemoved);
-								break;
-							case 2:
-								triggerEvent(BoardEvent::TwoRowRemoved);
-								break;
-							case 3:
-								triggerEvent(BoardEvent::ThreeRowRemoved);
-								break;
-							case 4:
-								triggerEvent(BoardEvent::FourRowRemoved);
-								break;
-						}
-					} else {
-						current_ = block;
-						triggerEvent(BoardEvent::GravityMovesBlock);
-					}
-					break;
-			}
+				} else {
+					current_ = block;
+					triggerEvent(BoardEvent::GravityMovesBlock);
+				}
+				break;
 		}
 	}
 
-	void RawTetrisBoard::updateNextBlock(BlockType nextBlock) {
+	void RawTetrisBoard::setNextBlock(BlockType nextBlock) {
 		next_ = nextBlock;
 		triggerEvent(BoardEvent::NextBlockUpdated);
 	}
 
-	void RawTetrisBoard::updateCurrentBlock(BlockType current) {
-		current_ = createBlock(current);
-		triggerEvent(BoardEvent::CurrentBlockUpdated);
+	void RawTetrisBoard::restart(BlockType current, BlockType next) {
+		restart(columns_, rows_, current, next);
 	}
 
-	void RawTetrisBoard::updateRestart(BlockType current, BlockType next) {
-		updateRestart(columns_, rows_, current, next);
-	}
-
-	void RawTetrisBoard::updateRestart(int columns, int rows, BlockType current, BlockType next) {
+	void RawTetrisBoard::restart(int columns, int rows, BlockType current, BlockType next) {
 		next_ = next;
 		rows_ = rows;
 		columns_ = columns;
@@ -205,7 +201,7 @@ namespace tetris {
 
 	void RawTetrisBoard::addBlockToBoard(const Block& block) {
 		// All squares in the block is added to the gameboard.
-		for (const Square& sq : block) {
+		for (const auto& sq : block) {
 			board(sq.column, sq.row) = block.getBlockType();
 		}
 	}
@@ -222,6 +218,19 @@ namespace tetris {
 			return BlockType::Empty;
 		}
 		return board(column, row);
+	}
+
+	int RawTetrisBoard::calculateSquaresFilled(int row) const {
+		if (row >= static_cast<int>(gameboard_.size()) / columns_) {
+			return 0;
+		}
+		int filled = 0;
+		for (int x = 0; x < columns_; ++x) {
+			if (board(x, row) != BlockType::Empty) {
+				++filled;
+			}
+		}
+		return filled;
 	}
 
 	bool RawTetrisBoard::collision(const Block& block) const {
@@ -242,31 +251,35 @@ namespace tetris {
 		isGameOver_ = false;
 	}
 
+	bool RawTetrisBoard::isRowInsideBoard(int row) const {
+		return row >= 0 && row * columns_ < static_cast<int>(gameboard_.size());
+	}
+
 	int RawTetrisBoard::removeFilledRows(const Block& block) {
 		int row = block.getLowestRow();
-		int nbr = 0; // Number of rows filled.
+		int rowsFilled = 0;
 		const int nbrOfSquares = static_cast<int>(current_.getSize());
 		for (int i = 0; i < nbrOfSquares; ++i) {
 			bool filled = false;
-			if (row >= 0 && row * columns_ < (int) gameboard_.size()) { // Check only rows inside the board.
+			if (isRowInsideBoard(row)) {
 				filled = isRowFilled(row);
 			}
 			if (filled) {
 				moveRowsOneStepDown(row);
-				++nbr;
+				++rowsFilled;
 			} else {
 				++row;
 			}
 		}
 
-		return nbr;
+		return rowsFilled;
 	}
 
 	void RawTetrisBoard::moveRowsOneStepDown(int rowToRemove) {
 		rowToBeRemoved_ = rowToRemove;
 		triggerEvent(BoardEvent::RowToBeRemoved);
+		
 		int indexStartOfRow = rowToRemove * columns_;
-		// Erase the row.
 		gameboard_.erase(gameboard_.begin() + indexStartOfRow, gameboard_.begin() + indexStartOfRow + columns_);
 
 		// Is it necessary to replace the row?

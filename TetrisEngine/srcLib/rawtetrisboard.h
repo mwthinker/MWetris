@@ -63,31 +63,22 @@ namespace tetris {
 
 		virtual ~RawTetrisBoard() = default;
 
-		// Move the block. The board will stay constant if game over is true.
 		void update(Move move);
 
-		// Update the next block to be. Triggers the game event NEXT_BLOCK_UPDATED.
-		void updateNextBlock(BlockType next);
+		void setNextBlock(BlockType next);
 
-		// Update the current block to be. Triggers the gameevent CURRENT_BLOCK_UPDATED.
-		// The current block is placed at the start position on the board.
-		void updateCurrentBlock(BlockType current);
+		void restart(BlockType current, BlockType next);
 
-		void updateRestart(BlockType current, BlockType next);
+		void restart(int column, int row, BlockType current, BlockType next);
 
-		void updateRestart(int column, int row, BlockType current, BlockType next);
-
-		// Return the number of rows.
 		int getRows() const {
 			return rows_;
 		}
 
-		// Return the number of columns.
 		int getColumns() const {
 			return columns_;
 		}
 
-		// Return true if the game is over else false.
 		bool isGameOver() const {
 			return isGameOver_;
 		}
@@ -114,18 +105,7 @@ namespace tetris {
 		// Return the blocktype for a given position.
 		BlockType getBlockType(int column, int row) const;
 
-		int calculateSquaresFilled(int row) const {
-			if (row >= (int) gameboard_.size() / columns_) {
-				return 0;
-			}
-			int filled = 0;
-			for (int x = 0; x < columns_; ++x) {
-				if (board(x, row) != BlockType::Empty) {
-					++filled;
-				}
-			}
-			return filled;
-		}
+		int calculateSquaresFilled(int row) const;
 
 		// Return true if the block is outside or on an already occupied square on the board.
 		// Otherwise it return false.
@@ -140,6 +120,8 @@ namespace tetris {
 		}
 
 	private:
+		bool isRowInsideBoard(int row) const;
+
 		BlockType& board(int column, int row) {
 			return gameboard_[row * columns_ + column];
 		}

@@ -18,7 +18,6 @@ namespace tetris {
 
 	std::vector<BlockType> generateRow(int width, int holes);
 
-	// Represents a tetris board.
 	class TetrisBoard : public RawTetrisBoard {
 	public:
 		TetrisBoard(int columns, int rows, BlockType current, BlockType next);
@@ -27,15 +26,13 @@ namespace tetris {
 			int rows, int columns, Block current, BlockType next,
 			int savedRowsRemoved = 0);
 
-		// Copy a tetrisboard except the connected gameEventListener.
-		TetrisBoard(const TetrisBoard&);
-		TetrisBoard& operator=(const TetrisBoard&);
+		TetrisBoard(const TetrisBoard&) = delete;
+		TetrisBoard& operator=(const TetrisBoard&) = delete;
 
-		TetrisBoard(TetrisBoard&& other) = default;
-		TetrisBoard& operator=(TetrisBoard&& other) = default;
+		TetrisBoard(TetrisBoard&& other) noexcept = default;
+		TetrisBoard& operator=(TetrisBoard&& other) noexcept = default;
 
-		// Restarts the board. Resets all states. Current and next represents the two starting blocks.
-		void restart(BlockType current, BlockType next);
+		void restartBoard(BlockType current, BlockType next);
 
 		// Add rows to be added at the bottom of the board at the next change of the moving block.
 		void addRows(const std::vector<BlockType>& blockTypes);

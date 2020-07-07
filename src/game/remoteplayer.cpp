@@ -52,7 +52,7 @@ namespace tetris::game {
 		points_ = 0;
 		gameOverPosition_ = 0;
 		levelUpCounter_ = 0;
-		tetrisBoard_.updateRestart(randomBlockType(), randomBlockType());
+		tetrisBoard_.restartBoard(randomBlockType(), randomBlockType());
 	}
 
 	void RemotePlayer::updateGameOver() {

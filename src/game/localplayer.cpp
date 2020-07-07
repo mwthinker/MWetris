@@ -117,7 +117,7 @@ namespace tetris::game {
 		points_ = 0;
 		gameOverPosition_ = 0;
 		levelUpCounter_ = 0;
-		tetrisBoard_.updateRestart(randomBlockType(), randomBlockType());
+		tetrisBoard_.restartBoard(randomBlockType(), randomBlockType());
 	}
 
 	void LocalPlayer::updateGameOver() {
@@ -126,7 +126,7 @@ namespace tetris::game {
 
 	void LocalPlayer::boardListener(BoardEvent gameEvent) {
 		if (gameEvent == BoardEvent::CurrentBlockUpdated) {
-			tetrisBoard_.updateNextBlock(randomBlockType());
+			tetrisBoard_.setNextBlock(randomBlockType());
 
 			leftHandler_.reset();
 			rightHandler_.reset();

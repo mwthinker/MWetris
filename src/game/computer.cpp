@@ -25,7 +25,8 @@ namespace tetris::game {
 			activeThread_ = true;
 			input_ = {};
 			currentTurn_ = board.getTurns();
-			handle_ = std::async(std::launch::async | std::launch::deferred, Computer::calculateBestState, board, ai_, 1);
+
+			handle_ = std::async(std::launch::async | std::launch::deferred, Computer::calculateBestState, RawTetrisBoard{board}, ai_, 1);
 		} else {
 			if (handle_.valid()) {
 				latestState_ = handle_.get();
