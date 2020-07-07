@@ -1,6 +1,6 @@
 #include "localplayer.h"
 #include "actionhandler.h"
-#include "tetrisboard.h"
+#include "tetrisboardcomponent.h"
 
 #include <string>
 #include <functional>
@@ -40,7 +40,7 @@ namespace tetris::game {
 		, levelUpCounter_{0}
 		, tetrisBoard_{board.getBoardVector(), board.getColumns(), board.getRows(), board.getBlock(), board.getNextBlockType()} {
 
-		connection_ = tetrisBoard_.addGameEventListener([&](BoardEvent gameEvent, const TetrisBoard& board) {
+		connection_ = tetrisBoard_.addGameEventListener([&](BoardEvent gameEvent, const TetrisBoardComponent& board) {
 			boardListener(gameEvent);
 		});
 		device_->update(getTetrisBoard());

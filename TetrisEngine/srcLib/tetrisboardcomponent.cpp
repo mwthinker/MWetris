@@ -1,4 +1,4 @@
-#include "tetrisboard.h"
+#include "tetrisboardcomponent.h"
 
 #include "square.h"
 #include "block.h"
@@ -71,24 +71,24 @@ namespace tetris {
 		return row;
 	}
 
-	TetrisBoard::TetrisBoard(int columns, int rows, BlockType current, BlockType next)
+	TetrisBoardComponent::TetrisBoardComponent(int columns, int rows, BlockType current, BlockType next)
 		: RawTetrisBoard{columns, rows, current, next} {
 	}
 
-	TetrisBoard::TetrisBoard(const std::vector<BlockType>& board,
+	TetrisBoardComponent::TetrisBoardComponent(const std::vector<BlockType>& board,
 		int columns, int rows, Block current, BlockType next,
 		int savedRowsRemoved)
 		: RawTetrisBoard{board, columns, rows, current, next}
 		, rowsRemoved_{savedRowsRemoved} {
 	}
 
-	void TetrisBoard::restartBoard(BlockType current, BlockType next) {
+	void TetrisBoardComponent::restartBoard(BlockType current, BlockType next) {
 		squaresToAdd_.clear();
 		turns_ = 0;
 		restart(current, next);
 	}
 
-	void TetrisBoard::triggerEvent(BoardEvent gameEvent) {
+	void TetrisBoardComponent::triggerEvent(BoardEvent gameEvent) {
 		listener_(gameEvent, *this);
 		switch (gameEvent) {
 			case BoardEvent::NextBlockUpdated:
@@ -113,19 +113,19 @@ namespace tetris {
 		}
 	}
 
-	void TetrisBoard::addRows(const std::vector<BlockType>& blockTypes) {
+	void TetrisBoardComponent::addRows(const std::vector<BlockType>& blockTypes) {
 		if (!isGameOver()) {
 			squaresToAdd_.insert(squaresToAdd_.end(), blockTypes.begin(), blockTypes.end());
 		}
 	}
 
-	std::vector<BlockType> TetrisBoard::addExternalRows() {
+	std::vector<BlockType> TetrisBoardComponent::addExternalRows() {
 		std::vector<BlockType> tmp = squaresToAdd_;
 		squaresToAdd_.clear();
 		return tmp;
 	}
 
-	mw::signals::Connection TetrisBoard::addGameEventListener(const std::function<void(BoardEvent, const TetrisBoard&)>& callback) {
+	mw::signals::Connection TetrisBoardComponent::addGameEventListener(const std::function<void(BoardEvent, const TetrisBoardComponent&)>& callback) {
 		return listener_.connect(callback);
 	}
 

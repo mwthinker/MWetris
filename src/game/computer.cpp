@@ -1,5 +1,5 @@
 #include "computer.h"
-#include "tetrisboard.h"
+#include "tetrisboardcomponent.h"
 
 #include <vector>
 #include <string>
@@ -19,7 +19,7 @@ namespace tetris::game {
 		return ai_.getName();
 	}
 
-	void Computer::update(const TetrisBoard& board) {
+	void Computer::update(const TetrisBoardComponent& board) {
 		// New block appears?
 		if (currentTurn_ != board.getTurns() && !activeThread_) {
 			activeThread_ = true;

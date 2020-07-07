@@ -14,7 +14,7 @@ namespace tetris::game {
 
 	}
 
-	const TetrisBoard& RemotePlayer::getTetrisBoard() const {
+	const TetrisBoardComponent& RemotePlayer::getTetrisBoard() const {
 		return tetrisBoard_;
 	}
 

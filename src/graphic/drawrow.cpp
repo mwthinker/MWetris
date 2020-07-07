@@ -11,7 +11,7 @@ namespace tetris::graphic {
 
 	}
 
-	DrawRow::DrawRow(int row, const TetrisBoard& board, float squareSize, float lowX, float lowY) :
+	DrawRow::DrawRow(int row, const TetrisBoardComponent& board, float squareSize, float lowX, float lowY) :
 		fadingTime_(TetrisData::getInstance().getRowFadingTime()), squareSize_(squareSize),
 		movingTime_(TetrisData::getInstance().getRowMovingTime()) {
 
@@ -28,7 +28,7 @@ namespace tetris::graphic {
 		init(row, board);
 	}
 
-	void DrawRow::init(int row, const TetrisBoard& board) {
+	void DrawRow::init(int row, const TetrisBoardComponent& board) {
 		row_ = row;
 		oldRow_ = row;
 		graphicRow_ = (float) row;
@@ -40,7 +40,7 @@ namespace tetris::graphic {
 		updateVertexData(board);
 	}
 
-	void DrawRow::handleEvent(BoardEvent gameEvent, const TetrisBoard& tetrisBoard) {
+	void DrawRow::handleEvent(BoardEvent gameEvent, const TetrisBoardComponent& tetrisBoard) {
 		if (row_ >= 0) {
 			int rowTobeRemoved = tetrisBoard.getRowToBeRemoved();
 			switch (gameEvent) {
@@ -110,7 +110,7 @@ namespace tetris::graphic {
 		return row_ >= -1 && alpha_ > 0;
 	}
 
-	void DrawRow::updateVertexData(const TetrisBoard& tetrisBoard) {
+	void DrawRow::updateVertexData(const TetrisBoardComponent& tetrisBoard) {
 		blockTypes_.clear();
 		for (int column = 0; column < columns_; ++column) {
 			blockTypes_.push_back(tetrisBoard.getBlockType(column, row_));

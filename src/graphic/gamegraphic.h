@@ -3,7 +3,7 @@
 
 #include "game/player.h"
 #include "drawrow.h"
-#include "tetrisboard.h"
+#include "tetrisboardcomponent.h"
 #include "types.h"
 
 #include <sdl/font.h>
@@ -38,16 +38,16 @@ namespace tetris::graphic {
 
 		//void update(float deltaTime, BoardBatch& dynamicBoardBatch);
 
-		void callback(BoardEvent gameEvent, const TetrisBoard& tetrisBoard);
+		void callback(BoardEvent gameEvent, const TetrisBoardComponent& tetrisBoard);
 
 	private:
 		//void initStaticBackground(BoardBatch& boardBatch, float lowX, float lowY, Player& player);
 
-		void addDrawRowAtTheTop(const TetrisBoard& tetrisBoard, int nbr);
+		void addDrawRowAtTheTop(const TetrisBoardComponent& tetrisBoard, int nbr);
 
-		void addEmptyRowTop(const TetrisBoard& tetrisBoard);
+		void addEmptyRowTop(const TetrisBoardComponent& tetrisBoard);
 
-		void addDrawRowBottom(const TetrisBoard& tetrisBoard, int row);
+		void addDrawRowBottom(const TetrisBoardComponent& tetrisBoard, int row);
 
 		std::list<DrawRowPtr> rows_;
 		std::list<DrawRowPtr> freeRows_;

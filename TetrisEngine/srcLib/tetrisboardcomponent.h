@@ -18,19 +18,19 @@ namespace tetris {
 
 	std::vector<BlockType> generateRow(int width, int holes);
 
-	class TetrisBoard : public RawTetrisBoard {
+	class TetrisBoardComponent : public RawTetrisBoard {
 	public:
-		TetrisBoard(int columns, int rows, BlockType current, BlockType next);
+		TetrisBoardComponent(int columns, int rows, BlockType current, BlockType next);
 
-		TetrisBoard(const std::vector<BlockType>& board,
+		TetrisBoardComponent(const std::vector<BlockType>& board,
 			int rows, int columns, Block current, BlockType next,
 			int savedRowsRemoved = 0);
 
-		TetrisBoard(const TetrisBoard&) = delete;
-		TetrisBoard& operator=(const TetrisBoard&) = delete;
+		TetrisBoardComponent(const TetrisBoardComponent&) = delete;
+		TetrisBoardComponent& operator=(const TetrisBoardComponent&) = delete;
 
-		TetrisBoard(TetrisBoard&& other) noexcept = default;
-		TetrisBoard& operator=(TetrisBoard&& other) noexcept = default;
+		TetrisBoardComponent(TetrisBoardComponent&& other) noexcept = default;
+		TetrisBoardComponent& operator=(TetrisBoardComponent&& other) noexcept = default;
 
 		void restartBoard(BlockType current, BlockType next);
 
@@ -41,7 +41,7 @@ namespace tetris {
 			return turns_;
 		}
 
-		mw::signals::Connection addGameEventListener(const std::function<void(BoardEvent, const TetrisBoard&)>& callback);
+		mw::signals::Connection addGameEventListener(const std::function<void(BoardEvent, const TetrisBoardComponent&)>& callback);
 
 		int getRemovedRows() const {
 			return rowsRemoved_;
@@ -53,7 +53,7 @@ namespace tetris {
 		std::vector<BlockType> addExternalRows() override;
 
 		std::vector<BlockType> squaresToAdd_;
-		mw::Signal<BoardEvent, const TetrisBoard&> listener_;
+		mw::Signal<BoardEvent, const TetrisBoardComponent&> listener_;
 		Random random_;
 		int turns_{};
 		int rowsRemoved_{};

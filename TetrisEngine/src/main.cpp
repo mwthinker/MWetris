@@ -2,7 +2,7 @@
 #include "flagsexception.h"
 
 #include <ai.h>
-#include <tetrisboard.h>
+#include <tetrisboardcomponent.h>
 #include <calc/calculatorexception.h>
 
 #include <fstream>
@@ -85,7 +85,7 @@ BlockType readBlockType(std::ifstream& infile) {
 	return badRandomBlockType();
 }
 
-std::chrono::duration<double> runGame(TetrisBoard& tetrisBoard, const Flags& flags) {
+std::chrono::duration<double> runGame(TetrisBoardComponent& tetrisBoard, const Flags& flags) {
 	auto time = std::chrono::high_resolution_clock::now();
 
 	Ai ai = flags.ai_;
@@ -118,7 +118,7 @@ std::chrono::duration<double> runGame(TetrisBoard& tetrisBoard, const Flags& fla
 	return std::chrono::high_resolution_clock::now() - time;
 }
 
-void printGameResult(const TetrisBoard& tetrisBoard, const Flags& flags, std::chrono::duration<double> gameTime,
+void printGameResult(const TetrisBoardComponent& tetrisBoard, const Flags& flags, std::chrono::duration<double> gameTime,
 	int lines1, int lines2, int lines3, int lines4) {
 
 	std::queue<std::string> outputOrder = flags.outputOrder_;
@@ -213,13 +213,13 @@ int main(const int argc, const char* const argv[]) {
 		next = readBlockType(infile);
 	}
 
-	TetrisBoard tetrisBoard{flags.width_, flags.height_, start, next};
+	TetrisBoardComponent tetrisBoard{flags.width_, flags.height_, start, next};
 	int nbrOneLine = 0;
 	int nbrTwoLine = 0;
 	int nbrThreeLine = 0;
 	int nbrFourLine = 0;
 
-	tetrisBoard.addGameEventListener([&](BoardEvent gameEvent, const TetrisBoard&) {
+	tetrisBoard.addGameEventListener([&](BoardEvent gameEvent, const TetrisBoardComponent&) {
 		if (BoardEvent::BlockCollision == gameEvent) {
 			if (flags.useRandomFile_) {
 				try {

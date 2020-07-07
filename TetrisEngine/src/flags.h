@@ -2,7 +2,7 @@
 #define FLAGS_H
 
 #include <ai.h>
-#include <tetrisboard.h>
+#include <tetrisboardcomponent.h>
 #include <calc/calculatorexception.h>
 
 #include <chrono>

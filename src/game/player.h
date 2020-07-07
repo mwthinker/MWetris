@@ -1,7 +1,7 @@
 #ifndef MWETRIS_GAME_PLAYER_H
 #define MWETRIS_GAME_PLAYER_H
 
-#include "tetrisboard.h"
+#include "tetrisboardcomponent.h"
 #include "playerdata.h"
 
 #include <mw/signal.h>
@@ -34,10 +34,10 @@ namespace tetris::game {
 
 		virtual DevicePtr getDevice() const = 0;
 
-		virtual const TetrisBoard& getTetrisBoard() const = 0;
+		virtual const TetrisBoardComponent& getTetrisBoard() const = 0;
 
 		virtual mw::signals::Connection addGameEventListener(
-			const std::function<void(BoardEvent, const TetrisBoard&)>& callback) = 0;
+			const std::function<void(BoardEvent, const TetrisBoardComponent&)>& callback) = 0;
 	};
 
 }

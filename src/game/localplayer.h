@@ -2,11 +2,10 @@
 #define MWETRIS_GAME_LOCALPLAYER_H
 
 #include "player.h"
-#include "tetrisboard.h"
+#include "tetrisboardcomponent.h"
 #include "actionhandler.h"
 #include "device.h"
 #include "playerdata.h"
-#include "tetrisboard.h"
 
 namespace tetris::game {
 
@@ -125,7 +124,7 @@ namespace tetris::game {
 		virtual void updateGameOver();
 
 		mw::signals::Connection addGameEventListener(
-			const std::function<void(BoardEvent, const TetrisBoard&)>& callback) override {
+			const std::function<void(BoardEvent, const TetrisBoardComponent&)>& callback) override {
 			return tetrisBoard_.addGameEventListener(callback);
 		}
 
@@ -161,7 +160,7 @@ namespace tetris::game {
 			return device_;
 		}
 
-		inline const TetrisBoard& getTetrisBoard() const override {
+		inline const TetrisBoardComponent& getTetrisBoard() const override {
 			return tetrisBoard_;
 		}
 
@@ -175,7 +174,7 @@ namespace tetris::game {
 		DevicePtr device_;
 		std::string name_;
 		int points_, level_, levelUpCounter_;
-		TetrisBoard tetrisBoard_;
+		TetrisBoardComponent tetrisBoard_;
 		int gameOverPosition_;
 		mw::signals::Connection connection_;
 

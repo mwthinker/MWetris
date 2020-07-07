@@ -1,6 +1,6 @@
 #include "drawboard.h"
 #include "tetrisdata.h"
-#include "tetrisboard.h"
+#include "tetrisboardcomponent.h"
 #include "graphic.h"
 #include "game/player.h"
 
@@ -60,7 +60,7 @@ namespace tetris::graphic {
 		infoSize_ = squareSize_ * 5.f;
 
 		connection_.disconnect();
-		connection_ = player.addGameEventListener([&](BoardEvent gameEvent, const TetrisBoard& tetrisBoard) {
+		connection_ = player.addGameEventListener([&](BoardEvent gameEvent, const TetrisBoardComponent& tetrisBoard) {
 			callback(gameEvent, tetrisBoard);
 		});
 
@@ -235,7 +235,7 @@ namespace tetris::graphic {
 		
 	}
 
-	void DrawBoard::callback(BoardEvent gameEvent, const TetrisBoard& tetrisBoard) {
+	void DrawBoard::callback(BoardEvent gameEvent, const TetrisBoardComponent& tetrisBoard) {
 		/*
 		for (auto& row : rows_) {
 			row->handleEvent(gameEvent, tetrisBoard);

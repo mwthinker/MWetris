@@ -1,6 +1,6 @@
 #include "tetrisgame.h"
 
-#include "tetrisboard.h"
+#include "tetrisboardcomponent.h"
 #include "tetrisgameevent.h"
 #include "localplayer.h"
 #include "remoteplayer.h"
@@ -54,7 +54,7 @@ namespace tetris::game {
 		std::vector<PlayerData> playerData;
 		for (const auto& player : players_) {
 			playerData.emplace_back();
-			const TetrisBoard& tetrisBoard = player->getTetrisBoard();
+			const auto& tetrisBoard = player->getTetrisBoard();
 			playerData.back().current_ = tetrisBoard.getBlock();
 			playerData.back().lastPosition_ = player->getGameOverPosition();
 			playerData.back().next_ = tetrisBoard.getNextBlockType();
