@@ -98,7 +98,7 @@ namespace tetris::game {
 
 	class LocalPlayer : public Player {
 	public:
-		LocalPlayer(const RawTetrisBoard& board, const DevicePtr& device);
+		LocalPlayer(const TetrisBoard& board, const DevicePtr& device);
 
 		virtual ~LocalPlayer();
 

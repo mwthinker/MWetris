@@ -26,7 +26,7 @@ namespace tetris::game {
 			input_ = {};
 			currentTurn_ = board.getTurns();
 
-			handle_ = std::async(std::launch::async | std::launch::deferred, Computer::calculateBestState, RawTetrisBoard{board}, ai_, 1);
+			handle_ = std::async(std::launch::async | std::launch::deferred, Computer::calculateBestState, TetrisBoard{board}, ai_, 1);
 		} else {
 			if (handle_.valid()) {
 				latestState_ = handle_.get();
@@ -50,7 +50,7 @@ namespace tetris::game {
 		}
 	}
 
-	Ai::State Computer::calculateBestState(RawTetrisBoard board, Ai ai, int depth) {
+	Ai::State Computer::calculateBestState(TetrisBoard board, Ai ai, int depth) {
 		return ai.calculateBestState(board, depth);
 	}
 

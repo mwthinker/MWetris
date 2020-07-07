@@ -2,7 +2,7 @@
 #define TETRISBOARD_H
 
 #include "block.h"
-#include "rawtetrisboard.h"
+#include "tetrisboard.h"
 
 #include "random.h"
 
@@ -14,11 +14,11 @@ namespace tetris {
 
 	BlockType randomBlockType();
 
-	std::vector<BlockType> generateRow(const RawTetrisBoard& board, double squaresPerLength);
+	std::vector<BlockType> generateRow(const TetrisBoard& board, double squaresPerLength);
 
 	std::vector<BlockType> generateRow(int width, int holes);
 
-	class TetrisBoardComponent : public RawTetrisBoard {
+	class TetrisBoardComponent : public TetrisBoard {
 	public:
 		TetrisBoardComponent(int columns, int rows, BlockType current, BlockType next);
 

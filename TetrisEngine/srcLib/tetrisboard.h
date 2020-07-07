@@ -49,19 +49,19 @@ namespace tetris {
 		GameOver
 	};
 
-	class RawTetrisBoard {
+	class TetrisBoard {
 	public:
-		RawTetrisBoard(int columns, int rows, BlockType current, BlockType next);
-		RawTetrisBoard(const std::vector<BlockType>& board,
+		TetrisBoard(int columns, int rows, BlockType current, BlockType next);
+		TetrisBoard(const std::vector<BlockType>& board,
 			int columns, int rows, const Block& current, BlockType next);
 
-		RawTetrisBoard(const RawTetrisBoard&) = default;
-		RawTetrisBoard& operator=(const RawTetrisBoard&) = default;
+		TetrisBoard(const TetrisBoard&) = default;
+		TetrisBoard& operator=(const TetrisBoard&) = default;
 
-		RawTetrisBoard(RawTetrisBoard&& other) = default;
-		RawTetrisBoard& operator=(RawTetrisBoard&& other) = default;
+		TetrisBoard(TetrisBoard&& other) = default;
+		TetrisBoard& operator=(TetrisBoard&& other) = default;
 
-		virtual ~RawTetrisBoard() = default;
+		virtual ~TetrisBoard() = default;
 
 		void update(Move move);
 

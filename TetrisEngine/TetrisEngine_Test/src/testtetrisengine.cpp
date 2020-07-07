@@ -195,9 +195,9 @@ TEST_CASE("Test tetrisboard", "[tetrisboard]") {
 
 	const BlockType firstNextBlockType = BlockType::L;
 	const BlockType firstCurrentBlockType = BlockType::S;
-	RawTetrisBoard board{TetrisWidth, TetrisHeight, firstCurrentBlockType, firstNextBlockType};
+	TetrisBoard board{TetrisWidth, TetrisHeight, firstCurrentBlockType, firstNextBlockType};
 
-	int size = sizeof(RawTetrisBoard);
+	int size = sizeof(TetrisBoard);
 
 	SECTION("should not be game over") {
 		REQUIRE(!board.isGameOver());
@@ -239,7 +239,7 @@ TEST_CASE("Test tetrisboard", "[tetrisboard]") {
 		const int NEW_HEIGHT = 30;
 		const BlockType NEW_CURRENT = BlockType::I;
 		const BlockType NEW_NEXT = BlockType::Z;
-		RawTetrisBoard restartBoard{NEW_WIDTH, NEW_HEIGHT, NEW_CURRENT, NEW_NEXT};
+		TetrisBoard restartBoard{NEW_WIDTH, NEW_HEIGHT, NEW_CURRENT, NEW_NEXT};
 
 		// Different size compare to board.
 		REQUIRE(board.getBlockType() != restartBoard.getBlockType());
@@ -313,7 +313,7 @@ TEST_CASE("Test ai", "[ai]") {
 		}
 	}
 
-	RawTetrisBoard tetrisBoard{boardBlockTypes, TetrisWidth, TetrisHeight, current, NEW_NEXT};
+	TetrisBoard tetrisBoard{boardBlockTypes, TetrisWidth, TetrisHeight, current, NEW_NEXT};
 	tetrisBoard.update(Move::DownGround);
 
 	SECTION("Calcualte highest used row") {

@@ -3,7 +3,7 @@
 
 #include "device.h"
 #include "block.h"
-#include "rawtetrisboard.h"
+#include "tetrisboard.h"
 #include "ai.h"
 #include "tetrisboardcomponent.h"
 
@@ -32,7 +32,7 @@ namespace tetris::game {
 		}
 
 	private:
-		static Ai::State calculateBestState(RawTetrisBoard board, Ai ai, int depth);
+		static Ai::State calculateBestState(TetrisBoard board, Ai ai, int depth);
 
 		// Calculate and return the best input to achieve the current state.
 		Input calculateInput(Ai::State state) const;

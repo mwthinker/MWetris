@@ -20,7 +20,7 @@ namespace tetris {
 		return static_cast<BlockType>(random.generateInt(BLOCK_TYPE_MIN, BLOCK_TYPE_MAX));
 	}
 
-	std::vector<BlockType> generateRow(const RawTetrisBoard& board, double squaresPerLength) {
+	std::vector<BlockType> generateRow(const TetrisBoard& board, double squaresPerLength) {
 		const auto size = board.getColumns();
 
 		Random random;
@@ -72,13 +72,13 @@ namespace tetris {
 	}
 
 	TetrisBoardComponent::TetrisBoardComponent(int columns, int rows, BlockType current, BlockType next)
-		: RawTetrisBoard{columns, rows, current, next} {
+		: TetrisBoard{columns, rows, current, next} {
 	}
 
 	TetrisBoardComponent::TetrisBoardComponent(const std::vector<BlockType>& board,
 		int columns, int rows, Block current, BlockType next,
 		int savedRowsRemoved)
-		: RawTetrisBoard{board, columns, rows, current, next}
+		: TetrisBoard{board, columns, rows, current, next}
 		, rowsRemoved_{savedRowsRemoved} {
 	}
 

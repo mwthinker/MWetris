@@ -14,10 +14,10 @@ namespace tetris::game {
 	LocalPlayerPtr LocalPlayerBuilder::build() {
 		LocalPlayerPtr player;
 		if (board_.size() > 0 || movingBlockType_ == BlockType::Empty) {
-			RawTetrisBoard board(board_, width_, height_, movingBlock_, next_);
+			TetrisBoard board(board_, width_, height_, movingBlock_, next_);
 			player = std::make_shared<LocalPlayer>(board, device_);
 		} else {
-			RawTetrisBoard board(width_, height_, movingBlockType_, next_);
+			TetrisBoard board(width_, height_, movingBlockType_, next_);
 			player = std::make_shared<LocalPlayer>(board, device_);
 		}
 		player->updateName(name_);
@@ -29,7 +29,7 @@ namespace tetris::game {
 		return player;
 	}
 
-	LocalPlayer::LocalPlayer(const RawTetrisBoard& board, const DevicePtr& device)
+	LocalPlayer::LocalPlayer(const TetrisBoard& board, const DevicePtr& device)
 		: leftHandler_{0.09, false}
 		, rightHandler_{0.09, false}
 		, rotateHandler_{0.0, true}

@@ -279,7 +279,7 @@ namespace tetris::graphic {
 			case BoardEvent::PLAYER_MOVES_BLOCK_RIGHT:
 				currentBlock_.update(tetrisBoard.getBlock());
 				{
-					RawTetrisBoard board = tetrisBoard;
+					TetrisBoard board = tetrisBoard;
 					board.update(Move::DOWN_GROUND);
 					downBlock_.update(board.getBlock());
 				}

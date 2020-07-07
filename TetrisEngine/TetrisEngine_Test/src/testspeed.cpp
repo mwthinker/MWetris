@@ -1,7 +1,7 @@
 // main() provided by Catch in file testmain.cpp.
 #include <catch2/catch.hpp>
 
-#include <rawtetrisboard.h>
+#include <tetrisboard.h>
 #include <tetrisboardcomponent.h>
 #include <square.h>
 #include <vector>
@@ -41,10 +41,10 @@ namespace {
 
 TEST_CASE("benchmarked", "[.][benchmark]") {
 
-	BENCHMARK("Copy RawTetrisBoard") {
-		RawTetrisBoard board{TetrisWidth, TetrisHeight, BlockType::S, BlockType::J};
+	BENCHMARK("Copy TetrisBoard") {
+		TetrisBoard board{TetrisWidth, TetrisHeight, BlockType::S, BlockType::J};
 		for (int i = 0; i < 100; ++i) {
-			RawTetrisBoard copyBoard = board;
+			TetrisBoard copyBoard = board;
 			board.update(Move::Down);
 		}
 	};
@@ -55,7 +55,7 @@ TEST_CASE("benchmarked", "[.][benchmark]") {
 
 		sizeof(Block);
 		sizeof(int);
-		sizeof(RawTetrisBoard);
+		sizeof(TetrisBoard);
 		sizeof(TetrisBoardComponent);
 		sizeof(int_fast32_t);
 
@@ -82,7 +82,7 @@ TEST_CASE("benchmarked", "[.][benchmark]") {
 	for (char chr : std::string_view{"TTOOZZSSEIETOOSZSEEEEEESSEEEEEEEES"}) {
 		blockTypes.push_back(charToBlockType(chr));
 	}
-	RawTetrisBoard board{blockTypes, TetrisWidth, TetrisHeight,
+	TetrisBoard board{blockTypes, TetrisWidth, TetrisHeight,
 		Block{BlockType::J, 4, 18, 0}, BlockType::L};
 	int highestUsedRow = calculateHighestUsedRow(board);
 	

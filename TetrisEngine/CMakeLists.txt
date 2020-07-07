@@ -15,8 +15,8 @@ set(SOURCES_LIB
 	srcLib/block.cpp
 	srcLib/block.h
 	srcLib/random.h
-	srcLib/rawtetrisboard.cpp
-	srcLib/rawtetrisboard.h
+	srcLib/tetrisboard.cpp
+	srcLib/tetrisboard.h
 	srcLib/square.h
 	srcLib/tetrisboardcomponent.cpp
 	srcLib/tetrisboardcomponent.h

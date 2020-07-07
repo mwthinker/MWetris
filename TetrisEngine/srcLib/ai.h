@@ -1,7 +1,7 @@
 #ifndef AI_H
 #define AI_H
 
-#include "rawtetrisboard.h"
+#include "tetrisboard.h"
 
 #include <calc/calculator.h>
 
@@ -20,20 +20,20 @@ namespace tetris {
 		int bumpiness;
 	};
 
-	RowRoughness calculateRowRoughness(const RawTetrisBoard& board, int highestUsedRow);
-	ColumnRoughness calculateColumnHoles(const RawTetrisBoard& board, int highestUsedRow);
-	int calculateHighestUsedRow(const RawTetrisBoard& board);
+	RowRoughness calculateRowRoughness(const TetrisBoard& board, int highestUsedRow);
+	ColumnRoughness calculateColumnHoles(const TetrisBoard& board, int highestUsedRow);
+	int calculateHighestUsedRow(const TetrisBoard& board);
 	float calculateBlockMeanHeight(const Block& block);
-	int calculateBlockEdges(const RawTetrisBoard& board, const Block& block);
+	int calculateBlockEdges(const TetrisBoard& board, const Block& block);
 
 	int calculateLandingHeight(const Block& block);
-	int calculateErodedPieces(const RawTetrisBoard& board);
-	int calculateRowTransitions(const RawTetrisBoard& board);
-	int calculateColumnTransitions(const RawTetrisBoard& board);
-	int calculateNumberOfHoles(const RawTetrisBoard& board);
-	int calculateCumulativeWells(const RawTetrisBoard& board);
-	int calculateHoleDepth(const RawTetrisBoard& board);
-	int calculateRowHoles(const RawTetrisBoard& board);
+	int calculateErodedPieces(const TetrisBoard& board);
+	int calculateRowTransitions(const TetrisBoard& board);
+	int calculateColumnTransitions(const TetrisBoard& board);
+	int calculateNumberOfHoles(const TetrisBoard& board);
+	int calculateCumulativeWells(const TetrisBoard& board);
+	int calculateHoleDepth(const TetrisBoard& board);
+	int calculateRowHoles(const TetrisBoard& board);
 
 	struct AiParameters {
 		bool landingHeight;
@@ -73,14 +73,14 @@ namespace tetris {
 			float value_{std::numeric_limits<float>::lowest()};
 		};
 
-		State calculateBestState(const RawTetrisBoard& board, int depth);
-		float moveBlockToGroundCalculateValue(const State& state, RawTetrisBoard& board);
+		State calculateBestState(const TetrisBoard& board, int depth);
+		float moveBlockToGroundCalculateValue(const State& state, TetrisBoard& board);
 
 	private:
 		void initCalculator(bool allowException);
 		void initAiParameters(const calc::Calculator& calculator, const calc::Cache& cache);
 
-		State calculateBestStateRecursive(const RawTetrisBoard& board, int depth);
+		State calculateBestStateRecursive(const TetrisBoard& board, int depth);
 
 		std::string name_;
 		std::string valueFunction_;
@@ -90,7 +90,7 @@ namespace tetris {
 		AiParameters parameters_{};
 	};
 
-	void moveBlockToBeforeImpact(const Ai::State& state, RawTetrisBoard& board);
+	void moveBlockToBeforeImpact(const Ai::State& state, TetrisBoard& board);
 
 }
 

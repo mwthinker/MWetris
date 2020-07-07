@@ -12,7 +12,7 @@ namespace tetris {
 	namespace {
 
 		// Calculate and return all possible states for the block provided.
-		std::vector<Ai::State> calculateAllPossibleStates(const RawTetrisBoard& board, Block block) {
+		std::vector<Ai::State> calculateAllPossibleStates(const TetrisBoard& board, Block block) {
 			std::vector<Ai::State> states;
 
 			// Valid block position?
@@ -76,7 +76,7 @@ namespace tetris {
 
 	}
 
-	RowRoughness calculateRowRoughness(const RawTetrisBoard& board, int highestUsedRow) {
+	RowRoughness calculateRowRoughness(const TetrisBoard& board, int highestUsedRow) {
 		RowRoughness rowRoughness{};
 		int holes = 0;
 		for (int row = 0; row < highestUsedRow; ++row) {
@@ -96,7 +96,7 @@ namespace tetris {
 		return rowRoughness;
 	}
 
-	ColumnRoughness calculateColumnHoles(const RawTetrisBoard& board, int highestUsedRow) {
+	ColumnRoughness calculateColumnHoles(const TetrisBoard& board, int highestUsedRow) {
 		ColumnRoughness roughness{};
 		int lastColumnNbr;
 		for (int column = 0; column < board.getColumns(); ++column) {
@@ -127,7 +127,7 @@ namespace tetris {
 
 	// Calculate the cleared lines times the current blocks square contribution to the cleared lines. 
 	// Calculation is perfomed before the block is part of the board.
-	int calculateErodedPieces(const RawTetrisBoard& board) { // f2	
+	int calculateErodedPieces(const TetrisBoard& board) { // f2	
 		int w = board.getColumns();
 		int h = board.getRows();
 		const Block& block = board.getBlock();
@@ -153,7 +153,7 @@ namespace tetris {
 	}
 
 	// Calculate the number of filled cells adjacent to empty cells summed of all rows.
-	int calculateRowTransitions(const RawTetrisBoard& board) { // f3
+	int calculateRowTransitions(const TetrisBoard& board) { // f3
 		const int w = board.getColumns();
 		const int h = board.getRows();
 		const auto highestRow = calculateHighestUsedRow(board);
@@ -176,7 +176,7 @@ namespace tetris {
 	}
 
 	// Calculate the number of filled cells adjacent to empty cells summed of all columns.
-	int calculateColumnTransitions(const RawTetrisBoard& board) { // f4
+	int calculateColumnTransitions(const TetrisBoard& board) { // f4
 		const int w = board.getColumns();
 		const int h = board.getRows();
 		const auto highestRow = calculateHighestUsedRow(board) + 1; // One higher, should be a empty square.
@@ -199,7 +199,7 @@ namespace tetris {
 	}
 
 	// Calculate the number of holes, the number of empty cells with at least one filled cell above.
-	int calculateNumberOfHoles(const RawTetrisBoard& board) { // f5
+	int calculateNumberOfHoles(const TetrisBoard& board) { // f5
 		const auto w = board.getColumns();
 		const auto h = board.getRows();
 		const auto highestRow = calculateHighestUsedRow(board);
@@ -223,7 +223,7 @@ namespace tetris {
 	}
 
 	// Calculate the sum of the accumulated depths of the wells.
-	int calculateCumulativeWells(const RawTetrisBoard& board) { // f6
+	int calculateCumulativeWells(const TetrisBoard& board) { // f6
 		auto w = board.getColumns();
 		auto h = board.getRows();
 		const auto highestRow = calculateHighestUsedRow(board);
@@ -250,7 +250,7 @@ namespace tetris {
 	}
 
 	// Calculate the number of filled cells above holes summed over all columns.
-	int calculateHoleDepth(const RawTetrisBoard& board) { // f7
+	int calculateHoleDepth(const TetrisBoard& board) { // f7
 		int w = board.getColumns();
 		int h = board.getRows();
 		const auto highestRow = calculateHighestUsedRow(board);
@@ -273,7 +273,7 @@ namespace tetris {
 
 	namespace {
 
-		bool isAtLeastOneFilledSquareAbowe(int x, int y, const RawTetrisBoard& board, size_t highestRow) {
+		bool isAtLeastOneFilledSquareAbowe(int x, int y, const TetrisBoard& board, size_t highestRow) {
 			for (++y; y <= highestRow; ++y) {
 				if (board.getBlockType(x, y) != BlockType::Empty) {
 					return true;
@@ -285,7 +285,7 @@ namespace tetris {
 	}
 
 	// Calculate the number of rows containing at least one hole.
-	int calculateRowHoles(const RawTetrisBoard& board) { // f8
+	int calculateRowHoles(const TetrisBoard& board) { // f8
 		int w = board.getColumns();
 		int h = board.getRows();
 		const auto highestRow = calculateHighestUsedRow(board);
@@ -303,7 +303,7 @@ namespace tetris {
 		return rows;
 	}
 
-	int calculateHighestUsedRow(const RawTetrisBoard& board) {
+	int calculateHighestUsedRow(const TetrisBoard& board) {
 		const auto& v = board.getBoardVector();
 		auto it = std::find_if(v.rbegin(), v.rend(), [](BlockType blockType) {
 			return BlockType::Empty != blockType;
@@ -320,7 +320,7 @@ namespace tetris {
 		return (float) blockMeanHeight / block.getSize();
 	}
 
-	int calculateBlockEdges(const RawTetrisBoard& board, const Block& block) {
+	int calculateBlockEdges(const TetrisBoard& board, const Block& block) {
 		int edges = 0;
 		for (const Square& sq : block) {
 			board.getBlockType(sq.column - 1, sq.row) != BlockType::Empty ? ++edges : 0;
@@ -346,7 +346,7 @@ namespace tetris {
 		initCalculator(allowException);
 	}
 
-	Ai::State Ai::calculateBestState(const RawTetrisBoard& board, int depth) {
+	Ai::State Ai::calculateBestState(const TetrisBoard& board, int depth) {
 		calculator_.updateVariable("rows", (float) board.getRows());
 		calculator_.updateVariable("columns", (float) board.getColumns());
 		if (depth >= 2) {
@@ -358,14 +358,14 @@ namespace tetris {
 		}
 	}
 
-	Ai::State Ai::calculateBestStateRecursive(const RawTetrisBoard& board, int depth) {
+	Ai::State Ai::calculateBestStateRecursive(const TetrisBoard& board, int depth) {
 		Ai::State bestState;
 
 		if (depth > 0) {
 			std::vector<Ai::State> states = calculateAllPossibleStates(board, board.getBlock());
 
 			for (const Ai::State& state : states) {
-				RawTetrisBoard childBoard = board;
+				TetrisBoard childBoard = board;
 
 				if (depth == 2) {
 					moveBlockToBeforeImpact(state, childBoard);
@@ -392,7 +392,7 @@ namespace tetris {
 		return bestState;
 	}
 
-	void moveBlockToBeforeImpact(const Ai::State& state, RawTetrisBoard& board) {
+	void moveBlockToBeforeImpact(const Ai::State& state, TetrisBoard& board) {
 		for (int i = 0; i < state.rotationLeft; ++i) {
 			board.update(Move::RotateLeft);
 		}
@@ -405,7 +405,7 @@ namespace tetris {
 		board.update(Move::DownGround);
 	}
 
-	float Ai::moveBlockToGroundCalculateValue(const State& state, RawTetrisBoard& board) {
+	float Ai::moveBlockToGroundCalculateValue(const State& state, TetrisBoard& board) {
 		moveBlockToBeforeImpact(state, board);
 		if (parameters_.landingHeight) {
 			calculator_.updateVariable("landingHeight", (float) calculateLandingHeight(board.getBlock()));

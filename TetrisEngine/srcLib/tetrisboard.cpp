@@ -1,4 +1,4 @@
-#include "rawtetrisboard.h"
+#include "tetrisboard.h"
 #include "square.h"
 #include "block.h"
 
@@ -30,7 +30,7 @@ namespace tetris {
 		}
 	}
 
-	RawTetrisBoard::RawTetrisBoard(int columns, int rows, BlockType current, BlockType next)
+	TetrisBoard::TetrisBoard(int columns, int rows, BlockType current, BlockType next)
 		: gameboard_{rows * columns, BlockType::Empty}
 		, next_{next}
 		, columns_{columns}
@@ -40,8 +40,8 @@ namespace tetris {
 		current_ = createBlock(current);
 	}
 
-	RawTetrisBoard::RawTetrisBoard(const std::vector<BlockType>& board, int columns, int rows, const Block& current, BlockType next)
-		: RawTetrisBoard{columns, rows, current.getBlockType(), next} {
+	TetrisBoard::TetrisBoard(const std::vector<BlockType>& board, int columns, int rows, const Block& current, BlockType next)
+		: TetrisBoard{columns, rows, current.getBlockType(), next} {
 
 		gameboard_.insert(gameboard_.begin(), board.begin(), board.end());
 
@@ -68,7 +68,7 @@ namespace tetris {
 		current_ = current;
 	}
 
-	void RawTetrisBoard::update(Move move) {
+	void TetrisBoard::update(Move move) {
 		triggerEvent(gameEventToMove(move));
 		
 		if (isGameOver_ || collision(current_)) {
@@ -175,16 +175,16 @@ namespace tetris {
 		}
 	}
 
-	void RawTetrisBoard::setNextBlock(BlockType nextBlock) {
+	void TetrisBoard::setNextBlock(BlockType nextBlock) {
 		next_ = nextBlock;
 		triggerEvent(BoardEvent::NextBlockUpdated);
 	}
 
-	void RawTetrisBoard::restart(BlockType current, BlockType next) {
+	void TetrisBoard::restart(BlockType current, BlockType next) {
 		restart(columns_, rows_, current, next);
 	}
 
-	void RawTetrisBoard::restart(int columns, int rows, BlockType current, BlockType next) {
+	void TetrisBoard::restart(int columns, int rows, BlockType current, BlockType next) {
 		next_ = next;
 		rows_ = rows;
 		columns_ = columns;
@@ -195,22 +195,22 @@ namespace tetris {
 		triggerEvent(BoardEvent::Restarted);
 	}
 
-	const std::vector<BlockType>& RawTetrisBoard::getBoardVector() const {
+	const std::vector<BlockType>& TetrisBoard::getBoardVector() const {
 		return gameboard_;
 	}
 
-	void RawTetrisBoard::addBlockToBoard(const Block& block) {
+	void TetrisBoard::addBlockToBoard(const Block& block) {
 		// All squares in the block is added to the gameboard.
 		for (const auto& sq : block) {
 			board(sq.column, sq.row) = block.getBlockType();
 		}
 	}
 
-	Block RawTetrisBoard::createBlock(BlockType blockType) const {
+	Block TetrisBoard::createBlock(BlockType blockType) const {
 		return Block(blockType, columns_ / 2 - 1, rows_ - 4); // 4 rows are the starting area.
 	}
 
-	BlockType RawTetrisBoard::getBlockType(int column, int row) const {
+	BlockType TetrisBoard::getBlockType(int column, int row) const {
 		if (column < 0 || column >= columns_ || row < 0) {
 			return BlockType::Wall;
 		}
@@ -220,7 +220,7 @@ namespace tetris {
 		return board(column, row);
 	}
 
-	int RawTetrisBoard::calculateSquaresFilled(int row) const {
+	int TetrisBoard::calculateSquaresFilled(int row) const {
 		if (row >= static_cast<int>(gameboard_.size()) / columns_) {
 			return 0;
 		}
@@ -233,7 +233,7 @@ namespace tetris {
 		return filled;
 	}
 
-	bool RawTetrisBoard::collision(const Block& block) const {
+	bool TetrisBoard::collision(const Block& block) const {
 		bool collision = false;
 
 		for (const Square& sq : block) {
@@ -246,16 +246,16 @@ namespace tetris {
 		return collision;
 	}
 
-	void RawTetrisBoard::clearBoard() {
+	void TetrisBoard::clearBoard() {
 		gameboard_.assign(rows_ * columns_, BlockType::Empty);
 		isGameOver_ = false;
 	}
 
-	bool RawTetrisBoard::isRowInsideBoard(int row) const {
+	bool TetrisBoard::isRowInsideBoard(int row) const {
 		return row >= 0 && row * columns_ < static_cast<int>(gameboard_.size());
 	}
 
-	int RawTetrisBoard::removeFilledRows(const Block& block) {
+	int TetrisBoard::removeFilledRows(const Block& block) {
 		int row = block.getLowestRow();
 		int rowsFilled = 0;
 		const int nbrOfSquares = static_cast<int>(current_.getSize());
@@ -275,7 +275,7 @@ namespace tetris {
 		return rowsFilled;
 	}
 
-	void RawTetrisBoard::moveRowsOneStepDown(int rowToRemove) {
+	void TetrisBoard::moveRowsOneStepDown(int rowToRemove) {
 		rowToBeRemoved_ = rowToRemove;
 		triggerEvent(BoardEvent::RowToBeRemoved);
 		

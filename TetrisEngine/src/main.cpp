@@ -18,7 +18,7 @@
 using namespace std::chrono_literals;
 using namespace tetris;
 
-void printBoard(const RawTetrisBoard& board) {
+void printBoard(const TetrisBoard& board) {
 	const std::vector<BlockType>& squares = board.getBoardVector();
 	int rows = board.getRows();
 	int columns = board.getColumns();
@@ -89,7 +89,7 @@ std::chrono::duration<double> runGame(TetrisBoardComponent& tetrisBoard, const F
 	auto time = std::chrono::high_resolution_clock::now();
 
 	Ai ai = flags.ai_;
-	RawTetrisBoard playBoard = tetrisBoard;
+	TetrisBoard playBoard = tetrisBoard;
 	while (!tetrisBoard.isGameOver() && tetrisBoard.getTurns() < flags.maxNbrBlocks_) {
 		Ai::State state = ai.calculateBestState(tetrisBoard, flags.depth_);
 
