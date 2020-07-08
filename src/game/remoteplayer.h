@@ -2,7 +2,7 @@
 #define MWETRIS_GAME_REMOTEPLAYER_H
 
 #include "player.h"
-#include "tetrisboardcomponent.h"
+#include "tetrisboardwrapper.h"
 
 namespace tetris::game {
 
@@ -12,7 +12,7 @@ namespace tetris::game {
 
 		virtual void update(double deltaTime);
 
-		virtual const TetrisBoardComponent& getTetrisBoard() const;
+		virtual const TetrisBoardWrapper& getTetrisBoard() const;
 
 		//virtual void update(Move move, IBoardEventHandler& eventHandler) = 0;
 
@@ -43,7 +43,7 @@ namespace tetris::game {
 
 		std::string name_;
 		int points_, level_, levelUpCounter_;
-		TetrisBoardComponent tetrisBoard_;
+		TetrisBoardWrapper tetrisBoard_;
 		int gameOverPosition_;
 		mw::signals::Connection connection_;
 	};

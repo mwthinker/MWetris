@@ -1,5 +1,5 @@
 #include "gamegraphic.h"
-#include "tetrisboardcomponent.h"
+#include "tetrisboardwrapper.h"
 #include "game/player.h"
 #include "tetrisdata.h"
 
@@ -312,7 +312,7 @@ namespace tetris::graphic {
 		}
 	}
 	*/
-	void GameGraphic::addDrawRowAtTheTop(const TetrisBoardComponent& tetrisBoard, int nbr) {
+	void GameGraphic::addDrawRowAtTheTop(const TetrisBoardWrapper& tetrisBoard, int nbr) {
 		for (int i = 0; i < nbr; ++i) {
 			addEmptyRowTop(tetrisBoard); // Add them in ascending order.
 		}
@@ -345,7 +345,7 @@ namespace tetris::graphic {
 	}
 	*/
 
-	void GameGraphic::addEmptyRowTop(const TetrisBoardComponent& tetrisBoard) {
+	void GameGraphic::addEmptyRowTop(const TetrisBoardWrapper& tetrisBoard) {
 		assert(!freeRows_.empty()); // Should never be empty.
 		if (!freeRows_.empty()) { // Just in case empty, but the game should be over anyway.
 			auto drawRow = freeRows_.back();
@@ -355,7 +355,7 @@ namespace tetris::graphic {
 		}
 	}
 
-	void GameGraphic::addDrawRowBottom(const TetrisBoardComponent& tetrisBoard, int row) {
+	void GameGraphic::addDrawRowBottom(const TetrisBoardWrapper& tetrisBoard, int row) {
 		assert(!freeRows_.empty()); // Should never be empty.
 		if (!freeRows_.empty()) {
 			auto drawRow = freeRows_.back();

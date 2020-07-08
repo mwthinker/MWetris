@@ -18,8 +18,8 @@ set(SOURCES_LIB
 	srcLib/tetrisboard.cpp
 	srcLib/tetrisboard.h
 	srcLib/square.h
-	srcLib/tetrisboardcomponent.cpp
-	srcLib/tetrisboardcomponent.h
+	srcLib/tetrisboardwrapper.cpp
+	srcLib/tetrisboardwrapper.h
 )
 
 add_library(TetrisEngineLib ${SOURCES_LIB})

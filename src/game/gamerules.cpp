@@ -19,7 +19,7 @@ namespace tetris::game {
 		}
 
 		for (auto& player : players) {
-			player->addGameEventListener([=](BoardEvent gameEvent, const TetrisBoardComponent& board) {
+			player->addGameEventListener([=](BoardEvent gameEvent, const TetrisBoardWrapper& board) {
 				applyRules(gameEvent, player);
 			});
 		}
@@ -33,7 +33,7 @@ namespace tetris::game {
 	}
 
 	void GameRules::addPlayer(const LocalPlayerPtr& player) {
-		player->addGameEventListener([&](BoardEvent gameEvent, const TetrisBoardComponent& board) {
+		player->addGameEventListener([&](BoardEvent gameEvent, const TetrisBoardWrapper& board) {
 			applyRules(gameEvent, player);
 		});
 

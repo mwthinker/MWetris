@@ -14,7 +14,7 @@ namespace tetris::game {
 
 	}
 
-	const TetrisBoardComponent& RemotePlayer::getTetrisBoard() const {
+	const TetrisBoardWrapper& RemotePlayer::getTetrisBoard() const {
 		return tetrisBoard_;
 	}
 
@@ -52,7 +52,7 @@ namespace tetris::game {
 		points_ = 0;
 		gameOverPosition_ = 0;
 		levelUpCounter_ = 0;
-		tetrisBoard_.restartBoard(randomBlockType(), randomBlockType());
+		tetrisBoard_.restart(randomBlockType(), randomBlockType());
 	}
 
 	void RemotePlayer::updateGameOver() {

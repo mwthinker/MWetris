@@ -1,6 +1,6 @@
 #include "tetrisgame.h"
 
-#include "tetrisboardcomponent.h"
+#include "tetrisboardwrapper.h"
 #include "tetrisgameevent.h"
 #include "localplayer.h"
 #include "remoteplayer.h"

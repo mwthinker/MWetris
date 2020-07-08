@@ -1,5 +1,5 @@
-#ifndef RAWTETRISBOARD_H
-#define RAWTETRISBOARD_H
+#ifndef TETRISBOARD_H
+#define TETRISBOARD_H
 
 #include "block.h"
 
@@ -8,10 +8,8 @@
 namespace tetris {
 
 	enum class BoardEvent {
-		Restarted,
 		BlockCollision,
 		CurrentBlockUpdated,
-		NextBlockUpdated,
 		ExternalRowsAdded,
 		
 		PlayerMovesBlockUpdated,
@@ -26,16 +24,7 @@ namespace tetris {
 		ThreeRowRemoved,
 		FourRowRemoved,
 		RowToBeRemoved,
-		GameOver,
-		
-		MoveRotateLeft,
-		MoveRotateRight,
-		MoveDownGravity,
-		MoveDown,
-		MoveDownGround,
-		MoveLeft,
-		MoveRigh,
-		MoveGameOver
+		GameOver
 	};
 
 	enum class Move {
@@ -61,9 +50,10 @@ namespace tetris {
 		TetrisBoard(TetrisBoard&& other) = default;
 		TetrisBoard& operator=(TetrisBoard&& other) = default;
 
-		virtual ~TetrisBoard() = default;
-
 		void update(Move move);
+
+		template <class EventCallback>
+		void update(Move move, const std::vector<BlockType>& externalRows, EventCallback&& eventCallback);
 
 		void setNextBlock(BlockType next);
 
@@ -154,16 +144,6 @@ namespace tetris {
 		// Game over is set to false.
 		void clearBoard();
 
-		// Is called just after the event given is triggered.
-		// e.g. if the row removed event is triggered (this function is called), the board has
-		// already removed the row mentioned.
-		virtual void triggerEvent(BoardEvent gameEvent) {
-		}
-
-		virtual std::vector<BlockType> addExternalRows() {
-			return std::vector<BlockType>(0);
-		}
-
 		void addBlockToBoard(const Block& block);
 
 		int removeFilledRows(const Block& block);
@@ -178,6 +158,115 @@ namespace tetris {
 		int externalRowsAdded_{0};
 		int rowToBeRemoved_{-1};
 	};
+
+	inline void TetrisBoard::update(Move move) {
+		update(move, {}, [](BoardEvent boardEvent) {});
+	}
+
+	template <class EventCallback>
+	void TetrisBoard::update(Move move, const std::vector<BlockType>& externalRows, EventCallback&& eventCallback) {
+		if (isGameOver_ || collision(current_)) {
+			if (!isGameOver_) {
+				// Only called once, when the game becomes game over.
+				isGameOver_ = true;
+				eventCallback(BoardEvent::GameOver);
+			}
+			return;
+		}
+
+		Block block = current_;
+		switch (move) {
+			case Move::GameOver:
+				// Only called once, when the game becomes game over.
+				isGameOver_ = true;
+				eventCallback(BoardEvent::GameOver);
+				break;
+			case Move::Left:
+				block.moveLeft();
+				if (!collision(block)) {
+					current_ = block;
+					eventCallback(BoardEvent::PlayerMovesBlockLeft);
+				}
+				break;
+			case Move::Right:
+				block.moveRight();
+				if (!collision(block)) {
+					current_ = block;
+					eventCallback(BoardEvent::PlayerMovesBlockRight);
+				}
+				break;
+			case Move::DownGround:
+				eventCallback(BoardEvent::PlayerMovesBlockDownGround);
+				do {
+					current_ = block;
+					block.moveDown();
+				} while (!collision(block));
+				eventCallback(BoardEvent::PlayerMovesBlockDown);
+				break;
+			case Move::Down:
+				block.moveDown();
+				if (!collision(block)) {
+					current_ = block;
+					eventCallback(BoardEvent::PlayerMovesBlockDown);
+				}
+				break;
+			case Move::RotateRight:
+				block.rotateRight();
+				if (!collision(block)) {
+					current_ = block;
+					eventCallback(BoardEvent::PlayerMovesBlockUpdated);
+				}
+				break;
+			case Move::RotateLeft:
+				block.rotateLeft();
+				if (!collision(block)) {
+					current_ = block;
+					eventCallback(BoardEvent::PlayerMovesBlockUpdated);
+				}
+				break;
+			case Move::DownGravity:
+				block.moveDown();
+				if (collision(block)) {
+					// Collision detected, add squares to the gameboard.
+					addBlockToBoard(current_);
+
+					eventCallback(BoardEvent::BlockCollision);
+
+					// Remove any filled row on the gameboard.
+					int nbr = removeFilledRows(current_);
+
+					// Add rows due to some external event.
+					if (!externalRows.empty()) {
+						externalRowsAdded_ = static_cast<int>(externalRows.size()) / columns_;
+						gameboard_.insert(gameboard_.begin(), externalRows.begin(), externalRows.end());
+						eventCallback(BoardEvent::ExternalRowsAdded);
+					}
+
+					// Update the user controlled block.
+					current_ = createBlock(next_);
+					eventCallback(BoardEvent::CurrentBlockUpdated);
+
+					switch (nbr) {
+						case 1:
+							eventCallback(BoardEvent::OneRowRemoved);
+							break;
+						case 2:
+							eventCallback(BoardEvent::TwoRowRemoved);
+							break;
+						case 3:
+							eventCallback(BoardEvent::ThreeRowRemoved);
+							break;
+						case 4:
+							eventCallback(BoardEvent::FourRowRemoved);
+							break;
+					}
+				} else {
+					current_ = block;
+					eventCallback(BoardEvent::GravityMovesBlock);
+				}
+				break;
+		}
+	}
 
 }
 

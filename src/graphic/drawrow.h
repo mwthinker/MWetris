@@ -12,13 +12,13 @@ namespace tetris::graphic {
 
 	class DrawRow {
 	public:
-		DrawRow(int row, const TetrisBoardComponent& board, float squareSize, float lowX, float lowY);
+		DrawRow(int row, const TetrisBoardWrapper& board, float squareSize, float lowX, float lowY);
 
 		int getRow() const {
 			return row_;
 		}
 
-		void handleEvent(BoardEvent gameEvent, const TetrisBoardComponent& tetrisBoard);
+		void handleEvent(BoardEvent gameEvent, const TetrisBoardWrapper& tetrisBoard);
 
 		void update(float deltaTime);
 
@@ -26,7 +26,7 @@ namespace tetris::graphic {
 
 		bool isActive() const;
 
-		void init(int row, const TetrisBoardComponent& board);
+		void init(int row, const TetrisBoardWrapper& board);
 
 		/*
 		const std::vector<BoardShader::Vertex>& getVertexes() {
@@ -37,7 +37,7 @@ namespace tetris::graphic {
 		void clear();
 
 	private:
-		void updateVertexData(const TetrisBoardComponent& tetrisBoard);
+		void updateVertexData(const TetrisBoardWrapper& tetrisBoard);
 		void updateVertexData();
 
 		sdl::Sprite getSprite(BlockType blockType) const;
