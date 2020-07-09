@@ -67,32 +67,23 @@ namespace tetris {
 	}
 
 	void TetrisBoardWrapper::triggerEvent(BoardEvent gameEvent) {
-		//listener_(gameEvent, tetrisBoardComponent);
+		boardEventCallbacks_(gameEvent, *this);
 		switch (gameEvent) {
-			/*
-			case BoardEvent::NextBlockUpdated:
-				// Assumes a new turn.
+			case BoardEvent::CurrentBlockUpdated:
 				++turns_;
 				break;
-			*/
 			case BoardEvent::OneRowRemoved:
-				rowsRemoved_ += 1;
+				++nbrOneLines_;
 				break;
 			case BoardEvent::TwoRowRemoved:
-				rowsRemoved_ += 2;
+				++nbrTwoLines_;
 				break;
 			case BoardEvent::ThreeRowRemoved:
-				rowsRemoved_ += 3;
+				++nbrThreeLines_;
 				break;
 			case BoardEvent::FourRowRemoved:
-				rowsRemoved_ += 4;
+				++nbrFourLines_;
 				break;
-
-			/*
-			case BoardEvent::Restarted:
-				rowsRemoved_ = 0;
-				break;
-			*/
 		}
 	}
 
@@ -105,7 +96,7 @@ namespace tetris {
 		int savedRowsRemoved)
 		: tetrisBoard_{board, columns, rows, current, next} {
 
-		rowsRemoved_ = savedRowsRemoved;
+		//rowsRemoved_ = savedRowsRemoved;
 	}
 
 	void TetrisBoardWrapper::addRows(const std::vector<BlockType>& blockTypes) {
@@ -117,6 +108,10 @@ namespace tetris {
 	void TetrisBoardWrapper::restart(BlockType current, BlockType next) {
 		squaresToAdd_.clear();
 		turns_ = 0;
+		nbrOneLines_ = 0;
+		nbrTwoLines_ = 0;
+		nbrThreeLines_ = 0;
+		nbrFourLines_ = 0;
 		tetrisBoard_.restart(current, next);
 	}
 

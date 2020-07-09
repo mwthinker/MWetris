@@ -54,8 +54,6 @@ namespace tetris::game {
 					input_.downGround = false;
 				}
 				break;
-			default:
-				break;
 		}
 	}
 

@@ -59,7 +59,7 @@ void printBoard(const TetrisBoard& board) {
 }
 
 BlockType badRandomBlockType() {
-	static BlockType blockType = BlockType::Z;
+	static auto blockType = BlockType::Z;
 	if (blockType == BlockType::Z) {
 		blockType = BlockType::S;
 	} else {
@@ -101,11 +101,12 @@ std::chrono::duration<double> runGame(TetrisBoardWrapper& cmp, const Flags& flag
 
 		auto tmp = cmp.getTetrisBoard();
 		float value = ai.moveBlockToGroundCalculateValue(state, tmp);
+		moveBlockToBeforeImpact(state, cmp);
 
 		if (flags.play_) {
 			std::cout << "Value: " << value << "\n";
 			const auto& variables = ai.getCalculator().getVariables();
-			for (std::string name : variables) {
+			for (const auto& name : variables) {
 				std::cout << name << " = " << ai.getCalculator().extractVariableValue(name) << "\t";
 			}
 			printBoard(playBoard);
@@ -119,8 +120,7 @@ std::chrono::duration<double> runGame(TetrisBoardWrapper& cmp, const Flags& flag
 	return std::chrono::high_resolution_clock::now() - time;
 }
 
-void printGameResult(const TetrisBoardWrapper& cmp, const Flags& flags, std::chrono::duration<double> gameTime,
-	int lines1, int lines2, int lines3, int lines4) {
+void printGameResult(const TetrisBoardWrapper& cmp, const Flags& flags, const std::chrono::duration<double>& gameTime) {
 
 	std::queue<std::string> outputOrder = flags.outputOrder_;
 
@@ -133,7 +133,7 @@ void printGameResult(const TetrisBoardWrapper& cmp, const Flags& flags, std::chr
 	}
 
 	while (!outputOrder.empty()) {
-		std::string flag = outputOrder.front();
+		const auto& flag = outputOrder.front();
 		if (flag == "-T") {
 			if (flags.verbose_) {
 				std::cout << "time = ";
@@ -152,27 +152,27 @@ void printGameResult(const TetrisBoardWrapper& cmp, const Flags& flags, std::chr
 			if (flags.verbose_) {
 				std::cout << "cleared-rows = ";
 			}
-			std::cout << lines1 + lines2 + lines3 + lines4 << "\t";
+			std::cout << cmp.getRemovedRows() << "\t";
 		} else if (flag == "-c1") {
 			if (flags.verbose_) {
 				std::cout << "cleared-rows-1 = ";
 			}
-			std::cout << lines1 << "\t";
+			std::cout << cmp.getNbrOneRowsRemoved() << "\t";
 		} else if (flag == "-c2") {
 			if (flags.verbose_) {
 				std::cout << "cleared-rows-2 = ";
 			}
-			std::cout << lines2 << "\t";
+			std::cout << cmp.getNbrTwoRowsRemoved() << "\t";
 		} else if (flag == "-c3") {
 			if (flags.verbose_) {
 				std::cout << "cleared-rows-3 = ";
 			}
-			std::cout << lines3 << "\t";
+			std::cout << cmp.getNbrThreeRowsRemoved() << "\t";
 		} else if (flag == "-c4") {
 			if (flags.verbose_) {
 				std::cout << "cleared-rows-4 = ";
 			}
-			std::cout << lines4 << "\t";
+			std::cout << cmp.getNbrFourRowsRemoved() << "\t";
 		}
 		outputOrder.pop();
 	}
@@ -194,8 +194,8 @@ int main(const int argc, const char* const argv[]) {
 		return 0;
 	}
 
-	BlockType start = randomBlockType();
-	BlockType next = randomBlockType();
+	auto start = randomBlockType();
+	auto next = randomBlockType();
 
 	std::ifstream infile;
 	infile.exceptions(std::ifstream::badbit| std::ifstream::failbit);
@@ -215,10 +215,6 @@ int main(const int argc, const char* const argv[]) {
 	}
 
 	TetrisBoardWrapper cmp{flags.width_, flags.height_, start, next};
-	int nbrOneLine = 0;
-	int nbrTwoLine = 0;
-	int nbrThreeLine = 0;
-	int nbrFourLine = 0;
 
 	cmp.addGameEventListener([&](BoardEvent gameEvent, const TetrisBoardWrapper&) {
 		if (BoardEvent::BlockCollision == gameEvent) {
@@ -226,7 +222,7 @@ int main(const int argc, const char* const argv[]) {
 				try {
 					BlockType blockType = readBlockType(infile);
 					cmp.setNextBlock(blockType);
-				} catch (std::ifstream::failure e) {
+				} catch (const std::ifstream::failure& e) {
 					std::cerr << "Failed to read " << flags.randomFilePath_ << "\n";
 					if (flags.verbose_) {
 						std::cerr << e.what() << "\n";
@@ -237,24 +233,10 @@ int main(const int argc, const char* const argv[]) {
 				cmp.setNextBlock(randomBlockType());
 			}
 		}
-		switch (gameEvent) {
-			case BoardEvent::OneRowRemoved:
-				++nbrOneLine;
-				break;
-			case BoardEvent::TwoRowRemoved:
-				++nbrTwoLine;
-				break;
-			case BoardEvent::ThreeRowRemoved:
-				++nbrThreeLine;
-				break;
-			case BoardEvent::FourRowRemoved:
-				++nbrFourLine;
-				break;
-		}
 	});
 
-	std::chrono::duration<double> delta = runGame(cmp, flags);
-	printGameResult(cmp, flags, delta, nbrOneLine, nbrTwoLine, nbrThreeLine, nbrFourLine);
+	auto gameTime = runGame(cmp, flags);
+	printGameResult(cmp, flags, gameTime);
 	
 	return 0;
 }

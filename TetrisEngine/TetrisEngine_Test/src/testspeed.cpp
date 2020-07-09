@@ -43,10 +43,9 @@ TEST_CASE("benchmarked", "[.][benchmark]") {
 
 	BENCHMARK("Copy TetrisBoard") {
 		TetrisBoard board{TetrisWidth, TetrisHeight, BlockType::S, BlockType::J};
-		for (int i = 0; i < 100; ++i) {
-			TetrisBoard copyBoard = board;
-			board.update(Move::Down);
-		}
+		
+		TetrisBoard copyBoard = board;
+		board.update(Move::Down);
 	};
 
 	BENCHMARK("Copy block") {
@@ -59,7 +58,7 @@ TEST_CASE("benchmarked", "[.][benchmark]") {
 		sizeof(TetrisBoardWrapper);
 		sizeof(int_fast32_t);
 
-		for (int i = 0; i < 10000; ++i) {
+		for (int i = 0; i < 10; ++i) {
 			Block block{blockTypes[i % sizeof(blockTypes)], 0, 0};
 			for (int j = 0; j < 4; ++j) {
 				block.rotateLeft();

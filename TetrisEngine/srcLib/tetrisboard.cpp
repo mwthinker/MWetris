@@ -44,8 +44,6 @@ namespace tetris {
 		current_ = current;
 	}
 
-	
-
 	void TetrisBoard::setNextBlock(BlockType nextBlock) {
 		next_ = nextBlock;
 	}
@@ -69,21 +67,38 @@ namespace tetris {
 	}
 
 	void TetrisBoard::addBlockToBoard(const Block& block) {
-		// All squares in the block is added to the gameboard.
 		for (const auto& sq : block) {
 			board(sq.column, sq.row) = block.getBlockType();
 		}
 	}
 
 	Block TetrisBoard::createBlock(BlockType blockType) const {
-		return Block(blockType, columns_ / 2 - 1, rows_ - 4); // 4 rows are the starting area.
+		return Block{blockType, columns_ / 2 - 1, rows_ - 4}; // 4 rows are the starting area.
+	}
+
+	bool TetrisBoard::isRowEmpty(int row) const {
+		for (int column = 0; column < columns_; ++column) {
+			if (board(column, row) != BlockType::Empty) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	bool TetrisBoard::isRowFilled(int row) const {
+		for (int column = 0; column < columns_; ++column) {
+			if (board(column, row) == BlockType::Empty) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	BlockType TetrisBoard::getBlockType(int column, int row) const {
 		if (column < 0 || column >= columns_ || row < 0) {
 			return BlockType::Wall;
 		}
-		if (row * columns_ + column >= (int) gameboard_.size()) {
+		if (row * columns_ + column >= static_cast<int>(gameboard_.size())) {
 			return BlockType::Empty;
 		}
 		return board(column, row);
@@ -122,40 +137,6 @@ namespace tetris {
 
 	bool TetrisBoard::isRowInsideBoard(int row) const {
 		return row >= 0 && row * columns_ < static_cast<int>(gameboard_.size());
-	}
-
-	int TetrisBoard::removeFilledRows(const Block& block) {
-		int row = block.getLowestRow();
-		int rowsFilled = 0;
-		const int nbrOfSquares = static_cast<int>(current_.getSize());
-		for (int i = 0; i < nbrOfSquares; ++i) {
-			bool filled = false;
-			if (isRowInsideBoard(row)) {
-				filled = isRowFilled(row);
-			}
-			if (filled) {
-				moveRowsOneStepDown(row);
-				++rowsFilled;
-			} else {
-				++row;
-			}
-		}
-
-		return rowsFilled;
-	}
-
-	void TetrisBoard::moveRowsOneStepDown(int rowToRemove) {
-		rowToBeRemoved_ = rowToRemove;
-		//triggerEvent(BoardEvent::RowToBeRemoved);
-		
-		int indexStartOfRow = rowToRemove * columns_;
-		gameboard_.erase(gameboard_.begin() + indexStartOfRow, gameboard_.begin() + indexStartOfRow + columns_);
-
-		// Is it necessary to replace the row?
-		if ((int) gameboard_.size() < rows_ * columns_) {
-			// Replace the removed row with an empty row at the top.
-			gameboard_.insert(gameboard_.end(), columns_, BlockType::Empty);
-		}
 	}
 
 }

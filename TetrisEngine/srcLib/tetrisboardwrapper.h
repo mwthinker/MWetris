@@ -46,7 +46,7 @@ namespace tetris {
 		}
 
 		int getRemovedRows() const {
-			return rowsRemoved_;
+			return nbrOneLines_ + nbrTwoLines_ * 2 + nbrThreeLines_ * 3 + nbrFourLines_ * 4;
 		}
 
 		int getRows() const {
@@ -100,6 +100,22 @@ namespace tetris {
 			return tetrisBoard_.getBoardVector();
 		}
 
+		int getNbrOneRowsRemoved() const {
+			return nbrOneLines_;
+		}
+
+		int getNbrTwoRowsRemoved() const {
+			return nbrTwoLines_;
+		}
+
+		int getNbrThreeRowsRemoved() const {
+			return nbrThreeLines_;
+		}
+
+		int getNbrFourRowsRemoved() const {
+			return nbrFourLines_;
+		}
+
 	private:
 		void triggerEvent(BoardEvent gameEvent);
 
@@ -108,7 +124,10 @@ namespace tetris {
 		std::vector<BlockType> squaresToAdd_;
 		Random random_;
 		int turns_{};
-		int rowsRemoved_{};
+		int nbrOneLines_{};
+		int nbrTwoLines_{};
+		int nbrThreeLines_{};
+		int nbrFourLines_{};
 	};
 
 }

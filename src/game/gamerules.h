@@ -22,44 +22,29 @@ namespace tetris::game {
 		}
 
 	private:
-		void addPlayer(const LocalPlayerPtr& player);
+		void addPlayer(LocalPlayerPtr player);
 
-		void applyRules(BoardEvent gameEvent, LocalPlayerPtr player);
+		void applyRules(BoardEvent gameEvent, const LocalPlayerPtr& player);
 
-		void handleGameOverEvent(LocalPlayerPtr player);
+		void handleGameOverEvent(const LocalPlayerPtr& player);
 
-		void handleRowClearedEvent(LocalPlayerPtr player, int rows);
+		void handleRowClearedEvent(const LocalPlayerPtr& player, int rows);
 
-		void triggerPointEvent(LocalPlayerPtr player, int newPoints, int oldPoints);
+		void triggerPointEvent(const LocalPlayerPtr& player, int newPoints, int oldPoints);
 
-		void triggerGameOverEvent(LocalPlayerPtr player);
+		void triggerGameOverEvent(const LocalPlayerPtr& player);
 
-		void triggerLevelUpEvent(LocalPlayerPtr player, int newLevel, int oldLevel);
+		void triggerLevelUpEvent(const LocalPlayerPtr& player, int newLevel, int oldLevel);
 
-		void addRowsToOpponents(LocalPlayerPtr player);
+		void addRowsToOpponents(const LocalPlayerPtr& player);
 
-		static int generateNbrHoles(const PlayerPtr& player);
-
-		inline bool isMultiplayerGame() const {
+		bool isMultiplayerGame() const {
 			return localPlayers_.size() > 1;
 		}
-
-		struct Pair {
-			Pair() = default;
-
-			Pair(const mw::signals::Connection& connection, const LocalPlayerPtr& player) :
-				connection_(connection), player_(player) {
-			}
-
-			mw::signals::Connection connection_;
-			LocalPlayerPtr player_;
-		};
 
 		std::vector<LocalPlayerPtr> localPlayers_;
 		mw::Signal<TetrisGameEvent&>& gameEventSignal_;
 		int nbrOfAlivePlayers_{};
-		static const double HOLES_PERCENT;
-		static const int LEVELUP_NBR;
 	};
 
 }

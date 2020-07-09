@@ -51,11 +51,11 @@ namespace tetris {
 
 		Ai(std::string name, std::string valueFunction, bool allowException = false);
 
-		std::string getName() const {
+		const std::string& getName() const {
 			return name_;
 		}
 
-		std::string getValueFunction() const {
+		const std::string& getValueFunction() const {
 			return valueFunction_;
 		}
 
@@ -70,7 +70,7 @@ namespace tetris {
 
 			int left{};
 			int rotationLeft{};
-			float value_{std::numeric_limits<float>::lowest()};
+			float value{std::numeric_limits<float>::lowest()};
 		};
 
 		State calculateBestState(const TetrisBoard& board, int depth);
@@ -90,7 +90,19 @@ namespace tetris {
 		AiParameters parameters_{};
 	};
 
-	void moveBlockToBeforeImpact(const Ai::State& state, TetrisBoard& board);
+	template <class Board>
+	void moveBlockToBeforeImpact(const Ai::State& state, Board& board) {
+		for (int i = 0; i < state.rotationLeft; ++i) {
+			board.update(Move::RotateLeft);
+		}
+		for (int i = 0; i < state.left; ++i) {
+			board.update(Move::Left);
+		}
+		for (int i = 0; i < -1 * state.left; ++i) {
+			board.update(Move::Right);
+		}
+		board.update(Move::DownGround);
+	}
 
 }
 

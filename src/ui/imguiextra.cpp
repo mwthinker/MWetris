@@ -10,11 +10,11 @@ namespace ImGui {
 	namespace {
 
 		bool isMouseLeftClicked() {
-			return ImGui::GetIO().MouseClicked[0];
+			return ImGui::GetIO().MouseClicked[ImGuiMouseButton_Left];
 		}
 
 		bool isMouseRightClicked() {
-			return ImGui::GetIO().MouseClicked[1];
+			return ImGui::GetIO().MouseClicked[ImGuiMouseButton_Right];
 		}
 
 	}

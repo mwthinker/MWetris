@@ -26,7 +26,7 @@ namespace tetris::ui::scene {
 		if (radioNbr == 0) {
 			static char ipField[30] = "";
 			ImGui::InputText("The ip-number for the server", ipField, 30);
-			if (ImGui::BeginPopupContextItem("item context menu", 1)) {
+			if (ImGui::BeginPopupContextItem("item context menu", ImGuiMouseButton_Right)) {
 				if (ImGui::Selectable("Copy")) {
 					ImGui::SetClipboardText(ipField);
 				}

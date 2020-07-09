@@ -21,12 +21,12 @@ namespace tetris::graphic {
 
 		std::string gamePosition(int position) {
 			switch (position) {
-			case 1:
-				return fmt::format("{}:st place!", position);
-			case 2:
-				return fmt::format("{}:nd place!", position);
-			case 3:
-				return fmt::format("{}:rd place!", position);
+				case 1:
+					return fmt::format("{}:st place!", position);
+				case 2:
+					return fmt::format("{}:nd place!", position);
+				case 3:
+					return fmt::format("{}:rd place!", position);
 			}
 			return fmt::format("{}:th place!", position);
 		}

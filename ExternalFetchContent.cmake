@@ -12,7 +12,7 @@ FetchContent_Declare(CppProtoNetwork
 	GIT_REPOSITORY
 		https://github.com/mwthinker/CppProtoNetwork.git
 	GIT_TAG
-		c1a2213a8ae38c53429d7873276ebee12010224c
+		3c44914267ef7158cbcfc28a80d0ebba1b50d3ec
 )
 FetchContent_MakeAvailable(CppProtoNetwork)
 
@@ -47,4 +47,3 @@ FetchContent_GetProperties(MWetrisData
 	SOURCE_DIR
 		MWetrisData_SOURCE_DIR
 )
-

@@ -5,15 +5,17 @@ namespace tetris::graphic {
 
 	namespace {
 
-		inline float sign(int value) {
-			return value > 0 ? 1.f : -1.f;
+		template <class Value>
+		Value sign(Value value) {
+			return value > 0 ? 1 : -1;
 		}
 
 	}
 
-	DrawRow::DrawRow(int row, const TetrisBoardWrapper& board, float squareSize, float lowX, float lowY) :
-		fadingTime_(TetrisData::getInstance().getRowFadingTime()), squareSize_(squareSize),
-		movingTime_(TetrisData::getInstance().getRowMovingTime()) {
+	DrawRow::DrawRow(int row, const TetrisBoardWrapper& board, float squareSize, float lowX, float lowY)
+		: fadingTime_{TetrisData::getInstance().getRowFadingTime()}
+		, squareSize_{squareSize}
+		, movingTime_{TetrisData::getInstance().getRowMovingTime()} {
 
 		spriteZ_ = TetrisData::getInstance().getSprite(BlockType::Z);
 		spriteS_ = TetrisData::getInstance().getSprite(BlockType::S);
@@ -53,11 +55,6 @@ namespace tetris::graphic {
 						row_ = -1;
 						alpha_ = 1.f;
 					}
-					break;
-				case BoardEvent::FourRowRemoved:
-				case BoardEvent::ThreeRowRemoved:
-				case BoardEvent::TwoRowRemoved:
-				case BoardEvent::OneRowRemoved:
 					break;
 				case BoardEvent::ExternalRowsAdded:
 					row_ += tetrisBoard.getNbrExternalRowsAdded();

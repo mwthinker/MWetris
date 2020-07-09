@@ -4,6 +4,7 @@
 #include "block.h"
 
 #include <vector>
+#include <type_traits>
 
 namespace tetris {
 
@@ -122,23 +123,9 @@ namespace tetris {
 
 		Block createBlock(BlockType blockType) const;
 
-		bool isRowEmpty(int row) const {
-			for (int column = 0; column < columns_; ++column) {
-				if (board(column, row) != BlockType::Empty) {
-					return false;
-				}
-			}
-			return true;
-		}
+		bool isRowEmpty(int row) const;
 
-		bool isRowFilled(int row) const {
-			for (int column = 0; column < columns_; ++column) {
-				if (board(column, row) == BlockType::Empty) {
-					return false;
-				}
-			}
-			return true;
-		}
+		bool isRowFilled(int row) const;
 
 		// Set all squares on the board to empty.
 		// Game over is set to false.
@@ -146,8 +133,11 @@ namespace tetris {
 
 		void addBlockToBoard(const Block& block);
 
-		int removeFilledRows(const Block& block);
-		void moveRowsOneStepDown(int rowToRemove);
+		template <class EventCallback>
+		int removeFilledRows(const Block& block, EventCallback& callback);
+
+		template <class EventCallback>
+		void moveRowsOneStepDown(int rowToRemove, EventCallback& callback);
 
 		std::vector<BlockType> gameboard_;	// Containing all non moving squares on the board.
 		BlockType next_;					// Next block for the player to control.
@@ -165,6 +155,8 @@ namespace tetris {
 
 	template <class EventCallback>
 	void TetrisBoard::update(Move move, const std::vector<BlockType>& externalRows, EventCallback&& eventCallback) {
+		static_assert(std::is_invocable_v<EventCallback, BoardEvent>, "EventCallback must be in the form: void(BoardEvent) ");
+
 		if (isGameOver_ || collision(current_)) {
 			if (!isGameOver_) {
 				// Only called once, when the game becomes game over.
@@ -233,7 +225,7 @@ namespace tetris {
 					eventCallback(BoardEvent::BlockCollision);
 
 					// Remove any filled row on the gameboard.
-					int nbr = removeFilledRows(current_);
+					int nbr = removeFilledRows(current_, eventCallback);
 
 					// Add rows due to some external event.
 					if (!externalRows.empty()) {
@@ -265,6 +257,42 @@ namespace tetris {
 					eventCallback(BoardEvent::GravityMovesBlock);
 				}
 				break;
+		}
+	}
+
+	template <class EventCallback>
+	int TetrisBoard::removeFilledRows(const Block& block, EventCallback& callback) {
+		int row = block.getLowestRow();
+		int rowsFilled = 0;
+		const int nbrOfSquares = static_cast<int>(current_.getSize());
+		for (int i = 0; i < nbrOfSquares; ++i) {
+			bool filled = false;
+			if (isRowInsideBoard(row)) {
+				filled = isRowFilled(row);
+			}
+			if (filled) {
+				moveRowsOneStepDown(row, callback);
+				++rowsFilled;
+			} else {
+				++row;
+			}
+		}
+
+		return rowsFilled;
+	}
+
+	template <class EventCallback>
+	void TetrisBoard::moveRowsOneStepDown(int rowToRemove, EventCallback& callback) {
+		rowToBeRemoved_ = rowToRemove;
+		callback(BoardEvent::RowToBeRemoved);
+
+		int indexStartOfRow = rowToRemove * columns_;
+		gameboard_.erase(gameboard_.begin() + indexStartOfRow, gameboard_.begin() + indexStartOfRow + columns_);
+
+		// Is it necessary to replace the row?
+		if (static_cast<int>(gameboard_.size()) < rows_ * columns_) {
+			// Replace the removed row with an empty row at the top.
+			gameboard_.insert(gameboard_.end(), columns_, BlockType::Empty);
 		}
 	}
 

@@ -375,34 +375,21 @@ namespace tetris {
 
 					State childState = calculateBestStateRecursive(childBoard, 1);
 
-					if (childState.value_ > bestState.value_) {
+					if (childState.value > bestState.value) {
 						bestState = state;
 						// Only updating the value from the child.
-						bestState.value_ = childState.value_;
+						bestState.value = childState.value;
 					}
 				} else {
 					float value = moveBlockToGroundCalculateValue(state, childBoard);
-					if (value > bestState.value_) {
+					if (value > bestState.value) {
 						bestState = state;
-						bestState.value_ = value;
+						bestState.value = value;
 					}
 				}
 			}
 		}
 		return bestState;
-	}
-
-	void moveBlockToBeforeImpact(const Ai::State& state, TetrisBoard& board) {
-		for (int i = 0; i < state.rotationLeft; ++i) {
-			board.update(Move::RotateLeft);
-		}
-		for (int i = 0; i < state.left; ++i) {
-			board.update(Move::RotateRight);
-		}
-		for (int i = 0; i < -1 * state.left; ++i) {
-			board.update(Move::Right);
-		}
-		board.update(Move::DownGround);
 	}
 
 	float Ai::moveBlockToGroundCalculateValue(const State& state, TetrisBoard& board) {
