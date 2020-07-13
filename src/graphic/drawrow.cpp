@@ -56,9 +56,11 @@ namespace tetris::graphic {
 						alpha_ = 1.f;
 					}
 					break;
+				/*
 				case BoardEvent::ExternalRowsAdded:
 					row_ += tetrisBoard.getNbrExternalRowsAdded();
 					break;
+				*/
 				case BoardEvent::BlockCollision:
 					if (row_ >= 0) {
 						updateVertexData(tetrisBoard);

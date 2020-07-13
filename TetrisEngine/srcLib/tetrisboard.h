@@ -11,19 +11,11 @@ namespace tetris {
 	enum class BoardEvent {
 		BlockCollision,
 		CurrentBlockUpdated,
-		ExternalRowsAdded,
 		
-		PlayerMovesBlockUpdated,
-		PlayerMovesBlockLeft,
-		PlayerMovesBlockRight,
-		PlayerMovesBlockDown,
-		PlayerMovesBlockDownGround,
+		PlayerMovesBlock,
 		GravityMovesBlock,
 		
-		OneRowRemoved,
-		TwoRowRemoved,
-		ThreeRowRemoved,
-		FourRowRemoved,
+		RowsRemoved,
 		RowToBeRemoved,
 		GameOver
 	};
@@ -51,10 +43,13 @@ namespace tetris {
 		TetrisBoard(TetrisBoard&& other) = default;
 		TetrisBoard& operator=(TetrisBoard&& other) = default;
 
+		template <class Rows>
+		int addExternalRows(const Rows& externalRows);
+
 		void update(Move move);
 
 		template <class EventCallback>
-		void update(Move move, const std::vector<BlockType>& externalRows, EventCallback&& eventCallback);
+		void update(Move move, EventCallback&& eventCallback);
 
 		void setNextBlock(BlockType next);
 
@@ -98,17 +93,7 @@ namespace tetris {
 
 		int calculateSquaresFilled(int row) const;
 
-		// Return true if the block is outside or on an already occupied square on the board.
-		// Otherwise it return false.
 		bool collision(const Block& block) const;
-
-		int getNbrExternalRowsAdded() const {
-			return externalRowsAdded_;
-		}
-
-		int getRowToBeRemoved() const {
-			return rowToBeRemoved_;
-		}
 
 	private:
 		bool isRowInsideBoard(int row) const;
@@ -127,41 +112,41 @@ namespace tetris {
 
 		bool isRowFilled(int row) const;
 
-		// Set all squares on the board to empty.
-		// Game over is set to false.
-		void clearBoard();
-
 		void addBlockToBoard(const Block& block);
 
 		template <class EventCallback>
-		int removeFilledRows(const Block& block, EventCallback& callback);
+		void removeFilledRows(const Block& block, EventCallback& callback);
 
 		template <class EventCallback>
 		void moveRowsOneStepDown(int rowToRemove, EventCallback& callback);
 
-		std::vector<BlockType> gameboard_;	// Containing all non moving squares on the board.
-		BlockType next_;					// Next block for the player to control.
-		Block current_;						// The current block for the player to control.
+		std::vector<BlockType> gameboard_;
+		BlockType next_;
+		Block current_;
 		int columns_;
 		int rows_;
 		bool isGameOver_{false};
-		int externalRowsAdded_{0};
-		int rowToBeRemoved_{-1};
 	};
 
+	template <class Rows>
+	int TetrisBoard::addExternalRows(const Rows& externalRows) {
+		gameboard_.insert(gameboard_.begin(), std::begin(externalRows), std::end(externalRows));
+		return static_cast<int>(externalRows.size()) / columns_;
+	}
+
 	inline void TetrisBoard::update(Move move) {
-		update(move, {}, [](BoardEvent boardEvent) {});
+		update(move, [](BoardEvent boardEvent, int value) {});
 	}
 
 	template <class EventCallback>
-	void TetrisBoard::update(Move move, const std::vector<BlockType>& externalRows, EventCallback&& eventCallback) {
-		static_assert(std::is_invocable_v<EventCallback, BoardEvent>, "EventCallback must be in the form: void(BoardEvent) ");
+	void TetrisBoard::update(Move move, EventCallback&& eventCallback) {
+		static_assert(std::is_invocable_v<EventCallback, BoardEvent, int>, "EventCallback must be in the form: void(BoardEvent, int) ");
 
 		if (isGameOver_ || collision(current_)) {
 			if (!isGameOver_) {
 				// Only called once, when the game becomes game over.
 				isGameOver_ = true;
-				eventCallback(BoardEvent::GameOver);
+				eventCallback(BoardEvent::GameOver, 0);
 			}
 			return;
 		}
@@ -171,97 +156,74 @@ namespace tetris {
 			case Move::GameOver:
 				// Only called once, when the game becomes game over.
 				isGameOver_ = true;
-				eventCallback(BoardEvent::GameOver);
+				eventCallback(BoardEvent::GameOver, 0);
 				break;
 			case Move::Left:
 				block.moveLeft();
 				if (!collision(block)) {
 					current_ = block;
-					eventCallback(BoardEvent::PlayerMovesBlockLeft);
+					eventCallback(BoardEvent::PlayerMovesBlock, 0);
 				}
 				break;
 			case Move::Right:
 				block.moveRight();
 				if (!collision(block)) {
 					current_ = block;
-					eventCallback(BoardEvent::PlayerMovesBlockRight);
+					eventCallback(BoardEvent::PlayerMovesBlock, 0);
 				}
 				break;
-			case Move::DownGround:
-				eventCallback(BoardEvent::PlayerMovesBlockDownGround);
-				do {
+			case Move::DownGround: {
+				bool moved = false;
+				while (!collision(block)) {
+					moved = true;
 					current_ = block;
 					block.moveDown();
-				} while (!collision(block));
-				eventCallback(BoardEvent::PlayerMovesBlockDown);
+				}
+				eventCallback(BoardEvent::PlayerMovesBlock, 0);
 				break;
+			}
 			case Move::Down:
 				block.moveDown();
 				if (!collision(block)) {
 					current_ = block;
-					eventCallback(BoardEvent::PlayerMovesBlockDown);
+					eventCallback(BoardEvent::PlayerMovesBlock, 0);
 				}
 				break;
 			case Move::RotateRight:
 				block.rotateRight();
 				if (!collision(block)) {
 					current_ = block;
-					eventCallback(BoardEvent::PlayerMovesBlockUpdated);
+					eventCallback(BoardEvent::PlayerMovesBlock, 0);
 				}
 				break;
 			case Move::RotateLeft:
 				block.rotateLeft();
 				if (!collision(block)) {
 					current_ = block;
-					eventCallback(BoardEvent::PlayerMovesBlockUpdated);
+					eventCallback(BoardEvent::PlayerMovesBlock, 0);
 				}
 				break;
 			case Move::DownGravity:
 				block.moveDown();
 				if (collision(block)) {
-					// Collision detected, add squares to the gameboard.
 					addBlockToBoard(current_);
-
-					eventCallback(BoardEvent::BlockCollision);
-
-					// Remove any filled row on the gameboard.
-					int nbr = removeFilledRows(current_, eventCallback);
-
-					// Add rows due to some external event.
-					if (!externalRows.empty()) {
-						externalRowsAdded_ = static_cast<int>(externalRows.size()) / columns_;
-						gameboard_.insert(gameboard_.begin(), externalRows.begin(), externalRows.end());
-						eventCallback(BoardEvent::ExternalRowsAdded);
-					}
+					eventCallback(BoardEvent::BlockCollision, 0);
+					
+					removeFilledRows(current_, eventCallback);
 
 					// Update the user controlled block.
 					current_ = createBlock(next_);
-					eventCallback(BoardEvent::CurrentBlockUpdated);
-
-					switch (nbr) {
-						case 1:
-							eventCallback(BoardEvent::OneRowRemoved);
-							break;
-						case 2:
-							eventCallback(BoardEvent::TwoRowRemoved);
-							break;
-						case 3:
-							eventCallback(BoardEvent::ThreeRowRemoved);
-							break;
-						case 4:
-							eventCallback(BoardEvent::FourRowRemoved);
-							break;
-					}
+					eventCallback(BoardEvent::CurrentBlockUpdated, 0);
 				} else {
 					current_ = block;
-					eventCallback(BoardEvent::GravityMovesBlock);
+					eventCallback(BoardEvent::GravityMovesBlock, 0);
 				}
 				break;
 		}
 	}
 
 	template <class EventCallback>
-	int TetrisBoard::removeFilledRows(const Block& block, EventCallback& callback) {
+	void TetrisBoard::removeFilledRows(const Block& block, EventCallback& callback) {
 		int row = block.getLowestRow();
 		int rowsFilled = 0;
 		const int nbrOfSquares = static_cast<int>(current_.getSize());
@@ -278,15 +240,16 @@ namespace tetris {
 			}
 		}
 
-		return rowsFilled;
+		if (rowsFilled > 0) {
+			callback(BoardEvent::RowsRemoved, rowsFilled);
+		}
 	}
 
 	template <class EventCallback>
 	void TetrisBoard::moveRowsOneStepDown(int rowToRemove, EventCallback& callback) {
-		rowToBeRemoved_ = rowToRemove;
-		callback(BoardEvent::RowToBeRemoved);
+		callback(BoardEvent::RowToBeRemoved, rowToRemove);
 
-		int indexStartOfRow = rowToRemove * columns_;
+		auto indexStartOfRow = rowToRemove * columns_;
 		gameboard_.erase(gameboard_.begin() + indexStartOfRow, gameboard_.begin() + indexStartOfRow + columns_);
 
 		// Is it necessary to replace the row?

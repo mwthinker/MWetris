@@ -10,11 +10,11 @@ namespace tetris {
 
 	BlockType randomBlockType() {
 		Random random;
-		const int BlockTypeMin = 0;
-		const int BlockTypeMax = 6;
-		static_assert((int) BlockType::Empty > BlockTypeMax &&
-			(int) BlockType::Wall > BlockTypeMax, "BlockType::EMPTY should not be generated");
-		return static_cast<BlockType>(random.generateInt(BlockTypeMin, BlockTypeMax));
+		constexpr std::array BlockTypes{
+			BlockType::I, BlockType::J, BlockType::L,
+			BlockType::O ,BlockType::S, BlockType::T, BlockType::Z};
+
+		return BlockTypes[random.generateInt(0, static_cast<int>(BlockTypes.size()) - 1)];
 	}
 
 	std::vector<BlockType> generateRow(const TetrisBoard& board, double squaresPerLength) {
@@ -66,25 +66,21 @@ namespace tetris {
 		return row;
 	}
 
-	void TetrisBoardWrapper::triggerEvent(BoardEvent gameEvent) {
-		boardEventCallbacks_(gameEvent, *this);
+	void TetrisBoardWrapper::triggerEvent(BoardEvent gameEvent, int value) {
 		switch (gameEvent) {
+			case BoardEvent::RowToBeRemoved:
+				rowToBeRemoved_ = value;
+				break;
 			case BoardEvent::CurrentBlockUpdated:
+				externalRowsAdded_ = tetrisBoard_.addExternalRows(squaresToAdd_);
+				squaresToAdd_.clear();
 				++turns_;
 				break;
-			case BoardEvent::OneRowRemoved:
-				++nbrOneLines_;
-				break;
-			case BoardEvent::TwoRowRemoved:
-				++nbrTwoLines_;
-				break;
-			case BoardEvent::ThreeRowRemoved:
-				++nbrThreeLines_;
-				break;
-			case BoardEvent::FourRowRemoved:
-				++nbrFourLines_;
+			case BoardEvent::RowsRemoved:
+				nbrOneLines_ += value;
 				break;
 		}
+		boardEventCallbacks_(gameEvent, *this);
 	}
 
 	TetrisBoardWrapper::TetrisBoardWrapper(int columns, int rows, BlockType current, BlockType next)

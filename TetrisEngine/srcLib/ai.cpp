@@ -121,13 +121,13 @@ namespace tetris {
 	}
 
 	// Calculation is performed before the block is part of the board.
-	int calculateLandingHeight(const Block& block) { // f1	
+	int calculateLandingHeight(const Block& block) { // f1
 		return block.getLowestRow();
 	}
 
 	// Calculate the cleared lines times the current blocks square contribution to the cleared lines. 
 	// Calculation is perfomed before the block is part of the board.
-	int calculateErodedPieces(const TetrisBoard& board) { // f2	
+	int calculateErodedPieces(const TetrisBoard& board) { // f2
 		int w = board.getColumns();
 		int h = board.getRows();
 		const Block& block = board.getBlock();
@@ -314,7 +314,7 @@ namespace tetris {
 
 	float calculateBlockMeanHeight(const Block& block) {
 		int blockMeanHeight = 0;
-		for (const Square& sq : block) {
+		for (const auto& sq : block) {
 			blockMeanHeight += sq.row;
 		}
 		return (float) blockMeanHeight / block.getSize();
@@ -322,7 +322,7 @@ namespace tetris {
 
 	int calculateBlockEdges(const TetrisBoard& board, const Block& block) {
 		int edges = 0;
-		for (const Square& sq : block) {
+		for (const auto& sq : block) {
 			board.getBlockType(sq.column - 1, sq.row) != BlockType::Empty ? ++edges : 0;
 			board.getBlockType(sq.column, sq.row - 1) != BlockType::Empty ? ++edges : 0;
 			board.getBlockType(sq.column + 1, sq.row) != BlockType::Empty ? ++edges : 0;
@@ -364,8 +364,8 @@ namespace tetris {
 		if (depth > 0) {
 			std::vector<Ai::State> states = calculateAllPossibleStates(board, board.getBlock());
 
-			for (const Ai::State& state : states) {
-				TetrisBoard childBoard = board;
+			for (const auto& state : states) {
+				TetrisBoard childBoard{board};
 
 				if (depth == 2) {
 					moveBlockToBeforeImpact(state, childBoard);

@@ -62,11 +62,11 @@ namespace tetris {
 		}
 
 		int getRowToBeRemoved() const {
-			return tetrisBoard_.getRowToBeRemoved();
+			return rowToBeRemoved_;
 		}
 
 		int getNbrExternalRowsAdded() const {
-			return tetrisBoard_.getNbrExternalRowsAdded();
+			return externalRowsAdded_;
 		}
 
 		BlockType getBlockType() const {
@@ -82,10 +82,9 @@ namespace tetris {
 		}
 
 		void update(Move move) {
-			tetrisBoard_.update(move, squaresToAdd_, [&](BoardEvent boardEvent) {
-				triggerEvent(boardEvent);
+			tetrisBoard_.update(move, [&](BoardEvent boardEvent, int value) {
+				triggerEvent(boardEvent, value);
 			});
-			squaresToAdd_.clear();
 		}
 
 		void setNextBlock(BlockType next) {
@@ -117,7 +116,7 @@ namespace tetris {
 		}
 
 	private:
-		void triggerEvent(BoardEvent gameEvent);
+		void triggerEvent(BoardEvent gameEvent, int value);
 
 		TetrisBoard tetrisBoard_;
 		mw::Signal<BoardEvent, const TetrisBoardWrapper&> boardEventCallbacks_;
@@ -128,6 +127,8 @@ namespace tetris {
 		int nbrTwoLines_{};
 		int nbrThreeLines_{};
 		int nbrFourLines_{};
+		int rowToBeRemoved_{};
+		int externalRowsAdded_{};
 	};
 
 }

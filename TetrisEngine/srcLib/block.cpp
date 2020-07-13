@@ -98,13 +98,6 @@ namespace tetris {
 		}
 	}
 
-	void Block::moveUp() {
-		++lowestStartRow_;
-		for (Square& sq : squares_) {
-			++sq.row;
-		}
-	}
-
 	void Block::moveDown() {
 		--lowestStartRow_;
 		for (Square& sq : squares_) {

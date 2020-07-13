@@ -101,17 +101,6 @@ TEST_CASE("Test Block", "[block][square]") {
 			REQUIRE(blockEqual(tmpBlock, block));
 		}
 
-		SECTION("Move up") {
-			block.moveUp();
-			Block tmpBlock{BlockType::J, 0, 1};
-			REQUIRE(blockEqual(tmpBlock, block));
-
-			block.moveUp();
-			block.moveUp();
-			tmpBlock = Block{BlockType::J, 0, 3};
-			REQUIRE(blockEqual(tmpBlock, block));
-		}
-
 		SECTION("Move left") {
 			block.moveLeft();
 			Block tmpBlock{BlockType::J, -1, 0};

@@ -7,26 +7,27 @@
 namespace tetris {
 
 	TetrisBoard::TetrisBoard(int columns, int rows, BlockType current, BlockType next)
-		: gameboard_{rows * columns, BlockType::Empty}
+		: gameboard_(rows * columns, BlockType::Empty)
 		, next_{next}
 		, columns_{columns}
 		, rows_{rows} {
-
-		// Uses the size of the board. I.e. rows_ and columns_.
+		
 		current_ = createBlock(current);
 	}
 
 	TetrisBoard::TetrisBoard(const std::vector<BlockType>& board, int columns, int rows, const Block& current, BlockType next)
-		: TetrisBoard{columns, rows, current.getBlockType(), next} {
+		: gameboard_(board.begin(), board.end())
+		, next_{next}
+		, current_{current}
+		, columns_{columns}
+		, rows_{rows} {
 
-		gameboard_.insert(gameboard_.begin(), board.begin(), board.end());
+		int calcRows = static_cast<int>(gameboard_.size()) / columns_; // Number of filled rows.
+		int nbr = columns_ - static_cast<int>(gameboard_.size()) - calcRows * columns_; // The number of elements in the unfilled row.
 
-		int calcRows = static_cast<int>(gameboard_.size()) / columns_; // Number of whole rows.
-		int nbr = static_cast<int>(gameboard_.size()) - calcRows * columns_; // The number of elements in the unfilled row.
-
-		// To make all rows filled. Remove elements in the unfilled row.
+		// To make all rows filled. Add elements in the unfilled row.
 		for (int i = 0; i < nbr; ++i) {
-			gameboard_.pop_back();
+			gameboard_.push_back(BlockType::Empty);
 		}
 
 		// Remove unneeded rows. I.e. remove empty rows at the top which are outside the board.
@@ -41,7 +42,6 @@ namespace tetris {
 		if (collision(current)) {
 			isGameOver_ = true;
 		}
-		current_ = current;
 	}
 
 	void TetrisBoard::setNextBlock(BlockType nextBlock) {
@@ -57,9 +57,8 @@ namespace tetris {
 		rows_ = rows;
 		columns_ = columns;
 		current_ = createBlock(current);
-		rowToBeRemoved_ = -1;
-		externalRowsAdded_ = 0;
-		clearBoard();
+		gameboard_.assign(rows_ * columns_, BlockType::Empty);
+		isGameOver_ = false;
 	}
 
 	const std::vector<BlockType>& TetrisBoard::getBoardVector() const {
@@ -120,7 +119,7 @@ namespace tetris {
 	bool TetrisBoard::collision(const Block& block) const {
 		bool collision = false;
 
-		for (const Square& sq : block) {
+		for (const auto& sq : block) {
 			if (getBlockType(sq.column, sq.row) != BlockType::Empty) {
 				collision = true;
 				break;
@@ -128,11 +127,6 @@ namespace tetris {
 		}
 
 		return collision;
-	}
-
-	void TetrisBoard::clearBoard() {
-		gameboard_.assign(rows_ * columns_, BlockType::Empty);
-		isGameOver_ = false;
 	}
 
 	bool TetrisBoard::isRowInsideBoard(int row) const {

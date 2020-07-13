@@ -3,16 +3,16 @@
 
 namespace tetris {
 
-	enum class BlockType {
-		I,
-		J,
-		L,
-		O,
-		S,
-		T,
-		Z,
-		Empty,
-		Wall
+	enum class BlockType : char {
+		I = 'I',
+		J = 'J',
+		L = 'L',
+		O = 'O',
+		S = 'S',
+		T = 'T',
+		Z = 'Z',
+		Empty = 'E',
+		Wall = 'W',
 	};
 
 	struct Square {

@@ -37,6 +37,15 @@ namespace {
 		}
 	}
 
+	TetrisBoard CreateTetrisBoard() {
+		std::vector<BlockType> blockTypes;
+		for (char chr : std::string_view{"TTOOZZSSEIETOOSZSEEEEEESSEEEEEEEES"}) {
+			blockTypes.push_back(charToBlockType(chr));
+		}
+		return TetrisBoard{blockTypes, TetrisWidth, TetrisHeight,
+			Block{BlockType::J, 4, 18, 0}, BlockType::L};
+	}
+
 }
 
 TEST_CASE("benchmarked", "[.][benchmark]") {
@@ -69,22 +78,13 @@ TEST_CASE("benchmarked", "[.][benchmark]") {
 			for (int j = 0; j < 8; ++j) {
 				block.moveDown();
 			}
-			for (int j = 0; j < 8; ++j) {
-				block.moveUp();
-			}
 		}
 	};
 
 	sizeof(Block);
 
-	std::vector<BlockType> blockTypes;
-	for (char chr : std::string_view{"TTOOZZSSEIETOOSZSEEEEEESSEEEEEEEES"}) {
-		blockTypes.push_back(charToBlockType(chr));
-	}
-	TetrisBoard board{blockTypes, TetrisWidth, TetrisHeight,
-		Block{BlockType::J, 4, 18, 0}, BlockType::L};
+	auto board = CreateTetrisBoard();
 	int highestUsedRow = calculateHighestUsedRow(board);
-	
 	board.update(Move::DownGround);
 
 	BENCHMARK("Old ai functions") {
@@ -145,9 +145,13 @@ TEST_CASE("benchmarked", "[.][benchmark]") {
 		calculateHoleDepth(board);
 	};
 
+}
+
+TEST_CASE("Best state", "[.][ai]") {
+	auto board = CreateTetrisBoard();
+
 	BENCHMARK("AI calculateBestState") {
-		Ai ai;
+		Ai ai{};
 		ai.calculateBestState(board, 1);
 	};
-
 }

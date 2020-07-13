@@ -18,7 +18,6 @@ namespace tetris {
 
 		void moveLeft();
 		void moveRight();
-		void moveUp();
 		void moveDown();
 		void rotateLeft();
 		void rotateRight();
