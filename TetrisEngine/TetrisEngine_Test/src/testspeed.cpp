@@ -149,7 +149,7 @@ TEST_CASE("Best state", "[.][ai]") {
 	auto board = CreateTetrisBoard();
 
 	BENCHMARK("AI calculateBestState") {
-		Ai ai{};
+		Ai ai;
 		ai.calculateBestState(board, 1);
 	};
 }

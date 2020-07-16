@@ -13,10 +13,7 @@ namespace tetris {
 	}
 
 	Block::Block(BlockType blockType, int startColumn, int lowestStartRow)
-		: maxRotations_{4}
-		, currentRotation_{0}
-		, rotationSquareIndex_{0}
-		, blockType_{blockType}
+		: blockType_{blockType}
 		, startColumn_{startColumn}
 		, lowestStartRow_{lowestStartRow} {
 
@@ -86,21 +83,21 @@ namespace tetris {
 
 	void Block::moveLeft() {
 		--startColumn_;
-		for (Square& sq : squares_) {
+		for (auto& sq : squares_) {
 			--sq.column;
 		}
 	}
 
 	void Block::moveRight() {
 		++startColumn_;
-		for (Square& sq : squares_) {
+		for (auto& sq : squares_) {
 			++sq.column;
 		}
 	}
 
 	void Block::moveDown() {
 		--lowestStartRow_;
-		for (Square& sq : squares_) {
+		for (auto& sq : squares_) {
 			--sq.row;
 		}
 	}
@@ -112,8 +109,8 @@ namespace tetris {
 		if (rotate > 0) {
 			// Rotate left.
 			for (int i = 0; i < rotate; ++i) {
-				for (Square& sq : squares_) {
-					Square tmp = sq;
+				for (auto& sq : squares_) {
+					auto tmp = sq;
 					tmp.column = column + row - sq.row;
 					tmp.row = sq.column + row - column;
 					sq = tmp;

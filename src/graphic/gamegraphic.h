@@ -3,7 +3,7 @@
 
 #include "game/player.h"
 #include "drawrow.h"
-#include "tetrisboardwrapper.h"
+#include "game/tetrisboardwrapper.h"
 #include "types.h"
 
 #include <sdl/font.h>

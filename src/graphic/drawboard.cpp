@@ -1,6 +1,6 @@
 #include "drawboard.h"
 #include "tetrisdata.h"
-#include "tetrisboardwrapper.h"
+#include "game/tetrisboardwrapper.h"
 #include "graphic.h"
 #include "game/player.h"
 

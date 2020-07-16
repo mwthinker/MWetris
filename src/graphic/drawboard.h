@@ -3,7 +3,7 @@
 
 #include "tetrisdata.h"
 #include "game/player.h"
-#include "tetrisboardwrapper.h"
+#include "game/tetrisboardwrapper.h"
 #include "graphic.h"
 
 #include <sdl/imguiauxiliary.h>

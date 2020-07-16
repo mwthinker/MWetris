@@ -1,5 +1,5 @@
 #include "gamegraphic.h"
-#include "tetrisboardwrapper.h"
+#include "game/tetrisboardwrapper.h"
 #include "game/player.h"
 #include "tetrisdata.h"
 

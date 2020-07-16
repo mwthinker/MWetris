@@ -44,7 +44,6 @@ namespace tetris {
 			return lowestStartRow_;
 		}
 
-		// Return the lowest row.
 		int getLowestRow() const {
 			return std::min({squares_[0].row, squares_[1].row, squares_[2].row, squares_[3].row});;
 		}
@@ -72,9 +71,10 @@ namespace tetris {
 	private:
 		void rotate(int rotate);
 
-		int rotationSquareIndex_{};
 		std::array<Square, 4> squares_{};
-		int maxRotations_{}, currentRotation_{};
+		int rotationSquareIndex_{};
+		int maxRotations_{4};
+		int currentRotation_{};
 		int lowestStartRow_{};
 		int startColumn_{};
 		BlockType blockType_{BlockType::Empty};
