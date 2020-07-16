@@ -8,7 +8,7 @@ namespace tetris {
 	class Random {
 	public:
 		Random() = default;
-		Random(std::mt19937::result_type seed)
+		explicit Random(std::mt19937::result_type seed)
 			: engine_(seed) {
 		}
 

@@ -37,7 +37,7 @@ set(SOURCES
 	src/graphic/gamegraphic.h
 	src/graphic/graphic.cpp
 	src/graphic/graphic.h
-
+	
 	src/game/actionhandler.cpp
 	src/game/actionhandler.h
 	src/game/computer.cpp
@@ -60,6 +60,8 @@ set(SOURCES
 	src/game/remoteplayer.cpp
 	src/game/remoteplayer.h
 	src/game/sdldevice.h
+	src/game/tetrisboardwrapper.cpp
+	src/game/tetrisboardwrapper.h
 	src/game/tetrisgame.cpp
 	src/game/tetrisgameevent.h
 	src/game/tetrisgame.h

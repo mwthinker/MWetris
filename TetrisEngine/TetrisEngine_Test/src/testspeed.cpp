@@ -2,7 +2,6 @@
 #include <catch2/catch.hpp>
 
 #include <tetrisboard.h>
-#include <tetrisboardwrapper.h>
 #include <square.h>
 #include <vector>
 #include <ai.h>
@@ -64,7 +63,6 @@ TEST_CASE("benchmarked", "[.][benchmark]") {
 		sizeof(Block);
 		sizeof(int);
 		sizeof(TetrisBoard);
-		sizeof(TetrisBoardWrapper);
 		sizeof(int_fast32_t);
 
 		for (int i = 0; i < 10; ++i) {

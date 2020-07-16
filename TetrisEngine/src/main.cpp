@@ -1,8 +1,9 @@
 #include "flags.h"
 #include "flagsexception.h"
 
+#include <tetrisboard.h>
+#include <helper.h>
 #include <ai.h>
-#include <tetrisboardwrapper.h>
 #include <calc/calculatorexception.h>
 
 #include <fstream>
@@ -17,6 +18,100 @@
 
 using namespace std::chrono_literals;
 using namespace tetris;
+
+BlockType badRandomBlockType() {
+	static auto blockType = BlockType::Z;
+	if (blockType == BlockType::Z) {
+		blockType = BlockType::S;
+	} else {
+		blockType = BlockType::Z;
+	}
+	return blockType;
+}
+
+BlockType readBlockType(std::ifstream& infile) {
+	int data = -1;
+	if (infile.is_open()) {
+		if (!(infile >> data)) {
+			// Restart, read from the start again.
+			infile.clear();
+			infile.seekg(0, std::ios::beg);
+			infile >> data;
+		}
+	}
+	if (data >= 0 && data <= 6) {
+		return static_cast<BlockType>(data);
+	}
+	// In order for the ai to fail.
+	return badRandomBlockType();
+}
+
+struct Tetris {
+	Tetris(TetrisBoard& tetrisBoard, const Flags& flags, std::ifstream& infile)
+		: tetrisBoard{tetrisBoard}
+		, flags{flags}
+		, infile{infile} {
+	}
+	
+	void operator()(BoardEvent gameEvent, int value) {
+		switch (gameEvent) {
+			case tetris::BoardEvent::BlockCollision:
+				if (flags.useRandomFile_) {
+					try {
+						BlockType blockType = readBlockType(infile);
+						tetrisBoard.setNextBlock(blockType);
+					} catch (const std::ifstream::failure& e) {
+						std::cerr << "Failed to read " << flags.randomFilePath_ << "\n";
+						if (flags.verbose_) {
+							std::cerr << e.what() << "\n";
+						}
+						std::exit(1);
+					}
+				} else {
+					tetrisBoard.setNextBlock(randomBlockType());
+				}
+				break;
+			case tetris::BoardEvent::CurrentBlockUpdated:
+				++turns;
+				break;
+			case tetris::BoardEvent::PlayerMovesBlock:
+				break;
+			case tetris::BoardEvent::GravityMovesBlock:
+				break;
+			case tetris::BoardEvent::RowsRemoved:
+				switch (value) {
+					case 1:
+						++clearedOneRows;
+						break;
+					case 2:
+						++clearedTwoRows;
+						break;
+					case 3:
+						++clearedThreeRows;
+						break;
+					case 4:
+						++clearedFourRows;
+						break;
+				}
+				break;
+			case tetris::BoardEvent::RowToBeRemoved:
+				break;
+			case tetris::BoardEvent::GameOver:
+				break;
+			default:
+				break;
+		}
+	}
+
+	TetrisBoard& tetrisBoard;
+	Flags flags;
+	std::ifstream& infile;
+	int turns{};
+	int clearedOneRows{};
+	int clearedTwoRows{};
+	int clearedThreeRows{};
+	int clearedFourRows{};
+};
 
 void printBoard(const TetrisBoard& board) {
 	const std::vector<BlockType>& squares = board.getBoardVector();
@@ -58,77 +153,14 @@ void printBoard(const TetrisBoard& board) {
 	std::cout << "-\n\n";
 }
 
-BlockType badRandomBlockType() {
-	static auto blockType = BlockType::Z;
-	if (blockType == BlockType::Z) {
-		blockType = BlockType::S;
-	} else {
-		blockType = BlockType::Z;
-	}
-	return blockType;
-}
-
-BlockType readBlockType(std::ifstream& infile) {
-	int data = -1;
-	if (infile.is_open()) {
-		if (!(infile >> data)) {
-			// Restart, read from the start again.
-			infile.clear();
-			infile.seekg(0, std::ios::beg);
-			infile >> data;
-		}
-	}
-	if (data >= 0 && data <= 6) {
-		return static_cast<BlockType>(data);
-	}
-	// In order for the ai to fail.
-	return badRandomBlockType();
-}
-
-std::chrono::duration<double> runGame(TetrisBoardWrapper& cmp, const Flags& flags) {
-	auto time = std::chrono::high_resolution_clock::now();
-
-	Ai ai = flags.ai_;
-	TetrisBoard playBoard{cmp.getTetrisBoard()};
-	while (!cmp.getTetrisBoard().isGameOver() && cmp.getTurns() < flags.maxNbrBlocks_) {
-		Ai::State state = ai.calculateBestState(cmp.getTetrisBoard(), flags.depth_);
-
-		if (flags.play_) {
-			std::cout << "AI: " << ai.getValueFunction() << "\n";
-			std::cout << "Turns: " << cmp.getTurns() << "\n";
-			playBoard = cmp.getTetrisBoard();
-		}
-
-		auto tmp = cmp.getTetrisBoard();
-		float value = ai.moveBlockToGroundCalculateValue(state, tmp);
-		moveBlockToBeforeImpact(state, cmp);
-
-		if (flags.play_) {
-			std::cout << "Value: " << value << "\n";
-			const auto& variables = ai.getCalculator().getVariables();
-			for (const auto& name : variables) {
-				std::cout << name << " = " << ai.getCalculator().extractVariableValue(name) << "\t";
-			}
-			printBoard(playBoard);
-		}
-		
-		cmp.update(Move::DownGravity);
-		if (flags.delay_ > 1ms) {
-			std::this_thread::sleep_for(flags.delay_);
-		}
-	}
-	return std::chrono::high_resolution_clock::now() - time;
-}
-
-void printGameResult(const TetrisBoardWrapper& cmp, const Flags& flags, const std::chrono::duration<double>& gameTime) {
-
+void printGameResult(const Tetris& tetris, const Flags& flags, const std::chrono::duration<double>& gameTime) {
 	std::queue<std::string> outputOrder = flags.outputOrder_;
 
 	std::cout << std::setprecision(2) << std::fixed;
 	if (flags.play_) {
-		printBoard(cmp.getTetrisBoard());
+		printBoard(tetris.tetrisBoard);
 		std::cout << "AI: " << flags.ai_.getValueFunction() << "\n";
-		std::cout << "Turns: " << cmp.getTurns() << "\n";
+		std::cout << "Turns: " << tetris.turns << "\n";
 		std::cout << "Time in seconds: " << gameTime.count() << "\n";
 	}
 
@@ -147,37 +179,76 @@ void printGameResult(const TetrisBoardWrapper& cmp, const Flags& flags, const st
 			if (flags.verbose_) {
 				std::cout << "turns = ";
 			}
-			std::cout << cmp.getTurns() << "\t";
+			std::cout << tetris.turns << "\t";
 		} else if (flag == "-c") {
 			if (flags.verbose_) {
 				std::cout << "cleared-rows = ";
 			}
-			std::cout << cmp.getRemovedRows() << "\t";
+			std::cout << tetris.clearedOneRows + tetris.clearedTwoRows * 2 + tetris.clearedThreeRows * 3 + tetris.clearedFourRows * 4 << "\t";
 		} else if (flag == "-c1") {
 			if (flags.verbose_) {
 				std::cout << "cleared-rows-1 = ";
 			}
-			std::cout << cmp.getNbrOneRowsRemoved() << "\t";
+			std::cout << tetris.clearedOneRows << "\t";
 		} else if (flag == "-c2") {
 			if (flags.verbose_) {
 				std::cout << "cleared-rows-2 = ";
 			}
-			std::cout << cmp.getNbrTwoRowsRemoved() << "\t";
+			std::cout << tetris.clearedTwoRows << "\t";
 		} else if (flag == "-c3") {
 			if (flags.verbose_) {
 				std::cout << "cleared-rows-3 = ";
 			}
-			std::cout << cmp.getNbrThreeRowsRemoved() << "\t";
+			std::cout << tetris.clearedThreeRows << "\t";
 		} else if (flag == "-c4") {
 			if (flags.verbose_) {
 				std::cout << "cleared-rows-4 = ";
 			}
-			std::cout << cmp.getNbrFourRowsRemoved() << "\t";
+			std::cout << tetris.clearedFourRows << "\t";
 		}
 		outputOrder.pop();
 	}
 
 	std::cout << "\n";
+}
+
+void runGame(Tetris& tetris) {
+	auto time = std::chrono::high_resolution_clock::now();
+
+	auto& flags = tetris.flags;
+	auto& tetrisBoard = tetris.tetrisBoard;
+
+	Ai ai = flags.ai_;
+	TetrisBoard playBoard{tetrisBoard};
+	while (!tetrisBoard.isGameOver() && tetris.turns < flags.maxNbrBlocks_) {
+		auto state = ai.calculateBestState(tetrisBoard, flags.depth_);
+
+		if (flags.play_) {
+			std::cout << "AI: " << ai.getValueFunction() << "\n";
+			std::cout << "Turns: " << tetris.turns << "\n";
+			playBoard = tetrisBoard;
+		}
+
+		auto tmp = tetrisBoard;
+		auto value = ai.moveBlockToGroundCalculateValue(state, tmp);
+		moveBlockToBeforeImpact(state, tetrisBoard);
+
+		if (flags.play_) {
+			std::cout << "Value: " << value << "\n";
+			const auto& variables = ai.getCalculator().getVariables();
+			for (const auto& name : variables) {
+				std::cout << name << " = " << ai.getCalculator().extractVariableValue(name) << "\t";
+			}
+			printBoard(playBoard);
+		}
+		
+		tetrisBoard.update(Move::DownGravity, tetris);
+		if (flags.delay_ > 1ms) {
+			std::this_thread::sleep_for(flags.delay_);
+		}
+	}
+
+	printGameResult(tetris, flags, std::chrono::high_resolution_clock::now() - time);
 }
 
 int main(const int argc, const char* const argv[]) {
@@ -214,29 +285,11 @@ int main(const int argc, const char* const argv[]) {
 		next = readBlockType(infile);
 	}
 
-	TetrisBoardWrapper cmp{flags.width_, flags.height_, start, next};
+	TetrisBoard tetrisBoard{flags.width_, flags.height_, start, next};
 
-	cmp.addGameEventListener([&](BoardEvent gameEvent, const TetrisBoardWrapper&) {
-		if (BoardEvent::BlockCollision == gameEvent) {
-			if (flags.useRandomFile_) {
-				try {
-					BlockType blockType = readBlockType(infile);
-					cmp.setNextBlock(blockType);
-				} catch (const std::ifstream::failure& e) {
-					std::cerr << "Failed to read " << flags.randomFilePath_ << "\n";
-					if (flags.verbose_) {
-						std::cerr << e.what() << "\n";
-					}
-					std::exit(1);
-				}
-			} else {
-				cmp.setNextBlock(randomBlockType());
-			}
-		}
-	});
+	Tetris tetris{tetrisBoard, flags, infile};
 
-	auto gameTime = runGame(cmp, flags);
-	printGameResult(cmp, flags, gameTime);
+	runGame(tetris);
 	
 	return 0;
 }

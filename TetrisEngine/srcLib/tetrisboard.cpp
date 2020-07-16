@@ -2,8 +2,6 @@
 #include "square.h"
 #include "block.h"
 
-#include <cassert>
-
 namespace tetris {
 
 	TetrisBoard::TetrisBoard(int columns, int rows, BlockType current, BlockType next)

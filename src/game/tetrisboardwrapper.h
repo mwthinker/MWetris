@@ -3,8 +3,8 @@
 
 #include "block.h"
 #include "tetrisboard.h"
-
 #include "random.h"
+#include "helper.h"
 
 #include <mw/signal.h>
 
@@ -12,11 +12,25 @@
 
 namespace tetris {
 
-	BlockType randomBlockType();
+	enum class TetrisEvent {
+		BlockCollision,
+		CurrentBlockUpdated,
+		ExternalRowsAdded,
 
-	std::vector<BlockType> generateRow(const TetrisBoard& board, double squaresPerLength);
+		PlayerMovesBlockUpdated,
+		PlayerMovesBlockLeft,
+		PlayerMovesBlockRight,
+		PlayerMovesBlockDown,
+		PlayerMovesBlockDownGround,
+		GravityMovesBlock,
 
-	std::vector<BlockType> generateRow(int width, int holes);
+		OneRowRemoved,
+		TwoRowRemoved,
+		ThreeRowRemoved,
+		FourRowRemoved,
+		RowToBeRemoved,
+		GameOver
+	};
 
 	class TetrisBoardWrapper {
 	public:
