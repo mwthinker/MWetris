@@ -23,7 +23,7 @@ namespace tetris::graphic {
 
 		void draw(Graphic& graphic);
 
-		void callback(BoardEvent gameEvent, const TetrisBoardWrapper& tetrisBoard);
+		void callback(BoardEvent gameEvent, const game::TetrisBoardWrapper& tetrisBoard);
 
 	private:
 		void drawBlock(Graphic& graphic, const Block& block, Vec2 pos = {}, bool center = false);
@@ -34,7 +34,7 @@ namespace tetris::graphic {
 		float borderSize_;
 		float infoSize_;
 		
-		const TetrisBoardWrapper& tetrisBoard_;
+		const game::TetrisBoardWrapper& tetrisBoard_;
 		mw::signals::Connection connection_;
 		
 		float width_, height_;

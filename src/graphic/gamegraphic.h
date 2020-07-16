@@ -38,16 +38,16 @@ namespace tetris::graphic {
 
 		//void update(float deltaTime, BoardBatch& dynamicBoardBatch);
 
-		void callback(BoardEvent gameEvent, const TetrisBoardWrapper& tetrisBoard);
+		void callback(BoardEvent gameEvent, const game::TetrisBoardWrapper& tetrisBoard);
 
 	private:
 		//void initStaticBackground(BoardBatch& boardBatch, float lowX, float lowY, Player& player);
 
-		void addDrawRowAtTheTop(const TetrisBoardWrapper& tetrisBoard, int nbr);
+		void addDrawRowAtTheTop(const game::TetrisBoardWrapper& tetrisBoard, int nbr);
 
-		void addEmptyRowTop(const TetrisBoardWrapper& tetrisBoard);
+		void addEmptyRowTop(const game::TetrisBoardWrapper& tetrisBoard);
 
-		void addDrawRowBottom(const TetrisBoardWrapper& tetrisBoard, int row);
+		void addDrawRowBottom(const game::TetrisBoardWrapper& tetrisBoard, int row);
 
 		std::list<DrawRowPtr> rows_;
 		std::list<DrawRowPtr> freeRows_;

@@ -1,5 +1,4 @@
 #include "tetrisboard.h"
-#include "square.h"
 #include "block.h"
 
 namespace tetris {
@@ -13,29 +12,36 @@ namespace tetris {
 		current_ = createBlock(current);
 	}
 
-	TetrisBoard::TetrisBoard(const std::vector<BlockType>& board, int columns, int rows, const Block& current, BlockType next)
-		: gameboard_(board.begin(), board.end())
-		, next_{next}
-		, current_{current}
-		, columns_{columns}
-		, rows_{rows} {
-
-		int calcRows = static_cast<int>(gameboard_.size()) / columns_; // Number of filled rows.
-		int nbr = columns_ - static_cast<int>(gameboard_.size()) - calcRows * columns_; // The number of elements in the unfilled row.
-
-		// To make all rows filled. Add elements in the unfilled row.
-		for (int i = 0; i < nbr; ++i) {
-			gameboard_.push_back(BlockType::Empty);
-		}
-
-		// Remove unneeded rows. I.e. remove empty rows at the top which are outside the board.
-		for (int row = calcRows - 1; row >= rows_; --row) {
-			if (isRowEmpty(row)) {
+	void TetrisBoard::removeEmptyRowsOutsideBoard() {
+		const auto FilledRows = static_cast<int>(gameboard_.size()) / columns_;
+		const auto Nbr = FilledRows - rows_;
+		for (int i = 1; i <= Nbr; ++i) {
+			const auto Row = FilledRows - i;
+			if (isRowEmpty(Row)) {
 				for (int column = 0; column < columns_; ++column) {
 					gameboard_.pop_back();
 				}
 			}
 		}
+	}
+
+	void TetrisBoard::removeUnfilledRows() {
+		const auto Nbr = static_cast<int>(gameboard_.size()) % columns_;
+		for (int i = 0; i < Nbr; ++i) {
+			gameboard_.pop_back();
+		}
+	}
+
+	TetrisBoard::TetrisBoard(const std::vector<BlockType>& board, int columns, int rows, const Block& current, BlockType next)
+		: gameboard_(rows * columns, BlockType::Empty)
+		, next_{next}
+		, current_{current}
+		, columns_{columns}
+		, rows_{rows} {
+
+		gameboard_.insert(gameboard_.begin(), board.begin(), board.end());
+		removeUnfilledRows();
+		removeEmptyRowsOutsideBoard();
 
 		if (collision(current)) {
 			isGameOver_ = true;

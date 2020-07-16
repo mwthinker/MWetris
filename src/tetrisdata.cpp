@@ -1,5 +1,4 @@
 #include "tetrisdata.h"
-#include "square.h"
 
 #include <sdl/color.h>
 

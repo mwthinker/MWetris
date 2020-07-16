@@ -4,7 +4,6 @@
 #include "sdldevice.h"
 
 #include <SDL.h>
-#include <SDL.h>
 
 namespace tetris::game {
 

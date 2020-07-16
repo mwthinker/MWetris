@@ -12,90 +12,6 @@ namespace tetris::game {
 	class LocalPlayer;
 	using LocalPlayerPtr = std::shared_ptr<LocalPlayer>;
 
-	class LocalPlayerBuilder {
-	public:
-		LocalPlayerBuilder() = default;
-
-		LocalPlayerPtr build();
-
-		LocalPlayerBuilder withWidth(int width) {
-			width_ = width;
-			return *this;
-		}
-
-		LocalPlayerBuilder& withHeight(int height) {
-			height_ = height;
-			return *this;
-		}
-
-		LocalPlayerBuilder& widthMovingBlock(const Block& block) {
-			movingBlockType_ = BlockType::Empty;
-			movingBlock_ = block;
-			return *this;
-		}
-
-		LocalPlayerBuilder& widthMovingBlockType(const BlockType& blockType) {
-			movingBlockType_ = blockType;
-			return *this;
-		}
-
-		LocalPlayerBuilder& widthNextBlockType(BlockType next) {
-			next_ = next;
-			return *this;
-		}
-
-		LocalPlayerBuilder& widthDevice(DevicePtr device) {
-			device_ = device;
-			return *this;
-		}
-
-		LocalPlayerBuilder& widthPoints(int points) {
-			points_ = points;
-			return *this;
-		}
-
-		LocalPlayerBuilder& widthLevel(int level) {
-			level_ = level;
-			return *this;
-		}
-
-		LocalPlayerBuilder& widthLevelUpCounter(int counter) {
-			levelUpCounter_ = counter;
-			return *this;
-		}
-
-		LocalPlayerBuilder& widthClearedRows(int rows) {
-			clearedRows_ = rows;
-			return *this;
-		}
-
-		LocalPlayerBuilder& widthBoard(const std::vector<BlockType>& board) {
-			board_ = board;
-			return *this;
-		}
-
-		LocalPlayerBuilder& widthGameOverPosition(int gameOverPosition) {
-			gameOverPosition_ = gameOverPosition;
-			return *this;
-		}
-
-		LocalPlayerBuilder& widthName(const std::string& name) {
-			name_ = name;
-			return *this;
-		}
-
-	private:
-		DevicePtr device_;
-		std::string name_{"PLAYER"};
-		int points_{0}, level_{1}, levelUpCounter_{0}, clearedRows_{0};
-		int width_{10}, height_{24};
-		Block movingBlock_;
-		BlockType movingBlockType_{BlockType::Empty};
-		BlockType next_{BlockType::Empty};
-		std::vector<BlockType> board_;
-		int gameOverPosition_{};
-	};
-
 	class LocalPlayer : public Player {
 	public:
 		LocalPlayer(const TetrisBoard& board, const DevicePtr& device);
@@ -140,31 +56,31 @@ namespace tetris::game {
 			return points_;
 		}
 
-		inline int getClearedRows() const override {
+		int getClearedRows() const override {
 			return tetrisBoard_.getRemovedRows();
 		}
 
-		inline int getLevelUpCounter() const override {
+		int getLevelUpCounter() const override {
 			return levelUpCounter_;
 		}
 
-		inline bool isGameOver() const override {
+		bool isGameOver() const override {
 			return tetrisBoard_.isGameOver();
 		}
 
-		inline int getGameOverPosition() const override {
+		int getGameOverPosition() const override {
 			return gameOverPosition_;
 		}
 
-		inline DevicePtr getDevice() const override {
+		DevicePtr getDevice() const override {
 			return device_;
 		}
 
-		inline const TetrisBoardWrapper& getTetrisBoard() const override {
+		const TetrisBoardWrapper& getTetrisBoard() const override {
 			return tetrisBoard_;
 		}
 
-		inline virtual float getGravityDownSpeed() const {
+		virtual float getGravityDownSpeed() const {
 			return 1 + level_ * 0.5f;
 		}
 

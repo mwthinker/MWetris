@@ -7,7 +7,7 @@
 #include "tetrisparameters.h"
 #include "gamerules.h"
 #include "network.h"
-
+#include "localplayerbuilder.h"
 #include "localgame.h"
 
 #include <vector>

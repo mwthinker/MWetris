@@ -52,6 +52,8 @@ set(SOURCES
 	src/game/localgame.h
 	src/game/localplayer.cpp
 	src/game/localplayer.h
+	src/game/localplayerbuilder.cpp
+	src/game/localplayerbuilder.h
 	src/game/network.cpp
 	src/game/network.h
 	src/game/player.cpp

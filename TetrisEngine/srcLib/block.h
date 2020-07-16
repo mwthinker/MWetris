@@ -1,12 +1,35 @@
 #ifndef BLOCK_H
 #define BLOCK_H
 
-#include "square.h"
-
 #include <array>
 #include <algorithm>
 
 namespace tetris {
+
+	enum class BlockType : char {
+		I = 'I',
+		J = 'J',
+		L = 'L',
+		O = 'O',
+		S = 'S',
+		T = 'T',
+		Z = 'Z',
+		Empty = 'E',
+		Wall = 'W',
+	};
+
+	struct Square {
+		bool operator==(const Square& square) const {
+			return row == square.row && column == square.column;
+		}
+
+		bool operator!=(const Square& square) const {
+			return row != square.row || column != square.column;
+		}
+
+		int column;
+		int row;
+	};
 
 	class Block {
 	public:

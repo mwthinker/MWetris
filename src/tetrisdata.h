@@ -1,7 +1,6 @@
 #ifndef MWETRIS_TETRISDATA_H
 #define MWETRIS_TETRISDATA_H
 
-#include "square.h"
 #include "block.h"
 #include "ai.h"
 #include "game/playerdata.h"

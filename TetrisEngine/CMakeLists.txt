@@ -1,6 +1,6 @@
 project(TetrisEngine
 	DESCRIPTION
-		"A lib for tetris rules and ai logic"
+		"A lib for tetris board rules and ai logic"
 	LANGUAGES
 		CXX
 )
@@ -19,7 +19,7 @@ set(SOURCES_LIB
 	srcLib/random.h
 	srcLib/tetrisboard.cpp
 	srcLib/tetrisboard.h
-	srcLib/square.h
+	srcLib/tetrisevent.h
 )
 
 add_library(TetrisEngineLib ${SOURCES_LIB})
@@ -30,12 +30,6 @@ target_include_directories(TetrisEngineLib
 )
 
 include(FetchContent)
-fetchcontent_declare(Signal
-	GIT_REPOSITORY
-		https://github.com/mwthinker/Signal.git
-)
-FetchContent_MakeAvailable(Signal)
-
 fetchcontent_declare(Calculator
 	GIT_REPOSITORY
 		https://github.com/mwthinker/Calculator.git
@@ -50,9 +44,6 @@ target_compile_definitions(TetrisEngineLib
 target_link_libraries(TetrisEngineLib
 	PUBLIC
 		Calculator
-
-		Signal
-		EnTT::EnTT
 )
 
 message(STATUS "TetrisEngine_Test is available to add: -DTetrisEngine_Test=1")

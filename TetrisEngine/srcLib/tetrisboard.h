@@ -96,6 +96,10 @@ namespace tetris {
 		bool collision(const Block& block) const;
 
 	private:
+		void removeUnfilledRows();
+
+		void removeEmptyRowsOutsideBoard();
+
 		bool isRowInsideBoard(int row) const;
 
 		BlockType& board(int column, int row) {

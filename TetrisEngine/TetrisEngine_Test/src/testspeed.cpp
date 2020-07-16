@@ -2,7 +2,7 @@
 #include <catch2/catch.hpp>
 
 #include <tetrisboard.h>
-#include <square.h>
+#include <block.h>
 #include <vector>
 #include <ai.h>
 

@@ -60,7 +60,7 @@ namespace tetris::graphic {
 		infoSize_ = squareSize_ * 5.f;
 
 		connection_.disconnect();
-		connection_ = player.addGameEventListener([&](BoardEvent gameEvent, const TetrisBoardWrapper& tetrisBoard) {
+		connection_ = player.addGameEventListener([&](BoardEvent gameEvent, const game::TetrisBoardWrapper& tetrisBoard) {
 			callback(gameEvent, tetrisBoard);
 		});
 
@@ -235,7 +235,7 @@ namespace tetris::graphic {
 		
 	}
 
-	void DrawBoard::callback(BoardEvent gameEvent, const TetrisBoardWrapper& tetrisBoard) {
+	void DrawBoard::callback(BoardEvent gameEvent, const game::TetrisBoardWrapper& tetrisBoard) {
 		/*
 		for (auto& row : rows_) {
 			row->handleEvent(gameEvent, tetrisBoard);

@@ -1,11 +1,9 @@
 #include "tetrisboardwrapper.h"
-
-#include "square.h"
 #include "block.h"
 
 #include <vector>
 
-namespace tetris {
+namespace tetris::game {
 
 	void TetrisBoardWrapper::triggerEvent(BoardEvent gameEvent, int value) {
 		switch (gameEvent) {

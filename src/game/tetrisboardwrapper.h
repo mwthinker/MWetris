@@ -1,5 +1,6 @@
-#ifndef TETRISBOARDWRAPPER_H
-#define TETRISBOARDWRAPPER_H
+#ifndef MWETRIS_GAME_TETRISBOARDWRAPPER_H
+#define MWETRIS_GAME_TETRISBOARDWRAPPER_H
+
 
 #include "block.h"
 #include "tetrisboard.h"

@@ -1,7 +1,7 @@
 #ifndef MWETRIS_GRAPHIC_DRAWROW_H
 #define MWETRIS_GRAPHIC_DRAWROW_H
 
-#include "../game/player.h"
+#include "game/player.h"
 
 #include <sdl/sprite.h>
 
@@ -12,13 +12,13 @@ namespace tetris::graphic {
 
 	class DrawRow {
 	public:
-		DrawRow(int row, const TetrisBoardWrapper& board, float squareSize, float lowX, float lowY);
+		DrawRow(int row, const game::TetrisBoardWrapper& board, float squareSize, float lowX, float lowY);
 
 		int getRow() const {
 			return row_;
 		}
 
-		void handleEvent(BoardEvent gameEvent, const TetrisBoardWrapper& tetrisBoard);
+		void handleEvent(BoardEvent gameEvent, const game::TetrisBoardWrapper& tetrisBoard);
 
 		void update(float deltaTime);
 
@@ -26,7 +26,7 @@ namespace tetris::graphic {
 
 		bool isActive() const;
 
-		void init(int row, const TetrisBoardWrapper& board);
+		void init(int row, const game::TetrisBoardWrapper& board);
 
 		/*
 		const std::vector<BoardShader::Vertex>& getVertexes() {
@@ -37,7 +37,7 @@ namespace tetris::graphic {
 		void clear();
 
 	private:
-		void updateVertexData(const TetrisBoardWrapper& tetrisBoard);
+		void updateVertexData(const game::TetrisBoardWrapper& tetrisBoard);
 		void updateVertexData();
 
 		sdl::Sprite getSprite(BlockType blockType) const;

@@ -1,8 +1,8 @@
 #ifndef MWETRIS_IMGUIEXTRA_H
 #define MWETRIS_IMGUIEXTRA_H
 
-#include "../types.h"
-#include "../tetrisdata.h"
+#include "types.h"
+#include "tetrisdata.h"
 
 #include <sdl/imguiauxiliary.h>
 
