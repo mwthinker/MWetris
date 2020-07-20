@@ -24,7 +24,7 @@ namespace tetris::game {
 
 	class ServerGame : public GameManager {
 	public:
-		ServerGame(mw::Signal<TetrisGameEvent&>& gameEventSignal);
+		ServerGame(std::shared_ptr<EventManager> eventManager);
 
 		~ServerGame();
 
@@ -63,7 +63,7 @@ namespace tetris::game {
 
 	class ClientGame : public GameManager {
 	public:
-		ClientGame(mw::Signal<TetrisGameEvent&>& gameEventSignal);
+		ClientGame(std::shared_ptr<EventManager> eventManager);
 
 		~ClientGame();
 

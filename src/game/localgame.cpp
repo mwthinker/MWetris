@@ -18,8 +18,8 @@ namespace tetris::game {
 		return gameRules_->getNbrAlivePlayers();
 	}
 
-	LocalGame::LocalGame(mw::Signal<TetrisGameEvent&>& gameEventSignal)
-		: gameRules_{std::make_unique<GameRules>(gameEventSignal)} {
+	LocalGame::LocalGame(std::shared_ptr<EventManager> eventManager)
+		: gameRules_{std::make_unique<GameRules>(eventManager)} {
 	}
 
 }

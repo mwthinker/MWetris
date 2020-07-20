@@ -16,7 +16,8 @@
 namespace tetris::game {
 
 	TetrisGame::TetrisGame()
-		: game_{std::make_unique<LocalGame>(eventHandler_)} {
+		: eventManager_{std::make_shared<EventManager>()}
+		, game_{std::make_unique<LocalGame>(eventManager_)} {
 	}
 
 	TetrisGame::~TetrisGame() {
@@ -122,9 +123,9 @@ namespace tetris::game {
 
 	void TetrisGame::createServerGame(int port, int columns, int rows, const std::vector<DevicePtr>& devices) {
 		if (status_ == Status::WAITING_TO_CONNECT) {
-			auto serverGame = std::make_unique<ServerGame>(eventHandler_);
-			serverGame->connect(port);
-			game_ = std::move(serverGame);
+			//auto serverGame = std::make_unique<ServerGame>(eventHandler_);
+			//serverGame->connect(port);
+			//game_ = std::move(serverGame);
 
 			// game_ 
 			width_ = columns;
@@ -132,14 +133,14 @@ namespace tetris::game {
 			status_ = Status::SERVER;
 
 			createLocalPlayers(width_, height_, devices);
-			game_->createGame(players_);
+			//game_->createGame(players_);
 			initGame();
 		}
 	}
 
 	void TetrisGame::createClientGame(int port, std::string ip) {
 		if (status_ == Status::WAITING_TO_CONNECT) {
-			auto clientGame = std::make_unique<ServerGame>(eventHandler_);
+			//auto clientGame = std::make_unique<ServerGame>(eventHandler_);
 			status_ = Status::CLIENT;
 		}
 	}
@@ -149,7 +150,7 @@ namespace tetris::game {
 
 		if (game_->isPaused()) {
 			game_->setPaused(false);
-			eventHandler_(GamePause{game_->isPaused(), false});
+			//eventHandler_(GamePause{game_->isPaused(), false});
 		}
 
 		triggerTriggerInitGameEvent();
@@ -162,7 +163,7 @@ namespace tetris::game {
 		if (currentGameHasCountDown()) {
 			timeLeftToStart_ = COUNT_DOWN_TIME;
 			wholeTimeLeft_ = COUNT_DOWN_TIME;
-			eventHandler_(CountDown{wholeTimeLeft_});
+			//eventHandler_(CountDown{wholeTimeLeft_});
 		}
 	}
 
@@ -185,7 +186,7 @@ namespace tetris::game {
 
 	void TetrisGame::pause() {
 		game_->setPaused(!game_->isPaused());
-		eventHandler_(GamePause{game_->isPaused(), true});
+		//eventHandler_(GamePause{game_->isPaused(), true});
 	}
 
 	int TetrisGame::getNbrOfPlayers() const {
@@ -224,7 +225,7 @@ namespace tetris::game {
 			&& wholeTimeLeft_ > timeLeftToStart_ + 1) {
 
 			wholeTimeLeft_ = (int) (timeLeftToStart_ + 1);
-			eventHandler_(CountDown{wholeTimeLeft_});
+			//eventHandler_(CountDown{wholeTimeLeft_});
 		}
 	}
 
@@ -259,13 +260,13 @@ namespace tetris::game {
 	void TetrisGame::triggerGameStartEvent() {
 		switch (status_) {
 			case Status::LOCAL:
-				eventHandler_(GameStart{GameStart::Status::LOCAL});
+				//eventHandler_(GameStart{GameStart::Status::LOCAL});
 				break;
 			case Status::CLIENT:
-				eventHandler_(GameStart{GameStart::Status::CLIENT});
+				//eventHandler_(GameStart{GameStart::Status::CLIENT});
 				break;
 			case Status::SERVER:
-				eventHandler_(GameStart{GameStart::Status::SERVER});
+				//eventHandler_(GameStart{GameStart::Status::SERVER});
 				break;
 		}
 	}
@@ -275,7 +276,7 @@ namespace tetris::game {
 		for (const auto& p : players_) {
 			players.push_back(p);
 		}
-		eventHandler_(InitGame{players});
+		//eventHandler_(InitGame{players});
 	}
 
 }

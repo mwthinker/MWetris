@@ -3,6 +3,7 @@
 
 #include "tetrisboardwrapper.h"
 #include "playerdata.h"
+#include "eventmanager.h"
 
 #include <mw/signal.h>
 
@@ -14,9 +15,16 @@ namespace tetris::game {
 	class Player;
 	using PlayerPtr = std::shared_ptr<Player>;
 
-	class Player {
+	class Player : public std::enable_shared_from_this<Player> {
 	public:
-		virtual ~Player() = default;
+		Player(std::shared_ptr<EventManager> eventManager)
+			: eventManager_{eventManager}
+			, senderId_{eventManager->generateSenderId()} {
+			
+		}
+
+		virtual ~Player() {
+		}
 
 		virtual std::string getName() const = 0;
 
@@ -36,8 +44,23 @@ namespace tetris::game {
 
 		virtual const TetrisBoardWrapper& getTetrisBoard() const = 0;
 
-		virtual mw::signals::Connection addGameEventListener(
-			const std::function<void(BoardEvent, const TetrisBoardWrapper&)>& callback) = 0;
+		SenderId getSenderId() const {
+			return senderId_;
+		}
+
+	protected:
+		template <class Type, class... Args>
+		void publishEvent(Args&&... args) {
+			eventManager_->publish<Type>(senderId_, std::forward<Args>(args)...);
+		}
+
+		SubscriptionHandle subscribe(SenderId senderId, const EventManager::Callback& callback) {
+			return eventManager_->subscribe(senderId, callback);
+		}
+
+	private:
+		std::shared_ptr<EventManager> eventManager_;
+		SenderId senderId_;
 	};
 
 }

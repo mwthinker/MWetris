@@ -4,19 +4,15 @@
 #include <vector>
 
 #include "player.h"
+#include "eventmanager.h"
 
 namespace tetris::game {
 
-	class TetrisGameEvent {
-	public:
-		virtual ~TetrisGameEvent() = default;
-	};
-
-	class NewConnection : public TetrisGameEvent {
+	class NewConnection : public tetris::Event {
 	public:
 	};
 
-	class GameStart : public TetrisGameEvent {
+	class GameStart : public tetris::Event {
 	public:
 		enum class Status {
 			LOCAL,
@@ -25,48 +21,48 @@ namespace tetris::game {
 		};
 
 		GameStart(Status status)
-			: status_{status} {
+			: status{status} {
 		}
 
-		Status status_;
+		Status status{Status::LOCAL};
 	};
 
-	class CountDown : public TetrisGameEvent {
+	class CountDown : public tetris::Event {
 	public:
 		CountDown(int timeLeft)
-			: timeLeft_{timeLeft} {
+			: timeLeft{timeLeft} {
 		}
 
-		int timeLeft_;
+		int timeLeft{};
 	};
 
-	class GamePause : public TetrisGameEvent {
+	class GamePause : public tetris::Event {
 	public:
 		GamePause(bool pause, bool printPause)
-			: pause_{pause}
-			, printPause_{printPause} {
+			: pause{pause}
+			, printPause{printPause} {
 		}
 
-		bool pause_;
-		bool printPause_;
+		bool pause{};
+		bool printPause{};
 	};
 
-	class GameOver : public TetrisGameEvent {
+	class GameOver : public tetris::Event {
 	public:
 		GameOver(const PlayerPtr& player)
-			: player_{player} {
+			: player{player} {
 		}
 
-		PlayerPtr player_;
+		PlayerPtr player;
 	};
 
-	class InitGame : public TetrisGameEvent {
+	class InitGame : public tetris::Event {
 	public:
 		InitGame(const std::vector<PlayerPtr>& players)
-			: players_{players} {
+			: players{players} {
 		}
 
-		std::vector<PlayerPtr> players_;
+		std::vector<PlayerPtr> players;
 	};
 
 	/*
@@ -79,30 +75,30 @@ namespace tetris::game {
 	};
 	*/
 
-	class LevelChange : public TetrisGameEvent {
+	class LevelChange : public tetris::Event {
 	public:
 		LevelChange(const PlayerPtr& player, int newLevel, int oldLevel)
-			: player_{player}
-			, newLevel_{newLevel}
-			, oldLevel_{oldLevel} {
+			: player{player}
+			, newLevel{newLevel}
+			, oldLevel{oldLevel} {
 		}
 
-		int newLevel_;
-		int oldLevel_;
-		PlayerPtr player_;
+		int newLevel;
+		int oldLevel;
+		PlayerPtr player;
 	};
 
-	class PointsChange : public TetrisGameEvent {
+	class PointsChange : public tetris::Event {
 	public:
 		PointsChange(const PlayerPtr& player, int newPoints, int oldPoints)
-			: player_{player}
-			, newPoints_{newPoints}
-			, oldPoints_{oldPoints} {
+			: player{player}
+			, newPoints{newPoints}
+			, oldPoints{oldPoints} {
 		}
 
-		int newPoints_;
-		int oldPoints_;
-		PlayerPtr player_;
+		int newPoints;
+		int oldPoints;
+		PlayerPtr player;
 	};
 
 }

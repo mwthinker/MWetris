@@ -37,7 +37,7 @@ set(SOURCES
 	src/graphic/gamegraphic.h
 	src/graphic/graphic.cpp
 	src/graphic/graphic.h
-	
+		
 	src/game/actionhandler.cpp
 	src/game/actionhandler.h
 	src/game/computer.cpp
@@ -67,6 +67,7 @@ set(SOURCES
 	src/game/tetrisgame.cpp
 	src/game/tetrisgameevent.h
 	src/game/tetrisgame.h
+	src/game/taskqueue.h
 	
 	src/ui/scene/custom.cpp
 	src/ui/scene/custom.h
@@ -90,6 +91,8 @@ set(SOURCES
 	src/ui/tetriswindow.cpp
 	src/ui/tetriswindow.h
 	
+	src/eventmanager.cpp
+	src/eventmanager.h
 	src/logger.cpp
 	src/logger.h
 	src/types.h

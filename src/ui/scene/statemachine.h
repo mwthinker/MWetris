@@ -44,8 +44,6 @@ namespace tetris::ui::scene {
 		template <class Type>
 		static Key getKey();
 
-		using Map = std::map<std::type_index, std::shared_ptr<Scene>>;
-
 		std::map<Key, std::shared_ptr<Scene>> scenes_;
 		Key currentKey_;
 		std::shared_ptr<entt::dispatcher> dispatcher_;

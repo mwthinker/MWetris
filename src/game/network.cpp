@@ -3,8 +3,8 @@
 
 namespace tetris::game {
 
-	ServerGame::ServerGame(mw::Signal<TetrisGameEvent&>& gameEventSignal)
-		: gameRules_{std::make_unique<GameRules>(gameEventSignal)} {
+	ServerGame::ServerGame(std::shared_ptr<EventManager> eventManager)
+		: gameRules_{std::make_unique<GameRules>(eventManager)} {
 	}
 
 	ServerGame::~ServerGame() {
@@ -153,8 +153,8 @@ namespace tetris::game {
 		}
 	}
 
-	ClientGame::ClientGame(mw::Signal<TetrisGameEvent&>& gameEventSignal) :
-		gameRules_(std::make_unique<GameRules>(gameEventSignal)) {
+	ClientGame::ClientGame(std::shared_ptr<EventManager> eventManager) :
+		gameRules_(std::make_unique<GameRules>(eventManager)) {
 	}
 
 	ClientGame::~ClientGame() {

@@ -2,6 +2,7 @@
 #define MWETRIS_GAME_GAMERULES_H
 
 #include "localplayer.h"
+#include "eventmanager.h"
 
 #include <vector>
 
@@ -11,7 +12,7 @@ namespace tetris::game {
 
 	class GameRules {
 	public:
-		GameRules(mw::Signal<TetrisGameEvent&>& gameEventSignal);
+		GameRules(std::shared_ptr<EventManager> eventManager);
 
 		void createGame(const std::vector<LocalPlayerPtr>& players);
 
@@ -22,6 +23,8 @@ namespace tetris::game {
 		}
 
 	private:
+		void handleEvent(Event& event);
+
 		void addPlayer(LocalPlayerPtr player);
 
 		void applyRules(BoardEvent gameEvent, const LocalPlayerPtr& player);
@@ -42,8 +45,8 @@ namespace tetris::game {
 			return localPlayers_.size() > 1;
 		}
 
+		std::shared_ptr<EventManager> eventManager_;
 		std::vector<LocalPlayerPtr> localPlayers_;
-		mw::Signal<TetrisGameEvent&>& gameEventSignal_;
 		int nbrOfAlivePlayers_{};
 	};
 

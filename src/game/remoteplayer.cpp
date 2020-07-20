@@ -3,7 +3,8 @@
 namespace tetris::game {
 
 	RemotePlayer::RemotePlayer()
-		: tetrisBoard_{10,10, BlockType::I, BlockType::I} {
+		: Player{nullptr} // Todo add parameter
+		, tetrisBoard_{TetrisBoard{10, 10, BlockType::I, BlockType::I}} {
 	}
 
 	void RemotePlayer::update(double deltaTime) {
@@ -19,7 +20,7 @@ namespace tetris::game {
 	}
 
 	void RemotePlayer::addRow(int holes) {
-		std::vector<BlockType> blockTypes = generateRow(tetrisBoard_.getColumns(), 2);
+		auto blockTypes = generateRow(tetrisBoard_.getColumns(), 2);
 		tetrisBoard_.addRows(blockTypes);
 	}
 
@@ -56,7 +57,8 @@ namespace tetris::game {
 	}
 
 	void RemotePlayer::updateGameOver() {
-		tetrisBoard_.update(Move::GameOver);
+		tetrisBoard_.update(Move::GameOver, [](TetrisBoardWrapper::Event event, int value) {
+		});
 	}
 
 	/*

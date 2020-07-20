@@ -10,18 +10,11 @@
 #include "gamerules.h"
 #include "remoteplayer.h"
 
-#include <mw/signal.h>
-
-//#include <net/packet.h>
-//#include <net/network.h>
-//#include <net/connection.h>
-
 #include <vector>
 #include <memory>
 
 namespace tetris::game {
-
-	// Handle all communication between game and gui.
+	
 	class TetrisGame {
 	public:
 		enum class Status {WAITING_TO_CONNECT, LOCAL, SERVER, CLIENT};
@@ -74,10 +67,6 @@ namespace tetris::game {
 			return status_;
 		}
 
-		mw::signals::Connection addGameEventHandler(const mw::Signal<TetrisGameEvent&>::Callback& callback) {
-			return eventHandler_.connect(callback);
-		}
-
 		std::vector<PlayerData> getPlayerData() const;
 
 		bool currentGameHasCountDown() const {
@@ -112,7 +101,7 @@ namespace tetris::game {
 
 		static constexpr double FIXED_TIMESTEP = 1.0 / 60.0;
 
-		mw::Signal<TetrisGameEvent&> eventHandler_;
+		std::shared_ptr<EventManager> eventManager_;
 		std::unique_ptr<GameManager> game_;
 
 		Status status_{Status::WAITING_TO_CONNECT};

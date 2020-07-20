@@ -18,8 +18,9 @@ namespace tetris::game {
 
 	}
 
-	GameRules::GameRules(mw::Signal<TetrisGameEvent&>& gameEventSignal)
-		: gameEventSignal_{gameEventSignal} {
+	GameRules::GameRules(std::shared_ptr<EventManager> eventManager)
+		: eventManager_{eventManager} {
+
 	}
 
 	void GameRules::createGame(const std::vector<LocalPlayerPtr>& players) {
@@ -31,10 +32,16 @@ namespace tetris::game {
 		}
 
 		for (auto& player : players) {
-			player->addGameEventListener([&](BoardEvent gameEvent, const TetrisBoardWrapper& board) {
-				applyRules(gameEvent, player);
+			eventManager_->subscribe(player->getSenderId(), [this](EventPtr event) {
+				handleEvent(*event);
 			});
 		}
+	}
+
+	void GameRules::handleEvent(Event& event) {
+		try {
+			auto& countDown = dynamic_cast<game::CountDown&>(event);
+		} catch (std::bad_cast&) {}
 	}
 
 	void GameRules::restartGame() {
@@ -45,15 +52,19 @@ namespace tetris::game {
 	}
 
 	void GameRules::addPlayer(LocalPlayerPtr player) {
+		/*
 		player->addGameEventListener([&](BoardEvent gameEvent, const TetrisBoardWrapper& board) {
 			applyRules(gameEvent, player);
 		});
+		*/
 
 		localPlayers_.push_back(std::move(player));
 		++nbrOfAlivePlayers_;
 	}
 
 	void GameRules::applyRules(BoardEvent gameEvent, const LocalPlayerPtr& player) {
+
+
 		switch (gameEvent) {
 			case BoardEvent::RowsRemoved:
 				handleRowClearedEvent(player, 1);
@@ -115,17 +126,17 @@ namespace tetris::game {
 
 	void GameRules::triggerPointEvent(const LocalPlayerPtr& player, int newPoints, int oldPoints) {
 		PointsChange pointsChange(player, newPoints, oldPoints);
-		gameEventSignal_(pointsChange);
+		//gameEventSignal_(pointsChange);
 	}
 
 	void GameRules::triggerGameOverEvent(const LocalPlayerPtr& player) {
 		GameOver gameOver(player);
-		gameEventSignal_(gameOver);
+		//gameEventSignal_(gameOver);
 	}
 
 	void GameRules::triggerLevelUpEvent(const LocalPlayerPtr& player, int newLevel, int oldLevel) {
 		LevelChange levelChange(player, newLevel, oldLevel);
-		gameEventSignal_(levelChange);
+		//gameEventSignal_(levelChange);
 	}
 
 	void GameRules::addRowsToOpponents(const LocalPlayerPtr& player) {

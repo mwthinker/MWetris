@@ -35,10 +35,12 @@ namespace tetris::graphic {
 
 	GameComponent::GameComponent(game::TetrisGame& tetrisGame)
 		: tetrisGame_{tetrisGame} {
-
+		
+		/*
 		eventConnection_ = tetrisGame_.addGameEventHandler([&](game::TetrisGameEvent& tetrisEvent) {
 			eventHandler(tetrisEvent);
 		});
+		*/
 	}
 
 	GameComponent::~GameComponent() {
@@ -112,12 +114,12 @@ namespace tetris::graphic {
 		}
 	}
 
-	void GameComponent::eventHandler(game::TetrisGameEvent& tetrisEvent) {
+	void GameComponent::eventHandler(Event& tetrisEvent) {
 		// Handle CountDown event.
 		try {
 			auto& countDown = dynamic_cast<game::CountDown&>(tetrisEvent);
 
-			if (countDown.timeLeft_ > 0) {
+			if (countDown.timeLeft > 0) {
 				//middleText_.setText("Start in " + std::to_string(countDown.timeLeft_));
 			} else {
 				//middleText_.setText("");
@@ -136,8 +138,8 @@ namespace tetris::graphic {
 		try {
 			auto& gamePause = dynamic_cast<game::GamePause&>(tetrisEvent);
 
-			if (gamePause.printPause_) {
-				if (!gamePause.pause_) {
+			if (gamePause.printPause) {
+				if (!gamePause.pause) {
 					//middleText_.setText("");
 				} else {
 					//middleText_.setText("Paused");
@@ -157,9 +159,9 @@ namespace tetris::graphic {
 		try {
 			//middleText_ = sdl::Text("", TetrisData::getInstance().getDefaultFont(50), 20);
 			auto& initGameVar = dynamic_cast<game::InitGame&>(tetrisEvent);
-			initGame(initGameVar.players_);
+			initGame(initGameVar.players);
 
-			for (const auto& player : initGameVar.players_) {
+			for (const auto& player : initGameVar.players) {
 				if (player->isGameOver()) {
 					handleMiddleText(player, player->getGameOverPosition());
 				}
@@ -207,7 +209,7 @@ namespace tetris::graphic {
 		// Handle GameOver event.
 		try {
 			auto& gameOver = dynamic_cast<game::GameOver&>(tetrisEvent);
-			handleMiddleText(gameOver.player_, gameOver.player_->getGameOverPosition());
+			handleMiddleText(gameOver.player, gameOver.player->getGameOverPosition());
 
 			return;
 		} catch (std::bad_cast&) {}
@@ -226,4 +228,4 @@ namespace tetris::graphic {
 		//graphicPlayers_[player].setMiddleMessage(middleText);
 	}
 
-} // Namespace tetris.
+}

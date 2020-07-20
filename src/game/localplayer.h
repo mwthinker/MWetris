@@ -14,35 +14,30 @@ namespace tetris::game {
 
 	class LocalPlayer : public Player {
 	public:
-		LocalPlayer(const TetrisBoard& board, const DevicePtr& device);
+		LocalPlayer(std::shared_ptr<EventManager> eventManager, const TetrisBoard& board, const DevicePtr& device);
 
 		virtual ~LocalPlayer();
 
 		LocalPlayer(const LocalPlayer&) = delete;
 		LocalPlayer& operator=(const LocalPlayer&) = delete;
 
-		virtual void update(double deltaTime);
+		void update(double deltaTime);
 
-		virtual void addRow(int holes);
+		void addRow(int holes);
 
-		virtual void updatePoints(int points);
+		void updatePoints(int points);
 
-		virtual void updateName(const std::string& name);
+		void updateName(const std::string& name);
 
-		virtual void updateLevelUpCounter(int counter);
+		void updateLevelUpCounter(int counter);
 
-		virtual void updateLevel(int level);
+		void updateLevel(int level);
 
-		virtual void updateGameOverPosition(int gameOverPosition);
+		void updateGameOverPosition(int gameOverPosition);
 
-		virtual void updateRestart();
+		void updateRestart();
 
-		virtual void updateGameOver();
-
-		mw::signals::Connection addGameEventListener(
-			const std::function<void(BoardEvent, const TetrisBoardWrapper&)>& callback) override {
-			return tetrisBoard_.addGameEventListener(callback);
-		}
+		void updateGameOver();
 
 		std::string getName() const override {
 			return name_;
@@ -92,7 +87,6 @@ namespace tetris::game {
 		int points_, level_, levelUpCounter_;
 		TetrisBoardWrapper tetrisBoard_;
 		int gameOverPosition_;
-		mw::signals::Connection connection_;
 
 		ActionHandler gravityMove_, downHandler_, leftHandler_, rightHandler_, rotateHandler_, downGroundHandler_;
 	};

@@ -1,45 +1,78 @@
 #ifndef MWETRIS_GAME_TETRISBOARDWRAPPER_H
 #define MWETRIS_GAME_TETRISBOARDWRAPPER_H
 
+#include "eventmanager.h"
 
 #include "block.h"
 #include "tetrisboard.h"
 #include "random.h"
 #include "helper.h"
 
-#include <mw/signal.h>
-
 #include <vector>
 
-namespace tetris {
+namespace tetris::game {
 
-	enum class TetrisEvent {
-		BlockCollision,
-		CurrentBlockUpdated,
-		ExternalRowsAdded,
+	class BlockCollisionEvent : public Event {
+	public:
+	};
 
-		PlayerMovesBlockUpdated,
-		PlayerMovesBlockLeft,
-		PlayerMovesBlockRight,
-		PlayerMovesBlockDown,
-		PlayerMovesBlockDownGround,
-		GravityMovesBlock,
+	class CurrentBlockUpdatedEvent : public Event {
+	public:
+	};
 
-		OneRowRemoved,
-		TwoRowRemoved,
-		ThreeRowRemoved,
-		FourRowRemoved,
-		RowToBeRemoved,
-		GameOver
+	class ExternalRowsAddedEvent : public Event {
+	public:
+	};
+
+	class RowToBeRemovedEvent : public Event {
+	public:
+		RowToBeRemovedEvent(int row)
+			: row{row} {
+		}
+
+		int row;
+	};
+
+	class RowsRemovedEvent : public Event {
+	public:
+		RowsRemovedEvent(int nbr)
+			: nbr{nbr} {
+			
+		}
+		int nbr;
+	};
+
+	class TetrisBoardGameOver : public Event {
+	public:
+	};
+
+	class Row {
+	public:
+		Row(int row)
+			: row_{row} {
+
+		}
+
+	private:
+		int row_;
+		std::vector<BlockType> elements_;
 	};
 
 	class TetrisBoardWrapper {
 	public:
-		TetrisBoardWrapper(int columns, int rows, BlockType current, BlockType next);
+		enum class Event {
+			BlockCollision,
+			CurrentBlockUpdated,
 
-		TetrisBoardWrapper(const std::vector<BlockType>& board,
-			int rows, int columns, Block current, BlockType next,
-			int savedRowsRemoved = 0);
+			PlayerMovesBlock,
+			GravityMovesBlock,
+
+			RowsRemoved,
+			RowToBeRemoved,
+			GameOver
+		};
+
+		TetrisBoardWrapper(const TetrisBoard& tetrisBoard, int savedRowsRemoved = 0);
 
 		TetrisBoardWrapper(const TetrisBoardWrapper&) = delete;
 		TetrisBoardWrapper& operator=(const TetrisBoardWrapper&) = delete;
@@ -52,7 +85,9 @@ namespace tetris {
 		// Add rows to be added at the bottom of the board at the next change of the moving block.
 		void addRows(const std::vector<BlockType>& blockTypes);
 
-		mw::signals::Connection addGameEventListener(const std::function<void(BoardEvent, const TetrisBoardWrapper&)>& callback);
+		int getSenderId() const {
+			return 0;
+		}
 
 		const TetrisBoard& getTetrisBoard() const;
 
@@ -96,9 +131,27 @@ namespace tetris {
 			return tetrisBoard_.getBlock();
 		}
 
-		void update(Move move) {
+		template <class EventCallback>
+		void update(Move move, EventCallback&& eventCallback) {
+			static_assert(std::is_invocable_v<EventCallback, Event, int>, "EventCallback must be in the form: void(BoardEvent, int) ");
+
 			tetrisBoard_.update(move, [&](BoardEvent boardEvent, int value) {
-				triggerEvent(boardEvent, value);
+				switch (boardEvent) {
+					case BoardEvent::BlockCollision:
+						eventCallback(TetrisBoardWrapper::Event::BlockCollision, value);
+						break;
+					case BoardEvent::RowToBeRemoved:
+						rowToBeRemoved_ = value;
+						break;
+					case BoardEvent::CurrentBlockUpdated:
+						externalRowsAdded_ = tetrisBoard_.addExternalRows(squaresToAdd_);
+						squaresToAdd_.clear();
+						++turns_;
+						break;
+					case BoardEvent::RowsRemoved:
+						nbrOneLines_ += value;
+						break;
+				}
 			});
 		}
 
@@ -131,11 +184,10 @@ namespace tetris {
 		}
 
 	private:
-		void triggerEvent(BoardEvent gameEvent, int value);
-
 		TetrisBoard tetrisBoard_;
-		mw::Signal<BoardEvent, const TetrisBoardWrapper&> boardEventCallbacks_;
 		std::vector<BlockType> squaresToAdd_;
+
+		std::vector<std::shared_ptr<Row>> rows_;
 		Random random_;
 		int turns_{};
 		int nbrOneLines_{};

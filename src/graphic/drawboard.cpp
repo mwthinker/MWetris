@@ -60,9 +60,12 @@ namespace tetris::graphic {
 		infoSize_ = squareSize_ * 5.f;
 
 		connection_.disconnect();
+		
+		/*
 		connection_ = player.addGameEventListener([&](BoardEvent gameEvent, const game::TetrisBoardWrapper& tetrisBoard) {
 			callback(gameEvent, tetrisBoard);
 		});
+		*/
 
 		name_ = sdl::Sprite{"Test", TetrisData::getInstance().getDefaultFont(50)};
 		name_.bindTexture();

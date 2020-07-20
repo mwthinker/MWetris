@@ -39,7 +39,7 @@ namespace tetris::graphic {
 
 		void initGame(const std::vector<game::PlayerPtr>& player);
 
-		void eventHandler(game::TetrisGameEvent& tetrisGameEvent);
+		void eventHandler(Event& tetrisGameEvent);
 		
 		void handleMiddleText(const game::PlayerPtr& player, int lastPostion);
 

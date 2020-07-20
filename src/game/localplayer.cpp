@@ -1,6 +1,7 @@
 #include "localplayer.h"
 #include "actionhandler.h"
 #include "tetrisboardwrapper.h"
+#include "tetrisgameevent.h"
 
 #include <string>
 #include <functional>
@@ -8,12 +9,11 @@
 namespace tetris::game {
 
 	LocalPlayer::~LocalPlayer() {
-		connection_.disconnect();
 	}
 
-
-	LocalPlayer::LocalPlayer(const TetrisBoard& board, const DevicePtr& device)
-		: leftHandler_{0.09, false}
+	LocalPlayer::LocalPlayer(std::shared_ptr<EventManager> eventManager, const TetrisBoard& board, const DevicePtr& device)
+		: Player{eventManager}
+		, leftHandler_{0.09, false}
 		, rightHandler_{0.09, false}
 		, rotateHandler_{0.0, true}
 		, downGroundHandler_{0.0, true}
@@ -21,11 +21,21 @@ namespace tetris::game {
 		, downHandler_{0.04, false}
 		, device_{device}
 		, levelUpCounter_{0}
-		, tetrisBoard_{board.getBoardVector(), board.getColumns(), board.getRows(), board.getBlock(), board.getNextBlockType()} {
+		, tetrisBoard_{TetrisBoard{board.getBoardVector(), board.getColumns(), board.getRows(), board.getBlock(), board.getNextBlockType()}} {
+		
+		//SubscriptionHandle handle = eventManager_->subscribe(getSenderId(), [](std::shared_ptr<Event> event) {
+		//});
+		
+		//eventManager_->publish<TestEvent>(senderId_, 5);
 
+		//eventManager_->unsubscribe(handle);
+
+		/*
 		connection_ = tetrisBoard_.addGameEventListener([&](BoardEvent gameEvent, const TetrisBoardWrapper& board) {
 			boardListener(gameEvent);
 		});
+		*/
+
 		device_->update(getTetrisBoard());
 		name_ = device_->getName();
 	}
@@ -37,41 +47,52 @@ namespace tetris::game {
 		double downTime = 1.0 / getGravityDownSpeed();
 		gravityMove_.setWaitingTime(downTime);
 
+		auto callback = [this](TetrisBoardWrapper::Event event, int value) {
+			switch (event) {
+				case TetrisBoardWrapper::Event::GameOver:
+					publishEvent<GameOver>(shared_from_this());
+					break;
+				case TetrisBoardWrapper::Event::BlockCollision:
+					publishEvent<GameOver>(shared_from_this());
+					break;
+			}
+		};
+
 		gravityMove_.update(deltaTime, true);
 		if (gravityMove_.doAction()) {
-			tetrisBoard_.update(Move::DownGravity);
+			tetrisBoard_.update(Move::DownGravity, callback);
 		}
 
 		leftHandler_.update(deltaTime, input.left && !input.right);
 		if (leftHandler_.doAction()) {
-			tetrisBoard_.update(Move::Left);
+			tetrisBoard_.update(Move::Left, callback);
 		}
 
 		rightHandler_.update(deltaTime, input.right && !input.left);
 		if (rightHandler_.doAction()) {
-			tetrisBoard_.update(Move::Right);
+			tetrisBoard_.update(Move::Right, callback);
 		}
 
 		downHandler_.update(deltaTime, input.down);
 		if (downHandler_.doAction()) {
-			tetrisBoard_.update(Move::Down);
+			tetrisBoard_.update(Move::Down, callback);
 		}
 
 		rotateHandler_.update(deltaTime, input.rotate);
 		if (rotateHandler_.doAction()) {
-			tetrisBoard_.update(Move::RotateLeft);
+			tetrisBoard_.update(Move::RotateLeft, callback);
 		}
 
 		downGroundHandler_.update(deltaTime, input.downGround);
 		if (downGroundHandler_.doAction()) {
-			tetrisBoard_.update(Move::DownGround);
+			tetrisBoard_.update(Move::DownGround, callback);
 		}
 
 		device_->update(tetrisBoard_);
 	}
 
 	void LocalPlayer::addRow(int holes) {
-		std::vector<BlockType> blockTypes = generateRow(tetrisBoard_.getColumns(), 2);
+		auto blockTypes = generateRow(tetrisBoard_.getColumns(), 2);
 		tetrisBoard_.addRows(blockTypes);
 	}
 
@@ -104,7 +125,9 @@ namespace tetris::game {
 	}
 
 	void LocalPlayer::updateGameOver() {
-		tetrisBoard_.update(Move::GameOver);
+		tetrisBoard_.update(Move::GameOver, [](TetrisBoardWrapper::Event event, int value) {
+
+		});
 	}
 
 	void LocalPlayer::boardListener(BoardEvent gameEvent) {
