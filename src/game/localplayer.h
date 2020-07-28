@@ -5,7 +5,6 @@
 #include "tetrisboardwrapper.h"
 #include "actionhandler.h"
 #include "device.h"
-#include "playerdata.h"
 
 namespace tetris::game {
 

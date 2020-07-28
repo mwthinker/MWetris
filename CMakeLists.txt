@@ -29,12 +29,8 @@ endif ()
 set(SOURCES
 	src/graphic/drawboard.cpp
 	src/graphic/drawboard.h
-	src/graphic/drawrow.cpp
-	src/graphic/drawrow.h
 	src/graphic/gamecomponent.cpp
 	src/graphic/gamecomponent.h
-	src/graphic/gamegraphic.cpp
-	src/graphic/gamegraphic.h
 	src/graphic/graphic.cpp
 	src/graphic/graphic.h
 		
@@ -54,13 +50,8 @@ set(SOURCES
 	src/game/localplayer.h
 	src/game/localplayerbuilder.cpp
 	src/game/localplayerbuilder.h
-	src/game/network.cpp
-	src/game/network.h
 	src/game/player.cpp
-	src/game/playerdata.h
 	src/game/player.h
-	src/game/remoteplayer.cpp
-	src/game/remoteplayer.h
 	src/game/sdldevice.h
 	src/game/tetrisboardwrapper.cpp
 	src/game/tetrisboardwrapper.h

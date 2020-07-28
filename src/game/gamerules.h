@@ -8,8 +8,6 @@
 
 namespace tetris::game {
 
-	class TetrisGameEvent;
-
 	class GameRules {
 	public:
 		GameRules(std::shared_ptr<EventManager> eventManager);

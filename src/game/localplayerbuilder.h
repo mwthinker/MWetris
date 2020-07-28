@@ -87,8 +87,12 @@ namespace tetris::game {
 		std::shared_ptr<EventManager> eventManager_;
 		DevicePtr device_;
 		std::string name_{"PLAYER"};
-		int points_{0}, level_{1}, levelUpCounter_{0}, clearedRows_{0};
-		int width_{10}, height_{24};
+		int points_{0};
+		int level_{1};
+		int levelUpCounter_{0};
+		int clearedRows_{0};
+		int width_{10};
+		int height_{24};
 		Block movingBlock_;
 		BlockType movingBlockType_{BlockType::Empty};
 		BlockType next_{BlockType::Empty};

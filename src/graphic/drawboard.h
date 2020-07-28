@@ -35,7 +35,6 @@ namespace tetris::graphic {
 		float infoSize_;
 		
 		const game::TetrisBoardWrapper& tetrisBoard_;
-		mw::signals::Connection connection_;
 		
 		float width_, height_;
 		sdl::Sprite spriteI_, spriteJ_, spriteL_, spriteO_, spriteS_, spriteT_, spriteZ_;

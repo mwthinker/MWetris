@@ -3,10 +3,8 @@
 #include "tetrisboardwrapper.h"
 #include "tetrisgameevent.h"
 #include "localplayer.h"
-#include "remoteplayer.h"
 #include "tetrisparameters.h"
 #include "gamerules.h"
-#include "network.h"
 #include "localplayerbuilder.h"
 #include "localgame.h"
 
@@ -22,52 +20,6 @@ namespace tetris::game {
 
 	TetrisGame::~TetrisGame() {
 		closeGame();
-	}
-
-	void TetrisGame::resumeGame(int columns, int rows, const std::vector<PlayerData>& playersData) {
-		width_ = columns;
-		height_ = rows;
-		status_ = Status::LOCAL;
-
-		players_.clear();
-		for (const PlayerData& data : playersData) {
-			LocalPlayerBuilder builder;
-			builder.widthBoard(data.board_);
-			builder.widthClearedRows(data.clearedRows_);
-			builder.widthDevice(data.device_);
-			builder.widthGameOverPosition(data.lastPosition_);
-			builder.widthLevel(data.level_);
-			builder.widthLevelUpCounter(data.levelUpCounter_);
-			builder.widthMovingBlock(data.current_);
-			builder.widthName(data.name_);
-			builder.widthNextBlockType(data.next_);
-			builder.widthPoints(data.points_);
-			builder.withHeight(height_);
-			builder.withWidth(width_);
-			players_.push_back(builder.build());
-		}
-
-		game_->createGame(players_);
-		initGame();
-	}
-
-	std::vector<PlayerData> TetrisGame::getPlayerData() const {
-		std::vector<PlayerData> playerData;
-		for (const auto& player : players_) {
-			playerData.emplace_back();
-			const auto& tetrisBoard = player->getTetrisBoard();
-			playerData.back().current_ = tetrisBoard.getBlock();
-			playerData.back().lastPosition_ = player->getGameOverPosition();
-			playerData.back().next_ = tetrisBoard.getNextBlockType();
-			playerData.back().board_ = tetrisBoard.getBoardVector();
-			playerData.back().levelUpCounter_ = player->getLevelUpCounter();
-			playerData.back().level_ = player->getLevel();
-			playerData.back().clearedRows_ = player->getClearedRows();
-			playerData.back().name_ = player->getName();
-			playerData.back().points_ = player->getPoints();
-			playerData.back().device_ = player->getDevice();
-		}
-		return playerData;
 	}
 
 	void TetrisGame::createLocalPlayers(int columns, int rows, const std::vector<DevicePtr>& devices) {
@@ -90,10 +42,6 @@ namespace tetris::game {
 			auto player = builder.build();
 			players_.push_back(player);
 		}
-	}
-
-	void TetrisGame::receiveRemotePlayers(const std::vector<std::shared_ptr<RemotePlayer>>& players) {
-
 	}
 
 	void TetrisGame::createLocalGame(int columns, int rows, const std::vector<DevicePtr>& devices) {

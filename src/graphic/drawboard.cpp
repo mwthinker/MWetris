@@ -58,8 +58,6 @@ namespace tetris::graphic {
 		squareSize_ = TetrisData::getInstance().getTetrisSquareSize();
 		borderSize_ = TetrisData::getInstance().getTetrisBorderSize();
 		infoSize_ = squareSize_ * 5.f;
-
-		connection_.disconnect();
 		
 		/*
 		connection_ = player.addGameEventListener([&](BoardEvent gameEvent, const game::TetrisBoardWrapper& tetrisBoard) {

@@ -116,6 +116,7 @@ namespace tetris::ui::scene {
 		nbrAis_ = 0;
 		nbrHumans_ = 0;
 
+		/*
 		auto playerDataVector = TetrisData::getInstance().getActiveLocalGamePlayers();
 		for (auto& playerData : playerDataVector) {
 			if (playerData.ai_) {
@@ -127,6 +128,7 @@ namespace tetris::ui::scene {
 			}
 		}
 		game_.resumeGame(columns, rows, playerDataVector);
+		*/
 	}
 
 }

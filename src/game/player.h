@@ -2,10 +2,8 @@
 #define MWETRIS_GAME_PLAYER_H
 
 #include "tetrisboardwrapper.h"
-#include "playerdata.h"
 #include "eventmanager.h"
-
-#include <mw/signal.h>
+#include "device.h"
 
 #include <string>
 #include <memory>

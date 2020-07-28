@@ -35,11 +35,11 @@ namespace tetris::ui::scene {
 		int rankNbr = 1;
 		for (const auto& highscore : highscores) {
 			ImGui::Text("%i", rankNbr++); ImGui::NextColumn();
-			ImGui::Text("%i", highscore.points_); ImGui::NextColumn();
-			ImGui::TextUnformatted(highscore.name_.c_str()); ImGui::NextColumn();
-			ImGui::Text("%i", highscore.rows_); ImGui::NextColumn();
-			ImGui::Text("%i", highscore.level_); ImGui::NextColumn();
-			ImGui::TextUnformatted(highscore.date_.c_str()); ImGui::NextColumn();
+			ImGui::Text("%i", highscore.points); ImGui::NextColumn();
+			ImGui::TextUnformatted(highscore.name.c_str()); ImGui::NextColumn();
+			ImGui::Text("%i", highscore.rows); ImGui::NextColumn();
+			ImGui::Text("%i", highscore.level); ImGui::NextColumn();
+			ImGui::TextUnformatted(highscore.date.c_str()); ImGui::NextColumn();
 		}
 		ImGui::Separator();
 		ImGui::PopFont();

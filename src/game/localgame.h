@@ -12,13 +12,6 @@ namespace tetris::game {
 	public:
 		virtual ~GameManager() = default;
 
-		//svirtual int getWidth() const = 0;
-		//virtual int getHeight() const = 0;
-
-		//virtual std::vector<ILocalPlayerPtr> createLocalPlayers(const std::vector<IDevicePtr>& devices) = 0;
-		//virtual bool setPause(bool pause);
-		//virtual bool getPause() const;
-
 		virtual void createGame(const std::vector<LocalPlayerPtr>& players) = 0;
 
 		virtual void restartGame() = 0;

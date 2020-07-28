@@ -1,19 +1,19 @@
 #include "gamecomponent.h"
+#include "tetrisdata.h"
+
 #include "game/tetrisgame.h"
-#include "gamegraphic.h"
 #include "game/tetrisparameters.h"
 #include "game/tetrisgameevent.h"
-#include "tetrisdata.h"
-#include <fmt/format.h>
 
 #include <sdl/opengl.h>
+
+#include <fmt/format.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
 
 #include <queue>
 #include <map>
 #include <cassert>
-
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/transform.hpp>
 
 namespace tetris::graphic {
 
@@ -34,13 +34,8 @@ namespace tetris::graphic {
 	}
 
 	GameComponent::GameComponent(game::TetrisGame& tetrisGame)
-		: tetrisGame_{tetrisGame} {
-		
-		/*
-		eventConnection_ = tetrisGame_.addGameEventHandler([&](game::TetrisGameEvent& tetrisEvent) {
-			eventHandler(tetrisEvent);
-		});
-		*/
+		: tetrisGame_{tetrisGame} {		
+
 	}
 
 	GameComponent::~GameComponent() {

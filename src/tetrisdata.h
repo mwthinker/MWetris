@@ -3,7 +3,6 @@
 
 #include "block.h"
 #include "ai.h"
-#include "game/playerdata.h"
 
 #include <sdl/sound.h>
 #include <sdl/sprite.h>
@@ -28,18 +27,18 @@ namespace tetris {
 		HighscoreRecord() = default;
 
 		HighscoreRecord(const std::string& name, std::string date, int points, int level, int rows)
-			: name_{name}
-			, date_{date}
-			, points_{points}
-			, level_{level}
-			, rows_{rows} {
+			: name{name}
+			, date{date}
+			, points{points}
+			, level{level}
+			, rows{rows} {
 		}
 
-		std::string name_;
-		std::string date_;
-		int points_{0};
-		int level_{1};
-		int rows_{0};
+		std::string name;
+		std::string date;
+		int points{0};
+		int level{1};
+		int rows{0};
 	};
 
 	class TetrisData {
@@ -208,7 +207,7 @@ namespace tetris {
 		int getMiddleTextBoxSize() const;
 
 		//void setActiveLocalGame(int columns, int rows, const std::vector<PlayerData>& playerDataVector);
-		std::vector<game::PlayerData> getActiveLocalGamePlayers();
+		//std::vector<game::PlayerData> getActiveLocalGamePlayers();
 		int getActiveLocalGameRows() const;
 		int getActiveLocalGameColumns() const;
 

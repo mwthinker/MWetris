@@ -131,30 +131,30 @@ namespace tetris {
 	}
 
 	void from_json(const json& j, HighscoreRecord& highscoreRecord) {
-		highscoreRecord.name_ = j.at("name").get<std::string>();
-		highscoreRecord.date_ = j.at("date").get<std::string>();
-		highscoreRecord.points_ = j.at("points").get<int>();
+		highscoreRecord.name = j.at("name").get<std::string>();
+		highscoreRecord.date = j.at("date").get<std::string>();
+		highscoreRecord.points = j.at("points").get<int>();
 
 		try {
-			highscoreRecord.level_ = j.at("level").get<int>();
+			highscoreRecord.level = j.at("level").get<int>();
 		} catch (nlohmann::detail::out_of_range) {
-			highscoreRecord.level_ = 0;
+			highscoreRecord.level = 0;
 		}
 
 		try {
-			highscoreRecord.rows_ = j.at("rows").get<int>();
+			highscoreRecord.rows = j.at("rows").get<int>();
 		} catch (nlohmann::detail::out_of_range) {
-			highscoreRecord.rows_ = 0;
+			highscoreRecord.rows = 0;
 		}
 	}
 
 	void to_json(json& j, const HighscoreRecord& highscoreRecord) {
 		j = json{
-			{"name", highscoreRecord.name_},
-			{"date", highscoreRecord.date_},
-			{"points", highscoreRecord.points_},
-			{"level", highscoreRecord.level_},
-			{"rows", highscoreRecord.rows_}
+			{"name", highscoreRecord.name},
+			{"date", highscoreRecord.date},
+			{"points", highscoreRecord.points},
+			{"level", highscoreRecord.level},
+			{"rows", highscoreRecord.rows}
 		};
 	}
 
@@ -727,6 +727,7 @@ namespace tetris {
 	}
 	*/
 
+	/*
 	std::vector<game::PlayerData> TetrisData::getActiveLocalGamePlayers() {
 		nlohmann::json players = jsonObject_["activeGames"]["localGame"]["players"];
 
@@ -748,5 +749,6 @@ namespace tetris {
 		}
 		return playerDataVector;
 	}
+	*/
 
 }

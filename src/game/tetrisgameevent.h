@@ -65,16 +65,6 @@ namespace tetris::game {
 		std::vector<PlayerPtr> players;
 	};
 
-	/*
-	class RestartPlayer : public TetrisGameEvent {
-	public:
-		RestartPlayer(const std::shared_ptr<RemoteConnection>& connection) : connection_(connection) {
-		}
-
-		std::shared_ptr<RemoteConnection> connection_;
-	};
-	*/
-
 	class LevelChange : public tetris::Event {
 	public:
 		LevelChange(const PlayerPtr& player, int newLevel, int oldLevel)

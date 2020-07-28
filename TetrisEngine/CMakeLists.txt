@@ -19,7 +19,6 @@ set(SOURCES_LIB
 	srcLib/random.h
 	srcLib/tetrisboard.cpp
 	srcLib/tetrisboard.h
-	srcLib/tetrisevent.h
 )
 
 add_library(TetrisEngineLib ${SOURCES_LIB})

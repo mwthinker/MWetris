@@ -1,7 +1,6 @@
 #ifndef MWETRIS_GRAPHIC_GAMECOMPONENT_H
 #define MWETRIS_GRAPHIC_GAMECOMPONENT_H
 
-#include "gamegraphic.h"
 #include "game/player.h"
 #include "drawboard.h"
 #include "graphic.h"
@@ -21,7 +20,6 @@ namespace tetris::game {
 
 	class TetrisGame;
 	class GameData;
-	class TetrisGameEvent;
 
 }
 

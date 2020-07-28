@@ -2,13 +2,11 @@
 #define MWETRIS_GAME_TETRISGAME_H
 
 #include "device.h"
-#include "playerdata.h"
 #include "localgame.h"
 #include "tetrisparameters.h"
 #include "tetrisgameevent.h"
 #include "player.h"
 #include "gamerules.h"
-#include "remoteplayer.h"
 
 #include <vector>
 #include <memory>
@@ -34,7 +32,7 @@ namespace tetris::game {
 
 		void createClientGame(int port, std::string ip);
 
-		void resumeGame(int columns, int rows, const std::vector<PlayerData>& playersData);
+		//void resumeGame(int columns, int rows, const std::vector<PlayerData>& playersData);
 
 		void closeGame();
 
@@ -67,8 +65,6 @@ namespace tetris::game {
 			return status_;
 		}
 
-		std::vector<PlayerData> getPlayerData() const;
-
 		bool currentGameHasCountDown() const {
 			return players_.size() > 1 && COUNT_DOWN_TIME > 0;
 		}
@@ -85,7 +81,6 @@ namespace tetris::game {
 
 	private:
 		void createLocalPlayers(int columns, int rows, const std::vector<DevicePtr>& devices);
-		void receiveRemotePlayers(const std::vector<std::shared_ptr<RemotePlayer>>& players);
 
 		void initGame();
 		void updateGame(double deltaTime);
