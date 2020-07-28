@@ -5,7 +5,7 @@
 #include "tetrisboardwrapper.h"
 #include "eventmanager.h"
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	class LocalPlayerBuilder {
 	public:
@@ -21,18 +21,18 @@ namespace tetris::game {
 			return *this;
 		}
 
-		LocalPlayerBuilder& widthMovingBlock(const Block& block) {
-			movingBlockType_ = BlockType::Empty;
+		LocalPlayerBuilder& widthMovingBlock(const tetris::Block& block) {
+			movingBlockType_ = tetris::BlockType::Empty;
 			movingBlock_ = block;
 			return *this;
 		}
 
-		LocalPlayerBuilder& widthMovingBlockType(const BlockType& blockType) {
+		LocalPlayerBuilder& widthMovingBlockType(const tetris::BlockType& blockType) {
 			movingBlockType_ = blockType;
 			return *this;
 		}
 
-		LocalPlayerBuilder& widthNextBlockType(BlockType next) {
+		LocalPlayerBuilder& widthNextBlockType(tetris::BlockType next) {
 			next_ = next;
 			return *this;
 		}
@@ -62,7 +62,7 @@ namespace tetris::game {
 			return *this;
 		}
 
-		LocalPlayerBuilder& widthBoard(const std::vector<BlockType>& board) {
+		LocalPlayerBuilder& widthBoard(const std::vector<tetris::BlockType>& board) {
 			board_ = board;
 			return *this;
 		}
@@ -93,10 +93,10 @@ namespace tetris::game {
 		int clearedRows_{0};
 		int width_{10};
 		int height_{24};
-		Block movingBlock_;
-		BlockType movingBlockType_{BlockType::Empty};
-		BlockType next_{BlockType::Empty};
-		std::vector<BlockType> board_;
+		tetris::Block movingBlock_;
+		tetris::BlockType movingBlockType_{tetris::BlockType::Empty};
+		tetris::BlockType next_{tetris::BlockType::Empty};
+		std::vector<tetris::BlockType> board_;
 		int gameOverPosition_{};
 	};
 

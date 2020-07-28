@@ -17,10 +17,10 @@
 #include <map>
 #include <vector>
 
-namespace tetris {
+namespace mwetris {
 
-	constexpr BlockType charToBlockType(char key);
-	constexpr const char* blockTypeToString(BlockType blocktype);
+	constexpr tetris::BlockType charToBlockType(char key);
+	constexpr const char* blockTypeToString(tetris::BlockType blocktype);
 
 	class HighscoreRecord {
 	public:
@@ -64,7 +64,7 @@ namespace tetris {
 		sdl::Music loadMusic(const std::string& file);
 		sdl::Sprite loadSprite(const std::string& file);
 
-		sdl::Sprite getSprite(BlockType blockType);
+		sdl::Sprite getSprite(tetris::BlockType blockType);
 
 		const sdl::Font& getDefaultFont(int size);
 
@@ -156,7 +156,7 @@ namespace tetris {
 		void setAi3Name(const std::string& name);
 		void setAi4Name(const std::string& name);
 
-		std::vector<Ai> getAiVector() const;
+		std::vector<tetris::Ai> getAiVector() const;
 
 		std::vector<HighscoreRecord> getHighscoreRecordVector() const;
 		void setHighscoreRecordVector(const std::vector<HighscoreRecord>& highscoreVector);

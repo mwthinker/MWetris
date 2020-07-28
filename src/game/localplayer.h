@@ -6,14 +6,14 @@
 #include "actionhandler.h"
 #include "device.h"
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	class LocalPlayer;
 	using LocalPlayerPtr = std::shared_ptr<LocalPlayer>;
 
 	class LocalPlayer : public Player {
 	public:
-		LocalPlayer(std::shared_ptr<EventManager> eventManager, const TetrisBoard& board, const DevicePtr& device);
+		LocalPlayer(std::shared_ptr<EventManager> eventManager, const tetris::TetrisBoard& board, const DevicePtr& device);
 
 		virtual ~LocalPlayer();
 
@@ -79,7 +79,7 @@ namespace tetris::game {
 		}
 
 	private:
-		void boardListener(BoardEvent gameEvent);
+		void boardListener(tetris::BoardEvent gameEvent);
 
 		DevicePtr device_;
 		std::string name_;

@@ -1,6 +1,6 @@
 #include "actionhandler.h"
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	ActionHandler::ActionHandler(double waitingTime, bool rebound)
 		: waitingTime_{waitingTime}

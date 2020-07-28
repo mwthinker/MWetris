@@ -3,7 +3,7 @@
 #include "game/keyboard.h"
 #include "game/computer.h"
 
-namespace tetris::ui::scene {
+namespace mwetris::ui::scene {
 
 	Play::Play() {
 		activeAis_[0] = findAiDevice(TetrisData::getInstance().getAi1Name());
@@ -16,9 +16,9 @@ namespace tetris::ui::scene {
 
 		gameComponent_ = std::make_unique<graphic::GameComponent>(game_);
 
-		crossSprite_ = tetris::TetrisData::getInstance().getCrossSprite();
-		manSprite_ = tetris::TetrisData::getInstance().getHumanSprite();
-		aiSprite_ = tetris::TetrisData::getInstance().getComputerSprite();
+		crossSprite_ = mwetris::TetrisData::getInstance().getCrossSprite();
+		manSprite_ = mwetris::TetrisData::getInstance().getHumanSprite();
+		aiSprite_ = mwetris::TetrisData::getInstance().getComputerSprite();
 
 		resumeGame();
 	}
@@ -36,7 +36,7 @@ namespace tetris::ui::scene {
 
 		graphic_.clearDraw();
 
-		auto menuHeight = tetris::TetrisData::getInstance().getWindowBarHeight();
+		auto menuHeight = mwetris::TetrisData::getInstance().getWindowBarHeight();
 		auto deltaTimeSeconds = std::chrono::duration<double>(deltaTime).count();
 
 		if (size_.x > 0 && size_.y > menuHeight) {
@@ -50,7 +50,7 @@ namespace tetris::ui::scene {
 	}
 
 	void Play::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
-		auto menuHeight = tetris::TetrisData::getInstance().getWindowBarHeight();
+		auto menuHeight = mwetris::TetrisData::getInstance().getWindowBarHeight();
 
 		ImGui::Bar([&]() {
 			ImGui::PushButtonStyle();
@@ -101,7 +101,7 @@ namespace tetris::ui::scene {
 
 	game::DevicePtr Play::findAiDevice(std::string name) const {
 		auto ais = TetrisData::getInstance().getAiVector();
-		for (const Ai& ai : ais) {
+		for (const auto& ai : ais) {
 			if (ai.getName() == name) {
 				return std::make_shared<game::Computer>(ai);
 			}

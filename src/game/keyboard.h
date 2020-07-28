@@ -5,7 +5,7 @@
 
 #include <SDL.h>
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	class Keyboard : public SdlDevice {
 	public:

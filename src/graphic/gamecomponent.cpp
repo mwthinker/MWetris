@@ -15,7 +15,7 @@
 #include <map>
 #include <cassert>
 
-namespace tetris::graphic {
+namespace mwetris::graphic {
 
 	namespace {
 

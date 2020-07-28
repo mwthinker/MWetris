@@ -1,6 +1,6 @@
 #include "statemachine.h"
 
-namespace tetris::ui::scene {
+namespace mwetris::ui::scene {
 
 	StateMachine::StateMachine(std::shared_ptr<entt::dispatcher> dispatcher)
 		: dispatcher_{std::move(dispatcher)} {

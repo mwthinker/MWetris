@@ -1,10 +1,10 @@
 #include "custom.h"
 #include "event.h"
 
-namespace tetris::ui::scene {
+namespace mwetris::ui::scene {
 
 	void Custom::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
-		auto menuHeight = tetris::TetrisData::getInstance().getWindowBarHeight();
+		auto menuHeight = mwetris::TetrisData::getInstance().getWindowBarHeight();
 
 		ImGui::Bar([&]() {
 			ImGui::PushButtonStyle();

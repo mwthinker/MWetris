@@ -14,7 +14,7 @@
 #include <typeindex>
 #include <algorithm>
 
-namespace tetris::ui::scene {
+namespace mwetris::ui::scene {
 
 	class StateMachine {
 	public:

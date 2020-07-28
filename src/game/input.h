@@ -1,7 +1,7 @@
 #ifndef MWETRIS_GAME_INPUT_H
 #define MWETRIS_GAME_INPUT_H
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	struct Input {
 		bool rotate : 1;

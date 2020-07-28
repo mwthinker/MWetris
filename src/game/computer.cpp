@@ -5,9 +5,9 @@
 #include <string>
 #include <future>
 
-namespace tetris::game {
+namespace mwetris::game {
 
-	Computer::Computer(const Ai& ai)
+	Computer::Computer(const tetris::Ai& ai)
 		: ai_{ai} {
 	}
 
@@ -31,12 +31,12 @@ namespace tetris::game {
 			if (handle_.valid()) {
 				latestState_ = handle_.get();
 				latestBlock_ = board.getBlock();
-				handle_ = std::future<Ai::State>();
+				handle_ = std::future<tetris::Ai::State>();
 				activeThread_ = false;
 			}
-			Block current = board.getBlock();
-			Square currentSq = current.getRotationSquare();
-			Square sq = latestBlock_.getRotationSquare();
+			auto current = board.getBlock();
+			auto currentSq = current.getRotationSquare();
+			auto sq = latestBlock_.getRotationSquare();
 
 			if (latestState_.left == sq.column - currentSq.column) {
 				latestState_.left = 0;
@@ -50,12 +50,12 @@ namespace tetris::game {
 		}
 	}
 
-	Ai::State Computer::calculateBestState(TetrisBoard board, Ai ai, int depth) {
+	tetris::Ai::State Computer::calculateBestState(tetris::TetrisBoard board, tetris::Ai ai, int depth) {
 		return ai.calculateBestState(board, depth);
 	}
 
 	// Calculate and return the best input to achieve the current state.
-	Input Computer::calculateInput(Ai::State state) const {
+	Input Computer::calculateInput(tetris::Ai::State state) const {
 		Input input{};
 		if (state.rotationLeft > 0) {
 			input.rotate = !input_.rotate;

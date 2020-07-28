@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	class SdlDevice;
 	typedef std::shared_ptr<SdlDevice> SdlDevicePtr;

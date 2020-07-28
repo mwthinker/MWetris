@@ -8,7 +8,7 @@
 #include <fstream>
 #include <filesystem>
 
-namespace tetris::logger {
+namespace mwetris::logger {
 
 	namespace {
 

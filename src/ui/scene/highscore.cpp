@@ -1,11 +1,11 @@
 #include "highscore.h"
 #include "event.h"
 
-namespace tetris::ui::scene {
+namespace mwetris::ui::scene {
 
 	void HighScore::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
-		auto menuHeight = tetris::TetrisData::getInstance().getWindowBarHeight();
-		auto labelColor = tetris::TetrisData::getInstance().getLabelTextColor();
+		auto menuHeight = mwetris::TetrisData::getInstance().getWindowBarHeight();
+		auto labelColor = mwetris::TetrisData::getInstance().getLabelTextColor();
 
 		ImGui::Bar([&]() {
 			ImGui::PushButtonStyle();
@@ -15,11 +15,11 @@ namespace tetris::ui::scene {
 			ImGui::PopButtonStyle();
 		});
 
-		ImGui::PushFont(tetris::TetrisData::getInstance().getImGuiHeaderFont());
+		ImGui::PushFont(mwetris::TetrisData::getInstance().getImGuiHeaderFont());
 		ImGui::TextColored(labelColor, "Highscore");
 		ImGui::PopFont();
 
-		ImGui::PushFont(tetris::TetrisData::getInstance().getImGuiDefaultFont());
+		ImGui::PushFont(mwetris::TetrisData::getInstance().getImGuiDefaultFont());
 		ImGui::Columns(6, "Highscore");
 		ImGui::Separator();
 		ImGui::Text("Ranking"); ImGui::NextColumn();

@@ -10,11 +10,11 @@
 
 #include <vector>
 
-namespace tetris::graphic {
+namespace mwetris::graphic {
 
 	namespace {
 
-		Vec2 calculateCenterOfMass(const Block& block) {
+		Vec2 calculateCenterOfMass(const tetris::Block& block) {
 			Vec2 pos{};
 			for (const auto& sq : block) {
 				pos += Vec2{sq.column, sq.row};
@@ -47,13 +47,13 @@ namespace tetris::graphic {
 	DrawBoard::DrawBoard(game::Player& player)
 		: tetrisBoard_{player.getTetrisBoard()} {
 
-		spriteZ_ = TetrisData::getInstance().getSprite(BlockType::Z);
-		spriteS_ = TetrisData::getInstance().getSprite(BlockType::S);
-		spriteJ_ = TetrisData::getInstance().getSprite(BlockType::J);
-		spriteI_ = TetrisData::getInstance().getSprite(BlockType::I);
-		spriteL_ = TetrisData::getInstance().getSprite(BlockType::L);
-		spriteT_ = TetrisData::getInstance().getSprite(BlockType::T);
-		spriteO_ = TetrisData::getInstance().getSprite(BlockType::O);
+		spriteZ_ = TetrisData::getInstance().getSprite(tetris::BlockType::Z);
+		spriteS_ = TetrisData::getInstance().getSprite(tetris::BlockType::S);
+		spriteJ_ = TetrisData::getInstance().getSprite(tetris::BlockType::J);
+		spriteI_ = TetrisData::getInstance().getSprite(tetris::BlockType::I);
+		spriteL_ = TetrisData::getInstance().getSprite(tetris::BlockType::L);
+		spriteT_ = TetrisData::getInstance().getSprite(tetris::BlockType::T);
+		spriteO_ = TetrisData::getInstance().getSprite(tetris::BlockType::O);
 
 		squareSize_ = TetrisData::getInstance().getTetrisSquareSize();
 		borderSize_ = TetrisData::getInstance().getTetrisBorderSize();
@@ -76,7 +76,7 @@ namespace tetris::graphic {
 		return {width_, height_};
 	}
 
-	void DrawBoard::drawBlock(Graphic& graphic, const Block& block, Vec2 pos, bool center) {
+	void DrawBoard::drawBlock(Graphic& graphic, const tetris::Block& block, Vec2 pos, bool center) {
 		Vec2 delta{};
 		if (center) {
 			delta = (-Vec2{0.5f, 0.5f} - calculateCenterOfMass(block)) * squareSize_;
@@ -144,7 +144,7 @@ namespace tetris::graphic {
 			infoSize_,
 			TetrisData::getInstance().getStartAreaColor());
 
-		drawBlock(graphic, Block{tetrisBoard_.getBlockType(), 0, 0}, Vec2{x, y} + squareSize_ * 2.5f, true);
+		drawBlock(graphic, tetris::Block{tetrisBoard_.getBlockType(), 0, 0}, Vec2{x, y} + squareSize_ * 2.5f, true);
 
 		const Color borderColor = TetrisData::getInstance().getBorderColor();
 
@@ -221,8 +221,8 @@ namespace tetris::graphic {
 				y = borderSize_ + squareSize_ * i;
 
 				auto blockType = tetrisBoard_.getBlockType(j, i);
-				if (blockType != BlockType::Empty
-					&& blockType != BlockType::Wall) {
+				if (blockType != tetris::BlockType::Empty
+					&& blockType != tetris::BlockType::Wall) {
 					
 					addSquare(graphic,
 						x, y,
@@ -236,7 +236,7 @@ namespace tetris::graphic {
 		
 	}
 
-	void DrawBoard::callback(BoardEvent gameEvent, const game::TetrisBoardWrapper& tetrisBoard) {
+	void DrawBoard::callback(tetris::BoardEvent gameEvent, const game::TetrisBoardWrapper& tetrisBoard) {
 		/*
 		for (auto& row : rows_) {
 			row->handleEvent(gameEvent, tetrisBoard);
@@ -317,21 +317,21 @@ namespace tetris::graphic {
 		*/
 	}
 
-	sdl::Sprite DrawBoard::getSprite(BlockType blockType) const {
+	sdl::Sprite DrawBoard::getSprite(tetris::BlockType blockType) const {
 		switch (blockType) {
-			case BlockType::I:
+			case tetris::BlockType::I:
 				return spriteI_;
-			case BlockType::J:
+			case tetris::BlockType::J:
 				return spriteJ_;
-			case BlockType::L:
+			case tetris::BlockType::L:
 				return spriteL_;
-			case BlockType::O:
+			case tetris::BlockType::O:
 				return spriteO_;
-			case BlockType::S:
+			case tetris::BlockType::S:
 				return spriteS_;
-			case BlockType::T:
+			case tetris::BlockType::T:
 				return spriteT_;
-			case BlockType::Z:
+			case tetris::BlockType::Z:
 				return spriteZ_;
 		}
 		return spriteI_;

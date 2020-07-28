@@ -13,7 +13,7 @@
 #include <array>
 #include <functional>
 
-namespace tetris::graphic {
+namespace mwetris::graphic {
 
     class Graphic {
     public:

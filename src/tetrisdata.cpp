@@ -8,7 +8,7 @@
 #include <sstream>
 
 using nlohmann::json;
-using namespace tetris;
+using namespace mwetris;
 
 namespace sdl {
 
@@ -40,72 +40,26 @@ namespace sdl {
 
 namespace tetris {
 
-	constexpr BlockType charToBlockType(char key) {
-		switch (key) {
-			case 'z': case 'Z':
-				return BlockType::Z;
-			case 'w': case 'W':
-				return BlockType::Wall;
-			case 't': case 'T':
-				return BlockType::T;
-			case 's': case 'S':
-				return BlockType::S;
-			case 'o': case 'O':
-				return BlockType::O;
-			case 'l': case 'L':
-				return BlockType::L;
-			case 'j': case 'J':
-				return BlockType::J;
-			case 'I': case 'i':
-				return BlockType::I;
-			default:
-				return BlockType::Empty;
-		}
+	void from_json(const json& j, tetris::Ai& ai) {
+		ai = tetris::Ai{j.at("name").get<std::string>(), j.at("valueFunction").get<std::string>()};
 	}
 
-	constexpr const char* blockTypeToString(BlockType blocktype) {
-		switch (blocktype) {
-			case BlockType::Z:
-				return "Z";
-			case BlockType::Wall:
-				return "W";
-			case BlockType::T:
-				return "T";
-			case BlockType::S:
-				return "S";
-			case BlockType::O:
-				return "O";
-			case BlockType::L:
-				return "L";
-			case BlockType::J:
-				return "J";
-			case BlockType::I:
-				return "I";
-			default:
-				return "E";
-		}
-	}
-
-	void from_json(const json& j, Ai& ai) {
-		ai = Ai{j.at("name").get<std::string>(), j.at("valueFunction").get<std::string>()};
-	}
-
-	void from_json(const json& j, BlockType& blockType) {
+	void from_json(const json& j, tetris::BlockType& blockType) {
 		blockType = charToBlockType(j.get<std::string>()[0]);
 	}
 
-	void to_json(json& j, const BlockType& blockType) {
+	void to_json(json& j, const tetris::BlockType& blockType) {
 		j = json{blockTypeToString(blockType)};
 	}
 
-	void from_json(const json& j, Block& block) {
-		block = Block{j.at("blockType").get<BlockType>(),
+	void from_json(const json& j, tetris::Block& block) {
+		block = tetris::Block{j.at("blockType").get<tetris::BlockType>(),
 			j.at("leftColumn").get<int>(),
 			j.at("bottomRow").get<int>(),
 			j.at("currentRotation").get<int>()};
 	}
 
-	void to_json(json& j, const Block& block) {
+	void to_json(json& j, const tetris::Block& block) {
 		j = json{{
 			{"bottomRow", block.getLowestStartRow()},
 			{"blockType", block.getBlockType()},
@@ -114,7 +68,57 @@ namespace tetris {
 		}};
 	}
 
-	std::string convertBlockTypesToString(const std::vector<BlockType>& board) {
+}
+
+namespace mwetris {
+
+	constexpr tetris::BlockType charToBlockType(char key) {
+		switch (key) {
+			case 'z': case 'Z':
+				return tetris::BlockType::Z;
+			case 'w': case 'W':
+				return tetris::BlockType::Wall;
+			case 't': case 'T':
+				return tetris::BlockType::T;
+			case 's': case 'S':
+				return tetris::BlockType::S;
+			case 'o': case 'O':
+				return tetris::BlockType::O;
+			case 'l': case 'L':
+				return tetris::BlockType::L;
+			case 'j': case 'J':
+				return tetris::BlockType::J;
+			case 'I': case 'i':
+				return tetris::BlockType::I;
+			default:
+				return tetris::BlockType::Empty;
+		}
+	}
+
+	constexpr const char* blockTypeToString(tetris::BlockType blocktype) {
+		switch (blocktype) {
+			case tetris::BlockType::Z:
+				return "Z";
+			case tetris::BlockType::Wall:
+				return "W";
+			case tetris::BlockType::T:
+				return "T";
+			case tetris::BlockType::S:
+				return "S";
+			case tetris::BlockType::O:
+				return "O";
+			case tetris::BlockType::L:
+				return "L";
+			case tetris::BlockType::J:
+				return "J";
+			case tetris::BlockType::I:
+				return "I";
+			default:
+				return "E";
+		}
+	}
+
+	std::string convertBlockTypesToString(const std::vector<tetris::BlockType>& board) {
 		std::stringstream stream;
 		for (auto chr : board) {
 			stream << blockTypeToString(chr);
@@ -122,8 +126,8 @@ namespace tetris {
 		return stream.str();
 	}
 
-	std::vector<BlockType> convertStringToBlockTypes(const std::string& str) {
-		std::vector<BlockType> blocktypes_;
+	std::vector<tetris::BlockType> convertStringToBlockTypes(const std::string& str) {
+		std::vector<tetris::BlockType> blocktypes_;
 		for (auto key : str) {
 			blocktypes_.push_back(charToBlockType(key));
 		}
@@ -226,21 +230,21 @@ namespace tetris {
 		return textureAtlas_.add(file, 1);;
 	}
 
-	sdl::Sprite TetrisData::getSprite(BlockType blockType) {
+	sdl::Sprite TetrisData::getSprite(tetris::BlockType blockType) {
 		switch (blockType) {
-			case BlockType::I:
+			case tetris::BlockType::I:
 				return loadSprite(jsonObject_["window"]["tetrisBoard"]["sprites"]["squareI"].get<std::string>());
-			case BlockType::J:
+			case tetris::BlockType::J:
 				return loadSprite(jsonObject_["window"]["tetrisBoard"]["sprites"]["squareJ"].get<std::string>());
-			case BlockType::L:
+			case tetris::BlockType::L:
 				return loadSprite(jsonObject_["window"]["tetrisBoard"]["sprites"]["squareL"].get<std::string>());
-			case BlockType::O:
+			case tetris::BlockType::O:
 				return loadSprite(jsonObject_["window"]["tetrisBoard"]["sprites"]["squareO"].get<std::string>());
-			case BlockType::S:
+			case tetris::BlockType::S:
 				return loadSprite(jsonObject_["window"]["tetrisBoard"]["sprites"]["squareS"].get<std::string>());
-			case BlockType::T:
+			case tetris::BlockType::T:
 				return loadSprite(jsonObject_["window"]["tetrisBoard"]["sprites"]["squareT"].get<std::string>());
-			case BlockType::Z:
+			case tetris::BlockType::Z:
 				return loadSprite(jsonObject_["window"]["tetrisBoard"]["sprites"]["squareZ"].get<std::string>());
 		}
 		return {};
@@ -484,8 +488,8 @@ namespace tetris {
 		jsonObject_["ai4"] = name;
 	}
 
-	std::vector<Ai> TetrisData::getAiVector() const {
-		std::vector<Ai> ais;
+	std::vector<tetris::Ai> TetrisData::getAiVector() const {
+		std::vector<tetris::Ai> ais;
 		ais.push_back({});
 		ais.insert(ais.end(), jsonObject_["ais"].begin(), jsonObject_["ais"].end());
 		return ais;

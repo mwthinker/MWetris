@@ -1,7 +1,7 @@
 #include "gamerules.h"
 #include "tetrisgameevent.h"
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	namespace {
 
@@ -62,11 +62,11 @@ namespace tetris::game {
 		++nbrOfAlivePlayers_;
 	}
 
-	void GameRules::applyRules(BoardEvent gameEvent, const LocalPlayerPtr& player) {
+	void GameRules::applyRules(tetris::BoardEvent gameEvent, const LocalPlayerPtr& player) {
 
 
 		switch (gameEvent) {
-			case BoardEvent::RowsRemoved:
+			case tetris::BoardEvent::RowsRemoved:
 				handleRowClearedEvent(player, 1);
 				break;
 			/*
@@ -81,7 +81,7 @@ namespace tetris::game {
 				addRowsToOpponents(player);
 				break;
 			*/
-			case BoardEvent::GameOver:
+			case tetris::BoardEvent::GameOver:
 				handleGameOverEvent(player);
 				break;
 		}

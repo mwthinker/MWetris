@@ -1,14 +1,14 @@
 #include "localplayerbuilder.h"
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	LocalPlayerPtr LocalPlayerBuilder::build() {
 		LocalPlayerPtr player;
-		if (board_.size() > 0 || movingBlockType_ == BlockType::Empty) {
-			TetrisBoard board(board_, width_, height_, movingBlock_, next_);
+		if (board_.size() > 0 || movingBlockType_ == tetris::BlockType::Empty) {
+			tetris::TetrisBoard board(board_, width_, height_, movingBlock_, next_);
 			player = std::make_shared<LocalPlayer>(eventManager_, board, device_);
 		} else {
-			TetrisBoard board(width_, height_, movingBlockType_, next_);
+			tetris::TetrisBoard board(width_, height_, movingBlockType_, next_);
 			player = std::make_shared<LocalPlayer>(eventManager_, board, device_);
 		}
 		player->updateName(name_);

@@ -4,7 +4,7 @@
 
 #include <memory>
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	void LocalGame::createGame(const std::vector<LocalPlayerPtr>& players) {
 		gameRules_->createGame(players);

@@ -13,13 +13,13 @@
 #include <string>
 #include <future>
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	class Computer : public Device {
 	public:
 		Computer() = default;
 
-		Computer(const Ai& ai);
+		Computer(const tetris::Ai& ai);
 
 		Input getInput() const override;
 
@@ -32,18 +32,18 @@ namespace tetris::game {
 		}
 
 	private:
-		static Ai::State calculateBestState(TetrisBoard board, Ai ai, int depth);
+		static tetris::Ai::State calculateBestState(tetris::TetrisBoard board, tetris::Ai ai, int depth);
 
 		// Calculate and return the best input to achieve the current state.
-		Input calculateInput(Ai::State state) const;
+		Input calculateInput(tetris::Ai::State state) const;
 
 		int currentTurn_{};
 		Input input_{};
-		Ai::State latestState_{};
-		Block latestBlock_;
-		Ai ai_;
+		tetris::Ai::State latestState_{};
+		tetris::Block latestBlock_;
+		tetris::Ai ai_;
 		bool activeThread_{};
-		std::future<Ai::State> handle_;
+		std::future<tetris::Ai::State> handle_;
 	};
 
 }

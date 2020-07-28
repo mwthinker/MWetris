@@ -6,13 +6,13 @@
 #include "player.h"
 #include "eventmanager.h"
 
-namespace tetris::game {
+namespace mwetris::game {
 
-	class NewConnection : public tetris::Event {
+	class NewConnection : public mwetris::Event {
 	public:
 	};
 
-	class GameStart : public tetris::Event {
+	class GameStart : public mwetris::Event {
 	public:
 		enum class Status {
 			LOCAL,
@@ -27,7 +27,7 @@ namespace tetris::game {
 		Status status{Status::LOCAL};
 	};
 
-	class CountDown : public tetris::Event {
+	class CountDown : public mwetris::Event {
 	public:
 		CountDown(int timeLeft)
 			: timeLeft{timeLeft} {
@@ -36,7 +36,7 @@ namespace tetris::game {
 		int timeLeft{};
 	};
 
-	class GamePause : public tetris::Event {
+	class GamePause : public mwetris::Event {
 	public:
 		GamePause(bool pause, bool printPause)
 			: pause{pause}
@@ -47,16 +47,16 @@ namespace tetris::game {
 		bool printPause{};
 	};
 
-	class GameOver : public tetris::Event {
+	class GameOver : public mwetris::Event {
 	public:
-		GameOver(const PlayerPtr& player)
-			: player{player} {
+		GameOver(PlayerPtr player)
+			: player{std::move(player)} {
 		}
 
 		PlayerPtr player;
 	};
 
-	class InitGame : public tetris::Event {
+	class InitGame : public mwetris::Event {
 	public:
 		InitGame(const std::vector<PlayerPtr>& players)
 			: players{players} {
@@ -65,10 +65,10 @@ namespace tetris::game {
 		std::vector<PlayerPtr> players;
 	};
 
-	class LevelChange : public tetris::Event {
+	class LevelChange : public mwetris::Event {
 	public:
-		LevelChange(const PlayerPtr& player, int newLevel, int oldLevel)
-			: player{player}
+		LevelChange(PlayerPtr player, int newLevel, int oldLevel)
+			: player{std::move(player)}
 			, newLevel{newLevel}
 			, oldLevel{oldLevel} {
 		}
@@ -78,10 +78,10 @@ namespace tetris::game {
 		PlayerPtr player;
 	};
 
-	class PointsChange : public tetris::Event {
+	class PointsChange : public mwetris::Event {
 	public:
-		PointsChange(const PlayerPtr& player, int newPoints, int oldPoints)
-			: player{player}
+		PointsChange(PlayerPtr player, int newPoints, int oldPoints)
+			: player{std::move(player)}
 			, newPoints{newPoints}
 			, oldPoints{oldPoints} {
 		}

@@ -4,7 +4,7 @@
 #include "scene.h"
 #include "event.h"
 
-namespace tetris::ui::scene {
+namespace mwetris::ui::scene {
 
 	class Menu : public Scene {
 	public:

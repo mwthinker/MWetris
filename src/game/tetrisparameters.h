@@ -1,32 +1,21 @@
-#ifndef TETRISPARAMETERS_H
-#define TETRISPARAMETERS_H
+#ifndef MWETRIS_GAME_TETRISPARAMETERS_H
+#define MWETRIS_GAME_TETRISPARAMETERS_H
 
-namespace tetris {
+namespace mwetris {
 
-	// New record if these settings is used in non ai local single game.
-	const int TETRIS_MAX_LEVEL = 40;
+	constexpr int TetrisMaxLevel = 40;
 
-	const int TETRIS_MAX_WIDTH = 40;
-	const int TETRIS_MAX_HEIGHT = 40;
+	constexpr int TetrisMaxWidth = 40;
+	constexpr int TetrisMaxHeight = 40;
 
-	const int TETRIS_MIN_WIDTH = 6;
-	const int TETRIS_MIN_HEIGHT = 6;
+	constexpr int TetrisMinWidth = 6;
+	constexpr int TetrisMinHeight = 6;
 
-	const int TETRIS_WIDTH = 10;
-	const int TETRIS_HEIGHT = 24;
-	const int ROWS_TO_LEVEL_UP = 10;
-	const int COUNT_DOWN_TIME = 3;
-
-	enum TetrisMenu {
-		MENU,
-		GAME,
-		CUSTOM_GAME,
-		NETWORK_GAME,
-		HIGHSCORE,
-		QUIT,
-		ENUM_SIZE
-	};
+	constexpr int TetrisWidth = 10;
+	constexpr int TetrisHeight = 24;
+	constexpr int RowsToLevelUp = 10;
+	constexpr int CountDownTime = 3;
 
 }
 
-#endif // TETRISPARAMETERS_H
+#endif

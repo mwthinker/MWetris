@@ -11,7 +11,7 @@
 #include <vector>
 #include <algorithm>
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	TetrisGame::TetrisGame()
 		: eventManager_{std::make_shared<EventManager>()}
@@ -33,8 +33,8 @@ namespace tetris::game {
 			builder.widthLevelUpCounter(0);
 			//builder.widthMovingBlock(data.current_);
 			//builder.widthName(data.name_);
-			builder.widthMovingBlockType(randomBlockType());
-			builder.widthNextBlockType(randomBlockType());
+			builder.widthMovingBlockType(tetris::randomBlockType());
+			builder.widthNextBlockType(tetris::randomBlockType());
 			builder.widthPoints(0);
 			builder.withHeight(height_);
 			builder.withWidth(width_);
@@ -109,8 +109,8 @@ namespace tetris::game {
 	void TetrisGame::startNewCountDown() {
 		// Must be called last, after all settings are defined for the current game.
 		if (currentGameHasCountDown()) {
-			timeLeftToStart_ = COUNT_DOWN_TIME;
-			wholeTimeLeft_ = COUNT_DOWN_TIME;
+			timeLeftToStart_ = CountDownTime;
+			wholeTimeLeft_ = CountDownTime;
 			//eventHandler_(CountDown{wholeTimeLeft_});
 		}
 	}
@@ -142,8 +142,8 @@ namespace tetris::game {
 	}
 
 	void TetrisGame::resizeBoard(int width, int height) {
-		if (width > TETRIS_MIN_WIDTH && width <= TETRIS_MAX_WIDTH &&
-			height > TETRIS_MIN_HEIGHT && height <= TETRIS_MAX_HEIGHT &&
+		if (width > TetrisMinWidth && width <= TetrisMaxWidth &&
+			height > TetrisMinHeight && height <= TetrisMaxHeight &&
 			(width_ != width || height_ != height)) {
 
 			width_ = width;

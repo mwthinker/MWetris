@@ -8,7 +8,7 @@
 #include <string>
 #include <memory>
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	class Player;
 	using PlayerPtr = std::shared_ptr<Player>;

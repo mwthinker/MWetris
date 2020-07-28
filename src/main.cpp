@@ -6,15 +6,15 @@
 
 int main(int, char**) {
 	try {
-		tetris::logger::init();
+		mwetris::logger::init();
 		spdlog::info("[main] MWetris Version:  {}", PROJECT_VERSION);
 		spdlog::info("[main] MWetris git hash:  {}", GIT_VERSION);
 
 		const sdl::InitSdl SDL;
-		tetris::ui::TetrisWindow tetris;
+		mwetris::ui::TetrisWindow tetris;
 		//tetris.setStartPage(tetris::ui::scene::Event::Play);
 		tetris.startLoop();
-		tetris::TetrisData::getInstance().quit();
+		mwetris::TetrisData::getInstance().quit();
 	} catch (const std::exception&) {
 		spdlog::error("[Main] Fatal error has occured.");
 	}

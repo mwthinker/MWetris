@@ -7,7 +7,7 @@
 #include "tetrisdata.h"
 #include "ui/imguiextra.h"
 
-namespace tetris::ui::scene {
+namespace mwetris::ui::scene {
 
 	class Custom : public Scene {
 	public:

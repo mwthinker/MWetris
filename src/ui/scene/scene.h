@@ -11,7 +11,7 @@
 
 #include <chrono>
 
-namespace tetris::ui::scene {
+namespace mwetris::ui::scene {
 
 	class Scene {
 	public:

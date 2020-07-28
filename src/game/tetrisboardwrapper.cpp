@@ -3,21 +3,21 @@
 
 #include <vector>
 
-namespace tetris::game {
+namespace mwetris::game {
 
-	TetrisBoardWrapper::TetrisBoardWrapper(const TetrisBoard& tetrisBoard, int savedRowsRemoved)
+	TetrisBoardWrapper::TetrisBoardWrapper(const tetris::TetrisBoard& tetrisBoard, int savedRowsRemoved)
 		: tetrisBoard_{tetrisBoard} {
 
 		//rowsRemoved_ = savedRowsRemoved;
 	}
 
-	void TetrisBoardWrapper::addRows(const std::vector<BlockType>& blockTypes) {
+	void TetrisBoardWrapper::addRows(const std::vector<tetris::BlockType>& blockTypes) {
 		if (!tetrisBoard_.isGameOver()) {
 			squaresToAdd_.insert(squaresToAdd_.begin(), blockTypes.begin(), blockTypes.end());
 		}
 	}
 
-	void TetrisBoardWrapper::restart(BlockType current, BlockType next) {
+	void TetrisBoardWrapper::restart(tetris::BlockType current, tetris::BlockType next) {
 		squaresToAdd_.clear();
 		turns_ = 0;
 		nbrOneLines_ = 0;
@@ -27,7 +27,7 @@ namespace tetris::game {
 		tetrisBoard_.restart(current, next);
 	}
 
-	const TetrisBoard& TetrisBoardWrapper::getTetrisBoard() const {
+	const tetris::TetrisBoard& TetrisBoardWrapper::getTetrisBoard() const {
 		return tetrisBoard_;
 	}
 

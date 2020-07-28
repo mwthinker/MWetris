@@ -20,7 +20,7 @@
 #include <array>
 #include <memory>
 
-namespace tetris::ui::scene {
+namespace mwetris::ui::scene {
 
 	class Play : public Scene {
 	public:

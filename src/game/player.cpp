@@ -1,6 +1,6 @@
 #include "player.h"
 
-namespace tetris::game {
+namespace mwetris::game {
 
 
 }

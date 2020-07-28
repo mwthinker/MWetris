@@ -6,7 +6,7 @@
 #include <map>
 #include <queue>
 
-namespace tetris {
+namespace mwetris {
 
 	class Event {
 	public:

@@ -1,10 +1,10 @@
 #include "network.h"
 #include "event.h"
 
-namespace tetris::ui::scene {
+namespace mwetris::ui::scene {
 
 	void Network::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
-		auto menuHeight = tetris::TetrisData::getInstance().getWindowBarHeight();
+		auto menuHeight = mwetris::TetrisData::getInstance().getWindowBarHeight();
 
 		ImGui::Bar([&]() {
 			ImGui::PushButtonStyle();
@@ -17,7 +17,7 @@ namespace tetris::ui::scene {
 		ImGui::Indent(10.f);
 		ImGui::Dummy({0.0f, 5.0f});
 
-		ImGui::PushFont(tetris::TetrisData::getInstance().getImGuiDefaultFont());
+		ImGui::PushFont(mwetris::TetrisData::getInstance().getImGuiDefaultFont());
 		static int radioNbr = 0;
 		ImGui::RadioButton("Server", &radioNbr, 0);
 		ImGui::RadioButton("Client", &radioNbr, 1);

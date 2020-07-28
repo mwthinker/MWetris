@@ -19,20 +19,20 @@ namespace {
 
 }
 
-namespace tetris::ui {
+namespace mwetris::ui {
 
 	TetrisWindow::TetrisWindow()
 		: dispatcher_{std::make_shared<entt::dispatcher>()}
 		, sceneStateMachine_{dispatcher_} {
 
-		background_ = tetris::TetrisData::getInstance().getBackgroundSprite();
+		background_ = mwetris::TetrisData::getInstance().getBackgroundSprite();
 
-		setPosition(tetris::TetrisData::getInstance().getWindowPositionX(), tetris::TetrisData::getInstance().getWindowPositionY());
-		setSize(tetris::TetrisData::getInstance().getWindowWidth(), tetris::TetrisData::getInstance().getWindowHeight());
-		setResizeable(tetris::TetrisData::getInstance().getWindowWidth());
+		setPosition(mwetris::TetrisData::getInstance().getWindowPositionX(), mwetris::TetrisData::getInstance().getWindowPositionY());
+		setSize(mwetris::TetrisData::getInstance().getWindowWidth(), mwetris::TetrisData::getInstance().getWindowHeight());
+		setResizeable(mwetris::TetrisData::getInstance().getWindowWidth());
 		setTitle("MWetris");
-		setIcon(tetris::TetrisData::getInstance().getWindowIcon());
-		setBordered(tetris::TetrisData::getInstance().isWindowBordered());
+		setIcon(mwetris::TetrisData::getInstance().getWindowIcon());
+		setBordered(mwetris::TetrisData::getInstance().isWindowBordered());
 		setShowDemoWindow(true);
 		//ImGui::GetStyle().
 
@@ -49,7 +49,7 @@ namespace tetris::ui {
 		auto& io{ImGui::GetIO()};
 
 		background_.bindTexture();
-		tetris::TetrisData::getInstance().bindTextureFromAtlas();
+		mwetris::TetrisData::getInstance().bindTextureFromAtlas();
 		//ImGui::GetStyle().WindowBorderSize = 0;
 
 		TetrisData::getInstance().getImGuiButtonFont();
@@ -71,7 +71,7 @@ namespace tetris::ui {
 		ImVec4 clear_color{0.45f, 0.55f, 0.6f, 1.f};
 		auto context = SDL_GL_GetCurrentContext();
 	
-		ImGui::PushFont(tetris::TetrisData::getInstance().getImGuiDefaultFont());
+		ImGui::PushFont(mwetris::TetrisData::getInstance().getImGuiDefaultFont());
 		ImGui::PopFont();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});

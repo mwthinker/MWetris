@@ -9,7 +9,7 @@
 #include <string>
 #include <memory>
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	class Device;
 	using DevicePtr = std::shared_ptr<Device>;

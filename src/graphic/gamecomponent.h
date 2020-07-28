@@ -16,14 +16,14 @@
 
 #include <map>
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	class TetrisGame;
 	class GameData;
 
 }
 
-namespace tetris::graphic {
+namespace mwetris::graphic {
 
 	class GameComponent {
 	public:

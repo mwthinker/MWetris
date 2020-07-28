@@ -4,7 +4,7 @@
 
 #include <string>
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	Keyboard::Keyboard(std::string name, SDL_Keycode down, SDL_Keycode left,
 		SDL_Keycode right, SDL_Keycode rotate, SDL_Keycode downGround)

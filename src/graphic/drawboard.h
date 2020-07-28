@@ -13,7 +13,7 @@
 
 #include <vector>
 
-namespace tetris::graphic {
+namespace mwetris::graphic {
 
 	class DrawBoard {
 	public:
@@ -23,12 +23,12 @@ namespace tetris::graphic {
 
 		void draw(Graphic& graphic);
 
-		void callback(BoardEvent gameEvent, const game::TetrisBoardWrapper& tetrisBoard);
+		void callback(tetris::BoardEvent gameEvent, const game::TetrisBoardWrapper& tetrisBoard);
 
 	private:
-		void drawBlock(Graphic& graphic, const Block& block, Vec2 pos = {}, bool center = false);
+		void drawBlock(Graphic& graphic, const tetris::Block& block, Vec2 pos = {}, bool center = false);
 
-		sdl::Sprite getSprite(BlockType blockType) const;
+		sdl::Sprite getSprite(tetris::BlockType blockType) const;
 
 		float squareSize_;
 		float borderSize_;

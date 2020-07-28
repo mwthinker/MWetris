@@ -6,7 +6,7 @@
 
 #include <vector>
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	class GameRules {
 	public:
@@ -25,7 +25,7 @@ namespace tetris::game {
 
 		void addPlayer(LocalPlayerPtr player);
 
-		void applyRules(BoardEvent gameEvent, const LocalPlayerPtr& player);
+		void applyRules(tetris::BoardEvent gameEvent, const LocalPlayerPtr& player);
 
 		void handleGameOverEvent(const LocalPlayerPtr& player);
 

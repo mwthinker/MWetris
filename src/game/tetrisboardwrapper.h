@@ -10,7 +10,7 @@
 
 #include <vector>
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	class BlockCollisionEvent : public Event {
 	public:
@@ -55,7 +55,7 @@ namespace tetris::game {
 
 	private:
 		int row_;
-		std::vector<BlockType> elements_;
+		std::vector<tetris::BlockType> elements_;
 	};
 
 	class TetrisBoardWrapper {
@@ -72,7 +72,7 @@ namespace tetris::game {
 			GameOver
 		};
 
-		TetrisBoardWrapper(const TetrisBoard& tetrisBoard, int savedRowsRemoved = 0);
+		TetrisBoardWrapper(const tetris::TetrisBoard& tetrisBoard, int savedRowsRemoved = 0);
 
 		TetrisBoardWrapper(const TetrisBoardWrapper&) = delete;
 		TetrisBoardWrapper& operator=(const TetrisBoardWrapper&) = delete;
@@ -80,16 +80,16 @@ namespace tetris::game {
 		TetrisBoardWrapper(TetrisBoardWrapper&& other) noexcept = default;
 		TetrisBoardWrapper& operator=(TetrisBoardWrapper&& other) noexcept = default;
 
-		void restart(BlockType current, BlockType next);
+		void restart(tetris::BlockType current, tetris::BlockType next);
 
 		// Add rows to be added at the bottom of the board at the next change of the moving block.
-		void addRows(const std::vector<BlockType>& blockTypes);
+		void addRows(const std::vector<tetris::BlockType>& blockTypes);
 
 		int getSenderId() const {
 			return 0;
 		}
 
-		const TetrisBoard& getTetrisBoard() const;
+		const tetris::TetrisBoard& getTetrisBoard() const;
 
 		int getTurns() const {
 			return turns_;
@@ -119,51 +119,51 @@ namespace tetris::game {
 			return externalRowsAdded_;
 		}
 
-		BlockType getBlockType() const {
+		tetris::BlockType getBlockType() const {
 			return tetrisBoard_.getBlockType();
 		}
 
-		BlockType getBlockType(int column, int row) const {
+		tetris::BlockType getBlockType(int column, int row) const {
 			return tetrisBoard_.getBlockType(column, row);
 		}
 
-		Block getBlock() const {
+		tetris::Block getBlock() const {
 			return tetrisBoard_.getBlock();
 		}
 
 		template <class EventCallback>
-		void update(Move move, EventCallback&& eventCallback) {
+		void update(tetris::Move move, EventCallback&& eventCallback) {
 			static_assert(std::is_invocable_v<EventCallback, Event, int>, "EventCallback must be in the form: void(BoardEvent, int) ");
 
-			tetrisBoard_.update(move, [&](BoardEvent boardEvent, int value) {
+			tetrisBoard_.update(move, [&](tetris::BoardEvent boardEvent, int value) {
 				switch (boardEvent) {
-					case BoardEvent::BlockCollision:
+					case tetris::BoardEvent::BlockCollision:
 						eventCallback(TetrisBoardWrapper::Event::BlockCollision, value);
 						break;
-					case BoardEvent::RowToBeRemoved:
+					case tetris::BoardEvent::RowToBeRemoved:
 						rowToBeRemoved_ = value;
 						break;
-					case BoardEvent::CurrentBlockUpdated:
+					case tetris::BoardEvent::CurrentBlockUpdated:
 						externalRowsAdded_ = tetrisBoard_.addExternalRows(squaresToAdd_);
 						squaresToAdd_.clear();
 						++turns_;
 						break;
-					case BoardEvent::RowsRemoved:
+					case tetris::BoardEvent::RowsRemoved:
 						nbrOneLines_ += value;
 						break;
 				}
 			});
 		}
 
-		void setNextBlock(BlockType next) {
+		void setNextBlock(tetris::BlockType next) {
 			tetrisBoard_.setNextBlock(next);
 		}
 
-		BlockType getNextBlockType() const {
+		tetris::BlockType getNextBlockType() const {
 			return tetrisBoard_.getNextBlockType();
 		}
 
-		const std::vector<BlockType>& getBoardVector() const {
+		const std::vector<tetris::BlockType>& getBoardVector() const {
 			return tetrisBoard_.getBoardVector();
 		}
 
@@ -184,11 +184,11 @@ namespace tetris::game {
 		}
 
 	private:
-		TetrisBoard tetrisBoard_;
-		std::vector<BlockType> squaresToAdd_;
+		tetris::TetrisBoard tetrisBoard_;
+		std::vector<tetris::BlockType> squaresToAdd_;
 
 		std::vector<std::shared_ptr<Row>> rows_;
-		Random random_;
+		tetris::Random random_;
 		int turns_{};
 		int nbrOneLines_{};
 		int nbrTwoLines_{};

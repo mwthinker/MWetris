@@ -1,6 +1,6 @@
 #include "eventmanager.h"
 
-namespace tetris{
+namespace mwetris{
 
 	SubscriptionHandle EventManager::subscribe(SenderId senderId, const Callback& callback) {
 		auto receiverId = generateReceiverId();

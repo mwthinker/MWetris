@@ -6,12 +6,12 @@
 #include <string>
 #include <functional>
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	LocalPlayer::~LocalPlayer() {
 	}
 
-	LocalPlayer::LocalPlayer(std::shared_ptr<EventManager> eventManager, const TetrisBoard& board, const DevicePtr& device)
+	LocalPlayer::LocalPlayer(std::shared_ptr<EventManager> eventManager, const tetris::TetrisBoard& board, const DevicePtr& device)
 		: Player{eventManager}
 		, leftHandler_{0.09, false}
 		, rightHandler_{0.09, false}
@@ -21,7 +21,7 @@ namespace tetris::game {
 		, downHandler_{0.04, false}
 		, device_{device}
 		, levelUpCounter_{0}
-		, tetrisBoard_{TetrisBoard{board.getBoardVector(), board.getColumns(), board.getRows(), board.getBlock(), board.getNextBlockType()}} {
+		, tetrisBoard_{tetris::TetrisBoard{board.getBoardVector(), board.getColumns(), board.getRows(), board.getBlock(), board.getNextBlockType()}} {
 		
 		//SubscriptionHandle handle = eventManager_->subscribe(getSenderId(), [](std::shared_ptr<Event> event) {
 		//});
@@ -60,39 +60,39 @@ namespace tetris::game {
 
 		gravityMove_.update(deltaTime, true);
 		if (gravityMove_.doAction()) {
-			tetrisBoard_.update(Move::DownGravity, callback);
+			tetrisBoard_.update(tetris::Move::DownGravity, callback);
 		}
 
 		leftHandler_.update(deltaTime, input.left && !input.right);
 		if (leftHandler_.doAction()) {
-			tetrisBoard_.update(Move::Left, callback);
+			tetrisBoard_.update(tetris::Move::Left, callback);
 		}
 
 		rightHandler_.update(deltaTime, input.right && !input.left);
 		if (rightHandler_.doAction()) {
-			tetrisBoard_.update(Move::Right, callback);
+			tetrisBoard_.update(tetris::Move::Right, callback);
 		}
 
 		downHandler_.update(deltaTime, input.down);
 		if (downHandler_.doAction()) {
-			tetrisBoard_.update(Move::Down, callback);
+			tetrisBoard_.update(tetris::Move::Down, callback);
 		}
 
 		rotateHandler_.update(deltaTime, input.rotate);
 		if (rotateHandler_.doAction()) {
-			tetrisBoard_.update(Move::RotateLeft, callback);
+			tetrisBoard_.update(tetris::Move::RotateLeft, callback);
 		}
 
 		downGroundHandler_.update(deltaTime, input.downGround);
 		if (downGroundHandler_.doAction()) {
-			tetrisBoard_.update(Move::DownGround, callback);
+			tetrisBoard_.update(tetris::Move::DownGround, callback);
 		}
 
 		device_->update(tetrisBoard_);
 	}
 
 	void LocalPlayer::addRow(int holes) {
-		auto blockTypes = generateRow(tetrisBoard_.getColumns(), 2);
+		auto blockTypes = tetris::generateRow(tetrisBoard_.getColumns(), 2);
 		tetrisBoard_.addRows(blockTypes);
 	}
 
@@ -121,18 +121,18 @@ namespace tetris::game {
 		points_ = 0;
 		gameOverPosition_ = 0;
 		levelUpCounter_ = 0;
-		tetrisBoard_.restart(randomBlockType(), randomBlockType());
+		tetrisBoard_.restart(tetris::randomBlockType(), tetris::randomBlockType());
 	}
 
 	void LocalPlayer::updateGameOver() {
-		tetrisBoard_.update(Move::GameOver, [](TetrisBoardWrapper::Event event, int value) {
+		tetrisBoard_.update(tetris::Move::GameOver, [](TetrisBoardWrapper::Event event, int value) {
 
 		});
 	}
 
-	void LocalPlayer::boardListener(BoardEvent gameEvent) {
-		if (gameEvent == BoardEvent::CurrentBlockUpdated) {
-			tetrisBoard_.setNextBlock(randomBlockType());
+	void LocalPlayer::boardListener(tetris::BoardEvent gameEvent) {
+		if (gameEvent == tetris::BoardEvent::CurrentBlockUpdated) {
+			tetrisBoard_.setNextBlock(tetris::randomBlockType());
 
 			leftHandler_.reset();
 			rightHandler_.reset();

@@ -3,7 +3,7 @@
 
 #include <spdlog/spdlog.h>
 
-namespace tetris::logger {
+namespace mwetris::logger {
 	
 	bool init(const std::string& folderPath = "");
 

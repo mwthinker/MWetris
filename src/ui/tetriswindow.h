@@ -11,13 +11,13 @@
 #include <imgui.h>
 #include <entt/entt.hpp>
 
-namespace tetris {
+namespace mwetris {
 
 	class GameComponent;
 
 }
 
-namespace tetris::ui {
+namespace mwetris::ui {
 
 	class TetrisWindow : public sdl::ImGuiWindow {
 	public:

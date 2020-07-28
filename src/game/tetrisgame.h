@@ -11,7 +11,7 @@
 #include <vector>
 #include <memory>
 
-namespace tetris::game {
+namespace mwetris::game {
 	
 	class TetrisGame {
 	public:
@@ -66,7 +66,7 @@ namespace tetris::game {
 		}
 
 		bool currentGameHasCountDown() const {
-			return players_.size() > 1 && COUNT_DOWN_TIME > 0;
+			return players_.size() > 1 && CountDownTime > 0;
 		}
 
 		bool isCurrentGameActive() const;
@@ -76,7 +76,7 @@ namespace tetris::game {
 		}
 
 		bool isCustomGame() const {
-			return status_ == Status::LOCAL && !(width_ == TETRIS_WIDTH && height_ == TETRIS_HEIGHT);
+			return status_ == Status::LOCAL && !(width_ == TetrisWidth && height_ == TetrisHeight);
 		}
 
 	private:
@@ -100,9 +100,9 @@ namespace tetris::game {
 		std::unique_ptr<GameManager> game_;
 
 		Status status_{Status::WAITING_TO_CONNECT};
-		int width_{TETRIS_WIDTH};
-		int height_{TETRIS_HEIGHT};
-		int maxLevel_{TETRIS_MAX_LEVEL};
+		int width_{TetrisWidth};
+		int height_{TetrisHeight};
+		int maxLevel_{TetrisMaxLevel};
 
 		double timeLeftToStart_{-0.0}; // Time left for the count down.
 		int wholeTimeLeft_{0}; // Time left in whole seconds. E.g. timeLeftToStart_ = 1.4s means that wholeTimeLeft_ = 2s;

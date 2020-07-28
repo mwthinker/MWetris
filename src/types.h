@@ -9,7 +9,7 @@
 
 #include <sdl/color.h>
 
-namespace tetris {
+namespace mwetris {
 
 	using Mat4 = glm::mat4x4;
 	using Vec2 = glm::vec2;

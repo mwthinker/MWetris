@@ -1,7 +1,7 @@
 #ifndef MWETRIS_GAME_ACTIONHANDLER_H
 #define MWETRIS_GAME_ACTIONHANDLER_H
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	class ActionHandler {
 	public:

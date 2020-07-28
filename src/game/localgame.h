@@ -6,7 +6,7 @@
 #include "tetrisgameevent.h"
 #include "eventmanager.h"
 
-namespace tetris::game {
+namespace mwetris::game {
 
 	class GameManager {
 	public:

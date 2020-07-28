@@ -18,18 +18,18 @@ namespace ImGui {
 	bool Bar(T&& t) {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, tetris::TetrisData::getInstance().getWindowBarColor().toImU32());
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, mwetris::TetrisData::getInstance().getWindowBarColor().toImU32());
 
-		float height = tetris::TetrisData::getInstance().getWindowBarHeight();
+		float height = mwetris::TetrisData::getInstance().getWindowBarHeight();
 		ImGui::ChildWindow("Bar", ImVec2{ImGui::GetWindowWidth(), height}, [&]() {
 			ImGui::GetWindowDrawList()->AddRectFilled({0, 0},
 				ImGui::GetWindowSize(),
-				tetris::TetrisData::getInstance().getWindowBarColor().toImU32());
+				mwetris::TetrisData::getInstance().getWindowBarColor().toImU32());
 			t();
 		});
 		
 		//ImGui::Dummy({0.f, tetris::TetrisData::getInstance().getWindowBarHeight()});
-		ImGui::SetCursorPos({0.f, tetris::TetrisData::getInstance().getWindowBarHeight()});
+		ImGui::SetCursorPos({0.f, mwetris::TetrisData::getInstance().getWindowBarHeight()});
 		ImGui::PopStyleColor();
 		ImGui::PopStyleVar(2);
 		return true;
