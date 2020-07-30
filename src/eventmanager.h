@@ -15,12 +15,6 @@ namespace mwetris {
 	
 	using EventPtr = std::shared_ptr<Event>;
 
-	class TestEvent : public Event {
-	public:
-		TestEvent(int a) {
-		}
-	};
-
 	class SenderId {
 	public:
 		friend class EventManager;
@@ -40,7 +34,7 @@ namespace mwetris {
 		}
 
 	private:
-		SenderId(int id)
+		explicit SenderId(int id)
 			: id_{id} {
 		}
 		
@@ -66,7 +60,7 @@ namespace mwetris {
 		}
 
 	private:
-		ReceiverId(int id)
+		explicit ReceiverId(int id)
 			: id_{id} {
 		}
 
@@ -98,6 +92,7 @@ namespace mwetris {
 		template <class Type, class... Args>
 		void publish(SenderId senderId, Args&&... args);
 		
+		[[nodiscard]]
 		SubscriptionHandle subscribe(SenderId senderId, const Callback& callback);
 
 		void unsubscribe(SubscriptionHandle handle);
@@ -127,6 +122,34 @@ namespace mwetris {
 		std::queue<MetaEvent> events_;
 	};
 
+	class EventDispatcher {
+	public:
+		explicit EventDispatcher(std::shared_ptr<EventManager> eventManager)
+			: eventManager_{std::move(eventManager)}
+			, senderId_{eventManager_->generateSenderId()} {
+
+		}
+
+		~EventDispatcher() {
+		}
+
+		template <class Type, class... Args>
+		void publishEvent(Args&&... args) {
+			eventManager_->publish<Type>(senderId_, std::forward<Args>(args)...);
+		}
+
+		SubscriptionHandle subscribe(SenderId senderId, const EventManager::Callback& callback) {
+			return eventManager_->subscribe(senderId, callback);
+		}
+
+		SenderId getSenderId() const {
+			return senderId_;
+		}
+
+	private:
+		std::shared_ptr<EventManager> eventManager_;
+		SenderId senderId_;
+	};
 
 	template <class Type, class... Args>
 	void EventManager::publish(SenderId senderId, Args&&... args) {

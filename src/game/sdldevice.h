@@ -19,7 +19,7 @@ namespace mwetris::game {
 		virtual void eventUpdate(const SDL_Event& windowEvent) {
 		}
 
-		void update(const TetrisBoardWrapper& board) override {
+		void update(const tetris::TetrisBoard& board) override {
 		}
 
 		bool isAi() const override {

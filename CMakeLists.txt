@@ -53,8 +53,6 @@ set(SOURCES
 	src/game/player.cpp
 	src/game/player.h
 	src/game/sdldevice.h
-	src/game/tetrisboardwrapper.cpp
-	src/game/tetrisboardwrapper.h
 	src/game/tetrisgame.cpp
 	src/game/tetrisgameevent.h
 	src/game/tetrisgame.h

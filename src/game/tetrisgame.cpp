@@ -1,6 +1,7 @@
 #include "tetrisgame.h"
 
-#include "tetrisboardwrapper.h"
+#include "tetrisboard.h"
+#include "helper.h"
 #include "tetrisgameevent.h"
 #include "localplayer.h"
 #include "tetrisparameters.h"
@@ -13,13 +14,18 @@
 
 namespace mwetris::game {
 
+	namespace {
+
+		constexpr double FixedTimestep = 1.0 / 60.0;
+
+	}
+
 	TetrisGame::TetrisGame()
 		: eventManager_{std::make_shared<EventManager>()}
 		, game_{std::make_unique<LocalGame>(eventManager_)} {
 	}
 
 	TetrisGame::~TetrisGame() {
-		closeGame();
 	}
 
 	void TetrisGame::createLocalPlayers(int columns, int rows, const std::vector<DevicePtr>& devices) {
@@ -38,15 +44,14 @@ namespace mwetris::game {
 			builder.widthPoints(0);
 			builder.withHeight(height_);
 			builder.withWidth(width_);
+			builder.widthEventManager(eventManager_);
 
 			auto player = builder.build();
 			players_.push_back(player);
 		}
 	}
 
-	void TetrisGame::createLocalGame(int columns, int rows, const std::vector<DevicePtr>& devices) {
-		status_ = Status::LOCAL;
-
+	void TetrisGame::createGame(int columns, int rows, const std::vector<DevicePtr>& devices) {
 		width_ = columns;
 		height_ = rows;
 
@@ -56,52 +61,13 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::createGame(const std::vector<DevicePtr>& devices) {
-		switch (status_) {
-			case TetrisGame::Status::LOCAL:
-				createLocalGame(width_, height_, devices);
-				break;
-			case TetrisGame::Status::SERVER:
-				createLocalPlayers(width_, height_, devices);
-				game_->createGame(players_);
-				break;
-			case TetrisGame::Status::CLIENT:
-				break;
-		}
-	}
-
-	void TetrisGame::createServerGame(int port, int columns, int rows, const std::vector<DevicePtr>& devices) {
-		if (status_ == Status::WAITING_TO_CONNECT) {
-			//auto serverGame = std::make_unique<ServerGame>(eventHandler_);
-			//serverGame->connect(port);
-			//game_ = std::move(serverGame);
-
-			// game_ 
-			width_ = columns;
-			height_ = rows;
-			status_ = Status::SERVER;
-
-			createLocalPlayers(width_, height_, devices);
-			//game_->createGame(players_);
-			initGame();
-		}
-	}
-
-	void TetrisGame::createClientGame(int port, std::string ip) {
-		if (status_ == Status::WAITING_TO_CONNECT) {
-			//auto clientGame = std::make_unique<ServerGame>(eventHandler_);
-			status_ = Status::CLIENT;
-		}
+		createGame(width_, height_, devices);
 	}
 
 	void TetrisGame::initGame() {
-		triggerGameStartEvent();
-
 		if (game_->isPaused()) {
 			game_->setPaused(false);
-			//eventHandler_(GamePause{game_->isPaused(), false});
 		}
-
-		triggerTriggerInitGameEvent();
 
 		startNewCountDown();
 	}
@@ -116,16 +82,8 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::restartGame() {
-		if (status_ != Status::WAITING_TO_CONNECT) {
-			game_->restartGame();
-			initGame();
-		}
-	}
-
-	// Stop the game and abort any active connection.
-	void TetrisGame::closeGame() {
-		status_ = Status::WAITING_TO_CONNECT;
-
+		game_->restartGame();
+		initGame();
 	}
 
 	bool TetrisGame::isPaused() const {
@@ -155,7 +113,7 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::update(double deltaTime) {
-		if (status_ != Status::WAITING_TO_CONNECT && !game_->isPaused()) {
+		if (!game_->isPaused()) {
 			updateCurrentCountDown(deltaTime);
 
 			if (!hasActiveCountDown()) {
@@ -169,10 +127,10 @@ namespace mwetris::game {
 			timeLeftToStart_ -= deltaTime;
 		}
 
-		if (currentGameHasCountDown() && wholeTimeLeft_ != (int) (timeLeftToStart_ + 1)
+		if (currentGameHasCountDown() && wholeTimeLeft_ != static_cast<int>(timeLeftToStart_ + 1)
 			&& wholeTimeLeft_ > timeLeftToStart_ + 1) {
 
-			wholeTimeLeft_ = (int) (timeLeftToStart_ + 1);
+			wholeTimeLeft_ = static_cast<int>(timeLeftToStart_ + 1);
 			//eventHandler_(CountDown{wholeTimeLeft_});
 		}
 	}
@@ -188,10 +146,10 @@ namespace mwetris::game {
 		}
 
 		// Update using fixed time step.
-		while (deltaTime >= FIXED_TIMESTEP) {
-			deltaTime -= FIXED_TIMESTEP;
+		while (deltaTime >= FixedTimestep) {
+			deltaTime -= FixedTimestep;
 			for (auto& player : players_) {
-				player->update(FIXED_TIMESTEP);
+				player->update(FixedTimestep);
 			}
 		}
 
@@ -203,28 +161,6 @@ namespace mwetris::game {
 
 	bool TetrisGame::isCurrentGameActive() const {
 		return game_->getNbrAlivePlayers() > 0;
-	}
-
-	void TetrisGame::triggerGameStartEvent() {
-		switch (status_) {
-			case Status::LOCAL:
-				//eventHandler_(GameStart{GameStart::Status::LOCAL});
-				break;
-			case Status::CLIENT:
-				//eventHandler_(GameStart{GameStart::Status::CLIENT});
-				break;
-			case Status::SERVER:
-				//eventHandler_(GameStart{GameStart::Status::SERVER});
-				break;
-		}
-	}
-
-	void TetrisGame::triggerTriggerInitGameEvent() {
-		std::vector<PlayerPtr> players;
-		for (const auto& p : players_) {
-			players.push_back(p);
-		}
-		//eventHandler_(InitGame{players});
 	}
 
 }

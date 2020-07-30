@@ -23,8 +23,6 @@ namespace mwetris::game {
 		virtual void setPaused(bool pause) = 0;
 
 		virtual void close() = 0;
-
-		virtual void waitForGameEvents() = 0;
 	};
 
 	class GameRules;
@@ -50,9 +48,6 @@ namespace mwetris::game {
 		void close() override {
 		}
 
-		void waitForGameEvents() override {
-		}
-
 	private:
 		std::unique_ptr<GameRules> gameRules_;
 		bool pause_{};
@@ -67,15 +62,6 @@ namespace mwetris::game {
 		virtual std::unique_ptr<GameManager> createClientGame() const = 0;
 
 		virtual std::unique_ptr<GameManager> createServerGame() const = 0;
-	};
-
-	class PlayerFactory {
-	public:
-		virtual ~PlayerFactory() = default;
-
-		//virtual ILocalPlayerPtr createLocalPlayer() = 0;
-
-		//virtual IRemotePlayerPtr createRemotePlayer() = 0;
 	};
 
 }

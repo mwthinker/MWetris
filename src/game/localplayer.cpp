@@ -1,7 +1,8 @@
 #include "localplayer.h"
 #include "actionhandler.h"
-#include "tetrisboardwrapper.h"
 #include "tetrisgameevent.h"
+
+#include <helper.h>
 
 #include <string>
 #include <functional>
@@ -12,7 +13,7 @@ namespace mwetris::game {
 	}
 
 	LocalPlayer::LocalPlayer(std::shared_ptr<EventManager> eventManager, const tetris::TetrisBoard& board, const DevicePtr& device)
-		: Player{eventManager}
+		: Player{eventManager, board}
 		, leftHandler_{0.09, false}
 		, rightHandler_{0.09, false}
 		, rotateHandler_{0.0, true}
@@ -20,22 +21,8 @@ namespace mwetris::game {
 		, gravityMove_{1, false}  // Value doesn't matter! Changes every frame.
 		, downHandler_{0.04, false}
 		, device_{device}
-		, levelUpCounter_{0}
-		, tetrisBoard_{tetris::TetrisBoard{board.getBoardVector(), board.getColumns(), board.getRows(), board.getBlock(), board.getNextBlockType()}} {
+		, levelUpCounter_{0} {
 		
-		//SubscriptionHandle handle = eventManager_->subscribe(getSenderId(), [](std::shared_ptr<Event> event) {
-		//});
-		
-		//eventManager_->publish<TestEvent>(senderId_, 5);
-
-		//eventManager_->unsubscribe(handle);
-
-		/*
-		connection_ = tetrisBoard_.addGameEventListener([&](BoardEvent gameEvent, const TetrisBoardWrapper& board) {
-			boardListener(gameEvent);
-		});
-		*/
-
 		device_->update(getTetrisBoard());
 		name_ = device_->getName();
 	}
@@ -47,53 +34,42 @@ namespace mwetris::game {
 		double downTime = 1.0 / getGravityDownSpeed();
 		gravityMove_.setWaitingTime(downTime);
 
-		auto callback = [this](TetrisBoardWrapper::Event event, int value) {
-			switch (event) {
-				case TetrisBoardWrapper::Event::GameOver:
-					publishEvent<GameOver>(shared_from_this());
-					break;
-				case TetrisBoardWrapper::Event::BlockCollision:
-					publishEvent<GameOver>(shared_from_this());
-					break;
-			}
-		};
-
 		gravityMove_.update(deltaTime, true);
 		if (gravityMove_.doAction()) {
-			tetrisBoard_.update(tetris::Move::DownGravity, callback);
+			updateTetrisBoard(tetris::Move::DownGravity);
 		}
 
 		leftHandler_.update(deltaTime, input.left && !input.right);
 		if (leftHandler_.doAction()) {
-			tetrisBoard_.update(tetris::Move::Left, callback);
+			updateTetrisBoard(tetris::Move::Left);
 		}
 
 		rightHandler_.update(deltaTime, input.right && !input.left);
 		if (rightHandler_.doAction()) {
-			tetrisBoard_.update(tetris::Move::Right, callback);
+			updateTetrisBoard(tetris::Move::Right);
 		}
 
 		downHandler_.update(deltaTime, input.down);
 		if (downHandler_.doAction()) {
-			tetrisBoard_.update(tetris::Move::Down, callback);
+			updateTetrisBoard(tetris::Move::Down);
 		}
 
 		rotateHandler_.update(deltaTime, input.rotate);
 		if (rotateHandler_.doAction()) {
-			tetrisBoard_.update(tetris::Move::RotateLeft, callback);
+			updateTetrisBoard(tetris::Move::RotateLeft);
 		}
 
 		downGroundHandler_.update(deltaTime, input.downGround);
 		if (downGroundHandler_.doAction()) {
-			tetrisBoard_.update(tetris::Move::DownGround, callback);
+			updateTetrisBoard(tetris::Move::DownGround);
 		}
 
-		device_->update(tetrisBoard_);
+		device_->update(getTetrisBoard());
 	}
 
 	void LocalPlayer::addRow(int holes) {
-		auto blockTypes = tetris::generateRow(tetrisBoard_.getColumns(), 2);
-		tetrisBoard_.addRows(blockTypes);
+		//auto blockTypes = tetris::generateRow(tetrisBoard_.getColumns(), 2);
+		//tetrisBoard_.addRows(blockTypes);
 	}
 
 	void LocalPlayer::updateName(const std::string& name) {
@@ -121,18 +97,16 @@ namespace mwetris::game {
 		points_ = 0;
 		gameOverPosition_ = 0;
 		levelUpCounter_ = 0;
-		tetrisBoard_.restart(tetris::randomBlockType(), tetris::randomBlockType());
+		restartTetrisBoard(tetris::randomBlockType(), tetris::randomBlockType());
 	}
 
 	void LocalPlayer::updateGameOver() {
-		tetrisBoard_.update(tetris::Move::GameOver, [](TetrisBoardWrapper::Event event, int value) {
-
-		});
+		updateTetrisBoard(tetris::Move::GameOver);
 	}
 
 	void LocalPlayer::boardListener(tetris::BoardEvent gameEvent) {
 		if (gameEvent == tetris::BoardEvent::CurrentBlockUpdated) {
-			tetrisBoard_.setNextBlock(tetris::randomBlockType());
+			setNextTetrisBlock(tetris::randomBlockType());
 
 			leftHandler_.reset();
 			rightHandler_.reset();

@@ -8,6 +8,19 @@
 
 namespace mwetris::game {
 
+	class GameBoardEvent : public mwetris::Event {
+	public:
+		GameBoardEvent(PlayerPtr player, tetris::BoardEvent type, int nbr)
+			: player{player}
+			, type{type}
+			, nbr{nbr} {
+		}
+
+		PlayerPtr player;
+		tetris::BoardEvent type;
+		int nbr;
+	};
+
 	class NewConnection : public mwetris::Event {
 	public:
 	};

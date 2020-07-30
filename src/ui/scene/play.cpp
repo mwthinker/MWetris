@@ -19,8 +19,10 @@ namespace mwetris::ui::scene {
 		crossSprite_ = mwetris::TetrisData::getInstance().getCrossSprite();
 		manSprite_ = mwetris::TetrisData::getInstance().getHumanSprite();
 		aiSprite_ = mwetris::TetrisData::getInstance().getComputerSprite();
-
-		resumeGame();
+		
+		std::vector<game::DevicePtr> devices;
+		devices.push_back(devices_[0]);
+		game_.createGame(devices);
 	}
 
 	void Play::eventUpdate(const SDL_Event& windowEvent) {

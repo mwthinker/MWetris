@@ -1,6 +1,6 @@
 #include "drawboard.h"
 #include "tetrisdata.h"
-#include "game/tetrisboardwrapper.h"
+#include "tetrisboard.h"
 #include "graphic.h"
 #include "game/player.h"
 
@@ -236,7 +236,7 @@ namespace mwetris::graphic {
 		
 	}
 
-	void DrawBoard::callback(tetris::BoardEvent gameEvent, const game::TetrisBoardWrapper& tetrisBoard) {
+	void DrawBoard::callback(tetris::BoardEvent gameEvent, const tetris::TetrisBoard& tetrisBoard) {
 		/*
 		for (auto& row : rows_) {
 			row->handleEvent(gameEvent, tetrisBoard);

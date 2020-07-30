@@ -1,5 +1,5 @@
 #include "computer.h"
-#include "tetrisboardwrapper.h"
+#include "tetrisboard.h"
 
 #include <vector>
 #include <string>
@@ -19,14 +19,14 @@ namespace mwetris::game {
 		return ai_.getName();
 	}
 
-	void Computer::update(const TetrisBoardWrapper& board) {
+	void Computer::update(const tetris::TetrisBoard& board) {
 		// New block appears?
-		if (currentTurn_ != board.getTurns() && !activeThread_) {
+		if (currentTurn_ != 0 /* board.getTurns() */ && !activeThread_) {
 			activeThread_ = true;
 			input_ = {};
-			currentTurn_ = board.getTurns();
+			//currentTurn_ = board.getTurns();
 
-			handle_ = std::async(std::launch::async | std::launch::deferred, Computer::calculateBestState, board.getTetrisBoard(), ai_, 1);
+			//handle_ = std::async(std::launch::async | std::launch::deferred, Computer::calculateBestState, board.getTetrisBoard(), ai_, 1);
 		} else {
 			if (handle_.valid()) {
 				latestState_ = handle_.get();

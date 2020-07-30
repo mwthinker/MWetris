@@ -2,7 +2,8 @@
 #define MWETRIS_GAME_DEVICE_H
 
 #include "input.h"
-#include "tetrisboardwrapper.h"
+
+#include <tetrisboard.h>
 
 #include <SDL.h>
 
@@ -22,7 +23,7 @@ namespace mwetris::game {
 
 		virtual std::string getName() const = 0;
 
-		virtual void update(const TetrisBoardWrapper& board) = 0;
+		virtual void update(const tetris::TetrisBoard& board) = 0;
 
 		virtual bool isAi() const = 0;
 	};

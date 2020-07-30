@@ -23,8 +23,6 @@ namespace mwetris::game {
 	private:
 		void handleEvent(Event& event);
 
-		void addPlayer(LocalPlayerPtr player);
-
 		void applyRules(tetris::BoardEvent gameEvent, const LocalPlayerPtr& player);
 
 		void handleGameOverEvent(const LocalPlayerPtr& player);

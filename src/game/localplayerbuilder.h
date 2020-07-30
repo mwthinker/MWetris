@@ -2,7 +2,7 @@
 #define MWETRIS_GAME_LOCALPLAYERBUILDER_H
 
 #include "localplayer.h"
-#include "tetrisboardwrapper.h"
+#include "tetrisboard.h"
 #include "eventmanager.h"
 
 namespace mwetris::game {

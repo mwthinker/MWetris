@@ -34,7 +34,8 @@ namespace mwetris::graphic {
 	}
 
 	GameComponent::GameComponent(game::TetrisGame& tetrisGame)
-		: tetrisGame_{tetrisGame} {		
+		: tetrisGame_{tetrisGame} {
+
 
 	}
 
@@ -110,6 +111,12 @@ namespace mwetris::graphic {
 	}
 
 	void GameComponent::eventHandler(Event& tetrisEvent) {
+		try {
+			auto& gameBoardEvent = dynamic_cast<game::GameBoardEvent&>(tetrisEvent);
+			return;
+		} catch (std::bad_cast&) {}
+
+
 		// Handle CountDown event.
 		try {
 			auto& countDown = dynamic_cast<game::CountDown&>(tetrisEvent);

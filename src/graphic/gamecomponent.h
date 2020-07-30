@@ -50,7 +50,7 @@ namespace mwetris::graphic {
 
 		// Fix time step.
 		Uint32 timeStep_;
-		Uint32 accumulator_;
+		Uint32 accumulator_{};
 
 		// Font related.
 		float fontSize_{};

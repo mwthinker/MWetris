@@ -5,7 +5,6 @@
 #include "block.h"
 #include "tetrisboard.h"
 #include "ai.h"
-#include "tetrisboardwrapper.h"
 
 #include <calc/calculator.h>
 
@@ -25,7 +24,7 @@ namespace mwetris::game {
 
 		std::string getName() const override;
 
-		void update(const TetrisBoardWrapper& board) override;
+		void update(const tetris::TetrisBoard& board) override;
 
 		bool isAi() const override {
 			return true;

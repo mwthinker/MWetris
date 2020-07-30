@@ -15,8 +15,6 @@ namespace mwetris::game {
 	
 	class TetrisGame {
 	public:
-		enum class Status {WAITING_TO_CONNECT, LOCAL, SERVER, CLIENT};
-
 		TetrisGame();
 		~TetrisGame();
 
@@ -26,15 +24,7 @@ namespace mwetris::game {
 		// Uses the same settings as last call.
 		void createGame(const std::vector<DevicePtr>& devices);
 
-		void createLocalGame(int columns, int rows, const std::vector<DevicePtr>& devices);
-
-		void createServerGame(int port, int columns, int rows, const std::vector<DevicePtr>& devices);
-
-		void createClientGame(int port, std::string ip);
-
-		//void resumeGame(int columns, int rows, const std::vector<PlayerData>& playersData);
-
-		void closeGame();
+		void createGame(int columns, int rows, const std::vector<DevicePtr>& devices);
 
 		bool isPaused() const;
 
@@ -61,23 +51,11 @@ namespace mwetris::game {
 			return width_;
 		}
 
-		Status getStatus() const {
-			return status_;
-		}
-
 		bool currentGameHasCountDown() const {
 			return players_.size() > 1 && CountDownTime > 0;
 		}
 
 		bool isCurrentGameActive() const;
-
-		bool isDefaultGame() const {
-			return true; // status_ == TetrisGame::LOCAL && width_ == TETRIS_WIDTH && height_ == TETRIS_HEIGHT && localConnection_.getNbrOfPlayers() == 1;
-		}
-
-		bool isCustomGame() const {
-			return status_ == Status::LOCAL && !(width_ == TetrisWidth && height_ == TetrisHeight);
-		}
 
 	private:
 		void createLocalPlayers(int columns, int rows, const std::vector<DevicePtr>& devices);
@@ -89,17 +67,11 @@ namespace mwetris::game {
 		void updateCurrentCountDown(double deltaTime);
 		bool hasActiveCountDown() const;
 
-		void triggerGameStartEvent();
-		void triggerTriggerInitGameEvent();
-
 		std::vector<LocalPlayerPtr> players_;
-
-		static constexpr double FIXED_TIMESTEP = 1.0 / 60.0;
 
 		std::shared_ptr<EventManager> eventManager_;
 		std::unique_ptr<GameManager> game_;
 
-		Status status_{Status::WAITING_TO_CONNECT};
 		int width_{TetrisWidth};
 		int height_{TetrisHeight};
 		int maxLevel_{TetrisMaxLevel};

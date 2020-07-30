@@ -2,7 +2,6 @@
 #define MWETRIS_GAME_LOCALPLAYER_H
 
 #include "player.h"
-#include "tetrisboardwrapper.h"
 #include "actionhandler.h"
 #include "device.h"
 
@@ -51,15 +50,11 @@ namespace mwetris::game {
 		}
 
 		int getClearedRows() const override {
-			return tetrisBoard_.getRemovedRows();
+			return 0;
 		}
 
 		int getLevelUpCounter() const override {
 			return levelUpCounter_;
-		}
-
-		bool isGameOver() const override {
-			return tetrisBoard_.isGameOver();
 		}
 
 		int getGameOverPosition() const override {
@@ -68,10 +63,6 @@ namespace mwetris::game {
 
 		DevicePtr getDevice() const override {
 			return device_;
-		}
-
-		const TetrisBoardWrapper& getTetrisBoard() const override {
-			return tetrisBoard_;
 		}
 
 		virtual float getGravityDownSpeed() const {
@@ -84,7 +75,6 @@ namespace mwetris::game {
 		DevicePtr device_;
 		std::string name_;
 		int points_, level_, levelUpCounter_;
-		TetrisBoardWrapper tetrisBoard_;
 		int gameOverPosition_;
 
 		ActionHandler gravityMove_, downHandler_, leftHandler_, rightHandler_, rotateHandler_, downGroundHandler_;

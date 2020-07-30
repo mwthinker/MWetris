@@ -51,20 +51,7 @@ namespace mwetris::game {
 		nbrOfAlivePlayers_ = static_cast<int>(localPlayers_.size());
 	}
 
-	void GameRules::addPlayer(LocalPlayerPtr player) {
-		/*
-		player->addGameEventListener([&](BoardEvent gameEvent, const TetrisBoardWrapper& board) {
-			applyRules(gameEvent, player);
-		});
-		*/
-
-		localPlayers_.push_back(std::move(player));
-		++nbrOfAlivePlayers_;
-	}
-
 	void GameRules::applyRules(tetris::BoardEvent gameEvent, const LocalPlayerPtr& player) {
-
-
 		switch (gameEvent) {
 			case tetris::BoardEvent::RowsRemoved:
 				handleRowClearedEvent(player, 1);

@@ -3,7 +3,7 @@
 
 #include "tetrisdata.h"
 #include "game/player.h"
-#include "game/tetrisboardwrapper.h"
+#include "tetrisboard.h"
 #include "graphic.h"
 
 #include <sdl/imguiauxiliary.h>
@@ -23,7 +23,7 @@ namespace mwetris::graphic {
 
 		void draw(Graphic& graphic);
 
-		void callback(tetris::BoardEvent gameEvent, const game::TetrisBoardWrapper& tetrisBoard);
+		void callback(tetris::BoardEvent gameEvent, const tetris::TetrisBoard& tetrisBoard);
 
 	private:
 		void drawBlock(Graphic& graphic, const tetris::Block& block, Vec2 pos = {}, bool center = false);
@@ -34,7 +34,7 @@ namespace mwetris::graphic {
 		float borderSize_;
 		float infoSize_;
 		
-		const game::TetrisBoardWrapper& tetrisBoard_;
+		const tetris::TetrisBoard& tetrisBoard_;
 		
 		float width_, height_;
 		sdl::Sprite spriteI_, spriteJ_, spriteL_, spriteO_, spriteS_, spriteT_, spriteZ_;

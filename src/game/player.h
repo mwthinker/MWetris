@@ -1,9 +1,10 @@
 #ifndef MWETRIS_GAME_PLAYER_H
 #define MWETRIS_GAME_PLAYER_H
 
-#include "tetrisboardwrapper.h"
 #include "eventmanager.h"
 #include "device.h"
+
+#include <tetrisboard.h>
 
 #include <string>
 #include <memory>
@@ -15,8 +16,9 @@ namespace mwetris::game {
 
 	class Player : public std::enable_shared_from_this<Player> {
 	public:
-		Player(std::shared_ptr<EventManager> eventManager)
-			: eventManager_{eventManager}
+		Player(std::shared_ptr<EventManager> eventManager, const tetris::TetrisBoard& tetrisBoard)
+			: tetrisBoard_{tetrisBoard}
+			, eventManager_{eventManager}
 			, senderId_{eventManager->generateSenderId()} {
 			
 		}
@@ -34,19 +36,29 @@ namespace mwetris::game {
 
 		virtual int getLevelUpCounter() const = 0;
 
-		virtual bool isGameOver() const = 0;
+		bool isGameOver() const;
 
 		virtual int getGameOverPosition() const = 0;
 
 		virtual DevicePtr getDevice() const = 0;
 
-		virtual const TetrisBoardWrapper& getTetrisBoard() const = 0;
+		const tetris::TetrisBoard& getTetrisBoard() const {
+			return tetrisBoard_;
+		}
 
 		SenderId getSenderId() const {
 			return senderId_;
 		}
 
 	protected:
+		void updateTetrisBoard(tetris::Move move);
+
+		void restartTetrisBoard(tetris::BlockType current, tetris::BlockType next);
+
+		void setNextTetrisBlock(tetris::BlockType next);
+
+		virtual void handleBoardEvent(tetris::BoardEvent boardEvent, int value);
+
 		template <class Type, class... Args>
 		void publishEvent(Args&&... args) {
 			eventManager_->publish<Type>(senderId_, std::forward<Args>(args)...);
@@ -57,6 +69,7 @@ namespace mwetris::game {
 		}
 
 	private:
+		tetris::TetrisBoard tetrisBoard_;
 		std::shared_ptr<EventManager> eventManager_;
 		SenderId senderId_;
 	};

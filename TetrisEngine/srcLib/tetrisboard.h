@@ -146,12 +146,13 @@ namespace tetris {
 	void TetrisBoard::update(Move move, EventCallback&& eventCallback) {
 		static_assert(std::is_invocable_v<EventCallback, BoardEvent, int>, "EventCallback must be in the form: void(BoardEvent, int) ");
 
-		if (isGameOver_ || collision(current_)) {
-			if (!isGameOver_) {
-				// Only called once, when the game becomes game over.
-				isGameOver_ = true;
-				eventCallback(BoardEvent::GameOver, 0);
-			}
+		if (isGameOver_) {
+			return;
+		}
+
+		if (collision(current_)) {
+			isGameOver_ = true;
+			eventCallback(BoardEvent::GameOver, 0);
 			return;
 		}
 
