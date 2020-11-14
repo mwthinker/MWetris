@@ -1,13 +1,17 @@
 #ifndef MWETRIS_GAME_PLAYER_H
 #define MWETRIS_GAME_PLAYER_H
 
-#include "eventmanager.h"
 #include "device.h"
+#include "tetrisgameevent.h"
 
 #include <tetrisboard.h>
 
 #include <string>
 #include <memory>
+
+#include <mw/signal.h>
+
+#include <entt/entt.hpp>
 
 namespace mwetris::game {
 
@@ -16,11 +20,10 @@ namespace mwetris::game {
 
 	class Player : public std::enable_shared_from_this<Player> {
 	public:
-		Player(std::shared_ptr<EventManager> eventManager, const tetris::TetrisBoard& tetrisBoard)
-			: tetrisBoard_{tetrisBoard}
-			, eventManager_{eventManager}
-			, senderId_{eventManager->generateSenderId()} {
-			
+		mw::PublicSignal<Player, tetris::BoardEvent, int> gameboardEventUpdate;
+
+		explicit Player(const tetris::TetrisBoard& tetrisBoard)
+			: tetrisBoard_{tetrisBoard} {
 		}
 
 		virtual ~Player() {
@@ -46,10 +49,6 @@ namespace mwetris::game {
 			return tetrisBoard_;
 		}
 
-		SenderId getSenderId() const {
-			return senderId_;
-		}
-
 	protected:
 		void updateTetrisBoard(tetris::Move move);
 
@@ -59,19 +58,8 @@ namespace mwetris::game {
 
 		virtual void handleBoardEvent(tetris::BoardEvent boardEvent, int value);
 
-		template <class Type, class... Args>
-		void publishEvent(Args&&... args) {
-			eventManager_->publish<Type>(senderId_, std::forward<Args>(args)...);
-		}
-
-		SubscriptionHandle subscribe(SenderId senderId, const EventManager::Callback& callback) {
-			return eventManager_->subscribe(senderId, callback);
-		}
-
 	private:
 		tetris::TetrisBoard tetrisBoard_;
-		std::shared_ptr<EventManager> eventManager_;
-		SenderId senderId_;
 	};
 
 }

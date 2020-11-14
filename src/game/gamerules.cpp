@@ -18,9 +18,7 @@ namespace mwetris::game {
 
 	}
 
-	GameRules::GameRules(std::shared_ptr<EventManager> eventManager)
-		: eventManager_{eventManager} {
-
+	GameRules::GameRules() {
 	}
 
 	void GameRules::createGame(const std::vector<LocalPlayerPtr>& players) {
@@ -32,17 +30,19 @@ namespace mwetris::game {
 		}
 
 		for (auto& player : players) {
-			eventManager_->subscribe(player->getSenderId(), [this](EventPtr event) {
-				handleEvent(*event);
-			});
+			//eventManager_->subscribe(player->getSenderId(), [this](EventPtr event) {
+				//handleEvent(*event);
+			//});
 		}
 	}
 
+	/*
 	void GameRules::handleEvent(Event& event) {
 		try {
 			auto& countDown = dynamic_cast<game::CountDown&>(event);
 		} catch (std::bad_cast&) {}
 	}
+	*/
 
 	void GameRules::restartGame() {
 		for (auto& player : localPlayers_) {

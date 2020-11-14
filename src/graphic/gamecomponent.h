@@ -6,6 +6,7 @@
 #include "graphic.h"
 
 #include "types.h"
+#include "game/tetrisgameevent.h"
 
 #include <sdl/vertexbufferobject.h>
 #include <sdl/shaderprogram.h>
@@ -13,6 +14,8 @@
 
 #include <sdl/graphic.h>
 #include <mw/signal.h>
+
+#include <entt/entt.hpp>
 
 #include <map>
 
@@ -27,34 +30,33 @@ namespace mwetris::graphic {
 
 	class GameComponent {
 	public:
-		GameComponent(game::TetrisGame& tetrisGame);
+		GameComponent();
 		~GameComponent();
 
 		void draw(Graphic& graphic, int width, int height, double deltaTime);
 
+		void initGame(const game::InitGameEvent& event);
+
 	private:
 		Mat4 calculateBoardMatrix(int windowWidth, int windowHeight) const;
 
-		void initGame(const std::vector<game::PlayerPtr>& player);
-
-		void eventHandler(Event& tetrisGameEvent);
+		//void eventHandler(Event& tetrisGameEvent);
 		
 		void handleMiddleText(const game::PlayerPtr& player, int lastPostion);
 
 		using DrawBoardPtr = std::unique_ptr<DrawBoard>;
 		std::map<game::PlayerPtr, DrawBoardPtr> drawPlayers_;
-
-		game::TetrisGame& tetrisGame_;
-
-		mw::signals::Connection eventConnection_;
+		
+		std::shared_ptr<entt::dispatcher> dispatcher_;
 
 		// Fix time step.
-		Uint32 timeStep_;
+		Uint32 timeStep_{};
 		Uint32 accumulator_{};
 
 		// Font related.
 		float fontSize_{};
 		float borderSize_{};
+		entt::scoped_connection initGameEventConnection_;
 	};
 
 }

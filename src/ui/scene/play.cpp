@@ -14,15 +14,9 @@ namespace mwetris::ui::scene {
 		devices_.push_back(std::make_shared<game::Keyboard>("Keyboard 1", SDLK_DOWN, SDLK_LEFT, SDLK_RIGHT, SDLK_UP, SDLK_RCTRL));
 		devices_.push_back(std::make_shared<game::Keyboard>("Keyboard 2", SDLK_s, SDLK_a, SDLK_d, SDLK_w, SDLK_LCTRL));
 
-		gameComponent_ = std::make_unique<graphic::GameComponent>(game_);
-
 		crossSprite_ = mwetris::TetrisData::getInstance().getCrossSprite();
 		manSprite_ = mwetris::TetrisData::getInstance().getHumanSprite();
 		aiSprite_ = mwetris::TetrisData::getInstance().getComputerSprite();
-		
-		std::vector<game::DevicePtr> devices;
-		devices.push_back(devices_[0]);
-		game_.createGame(devices);
 	}
 
 	void Play::eventUpdate(const SDL_Event& windowEvent) {
@@ -48,7 +42,7 @@ namespace mwetris::ui::scene {
 			gameComponent_->draw(graphic_, size_.x, size_.y - menuHeight, deltaTimeSeconds);
 			graphic_.draw(shader);
 		}
-		game_.update(deltaTimeSeconds);
+		game_->update(deltaTimeSeconds);
 	}
 
 	void Play::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
@@ -63,16 +57,16 @@ namespace mwetris::ui::scene {
 			
 			ImGui::SameLine();
 			if (ImGui::Button("Restart", {120.5f, menuHeight})) {
-				game_.restartGame();
+				game_->restartGame();
 			}
 
 			ImGui::SameLine();
 			if (ImGui::ManButton("Human", nbrHumans_, static_cast<int>(devices_.size()), crossSprite_.getTextureView(), manSprite_.getTextureView(), {menuHeight, menuHeight})) {
-				game_.createGame(getCurrentDevices());
+				game_->createGame(getCurrentDevices());
 			}
 			ImGui::SameLine();
 			if (ImGui::ManButton("Ai", nbrAis_, static_cast<int>(activeAis_.size()), crossSprite_.getTextureView(), aiSprite_.getTextureView(), {menuHeight, menuHeight})) {
-				game_.createGame(getCurrentDevices());
+				game_->createGame(getCurrentDevices());
 			}
 			ImGui::PopButtonStyle();
 		});
@@ -109,6 +103,18 @@ namespace mwetris::ui::scene {
 			}
 		}
 		return std::make_shared<game::Computer>(ais.back());
+	}
+
+	void Play::switchedTo() {
+		gameComponent_ = std::make_unique<graphic::GameComponent>();
+		game_ = std::make_unique<game::TetrisGame>();
+		connections_.clear();
+		connections_ += game_->initGameEvent.connect(gameComponent_.get(), &mwetris::graphic::GameComponent::initGame);
+		connections_.cleanUp();
+
+		std::vector<game::DevicePtr> devices;
+		devices.push_back(devices_[0]);
+		game_->createGame(devices);
 	}
 
 	void Play::resumeGame() {

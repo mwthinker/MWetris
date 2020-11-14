@@ -4,7 +4,7 @@ FetchContent_Declare(CppSdl2
 	GIT_REPOSITORY
 		https://github.com/mwthinker/CppSdl2.git
 	GIT_TAG
-		5e96637fd4a11a651fb5261471ee299dff12253b
+		4b39c8f13ec37c647c78b08f87a94bc190f0047c
 )
 FetchContent_MakeAvailable(CppSdl2)
 
@@ -20,7 +20,7 @@ FetchContent_Declare(Signal
 	GIT_REPOSITORY
 		https://github.com/mwthinker/Signal.git
 	GIT_TAG
-		9e4d6a3fc56ba42b75bab8dd984b59ffbf1d4fb8
+		2ce1a5505b167b76cf8ad7caaf4a0a527925cc08
 )
 FetchContent_MakeAvailable(Signal)
 

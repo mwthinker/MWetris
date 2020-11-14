@@ -5,19 +5,14 @@
 #include <sdl/initsdl.h>
 
 int main(int, char**) {
-	try {
-		mwetris::logger::init();
-		spdlog::info("[main] MWetris Version:  {}", PROJECT_VERSION);
-		spdlog::info("[main] MWetris git hash:  {}", GIT_VERSION);
+	mwetris::logger::init();
+	spdlog::info("[main] MWetris Version:  {}", PROJECT_VERSION);
+	spdlog::info("[main] MWetris git hash:  {}", GIT_VERSION);
 
-		const sdl::InitSdl SDL;
-		mwetris::ui::TetrisWindow tetris;
-		//tetris.setStartPage(tetris::ui::scene::Event::Play);
-		tetris.startLoop();
-		mwetris::TetrisData::getInstance().quit();
-	} catch (const std::exception&) {
-		spdlog::error("[Main] Fatal error has occured.");
-	}
-
+	const sdl::InitSdl SDL;
+	mwetris::ui::TetrisWindow tetris;
+	//tetris.setStartPage(tetris::ui::scene::Event::Play);
+	tetris.startLoop();
+	mwetris::TetrisData::getInstance().quit();
 	return 0;
 }

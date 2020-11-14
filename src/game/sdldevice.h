@@ -14,7 +14,7 @@ namespace mwetris::game {
 
 	class SdlDevice : public Device {
 	public:
-		virtual ~SdlDevice() = default;
+		~SdlDevice() override = default;
 
 		virtual void eventUpdate(const SDL_Event& windowEvent) {
 		}

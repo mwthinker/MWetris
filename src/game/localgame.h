@@ -4,7 +4,6 @@
 #include "player.h"
 #include "localplayer.h"
 #include "tetrisgameevent.h"
-#include "eventmanager.h"
 
 namespace mwetris::game {
 
@@ -29,7 +28,7 @@ namespace mwetris::game {
 
 	class LocalGame : public GameManager {
 	public:
-		LocalGame(std::shared_ptr<EventManager> eventManager);
+		LocalGame();
 
 		void createGame(const std::vector<LocalPlayerPtr>& players) override;
 

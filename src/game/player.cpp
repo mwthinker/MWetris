@@ -17,13 +17,13 @@ namespace mwetris::game {
 	}
 
 	void Player::updateTetrisBoard(tetris::Move move) {
-		tetrisBoard_.update(tetris::Move::DownGravity, [this](tetris::BoardEvent boardEvent, int value) {
+		tetrisBoard_.update(move, [this](tetris::BoardEvent boardEvent, int value) {
 			handleBoardEvent(boardEvent, value);
 		});
 	}
 
 	void Player::handleBoardEvent(tetris::BoardEvent event, int value) {
-		publishEvent<GameBoardEvent>(shared_from_this(), event, value);
+		gameboardEventUpdate.invoke(event, value);
 	}
 
 }

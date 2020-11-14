@@ -39,38 +39,50 @@ namespace mwetris::ui::scene {
 		bool isCurrentScene() const;
 
 	private:
+		template <class Type>
+		static constexpr void staticAssertIsBaseOfScene();
+
 		using Key = entt::id_type;
 
 		template <class Type>
 		static Key getKey();
 
 		std::map<Key, std::shared_ptr<Scene>> scenes_;
-		Key currentKey_;
+		Key currentKey_{};
 		std::shared_ptr<entt::dispatcher> dispatcher_;
 	};
 
 	template <class Type>
-	std::shared_ptr<Type> StateMachine::add(std::shared_ptr<Type> scene) {
+	constexpr void StateMachine::staticAssertIsBaseOfScene() {
 		static_assert(std::is_base_of<Scene, Type>::value,
 			"Type must have Scene as base class");
+	}
 
-		if (scene) {
-			auto key = getKey<Type>();
+	template <class Type>
+	std::shared_ptr<Type> StateMachine::add(std::shared_ptr<Type> scenePtr) {
+		staticAssertIsBaseOfScene<Type>();
+
+		if (!scenePtr) {
+			spdlog::warn("[SceneStateMachine] Tried to add empty scene!");
+			return nullptr;
+		}
+
+		auto key = getKey<Type>();
+		
+		auto& scene = static_cast<Scene&>(*scenePtr);
+
+		scene.dispatcher_ = dispatcher_;
+		auto it = scenes_.find(key);
+		if (it == scenes_.end()) {
 			if (scenes_.empty()) {
 				currentKey_ = key;
+				scene.switchedTo();
 			}
-			static_cast<Scene&>(*scene).dispatcher_ = dispatcher_;
-			auto it = scenes_.find(key);
-			if (it == scenes_.end()) {
-				scenes_[key] = scene;
-			} else {
-				spdlog::warn("[SceneStateMachine] Tried to add, scene {} already added!", typeid(Type).name());
-			}
-			return std::move(scene);
+			scenes_[key] = scenePtr;
 		} else {
-			spdlog::warn("[SceneStateMachine] Tried to add empty scene!");
+			spdlog::warn("[SceneStateMachine] Tried to add, scene {} already added!", typeid(Type).name());
 		}
-		return scene;
+		return std::move(scenePtr);
 	}
 
 	template <class Type, class... Args>
@@ -80,8 +92,15 @@ namespace mwetris::ui::scene {
 
 	template <class Type>
 	void StateMachine::switchTo() {
+		staticAssertIsBaseOfScene<Type>();
+		
 		if (auto it = scenes_.find(getKey<Type>()); it != scenes_.end()) {
-			currentKey_ = it->first;
+			auto key = it->first;
+			if (currentKey_ != 0) {
+				scenes_[currentKey_]->switchedFrom();
+			}
+			currentKey_ = key;
+			scenes_[currentKey_]->switchedTo();
 		} else {
 			spdlog::warn("[SceneStateMachine] Failed to switch to scene {}.", typeid(Type).name());
 		}

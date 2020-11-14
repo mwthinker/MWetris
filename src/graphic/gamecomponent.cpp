@@ -33,14 +33,10 @@ namespace mwetris::graphic {
 
 	}
 
-	GameComponent::GameComponent(game::TetrisGame& tetrisGame)
-		: tetrisGame_{tetrisGame} {
-
-
+	GameComponent::GameComponent() {
 	}
 
 	GameComponent::~GameComponent() {
-		eventConnection_.disconnect();
 	}
 
 	Mat4 GameComponent::calculateBoardMatrix(int windowWidth, int windowHeight) const {
@@ -92,7 +88,9 @@ namespace mwetris::graphic {
 		}
 	}
 
-	void GameComponent::initGame(const std::vector<game::PlayerPtr>& players) {
+	void GameComponent::initGame(const game::InitGameEvent& event) {
+		auto& players = event.players;
+
 		bool showPoints = false;
 		if (players.size() == 1) {
 			showPoints = true;
@@ -110,7 +108,8 @@ namespace mwetris::graphic {
 		}
 	}
 
-	void GameComponent::eventHandler(Event& tetrisEvent) {
+	//void GameComponent::eventHandler(Event& tetrisEvent) {
+		/*
 		try {
 			auto& gameBoardEvent = dynamic_cast<game::GameBoardEvent&>(tetrisEvent);
 			return;
@@ -171,9 +170,9 @@ namespace mwetris::graphic {
 
 			return;
 		} catch (std::bad_cast&) {}
-
+		*/
 		// Handle RestartPlayer event.
-		try {
+	//	try {
 			/*
 			middleText_ = mw::Text("", TetrisData::getInstance().getDefaultFont(50), 20);
 			auto& restartPlayer = dynamic_cast<RestartPlayer&>(tetrisEvent);
@@ -190,8 +189,9 @@ namespace mwetris::graphic {
 
 			return;
 			*/
-		} catch (std::bad_cast&) {}
+	//	} catch (std::bad_cast&) {}
 
+		/*
 		// Handle LevelChange event.
 		try {
 			auto& levelChange = dynamic_cast<game::LevelChange&>(tetrisEvent);
@@ -215,19 +215,20 @@ namespace mwetris::graphic {
 
 			return;
 		} catch (std::bad_cast&) {}
-	}
+		*/
+	//}
 
-	void GameComponent::handleMiddleText(const game::PlayerPtr& player, int lastPostion) {
+	//void GameComponent::handleMiddleText(const game::PlayerPtr& player, int lastPostion) {
 		//sdl::Text middleText("", TetrisData::getInstance().getDefaultFont(50), 20);
 
 		// Test if the player is a local player, exception otherwise.
-		if (tetrisGame_.getNbrOfPlayers() == 1) {
+		//if (tetrisGame_.getNbrOfPlayers() == 1) {
 			//middleText.setText("Game over");
-		} else {
+		//} else {
 			//middleText.setText(gamePosition(lastPostion));
-		}
+		//}
 
 		//graphicPlayers_[player].setMiddleMessage(middleText);
-	}
+	//}
 
 }

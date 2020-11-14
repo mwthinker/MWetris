@@ -12,9 +12,9 @@ namespace mwetris::game {
 
 	class LocalPlayer : public Player {
 	public:
-		LocalPlayer(std::shared_ptr<EventManager> eventManager, const tetris::TetrisBoard& board, const DevicePtr& device);
+		LocalPlayer(const tetris::TetrisBoard& board, const DevicePtr& device);
 
-		virtual ~LocalPlayer();
+		~LocalPlayer() override;
 
 		LocalPlayer(const LocalPlayer&) = delete;
 		LocalPlayer& operator=(const LocalPlayer&) = delete;

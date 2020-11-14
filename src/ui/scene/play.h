@@ -33,6 +33,8 @@ namespace mwetris::ui::scene {
 		void imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) override;
 
 	private:
+		void switchedTo() override;
+
 		void resumeGame();
 
 		std::vector<game::DevicePtr> getCurrentDevices() const;
@@ -42,7 +44,7 @@ namespace mwetris::ui::scene {
 
 		std::unique_ptr<graphic::GameComponent> gameComponent_;
 		std::array<game::DevicePtr, 4> activeAis_;
-		game::TetrisGame game_;
+		std::unique_ptr<game::TetrisGame> game_;
 		int nbrHumans_{1};
 		int nbrAis_{0};
 		std::vector<game::SdlDevicePtr> devices_;
@@ -51,6 +53,7 @@ namespace mwetris::ui::scene {
 		sdl::Sprite manSprite_;
 		sdl::Sprite aiSprite_;
 		Vec2 size_{};
+		mw::signals::ScopedConnections connections_;
 	};
 
 }

@@ -3,7 +3,6 @@
 
 #include "localplayer.h"
 #include "tetrisboard.h"
-#include "eventmanager.h"
 
 namespace mwetris::game {
 
@@ -76,15 +75,8 @@ namespace mwetris::game {
 			name_ = name;
 			return *this;
 		}
-		
-		
-		LocalPlayerBuilder& widthEventManager(std::shared_ptr<EventManager> eventManager) {
-			eventManager_ = std::move(eventManager);
-			return *this;
-		}
 
 	private:
-		std::shared_ptr<EventManager> eventManager_;
 		DevicePtr device_;
 		std::string name_{"PLAYER"};
 		int points_{0};

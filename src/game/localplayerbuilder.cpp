@@ -6,10 +6,10 @@ namespace mwetris::game {
 		LocalPlayerPtr player;
 		if (board_.size() > 0 || movingBlockType_ == tetris::BlockType::Empty) {
 			tetris::TetrisBoard board(board_, width_, height_, movingBlock_, next_);
-			player = std::make_shared<LocalPlayer>(eventManager_, board, device_);
+			player = std::make_shared<LocalPlayer>(board, device_);
 		} else {
 			tetris::TetrisBoard board(width_, height_, movingBlockType_, next_);
-			player = std::make_shared<LocalPlayer>(eventManager_, board, device_);
+			player = std::make_shared<LocalPlayer>(board, device_);
 		}
 		player->updateName(name_);
 		player->updateLevelUpCounter(levelUpCounter_);

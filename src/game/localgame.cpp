@@ -18,8 +18,8 @@ namespace mwetris::game {
 		return gameRules_->getNbrAlivePlayers();
 	}
 
-	LocalGame::LocalGame(std::shared_ptr<EventManager> eventManager)
-		: gameRules_{std::make_unique<GameRules>(eventManager)} {
+	LocalGame::LocalGame()
+		: gameRules_{std::make_unique<GameRules>()} {
 	}
 
 }

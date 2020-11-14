@@ -15,6 +15,8 @@ namespace mwetris::game {
 	
 	class TetrisGame {
 	public:
+		mw::PublicSignal<TetrisGame, InitGameEvent> initGameEvent;
+
 		TetrisGame();
 		~TetrisGame();
 
@@ -69,7 +71,6 @@ namespace mwetris::game {
 
 		std::vector<LocalPlayerPtr> players_;
 
-		std::shared_ptr<EventManager> eventManager_;
 		std::unique_ptr<GameManager> game_;
 
 		int width_{TetrisWidth};

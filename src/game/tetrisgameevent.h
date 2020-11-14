@@ -3,12 +3,14 @@
 
 #include <vector>
 
-#include "player.h"
-#include "eventmanager.h"
+//#include "player.h"
 
 namespace mwetris::game {
 
-	class GameBoardEvent : public mwetris::Event {
+	class Player;
+	using PlayerPtr = std::shared_ptr<Player>;
+
+	class GameBoardEvent {
 	public:
 		GameBoardEvent(PlayerPtr player, tetris::BoardEvent type, int nbr)
 			: player{player}
@@ -21,11 +23,11 @@ namespace mwetris::game {
 		int nbr;
 	};
 
-	class NewConnection : public mwetris::Event {
+	class NewConnection {
 	public:
 	};
 
-	class GameStart : public mwetris::Event {
+	class GameStart {
 	public:
 		enum class Status {
 			LOCAL,
@@ -40,7 +42,7 @@ namespace mwetris::game {
 		Status status{Status::LOCAL};
 	};
 
-	class CountDown : public mwetris::Event {
+	class CountDown {
 	public:
 		CountDown(int timeLeft)
 			: timeLeft{timeLeft} {
@@ -49,7 +51,7 @@ namespace mwetris::game {
 		int timeLeft{};
 	};
 
-	class GamePause : public mwetris::Event {
+	class GamePause {
 	public:
 		GamePause(bool pause, bool printPause)
 			: pause{pause}
@@ -60,7 +62,7 @@ namespace mwetris::game {
 		bool printPause{};
 	};
 
-	class GameOver : public mwetris::Event {
+	class GameOver {
 	public:
 		GameOver(PlayerPtr player)
 			: player{std::move(player)} {
@@ -69,16 +71,16 @@ namespace mwetris::game {
 		PlayerPtr player;
 	};
 
-	class InitGame : public mwetris::Event {
+	class InitGameEvent {
 	public:
-		InitGame(const std::vector<PlayerPtr>& players)
+		InitGameEvent(const std::vector<PlayerPtr>& players)
 			: players{players} {
 		}
 
 		std::vector<PlayerPtr> players;
 	};
 
-	class LevelChange : public mwetris::Event {
+	class LevelChange {
 	public:
 		LevelChange(PlayerPtr player, int newLevel, int oldLevel)
 			: player{std::move(player)}
@@ -91,7 +93,7 @@ namespace mwetris::game {
 		PlayerPtr player;
 	};
 
-	class PointsChange : public mwetris::Event {
+	class PointsChange {
 	public:
 		PointsChange(PlayerPtr player, int newPoints, int oldPoints)
 			: player{std::move(player)}

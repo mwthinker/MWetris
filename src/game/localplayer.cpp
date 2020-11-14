@@ -12,8 +12,8 @@ namespace mwetris::game {
 	LocalPlayer::~LocalPlayer() {
 	}
 
-	LocalPlayer::LocalPlayer(std::shared_ptr<EventManager> eventManager, const tetris::TetrisBoard& board, const DevicePtr& device)
-		: Player{eventManager, board}
+	LocalPlayer::LocalPlayer(const tetris::TetrisBoard& board, const DevicePtr& device)
+		: Player{board}
 		, leftHandler_{0.09, false}
 		, rightHandler_{0.09, false}
 		, rotateHandler_{0.0, true}

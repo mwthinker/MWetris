@@ -1,5 +1,5 @@
-#ifndef TETRIS_UI_TETRISWINDOW_H
-#define TETRIS_UI_TETRISWINDOW_H
+#ifndef MWETRIS_UI_TETRISWINDOW_H
+#define MWETRIS_UI_TETRISWINDOW_H
 
 #include "scene/scene.h"
 #include "scene/menu.h"

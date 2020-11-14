@@ -21,8 +21,7 @@ namespace mwetris::game {
 	}
 
 	TetrisGame::TetrisGame()
-		: eventManager_{std::make_shared<EventManager>()}
-		, game_{std::make_unique<LocalGame>(eventManager_)} {
+		: game_{std::make_unique<LocalGame>()} {
 	}
 
 	TetrisGame::~TetrisGame() {
@@ -44,7 +43,6 @@ namespace mwetris::game {
 			builder.widthPoints(0);
 			builder.withHeight(height_);
 			builder.withWidth(width_);
-			builder.widthEventManager(eventManager_);
 
 			auto player = builder.build();
 			players_.push_back(player);
@@ -65,6 +63,8 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::initGame() {
+		initGameEvent.invoke(InitGameEvent{std::vector<PlayerPtr>(players_.begin(), players_.end())});
+
 		if (game_->isPaused()) {
 			game_->setPaused(false);
 		}
@@ -83,6 +83,7 @@ namespace mwetris::game {
 
 	void TetrisGame::restartGame() {
 		game_->restartGame();
+
 		initGame();
 	}
 

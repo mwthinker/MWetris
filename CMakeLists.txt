@@ -80,8 +80,6 @@ set(SOURCES
 	src/ui/tetriswindow.cpp
 	src/ui/tetriswindow.h
 	
-	src/eventmanager.cpp
-	src/eventmanager.h
 	src/logger.cpp
 	src/logger.h
 	src/types.h
