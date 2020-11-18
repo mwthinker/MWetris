@@ -37,7 +37,7 @@ namespace mwetris::ui::scene {
 
 		if (size_.x > 0 && size_.y > menuHeight) {
 			graphic_.pushMatrix(glm::ortho(0.f, size_.x, 0.f, size_.y));
-			graphic_.addCircle({0.f, 0.f}, 10.f, sdl::RED);
+			graphic_.addCircle({0.f, 0.f}, 10.f, sdl::Red);
 
 			gameComponent_->draw(graphic_, size_.x, size_.y - menuHeight, deltaTimeSeconds);
 			graphic_.draw(shader);

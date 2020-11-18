@@ -9,7 +9,7 @@ namespace mwetris::game {
 	}
 
 	void Player::restartTetrisBoard(tetris::BlockType current, tetris::BlockType next) {
-		tetrisBoard_.restart(tetris::randomBlockType(), tetris::randomBlockType());
+		tetrisBoard_.restart(current, next);
 	}
 
 	void Player::setNextTetrisBlock(tetris::BlockType next) {

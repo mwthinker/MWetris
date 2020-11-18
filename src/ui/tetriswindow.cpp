@@ -61,10 +61,13 @@ namespace mwetris::ui {
 		sceneStateMachine_.emplace<scene::Network>();
 		sceneStateMachine_.emplace<scene::Settings>();
 		sceneStateMachine_.emplace<scene::HighScore>();
+
+		shader_ = sdl::Shader::CreateShaderGlsl_330();
 	}
 
 	void TetrisWindow::imGuiPreUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
-		sceneStateMachine_.draw(getShader(), deltaTime);
+		shader_.useProgram();
+		sceneStateMachine_.draw(shader_, deltaTime);
 	}
 	
 	void TetrisWindow::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {

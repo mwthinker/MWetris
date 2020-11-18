@@ -34,7 +34,7 @@ namespace ImGui {
 	}
 
 	bool ManButton(const char* idStr, int& nbr, int max, const sdl::TextureView& noMan,
-		const sdl::TextureView& man, const glm::vec2& size, const sdl::Color& color) {
+		const sdl::TextureView& man, const glm::vec2& size, sdl::Color color) {
 		
 		glm::vec2 p = GetCursorScreenPos();
 
@@ -82,7 +82,7 @@ namespace ImGui {
 		return pushed;
 	}
 
-	void LoadingBar(const sdl::Color& color1, const sdl::Color& color2, const ImVec2& size) {
+	void LoadingBar(sdl::Color color1, sdl::Color color2, const ImVec2& size) {
 		ImGui::Dummy(size);
 		auto pos = ImGui::GetCursorPos();
 		ImGui::GetWindowDrawList()->AddRectFilled(pos, { pos.x + size.x, pos.y + size.y }, color1.toImU32());

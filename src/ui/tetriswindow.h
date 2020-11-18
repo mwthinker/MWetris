@@ -7,6 +7,7 @@
 #include "scene/event.h"
 
 #include <sdl/imguiwindow.h>
+#include <sdl/shader.h>
 
 #include <imgui.h>
 #include <entt/entt.hpp>
@@ -45,6 +46,7 @@ namespace mwetris::ui {
 		std::shared_ptr<entt::dispatcher> dispatcher_{};
 		sdl::Sprite background_;
 		scene::StateMachine sceneStateMachine_;
+		sdl::Shader shader_;
 	};
 
 }
