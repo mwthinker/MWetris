@@ -2,6 +2,7 @@
 #define MWETRIS_UI_SCENE_STATEMACHINE_H
 
 #include "scene.h"
+#include "event.h"
 
 #include <sdl/shader.h>
 
@@ -18,7 +19,7 @@ namespace mwetris::ui::scene {
 
 	class StateMachine {
 	public:
-		explicit StateMachine(std::shared_ptr<entt::dispatcher> dispatcher);
+		StateMachine();
 
 		void eventUpdate(const SDL_Event& windowEvent);
 
@@ -38,7 +39,14 @@ namespace mwetris::ui::scene {
 		template <class Type>
 		bool isCurrentScene() const;
 
+		template<typename Callback>
+		void setCallback(Callback&& callback) {
+			callback_ = std::forward<Callback>(callback);
+		}
+
 	private:
+		void onCallback(scene::Event event);
+
 		template <class Type>
 		static constexpr void staticAssertIsBaseOfScene();
 
@@ -50,6 +58,7 @@ namespace mwetris::ui::scene {
 		std::map<Key, std::shared_ptr<Scene>> scenes_;
 		Key currentKey_{};
 		std::shared_ptr<entt::dispatcher> dispatcher_;
+		std::function<void(scene::Event)> callback_;
 	};
 
 	template <class Type>

@@ -22,18 +22,7 @@ namespace mwetris {
 	constexpr tetris::BlockType charToBlockType(char key);
 	constexpr const char* blockTypeToString(tetris::BlockType blocktype);
 
-	class HighscoreRecord {
-	public:
-		HighscoreRecord() = default;
-
-		HighscoreRecord(const std::string& name, std::string date, int points, int level, int rows)
-			: name{name}
-			, date{date}
-			, points{points}
-			, level{level}
-			, rows{rows} {
-		}
-
+	struct HighscoreRecord {
 		std::string name;
 		std::string date;
 		int points{0};

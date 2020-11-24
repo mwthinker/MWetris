@@ -35,10 +35,6 @@ namespace mwetris::ui::scene {
 			dispatcher_->enqueue<Event>(std::forward<Args>(args)...);
 		}
 
-		std::shared_ptr<entt::dispatcher> getDispatcher() const {
-			return dispatcher_;
-		}
-
 	private:
 		virtual void switchedFrom() {};
 

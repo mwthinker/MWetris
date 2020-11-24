@@ -9,9 +9,6 @@
 #include <sdl/imguiwindow.h>
 #include <sdl/shader.h>
 
-#include <imgui.h>
-#include <entt/entt.hpp>
-
 namespace mwetris {
 
 	class GameComponent;
@@ -43,7 +40,6 @@ namespace mwetris::ui {
 
 		void handleSceneMenuEvent(const scene::Event& menuEvent);
 	
-		std::shared_ptr<entt::dispatcher> dispatcher_{};
 		sdl::Sprite background_;
 		scene::StateMachine sceneStateMachine_;
 		sdl::Shader shader_;

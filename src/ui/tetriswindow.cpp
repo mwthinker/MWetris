@@ -21,10 +21,7 @@ namespace {
 
 namespace mwetris::ui {
 
-	TetrisWindow::TetrisWindow()
-		: dispatcher_{std::make_shared<entt::dispatcher>()}
-		, sceneStateMachine_{dispatcher_} {
-
+	TetrisWindow::TetrisWindow() {
 		background_ = mwetris::TetrisData::getInstance().getBackgroundSprite();
 
 		setPosition(mwetris::TetrisData::getInstance().getWindowPositionX(), mwetris::TetrisData::getInstance().getWindowPositionY());
@@ -38,7 +35,9 @@ namespace mwetris::ui {
 
 		//ImGui::PushStyleColor(ImGuiCol_Button, buttonTextColor_.Value);
 		
-		dispatcher_->sink<scene::Event>().connect<&TetrisWindow::handleSceneMenuEvent>(*this);
+		sceneStateMachine_.setCallback([this](scene::Event event) {
+			handleSceneMenuEvent(event);
+		});
 	}
 
 	TetrisWindow::~TetrisWindow() {
@@ -97,7 +96,6 @@ namespace mwetris::ui {
 	}
 
 	void TetrisWindow::imGuiPostUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
-		dispatcher_->update();
 	}
 
 	void TetrisWindow::eventUpdate(const SDL_Event& windowEvent) {
