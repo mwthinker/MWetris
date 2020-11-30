@@ -43,6 +43,7 @@ namespace mwetris::ui {
 		sdl::Sprite background_;
 		scene::StateMachine sceneStateMachine_;
 		sdl::Shader shader_;
+		graphic::Graphic graphic_;
 	};
 
 }

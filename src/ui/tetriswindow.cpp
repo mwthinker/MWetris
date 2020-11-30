@@ -56,7 +56,7 @@ namespace mwetris::ui {
 		TetrisData::getInstance().getImGuiHeaderFont();
 
 		sceneStateMachine_.emplace<scene::Menu>();
-		sceneStateMachine_.emplace<scene::Play>();
+		sceneStateMachine_.emplace<scene::Play>(graphic_);
 		sceneStateMachine_.emplace<scene::Network>();
 		sceneStateMachine_.emplace<scene::Settings>();
 		sceneStateMachine_.emplace<scene::HighScore>();
@@ -66,13 +66,13 @@ namespace mwetris::ui {
 
 	void TetrisWindow::imGuiPreUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
 		shader_.useProgram();
+		graphic_.clearDraw();
+		graphic_.addRectangleImage({-1, -1}, {2, 2}, background_.getTextureView());
+		graphic_.draw(shader_);
 		sceneStateMachine_.draw(shader_, deltaTime);
 	}
 	
 	void TetrisWindow::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
-		ImVec4 clear_color{0.45f, 0.55f, 0.6f, 1.f};
-		auto context = SDL_GL_GetCurrentContext();
-	
 		ImGui::PushFont(mwetris::TetrisData::getInstance().getImGuiDefaultFont());
 		ImGui::PopFont();
 
@@ -86,9 +86,6 @@ namespace mwetris::ui {
 		ImGui::SetNextWindowSize({static_cast<float>(width), static_cast<float>(height)});
 		
 		ImGui::Window("Main", nullptr, ImGuiNoWindow, [&]() {
-			if (!sceneStateMachine_.isCurrentScene<scene::Play>()) {
-				ImGui::ImageBackground(background_.getTextureView());
-			}
 			sceneStateMachine_.imGuiUpdate(deltaTime);
 		});
 		ImGui::PopStyleColor();

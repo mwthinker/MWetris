@@ -5,7 +5,9 @@
 
 namespace mwetris::ui::scene {
 
-	Play::Play() {
+	Play::Play(graphic::Graphic& graphic) 
+		: graphic_{graphic} {
+		
 		activeAis_[0] = findAiDevice(TetrisData::getInstance().getAi1Name());
 		activeAis_[1] = findAiDevice(TetrisData::getInstance().getAi2Name());
 		activeAis_[2] = findAiDevice(TetrisData::getInstance().getAi3Name());
@@ -37,8 +39,6 @@ namespace mwetris::ui::scene {
 
 		if (size_.x > 0 && size_.y > menuHeight) {
 			graphic_.pushMatrix(glm::ortho(0.f, size_.x, 0.f, size_.y));
-			graphic_.addCircle({0.f, 0.f}, 10.f, sdl::Red);
-
 			gameComponent_->draw(graphic_, size_.x, size_.y - menuHeight, deltaTimeSeconds);
 			graphic_.draw(shader);
 		}
@@ -103,6 +103,10 @@ namespace mwetris::ui::scene {
 			}
 		}
 		return std::make_shared<game::Computer>(ais.back());
+	}
+
+	void Play::switchedFrom() {
+
 	}
 
 	void Play::switchedTo() {

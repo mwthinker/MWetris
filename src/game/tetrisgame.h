@@ -30,8 +30,7 @@ namespace mwetris::game {
 
 		bool isPaused() const;
 
-		// Pause/Unpause the game depending on the current state of
-		// the game.
+		// Pause/Unpause the game depending on the current state of the game.
 		void pause();
 
 		// Restart the active game. If the game was not started, nothing happens.

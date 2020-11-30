@@ -24,7 +24,7 @@ namespace mwetris::ui::scene {
 
 	class Play : public Scene {
 	public:
-		Play();
+		explicit Play(graphic::Graphic& graphic);
 
 		void eventUpdate(const SDL_Event& windowEvent) override;
 
@@ -33,6 +33,8 @@ namespace mwetris::ui::scene {
 		void imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) override;
 
 	private:
+		void switchedFrom() override;
+
 		void switchedTo() override;
 
 		void resumeGame();
@@ -48,7 +50,7 @@ namespace mwetris::ui::scene {
 		int nbrHumans_{1};
 		int nbrAis_{0};
 		std::vector<game::SdlDevicePtr> devices_;
-		graphic::Graphic graphic_;
+		graphic::Graphic& graphic_;
 		sdl::Sprite crossSprite_;
 		sdl::Sprite manSprite_;
 		sdl::Sprite aiSprite_;
