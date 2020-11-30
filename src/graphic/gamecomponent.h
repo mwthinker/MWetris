@@ -15,8 +15,6 @@
 #include <sdl/graphic.h>
 #include <mw/signal.h>
 
-#include <entt/entt.hpp>
-
 #include <map>
 
 namespace mwetris::game {
@@ -46,8 +44,6 @@ namespace mwetris::graphic {
 
 		using DrawBoardPtr = std::unique_ptr<DrawBoard>;
 		std::map<game::PlayerPtr, DrawBoardPtr> drawPlayers_;
-		
-		std::shared_ptr<entt::dispatcher> dispatcher_;
 
 		// Fix time step.
 		Uint32 timeStep_{};
@@ -56,7 +52,6 @@ namespace mwetris::graphic {
 		// Font related.
 		float fontSize_{};
 		float borderSize_{};
-		entt::scoped_connection initGameEventConnection_;
 	};
 
 }

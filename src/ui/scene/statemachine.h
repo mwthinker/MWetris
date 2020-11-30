@@ -6,7 +6,6 @@
 
 #include <sdl/shader.h>
 
-#include <entt/entt.hpp>
 #include <SDL_events.h>
 #include <spdlog/spdlog.h>
 
@@ -27,16 +26,16 @@ namespace mwetris::ui::scene {
 
 		void draw(const sdl::Shader& shader, const std::chrono::high_resolution_clock::duration& deltaTime);
 		
-		template <class Type>
+		template <typename Type>
 		std::shared_ptr<Type> add(std::shared_ptr<Type> scene);
 
-		template <class Type, class... Args>
+		template <typename Type, class... Args>
 		std::shared_ptr<Type> emplace(Args&&... args);
 		
-		template <class Type>
+		template <typename Type>
 		void switchTo();
 
-		template <class Type>
+		template <typename Type>
 		bool isCurrentScene() const;
 
 		template<typename Callback>
@@ -44,20 +43,21 @@ namespace mwetris::ui::scene {
 			callback_ = std::forward<Callback>(callback);
 		}
 
+		void emitEvent(Event event);
+
 	private:
 		void onCallback(scene::Event event);
 
 		template <class Type>
 		static constexpr void staticAssertIsBaseOfScene();
 
-		using Key = entt::id_type;
+		using Key = IdType;
 
 		template <class Type>
 		static Key getKey();
 
 		std::map<Key, std::shared_ptr<Scene>> scenes_;
 		Key currentKey_{};
-		std::shared_ptr<entt::dispatcher> dispatcher_;
 		std::function<void(scene::Event)> callback_;
 	};
 
@@ -80,7 +80,7 @@ namespace mwetris::ui::scene {
 		
 		auto& scene = static_cast<Scene&>(*scenePtr);
 
-		scene.dispatcher_ = dispatcher_;
+		scene.stateMachine_ = this;
 		auto it = scenes_.find(key);
 		if (it == scenes_.end()) {
 			if (scenes_.empty()) {
@@ -122,7 +122,7 @@ namespace mwetris::ui::scene {
 
 	template <class Type>
 	StateMachine::Key StateMachine::getKey() {
-		return entt::type_info<Type>::id();
+		return TypeInfo<Type>::id();
 	}
 
 }

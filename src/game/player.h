@@ -11,8 +11,6 @@
 
 #include <mw/signal.h>
 
-#include <entt/entt.hpp>
-
 namespace mwetris::game {
 
 	class Player;

@@ -103,7 +103,6 @@ find_package(Threads REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
-find_package(EnTT CONFIG REQUIRED)
 
 add_subdirectory(TetrisEngine)
 add_subdirectory(Protocol)
@@ -180,7 +179,6 @@ target_link_libraries(MWetris
 		nlohmann_json::nlohmann_json
 		Protocol
 		Signal
-		EnTT::EnTT
 		${ExternalDependencies}
 )
 

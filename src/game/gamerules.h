@@ -6,8 +6,6 @@
 
 #include <vector>
 
-#include <entt/entt.hpp>
-
 namespace mwetris::game {
 
 	class GameRules {

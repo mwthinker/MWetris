@@ -10,7 +10,7 @@ namespace mwetris::ui::scene {
 		ImGui::Bar([&]() {
 			ImGui::PushButtonStyle();
 			if (ImGui::Button("Menu", {100.5f, menuHeight})) {
-				emitEvent<Event>(Event::Menu);
+				emitEvent(Event::Menu);
 			}
 			ImGui::PopButtonStyle();
 		});

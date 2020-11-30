@@ -33,7 +33,7 @@ namespace mwetris::ui::scene {
 
 	void Menu::AddMenuButton(const std::string& label, Event event) {
 		if (ImGui::Button(label.c_str())) {
-			emitEvent<Event>(event);
+			emitEvent(event);
 
 			spdlog::info("[ImGuiWindow] pushed {}", label);
 		}

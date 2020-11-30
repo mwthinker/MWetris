@@ -2,10 +2,7 @@
 
 namespace mwetris::ui::scene {
 
-	StateMachine::StateMachine()
-		: dispatcher_{std::make_shared<entt::dispatcher>()} {
-
-		dispatcher_->sink<scene::Event>().connect<&StateMachine::onCallback>(*this);
+	StateMachine::StateMachine() {
 	}
 
 	void StateMachine::eventUpdate(const SDL_Event& windowEvent) {
@@ -18,7 +15,6 @@ namespace mwetris::ui::scene {
 		if (currentKey_) {
 			scenes_[currentKey_]->imGuiUpdate(deltaTime);
 		}
-		dispatcher_->update();
 	}
 
 	void StateMachine::draw(const sdl::Shader& shader, const std::chrono::high_resolution_clock::duration& deltaTime) {
@@ -31,6 +27,26 @@ namespace mwetris::ui::scene {
 		if (callback_) {
 			callback_(event);
 		}
+	}
+
+	void StateMachine::emitEvent(Event event) {
+		if (callback_) {
+			callback_(event);
+		}
+	}
+	
+	Scene::StateMachineWrapper::StateMachineWrapper(StateMachine* stateMachine)
+		: stateMachine_{stateMachine} {
+	}
+
+	void Scene::StateMachineWrapper::emitEvent(Event event) {
+		if (stateMachine_) {
+			stateMachine_->emitEvent(event);
+		}
+	}
+
+	Scene::StateMachineWrapper::operator bool() const {
+		return stateMachine_ != nullptr;
 	}
 
 }

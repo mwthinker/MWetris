@@ -2,16 +2,28 @@
 #define MWETRIS_UI_SCENE_SCENE_H
 
 #include "graphic/graphic.h"
+#include "event.h"
 
 #include <sdl/shader.h>
 
 #include <SDL_events.h>
 #include <spdlog/spdlog.h>
-#include <entt/entt.hpp>
 
 #include <chrono>
 
 namespace mwetris::ui::scene {
+
+	using IdType = size_t;
+
+	template<typename T>
+	struct TypeInfo {
+		static IdType id() {
+			// Generate a uniqe id per type. reinterpret_cast makes it impossible to make it constexpr.
+			return reinterpret_cast<size_t>(&TypeInfo<T>::id);
+		}
+	};
+
+	class StateMachine;
 
 	class Scene {
 	public:
@@ -26,13 +38,26 @@ namespace mwetris::ui::scene {
 		virtual void draw(const sdl::Shader& shader, const std::chrono::high_resolution_clock::duration& deltaTime) {};
 
 	protected:
-		template <class Event, class... Args>
-		void emitEvent(Args&&... args) {
-			if (!dispatcher_) {
+		class StateMachineWrapper {
+		public:
+			StateMachineWrapper() = default;
+			StateMachineWrapper(StateMachine* stateMachine);
+
+			void emitEvent(Event event);
+
+			explicit operator bool() const;
+
+		private:
+			StateMachine* stateMachine_ = nullptr;
+		};
+
+		void emitEvent(Event event) {
+			if (!stateMachine_)
+			{
 				spdlog::warn("[Scene] Failed emitEvent, missing dispatcher");
 				return;
 			}
-			dispatcher_->enqueue<Event>(std::forward<Args>(args)...);
+			stateMachine_.emitEvent(event);
 		}
 
 	private:
@@ -40,7 +65,7 @@ namespace mwetris::ui::scene {
 
 		virtual void switchedTo() {};
 
-		std::shared_ptr<entt::dispatcher> dispatcher_;
+		StateMachineWrapper stateMachine_;
 	};
 
 }
