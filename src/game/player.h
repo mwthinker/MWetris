@@ -56,7 +56,6 @@ namespace mwetris::game {
 
 		virtual void handleBoardEvent(tetris::BoardEvent boardEvent, int value);
 
-	private:
 		tetris::TetrisBoard tetrisBoard_;
 	};
 

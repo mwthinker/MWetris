@@ -12,7 +12,7 @@ namespace mwetris::game {
 
 	class LocalPlayer : public Player {
 	public:
-		LocalPlayer(const tetris::TetrisBoard& board, const DevicePtr& device);
+		LocalPlayer(const tetris::TetrisBoard& board, DevicePtr device);
 
 		~LocalPlayer() override;
 
@@ -70,7 +70,7 @@ namespace mwetris::game {
 		}
 
 	private:
-		void boardListener(tetris::BoardEvent gameEvent);
+		void handleBoardEvent(tetris::BoardEvent boardEvent, int value) override;
 
 		DevicePtr device_;
 		std::string name_;

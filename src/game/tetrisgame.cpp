@@ -63,7 +63,7 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::initGame() {
-		initGameEvent.invoke(InitGameEvent{std::vector<PlayerPtr>(players_.begin(), players_.end())});
+		initGameEvent.invoke(InitGameEvent{players_.begin(), players_.end()});
 
 		if (game_->isPaused()) {
 			game_->setPaused(false);

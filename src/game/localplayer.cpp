@@ -12,7 +12,7 @@ namespace mwetris::game {
 	LocalPlayer::~LocalPlayer() {
 	}
 
-	LocalPlayer::LocalPlayer(const tetris::TetrisBoard& board, const DevicePtr& device)
+	LocalPlayer::LocalPlayer(const tetris::TetrisBoard& board, DevicePtr device)
 		: Player{board}
 		, leftHandler_{0.09, false}
 		, rightHandler_{0.09, false}
@@ -20,7 +20,7 @@ namespace mwetris::game {
 		, downGroundHandler_{0.0, true}
 		, gravityMove_{1, false}  // Value doesn't matter! Changes every frame.
 		, downHandler_{0.04, false}
-		, device_{device}
+		, device_{std::move(device)}
 		, levelUpCounter_{0} {
 		
 		device_->update(getTetrisBoard());
@@ -68,8 +68,8 @@ namespace mwetris::game {
 	}
 
 	void LocalPlayer::addRow(int holes) {
-		//auto blockTypes = tetris::generateRow(tetrisBoard_.getColumns(), 2);
-		//tetrisBoard_.addRows(blockTypes);
+		auto blockTypes = tetris::generateRow(tetrisBoard_.getColumns(), holes);
+		tetrisBoard_.addExternalRows(blockTypes);
 	}
 
 	void LocalPlayer::updateName(const std::string& name) {
@@ -104,8 +104,9 @@ namespace mwetris::game {
 		updateTetrisBoard(tetris::Move::GameOver);
 	}
 
-	void LocalPlayer::boardListener(tetris::BoardEvent gameEvent) {
-		if (gameEvent == tetris::BoardEvent::CurrentBlockUpdated) {
+	void LocalPlayer::handleBoardEvent(tetris::BoardEvent boardEvent, int value) {
+		Player::handleBoardEvent(boardEvent, value);
+		if (boardEvent == tetris::BoardEvent::CurrentBlockUpdated) {
 			setNextTetrisBlock(tetris::randomBlockType());
 
 			leftHandler_.reset();

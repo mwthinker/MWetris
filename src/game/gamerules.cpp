@@ -22,27 +22,19 @@ namespace mwetris::game {
 	}
 
 	void GameRules::createGame(const std::vector<LocalPlayerPtr>& players) {
+		connections_.clear();
+
 		localPlayers_ = players;
 		for (const auto& player : players) {
+			connections_ += player->gameboardEventUpdate.connect([this, player](tetris::BoardEvent gameEvent, int value) {
+				applyRules(gameEvent, value, player);
+			});
+
 			if (player->isGameOver()) {
 				++nbrOfAlivePlayers_;
 			}
 		}
-
-		for (auto& player : players) {
-			//eventManager_->subscribe(player->getSenderId(), [this](EventPtr event) {
-				//handleEvent(*event);
-			//});
-		}
 	}
-
-	/*
-	void GameRules::handleEvent(Event& event) {
-		try {
-			auto& countDown = dynamic_cast<game::CountDown&>(event);
-		} catch (std::bad_cast&) {}
-	}
-	*/
 
 	void GameRules::restartGame() {
 		for (auto& player : localPlayers_) {
@@ -51,23 +43,11 @@ namespace mwetris::game {
 		nbrOfAlivePlayers_ = static_cast<int>(localPlayers_.size());
 	}
 
-	void GameRules::applyRules(tetris::BoardEvent gameEvent, const LocalPlayerPtr& player) {
+	void GameRules::applyRules(tetris::BoardEvent gameEvent, int value, const LocalPlayerPtr& player) {
 		switch (gameEvent) {
 			case tetris::BoardEvent::RowsRemoved:
-				handleRowClearedEvent(player, 1);
+				handleRowsRemovedEvent(player, 1);
 				break;
-			/*
-			case BoardEvent::TwoRowRemoved:
-				handleRowClearedEvent(player, 2);
-				break;
-			case BoardEvent::ThreeRowRemoved:
-				handleRowClearedEvent(player, 3);
-				break;
-			case BoardEvent::FourRowRemoved:
-				handleRowClearedEvent(player, 4);
-				addRowsToOpponents(player);
-				break;
-			*/
 			case tetris::BoardEvent::GameOver:
 				handleGameOverEvent(player);
 				break;
@@ -91,11 +71,15 @@ namespace mwetris::game {
 		}
 	}
 
-	void GameRules::handleRowClearedEvent(const LocalPlayerPtr& player, int rows) {
+	void GameRules::handleRowsRemovedEvent(const LocalPlayerPtr& player, int rows) {
 		if (isMultiplayerGame()) {
 			for (auto& opponent : localPlayers_) {
 				if (player != opponent && !opponent->isGameOver()) {
 					opponent->updateLevelUpCounter(opponent->getLevelUpCounter() + rows);
+					
+					if (rows == 4) {
+						addRowsToOpponents(player);
+					}
 				}
 			}
 		} else {

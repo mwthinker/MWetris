@@ -73,8 +73,9 @@ namespace mwetris::game {
 
 	class InitGameEvent {
 	public:
-		InitGameEvent(const std::vector<PlayerPtr>& players)
-			: players{players} {
+		template <typename InputIt>
+		InitGameEvent(InputIt begin, InputIt end)
+			: players(begin, end) {
 		}
 
 		std::vector<PlayerPtr> players;

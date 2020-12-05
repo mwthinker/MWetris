@@ -58,12 +58,6 @@ namespace mwetris::graphic {
 		squareSize_ = TetrisData::getInstance().getTetrisSquareSize();
 		borderSize_ = TetrisData::getInstance().getTetrisBorderSize();
 		infoSize_ = squareSize_ * 5.f;
-		
-		/*
-		connection_ = player.addGameEventListener([&](BoardEvent gameEvent, const game::TetrisBoardWrapper& tetrisBoard) {
-			callback(gameEvent, tetrisBoard);
-		});
-		*/
 
 		name_ = sdl::Sprite{"Test", TetrisData::getInstance().getDefaultFont(50)};
 		name_.bindTexture();
@@ -144,7 +138,7 @@ namespace mwetris::graphic {
 			infoSize_,
 			TetrisData::getInstance().getStartAreaColor());
 
-		drawBlock(graphic, tetris::Block{tetrisBoard_.getBlockType(), 0, 0}, Vec2{x, y} + squareSize_ * 2.5f, true);
+		drawBlock(graphic, tetris::Block{tetrisBoard_.getNextBlockType(), 0, 0}, Vec2{x, y} + squareSize_ * 2.5f, true);
 
 		const Color borderColor = TetrisData::getInstance().getBorderColor();
 

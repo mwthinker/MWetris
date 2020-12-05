@@ -23,11 +23,11 @@ namespace mwetris::game {
 	private:
 		//void handleEvent(Event& event);
 
-		void applyRules(tetris::BoardEvent gameEvent, const LocalPlayerPtr& player);
+		void applyRules(tetris::BoardEvent gameEvent, int value, const LocalPlayerPtr& player);
 
 		void handleGameOverEvent(const LocalPlayerPtr& player);
 
-		void handleRowClearedEvent(const LocalPlayerPtr& player, int rows);
+		void handleRowsRemovedEvent(const LocalPlayerPtr& player, int rows);
 
 		void triggerPointEvent(const LocalPlayerPtr& player, int newPoints, int oldPoints);
 
@@ -43,6 +43,7 @@ namespace mwetris::game {
 
 		std::vector<LocalPlayerPtr> localPlayers_;
 		int nbrOfAlivePlayers_{};
+		mw::signals::ScopedConnections connections_;
 	};
 
 }
