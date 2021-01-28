@@ -21,6 +21,8 @@
 *ReleaseSdl2
 *ReleaseBuildSdl2
 /build*
+/linux_build
+/vcpkg_installed/
 
 #################
 ## Eclipse
