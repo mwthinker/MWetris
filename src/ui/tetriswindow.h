@@ -36,7 +36,7 @@ namespace mwetris::ui {
 
 		void imGuiPostUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) override;
 
-		void eventUpdate(const SDL_Event& windowEvent) override;
+		void imGuiEventUpdate(const SDL_Event& windowEvent) override;
 
 		void handleSceneMenuEvent(const scene::Event& menuEvent);
 	

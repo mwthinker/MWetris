@@ -49,7 +49,7 @@ namespace ImGui {
 		if (ImGui::IsItemHovered()) {
 			if (ImGui::IsAnyMouseDown()) {
 				if (isMouseRightClicked()) {
-					nbr = (nbr + 4) % (max + 1);
+					nbr = (nbr + max) % (max + 1);
 					pushed = true;
 				} else if (isMouseLeftClicked()) {
 					nbr = (nbr + 1) % (max + 1);

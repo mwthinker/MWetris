@@ -13,12 +13,6 @@
 
 #include <spdlog/spdlog.h>
 
-namespace {
-
-	constexpr ImGuiWindowFlags ImGuiNoWindow = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoMove;
-
-}
-
 namespace mwetris::ui {
 
 	TetrisWindow::TetrisWindow() {
@@ -31,9 +25,6 @@ namespace mwetris::ui {
 		setIcon(mwetris::TetrisData::getInstance().getWindowIcon());
 		setBordered(mwetris::TetrisData::getInstance().isWindowBordered());
 		setShowDemoWindow(true);
-		//ImGui::GetStyle().
-
-		//ImGui::PushStyleColor(ImGuiCol_Button, buttonTextColor_.Value);
 		
 		sceneStateMachine_.setCallback([this](scene::Event event) {
 			handleSceneMenuEvent(event);
@@ -49,8 +40,8 @@ namespace mwetris::ui {
 
 		background_.bindTexture();
 		mwetris::TetrisData::getInstance().bindTextureFromAtlas();
-		//ImGui::GetStyle().WindowBorderSize = 0;
 
+		ImGui::GetIO().Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 12);
 		TetrisData::getInstance().getImGuiButtonFont();
 		TetrisData::getInstance().getImGuiDefaultFont();
 		TetrisData::getInstance().getImGuiHeaderFont();
@@ -73,33 +64,15 @@ namespace mwetris::ui {
 	}
 	
 	void TetrisWindow::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
-		ImGui::PushFont(mwetris::TetrisData::getInstance().getImGuiDefaultFont());
-		ImGui::PopFont();
-
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, {0, 0, 0, 0});
-
-		ImGui::SetNextWindowPos({0.f,0.f});
-		auto [width, height] = sdl::Window::getSize();
-		ImGui::SetNextWindowSize({static_cast<float>(width), static_cast<float>(height)});
-		
-		ImGui::Window("Main", nullptr, ImGuiNoWindow, [&]() {
+		ImGui::MainWindow("Main", [&]() {
 			sceneStateMachine_.imGuiUpdate(deltaTime);
 		});
-		ImGui::PopStyleColor();
-		ImGui::PopStyleVar(3);
 	}
 
 	void TetrisWindow::imGuiPostUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
 	}
 
-	void TetrisWindow::eventUpdate(const SDL_Event& windowEvent) {
-		sdl::ImGuiWindow::eventUpdate(windowEvent);
-
-		auto& io = ImGui::GetIO();
-
+	void TetrisWindow::imGuiEventUpdate(const SDL_Event& windowEvent) {
 		switch (windowEvent.type) {
 			case SDL_WINDOWEVENT:
 				switch (windowEvent.window.event) {
@@ -112,33 +85,18 @@ namespace mwetris::ui {
 						sdl::Window::quit();
 				}
 				break;
-			case SDL_MOUSEBUTTONUP: [[fallthrough]];
-			case SDL_MOUSEBUTTONDOWN: [[fallthrough]];
-			case SDL_MOUSEMOTION: [[fallthrough]];
-			case SDL_MOUSEWHEEL:
-				if (!io.WantCaptureMouse) {
-					sceneStateMachine_.eventUpdate(windowEvent);
-				}
-				break;
-			case SDL_KEYUP:
-				if (!io.WantCaptureKeyboard) {
-					sceneStateMachine_.eventUpdate(windowEvent);
-				}
-				break;
 			case SDL_KEYDOWN:
-				if (!io.WantCaptureKeyboard) {
-					sceneStateMachine_.eventUpdate(windowEvent);
-					switch (windowEvent.key.keysym.sym) {
-						case SDLK_ESCAPE:
-							sdl::Window::quit();
-							break;
-					}
+				switch (windowEvent.key.keysym.sym) {
+					case SDLK_ESCAPE:
+						sdl::Window::quit();
+						break;
 				}
 				break;
 			case SDL_QUIT:
 				sdl::Window::quit();
 				break;
 		}
+		sceneStateMachine_.eventUpdate(windowEvent);
 	}
 
 	void TetrisWindow::handleSceneMenuEvent(const scene::Event& menuEvent) {

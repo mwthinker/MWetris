@@ -4,7 +4,7 @@ FetchContent_Declare(CppSdl2
 	GIT_REPOSITORY
 		https://github.com/mwthinker/CppSdl2.git
 	GIT_TAG
-		673645d9f03d0582229f6912178e7061bca663bf
+		635f52697af699403761eac8b6d11d1ababa4e90
 )
 FetchContent_MakeAvailable(CppSdl2)
 
@@ -40,7 +40,7 @@ FetchContent_Declare(MWetrisData
 	GIT_REPOSITORY
 		https://github.com/mwthinker/MWetrisData.git
 	GIT_TAG
-		d9bfd28c799b71e6048b51ae7f591f4853b7e887
+		1078a4a6c440057a9896015b65e6f10d9bf278b4
 )
 FetchContent_MakeAvailable(MWetrisData)
 FetchContent_GetProperties(MWetrisData
