@@ -59,7 +59,16 @@ set(SOURCES_MAIN
 	src/main.cpp
 )
 
-add_executable(TetrisEngine ${SOURCES_MAIN})
+if (MSVC)
+	add_executable(TetrisEngine 
+		${SOURCES_MAIN}
+		tetrisengine.rc
+	)
+else ()
+	add_executable(TetrisEngine
+		${SOURCES}
+	)
+endif ()
 	
 target_link_libraries(TetrisEngine
 	PRIVATE
