@@ -88,7 +88,10 @@ set(SOURCES
 	src/main.cpp
 
 	ExternalFetchContent.cmake
+	CPack.cmake
 )
+
+configure_file(MWetris.rc ${CMAKE_CURRENT_BINARY_DIR}/MWetris.rc)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On) 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT MWetris)
@@ -152,7 +155,17 @@ file(COPY ${MWetrisData_SOURCE_DIR}/images DESTINATION ${CMAKE_CURRENT_BINARY_DI
 file(COPY ${MWetrisData_SOURCE_DIR}/fonts DESTINATION ${CMAKE_CURRENT_BINARY_DIR}) 
 file(COPY data/. DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-add_executable(MWetris ${SOURCES})
+if (MSVC)
+	add_executable(MWetris
+		${SOURCES}
+		${MWetrisData_SOURCE_DIR}/package/mwetris.rc
+	)
+else ()
+	add_executable(MWetris
+		${SOURCES}
+	)
+endif ()
+
 
 target_include_directories(MWetris
 	PRIVATE
@@ -171,6 +184,11 @@ if (MSVC)
 			"/permissive-"
 			"/MP"
 	)
+
+	target_sources(MWetris
+		PRIVATE
+			${MWetrisData_SOURCE_DIR}/package/mwetris.rc
+	)
 endif ()
 
 target_link_libraries(MWetris
@@ -188,3 +206,5 @@ target_compile_definitions(MWetris
 		GIT_VERSION="${GIT_HASH}"
 		PROJECT_VERSION="${PROJECT_VERSION}"
 )
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/CPack.cmake)
