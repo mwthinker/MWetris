@@ -91,7 +91,7 @@ set(SOURCES
 	CPack.cmake
 )
 
-configure_file(MWetris.rc ${CMAKE_CURRENT_BINARY_DIR}/MWetris.rc)
+configure_file(properties.rc ${CMAKE_CURRENT_BINARY_DIR}/properties.rc)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On) 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT MWetris)
@@ -158,7 +158,8 @@ file(COPY data/. DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 if (MSVC)
 	add_executable(MWetris
 		${SOURCES}
-		${MWetrisData_SOURCE_DIR}/package/mwetris.rc
+		${MWetrisData_SOURCE_DIR}/package/mwetris_icon.rc
+		${CMAKE_CURRENT_BINARY_DIR}/properties.rc
 	)
 else ()
 	add_executable(MWetris
@@ -183,11 +184,6 @@ if (MSVC)
 		PUBLIC
 			"/permissive-"
 			"/MP"
-	)
-
-	target_sources(MWetris
-		PRIVATE
-			${MWetrisData_SOURCE_DIR}/package/mwetris.rc
 	)
 endif ()
 
