@@ -89,9 +89,12 @@ set(SOURCES
 
 	ExternalFetchContent.cmake
 	CPack.cmake
+	vcpkg.json
 )
 
-configure_file(properties.rc ${CMAKE_CURRENT_BINARY_DIR}/properties.rc)
+if (MSVC)
+	configure_file(properties.rc ${CMAKE_CURRENT_BINARY_DIR}/properties.rc)
+endif ()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On) 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT MWetris)

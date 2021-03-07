@@ -66,7 +66,7 @@ if (MSVC)
 	)
 else ()
 	add_executable(TetrisEngine
-		${SOURCES}
+		${SOURCES_MAIN}
 	)
 endif ()
 	

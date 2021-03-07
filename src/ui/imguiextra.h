@@ -38,10 +38,10 @@ namespace ImGui {
 	}
 
 	bool ManButton(const char* idStr, int& nbr, int max, const sdl::TextureView& noMan,
-		const sdl::TextureView& man, const glm::vec2& size, sdl::Color color = sdl::White);
+		const sdl::TextureView& man, const glm::vec2& size, sdl::Color color = sdl::color::White);
 
-	void LoadingBar(sdl::Color color1 = {0.8f, 0.8f, 0.8f, 1.f},
-		sdl::Color color2 = {0.5f, 0.5f, 0.5f, 1.f},
+	void LoadingBar(sdl::Color color1 = sdl::Color{0.8f, 0.8f, 0.8f, 1.f},
+		sdl::Color color2 = sdl::Color{0.5f, 0.5f, 0.5f, 1.f},
 		const ImVec2& size = {150.f, 25.f});
 
 }

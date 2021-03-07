@@ -12,44 +12,44 @@
 		"rowMovingTime": 0.05,
 		"bar": {
 			"height": 35,
-			"color": "0.5 0 0 0.3"
+			"color": "#80004d"
 		},
 		"label": {
-			"textColor": "1 1 1",
-			"backgroundColor": "1 1 1 0"
+			"textColor": "#ffffff",
+			"backgroundColor": "#ffffff00"
 		},
 		"checkBox": {
-			"textColor": "1 1 1",
-			"backgroundColor": "1 1 1 0",
-			"checkColor": "0 1 0 1",
-			"boxColor": "1 1 1 1",
+			"textColor": "#ffffff",
+			"backgroundColor": "#ffffff00",
+			"checkColor": "#00ff00ff",
+			"boxColor": "#ffffff",
 			"boxImage": "images/box.png",
 			"checkImage": "images/check.png"
 		},
 		"radioButton": {
-			"textColor": "1 1 1",
-			"backgroundColor": "1 1 1 0",
-			"checkColor": "0 1 0 1",
-			"boxColor": "1 1 1 1",
+			"textColor": "#ffffff",
+			"backgroundColor": "#ffffff00",
+			"checkColor": "#00ff00ff",
+			"boxColor": "#ffffff",
 			"boxImage": "images/outerRing.png",
 			"checkImage": "images/innerRing.png"
 		},
 		"button": {
-			"focusColor": ".8 .1 0 .3",
-			"textColor": "1 0.1 0.1",
-			"hoverColor": ".6 .1 .1",
-			"pushColor": ".8 .0 0 .7",
-			"backgroundColor": "0 0 0 0",
-			"borderColor": "0 0 0 0"
+			"focusColor": "#cc1a004d",
+			"textColor": "#ff1a1a",
+			"hoverColor": "#991a1a",
+			"pushColor": "#cc0000b3",
+			"backgroundColor": "#ffffffff",
+			"borderColor": "#ffffffff"
 		},
 		"comboBox": {
-			"textColor": "1 1 1",
-			"focusColor": ".8 .1 0 .3",
-			"backgroundColor": "0.21 .12 0.29 1",
-			"selectedTextColor": "1 1 1 1",
-			"selectedBackgroundColor": ".6 .1 .1",
-			"borderColor": "0 0 0 0",
-			"showDropDownColor": "1 1 1",
+			"textColor": "#ffffff",
+			"focusColor": "#cc1a004d",
+			"backgroundColor": "#361f4a",
+			"selectedTextColor": "#ffffff",
+			"selectedBackgroundColor": "#991a1a",
+			"borderColor": "#ffffffff",
+			"showDropDownColor": "#ffffff",
 			"showDropDownSprite": "images/triangle.png"
 		},
 		"font": "fonts/Ubuntu-B.ttf",
@@ -82,15 +82,15 @@
 				"squareT": "images/T.png",
 				"squareO": "images/O.png"
 			},
-			"borderColor": "0.3 0 0 1",
-			"startAreaColor": "0.64 0.16 0.24 0.5",
-			"outerSquareColor": "0.64 0.04 0.09 0.6",
-			"innerSquareColor": "0.08 0.02 0.03 0.1",
-			"playerAreaColor": "0.4 0.1 0.15 0.5",
-			"middleTextColor": "0.2 0.2 0.2 0.5",
+			"borderColor": "#4d0000",
+			"startAreaColor": "#a3293d80",
+			"outerSquareColor": "#a30a1799",
+			"innerSquareColor": "#1405081a",
+			"playerAreaColor": "#661a2680",
+			"middleTextColor": "#33333380",
 			"middleTextBoxSize": 7,
 			"showDownBlock": true,
-			"downBlockColor": "1 1 1 0.15"
+			"downBlockColor": "#ffffff26"
 		},
 		"port": 11155,
 		"ip": "127.0.0.1",
@@ -167,29 +167,27 @@
 		"localGame": {
 			"rows": 24,
 			"columns": 10,
-			"players": [
-				{
-					"name": "",
-					"lastPosition": 0,
-					"nextBlockType": "Z",
-					"levelUpCounter": 0,
-					"ai": false,
-					"clearedRows": 0,
-					"level": 1,
-					"points": 0,
-					"currentBlock": {
-						"bottomRow": 20,
-						"blockType": "J",
-						"leftColumn": 4,
-						"currentRotation": 0
-					},
-					"board": "",
-					"device": {
-						"name": "Keyboard 1",
-						"ai": false
-					}
+			"players": [{
+				"name": "",
+				"lastPosition": 0,
+				"nextBlockType": "Z",
+				"levelUpCounter": 0,
+				"ai": false,
+				"clearedRows": 0,
+				"level": 1,
+				"points": 0,
+				"currentBlock": {
+					"bottomRow": 20,
+					"blockType": "J",
+					"leftColumn": 4,
+					"currentRotation": 0
+				},
+				"board": "",
+				"device": {
+					"name": "Keyboard 1",
+					"ai": false
 				}
-			]
+			}]
 		}
 	}
 }

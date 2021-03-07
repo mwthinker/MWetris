@@ -77,12 +77,16 @@ namespace mwetris::graphic {
 		}
 
 		for (const auto& sq : block) {
+			const int columns = tetrisBoard_.getColumns();
 			auto x = pos.x + borderSize_ + squareSize_ * sq.column + delta.x;
 			auto y = pos.y + borderSize_ + squareSize_ * sq.row + delta.y;
-			addSquare(graphic,
-				x, y,
-				squareSize_,
-				getSprite(block.getBlockType()));
+
+			if (sq.row < tetrisBoard_.getRows() - 2) {
+				addSquare(graphic,
+					x, y,
+					squareSize_,
+					getSprite(block.getBlockType()));
+			}
 		}
 	}
 
@@ -209,7 +213,7 @@ namespace mwetris::graphic {
 
 		drawBlock(graphic, tetrisBoard_.getBlock());
 
-		for (int i = 0; i < tetrisBoard_.getRows(); ++i) {
+		for (int i = 0; i < tetrisBoard_.getRows() - 2; ++i) {
 			for (int j = 0; j < tetrisBoard_.getColumns(); ++j) {
 				x = borderSize_ + squareSize_ * j;
 				y = borderSize_ + squareSize_ * i;

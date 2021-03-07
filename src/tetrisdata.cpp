@@ -13,27 +13,31 @@ using namespace mwetris;
 namespace sdl {
 
 	void from_json(const json& j, Color& color) {
-		std::stringstream stream{j.get<std::string>()};
-		float r;
-		if (!(stream >> r)) {
-			throw std::runtime_error{"Red value invalid"};
-		}
-		float g;
-		if (!(stream >> g)) {
-			throw std::runtime_error{"Green value invalid"};
-		}
-		float b;
-		if (!(stream >> b)) {
-			throw std::runtime_error{"Blue value invalid"};
-		}
-		float a = 1.f;
-		if (!stream.eof()) {
-			if (!(stream >> a)) {
-				throw std::runtime_error{"Alpha value invalid"};
+		auto textColor = j.get<std::string>();
+		if (sdl::color::isValidHexColor(textColor)) {
+			color = Color{textColor};
+		} else {
+			std::stringstream stream{textColor};
+			float r;
+			if (!(stream >> r)) {
+				throw std::runtime_error{"Red value invalid"};
 			}
+			float g;
+			if (!(stream >> g)) {
+				throw std::runtime_error{"Green value invalid"};
+			}
+			float b;
+			if (!(stream >> b)) {
+				throw std::runtime_error{"Blue value invalid"};
+			}
+			float a = 1.f;
+			if (!stream.eof()) {
+				if (!(stream >> a)) {
+					throw std::runtime_error{"Alpha value invalid"};
+				}
+			}
+			color = Color{r, g, b, a};
 		}
-
-		color = {r, g, b, a};
 	}
 
 }
@@ -319,7 +323,7 @@ namespace mwetris {
 		try {
 			return jsonObject_.at("window").at("tetrisBoard").at("downBlockColor").get<sdl::Color>();
 		} catch (nlohmann::detail::out_of_range) {
-			return {1.f, 1.f, 1.f, 0.15f};
+			return sdl::Color{1.f, 1.f, 1.f, 0.15f};
 		}
 	}
 
@@ -432,11 +436,11 @@ namespace mwetris {
 	}
 
 	int TetrisData::getMultiSampleBuffers() const {
-		return jsonObject_["window"]["multiSampleBuffers"];
+		return jsonObject_["window"]["multiSampleBuffers"].get<int>();
 	}
 
 	int TetrisData::getMultiSampleSamples() const {
-		return jsonObject_["window"]["multiSampleSamples"];
+		return jsonObject_["window"]["multiSampleSamples"].get<int>();
 	}
 
 	float TetrisData::getRowFadingTime() const {

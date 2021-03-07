@@ -2,7 +2,7 @@
 	"name": "mwetris",
 	"version-string": "0.1.0",
 	"port-version": 1,
-	"homepage": "https://github.com/mwthinker/MWetris.git",
+	"homepage": "https://github.com/mwthinker/MWetris",
 	"description": "A C++ wrapper around SDL2 (Simple Direct Media Layer) and OpenGl.",
 	"license": "MIT",
 	"dependencies": [
@@ -18,6 +18,7 @@
 		"protobuf",
 		"nlohmann-json",
 		"asio",
-		"magic-enum"
+		"magic-enum",
+		"freetype"
 	]
 }
