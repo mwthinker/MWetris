@@ -12,7 +12,7 @@
 		"rowMovingTime": 0.05,
 		"bar": {
 			"height": 35,
-			"color": "#80004d"
+			"color": "#8000004d"
 		},
 		"label": {
 			"textColor": "#ffffff",
@@ -39,7 +39,7 @@
 			"textColor": "#ff1a1a",
 			"hoverColor": "#991a1a",
 			"pushColor": "#cc0000b3",
-			"backgroundColor": "#ffffffff",
+			"backgroundColor": "#ffffff00",
 			"borderColor": "#ffffffff"
 		},
 		"comboBox": {
