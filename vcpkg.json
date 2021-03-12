@@ -1,9 +1,9 @@
 {
 	"name": "mwetris",
 	"version-string": "0.1.0",
-	"port-version": 1,
+	"port-version": 0,
 	"homepage": "https://github.com/mwthinker/MWetris",
-	"description": "A C++ wrapper around SDL2 (Simple Direct Media Layer) and OpenGl.",
+	"description": "Simpe Tetris like game",
 	"license": "MIT",
 	"dependencies": [
 		"sdl2-image",
