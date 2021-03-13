@@ -51,7 +51,7 @@ namespace mwetris::ui::scene {
 		template <class Type>
 		static constexpr void staticAssertIsBaseOfScene();
 
-		using Key = IdType;
+		using Key = size_t;
 
 		template <class Type>
 		static Key getKey();
@@ -71,13 +71,15 @@ namespace mwetris::ui::scene {
 	std::shared_ptr<Type> StateMachine::add(std::shared_ptr<Type> scenePtr) {
 		staticAssertIsBaseOfScene<Type>();
 
+		spdlog::info("[SceneStateMachine] Try to add Scene: {}", typeid(Type).name());
+
 		if (!scenePtr) {
 			spdlog::warn("[SceneStateMachine] Tried to add empty scene!");
 			return nullptr;
 		}
 
 		auto key = getKey<Type>();
-		
+		spdlog::debug("[SceneStateMachine] Key: {}", key);
 		auto& scene = static_cast<Scene&>(*scenePtr);
 
 		scene.stateMachine_ = this;
@@ -88,8 +90,9 @@ namespace mwetris::ui::scene {
 				scene.switchedTo();
 			}
 			scenes_[key] = scenePtr;
+			spdlog::info("[SceneStateMachine] Scene added: {}={}", typeid(Type).name(), getKey<Type>());
 		} else {
-			spdlog::warn("[SceneStateMachine] Tried to add, scene {} already added!", typeid(Type).name());
+			spdlog::warn("[SceneStateMachine] Failed to add scene, {}={} already added!", typeid(Type).name(), getKey<Type>());
 		}
 		return std::move(scenePtr);
 	}
@@ -111,7 +114,7 @@ namespace mwetris::ui::scene {
 			currentKey_ = key;
 			scenes_[currentKey_]->switchedTo();
 		} else {
-			spdlog::warn("[SceneStateMachine] Failed to switch to scene {}.", typeid(Type).name());
+			spdlog::warn("[SceneStateMachine] Failed to switch to scene {}={} .", typeid(Type).name(), getKey<Type>());
 		}
 	}
 
@@ -122,7 +125,7 @@ namespace mwetris::ui::scene {
 
 	template <class Type>
 	StateMachine::Key StateMachine::getKey() {
-		return TypeInfo<Type>::id();
+		return typeid(Type).hash_code();
 	}
 
 }

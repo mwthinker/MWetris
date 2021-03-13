@@ -13,16 +13,6 @@
 
 namespace mwetris::ui::scene {
 
-	using IdType = size_t;
-
-	template<typename T>
-	struct TypeInfo {
-		static IdType id() {
-			// Generate a uniqe id per type. reinterpret_cast makes it impossible to make it constexpr.
-			return reinterpret_cast<size_t>(&TypeInfo<T>::id);
-		}
-	};
-
 	class StateMachine;
 
 	class Scene {
