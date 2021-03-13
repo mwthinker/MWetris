@@ -5,8 +5,6 @@
 #include <glm/mat4x2.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <imgui.h>
-
 #include <sdl/color.h>
 
 namespace mwetris {

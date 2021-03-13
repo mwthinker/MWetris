@@ -10,7 +10,7 @@
 namespace mwetris::game {
 
 	class SdlDevice;
-	typedef std::shared_ptr<SdlDevice> SdlDevicePtr;
+	using SdlDevicePtr = std::shared_ptr<SdlDevice>;
 
 	class SdlDevice : public Device {
 	public:

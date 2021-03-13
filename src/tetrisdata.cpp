@@ -17,26 +17,7 @@ namespace sdl {
 		if (sdl::color::isValidHexColor(textColor)) {
 			color = Color{textColor};
 		} else {
-			std::stringstream stream{textColor};
-			float r;
-			if (!(stream >> r)) {
-				throw std::runtime_error{"Red value invalid"};
-			}
-			float g;
-			if (!(stream >> g)) {
-				throw std::runtime_error{"Green value invalid"};
-			}
-			float b;
-			if (!(stream >> b)) {
-				throw std::runtime_error{"Blue value invalid"};
-			}
-			float a = 1.f;
-			if (!stream.eof()) {
-				if (!(stream >> a)) {
-					throw std::runtime_error{"Alpha value invalid"};
-				}
-			}
-			color = Color{r, g, b, a};
+			throw std::runtime_error{fmt::format("Invalid hex color: ", color.toHexString())};
 		}
 	}
 
