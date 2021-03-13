@@ -12,7 +12,7 @@ namespace mwetris::logger {
 
 	namespace {
 
-		const std::string LOG_FILE = "logs/log.txt";
+		const std::string LogFile = "logs/mwetris.log";
 
 		void createLogFolder(const std::string& folderPath) {
 			std::string logPath = "logs";
@@ -29,7 +29,7 @@ namespace mwetris::logger {
 	bool init(const std::string& folderPath) {
 		try {
 			createLogFolder(folderPath);
-			auto rotatingSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(folderPath + LOG_FILE, 1024 * 1024, 10);
+			auto rotatingSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(folderPath + LogFile, 1024 * 1024, 10);
 			auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 
 			auto logger = std::make_shared<spdlog::logger>("tetris", spdlog::sinks_init_list({consoleSink, rotatingSink}));
