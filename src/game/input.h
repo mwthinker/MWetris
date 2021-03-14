@@ -11,6 +11,18 @@ namespace mwetris::game {
 		bool right : 1;
 	};
 
+	inline constexpr bool operator==(Input left, Input right) {
+		return left.rotate == right.rotate
+			&& left.down == right.down
+			&& left.downGround == right.downGround
+			&& left.left == right.left
+			&& left.right == right.right;
+	}
+
+	inline constexpr bool operator!=(Input left, Input right) {
+		return !(left == right);
+	}
+
 }
 
 #endif

@@ -82,6 +82,7 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::restartGame() {
+		accumulator_ = 0.0;
 		game_->restartGame();
 
 		initGame();
@@ -146,17 +147,13 @@ namespace mwetris::game {
 			deltaTime = 0.250;
 		}
 
-		// Update using fixed time step.
-		while (deltaTime >= FixedTimestep) {
-			deltaTime -= FixedTimestep;
+		accumulator_ += deltaTime;
+		
+		while (accumulator_ >= FixedTimestep) {
+			accumulator_ -= FixedTimestep;
 			for (auto& player : players_) {
 				player->update(FixedTimestep);
 			}
-		}
-
-		// Update the remaining time.
-		for (auto& player : players_) {
-			player->update(deltaTime);
 		}
 	}
 

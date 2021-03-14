@@ -76,6 +76,7 @@ namespace mwetris::game {
 		int height_{TetrisHeight};
 		int maxLevel_{TetrisMaxLevel};
 
+		double accumulator_{0.0};
 		double timeLeftToStart_{-0.0}; // Time left for the count down.
 		int wholeTimeLeft_{0}; // Time left in whole seconds. E.g. timeLeftToStart_ = 1.4s means that wholeTimeLeft_ = 2s;
 	};
