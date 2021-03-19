@@ -22,6 +22,8 @@
 		"highscore": { "$ref": "#/definitions/Highscore" },
 		"activeGames": { "$ref": "#/definitions/ActiveGames" }
 	},
+	"required": ["window", "ai1", "ai2", "ai3" ,"ai4", "ais", "highscore", "activeGames"],
+	"additionalProperties": false,
 	
 	"definitions": {
 		"Color":{
@@ -74,15 +76,15 @@
 						"zoom": { "type": "string" }
 					},
 					"required": ["background", "computer", "human", "cross", "zoom"],
-					"additionalItems": false
+					"additionalProperties": false
 				},
 				"tetrisBoard": { "$ref": "#/definitions/TetrisBoard" },
 				"ip": { "$ref": "#/definitions/Ip" },
 				"port": { "type": "integer" },
 				"timeToConnectMS": { "type": "integer" }
 			},
-			"required": ["fullscreenOnDoubleClick"],
-			"additionalItems": false
+			"required": ["fullscreenOnDoubleClick", "border", "pauseOnLostFocus", "moveWindowByHoldingDownMouse", "vsync", "limitFps", "multiSampleBuffers", "multiSampleSamples", "rowFadingTime", "rowMovingTime", "bar", "label", "checkBox", "radioButton", "button", "comboBox", "font", "width", "height", "positionX", "positionY", "maximized", "resizeable", "minWidth", "minHeight", "icon", "sprites", "tetrisBoard", "ip", "port", "timeToConnectMS"],
+			"additionalProperties": false
 		},
 		"Bar": {
 			"type": "object",
@@ -90,7 +92,8 @@
 				"height": { "type": "number" },
 				"color": { "$ref": "#/definitions/Color" }
 			},
-			"additionalItems": false
+			"required": ["height", "color"],
+			"additionalProperties": false
 		},
 		"Label": {
 			"type": "object",
@@ -98,7 +101,8 @@
 				"textColor": { "$ref": "#/definitions/Color" },
 				"backgroundColor": { "$ref": "#/definitions/Color" }
 			},
-			"additionalItems": false
+			"required": ["textColor", "backgroundColor"],
+			"additionalProperties": false
 		},
 		"CheckBox": {
 			"type": "object",
@@ -106,11 +110,10 @@
 				"textColor": { "$ref": "#/definitions/Color" },
 				"backgroundColor": { "$ref": "#/definitions/Color" },
 				"checkColor": { "$ref": "#/definitions/Color" },
-				"boxColor": { "$ref": "#/definitions/Color" },
-				"boxImage": { "type": "string" },
-				"checkImage": { "type": "string" }
+				"boxColor": { "$ref": "#/definitions/Color" }
 			},
-			"additionalItems": false
+			"required": ["textColor", "backgroundColor", "checkColor", "boxColor"],
+			"additionalProperties": false
 		},
 		"RadioButton": {
 			"type": "object",
@@ -118,11 +121,10 @@
 				"textColor": { "$ref": "#/definitions/Color" },
 				"backgroundColor": { "$ref": "#/definitions/Color" },
 				"checkColor": { "$ref": "#/definitions/Color" },
-				"boxColor": { "$ref": "#/definitions/Color" },
-				"boxImage": { "type": "string" },
-				"checkImage": { "type": "string" }
+				"boxColor": { "$ref": "#/definitions/Color" }
 			},
-			"additionalItems": false
+			"required": ["textColor", "backgroundColor", "checkColor", "boxColor"],
+			"additionalProperties": false
 		},
 		"Button": {
 			"type": "object",
@@ -134,7 +136,8 @@
 				"backgroundColor": { "$ref": "#/definitions/Color" },
 				"borderColor": { "$ref": "#/definitions/Color" }
 			},
-			"additionalItems": false
+			"required": ["focusColor", "textColor", "hoverColor", "pushColor", "backgroundColor", "borderColor"],
+			"additionalProperties": false
 		},
 		"ComboBox": {
 			"type": "object",
@@ -145,10 +148,10 @@
 				"selectedTextColor": { "$ref": "#/definitions/Color" },
 				"selectedBackgroundColor": { "$ref": "#/definitions/Color" },
 				"borderColor": { "$ref": "#/definitions/Color" },
-				"showDropDownColor": { "$ref": "#/definitions/Color" },
-				"showDropDownSprite": { "type": "string" }
+				"showDropDownColor": { "$ref": "#/definitions/Color" }
 			},
-			"additionalItems": false
+			"required": ["textColor", "focusColor", "backgroundColor", "selectedTextColor", "selectedBackgroundColor", "borderColor", "showDropDownColor"],
+			"additionalProperties": false
 		},
 		"TetrisBoard": {
 			"type": "object",
@@ -168,29 +171,33 @@
 						"squareO": { "type": "string" }
 					},
 					"required": ["squareZ", "squareS", "squareJ", "squareI", "squareL", "squareT", "squareO"],
-					"additionalItems": false
+					"additionalProperties": false
 				},
-				"cross": { "type": "string" },
-				"zoom": { "type": "string" }
+				"borderColor": { "$ref": "#/definitions/Color" },
+				"startAreaColor": { "$ref": "#/definitions/Color" },
+				"outerSquareColor": { "$ref": "#/definitions/Color" },
+				"innerSquareColor": { "$ref": "#/definitions/Color" },
+				"playerAreaColor": { "$ref": "#/definitions/Color" },
+				"middleTextColor": { "$ref": "#/definitions/Color" },
+				"middleTextBoxSize": { "type": "integer" },
+				"showDownBlock": { "type": "boolean" },
+				"downBlockColor": { "$ref": "#/definitions/Color" }
 			},
-			"borderColor": { "$ref": "#/definitions/Color" },
-			"startAreaColor": { "$ref": "#/definitions/Color" },
-			"outerSquareColor": { "$ref": "#/definitions/Color" },
-			"innerSquareColor": { "$ref": "#/definitions/Color" },
-			"playerAreaColor": { "$ref": "#/definitions/Color" },
-			"middleTextColor": { "$ref": "#/definitions/Color" },
-			"middleTextBoxSize": { "type": "integer" },
-			"showDownBlock": { "type": "boolean" },
-			"downBlockColor": { "$ref": "#/definitions/Color" }
+			"required": ["font", "squareSize", "borderSize", "sprites", "borderColor", "startAreaColor", "outerSquareColor" ,"innerSquareColor", "playerAreaColor", "middleTextColor", "middleTextBoxSize", "showDownBlock", "downBlockColor"],
+			"additionalProperties": false
 		},
 		"Highscore": {
 			"type": "array",
-			"properties": {
-				"height": { "type": "number" },
-				"date": { "type": "string" },
-				"points": { "type": "integer" }
-			},
-			"additionalItems": false
+			"items": {
+				"type": "object",
+				"properties": {
+					"name": { "string": "string" },
+					"date": { "type": "string" },
+					"points": { "type": "integer" }
+				},
+				"required": ["name", "date", "points"],
+				"additionalProperties": false
+			}
 		},
 		"ActiveGames": {
 			"type": "object",
@@ -227,16 +234,18 @@
 										"name": { "type": "string" },
 										"ai": { "type": "boolean" }
 									},
-									"additionalItems": false
+									"additionalProperties": false
 								}
 							},
 							"additionalItems": false
 						}
 					},
-					"additionalItems": false
+					"required": ["rows", "columns", "players"],
+					"additionalProperties": false
 				}
 			},
-			"additionalItems": false
+			"required": ["localGame"],
+			"additionalProperties": false
 		}
 	}
 }

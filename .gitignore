@@ -23,6 +23,7 @@
 /build*
 /linux_build
 /vcpkg_installed/
+.vscode/
 
 #################
 ## Eclipse

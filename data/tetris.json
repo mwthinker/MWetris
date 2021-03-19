@@ -22,17 +22,13 @@
 			"textColor": "#ffffff",
 			"backgroundColor": "#ffffff00",
 			"checkColor": "#00ff00ff",
-			"boxColor": "#ffffff",
-			"boxImage": "images/box.png",
-			"checkImage": "images/check.png"
+			"boxColor": "#ffffff"
 		},
 		"radioButton": {
 			"textColor": "#ffffff",
 			"backgroundColor": "#ffffff00",
 			"checkColor": "#00ff00ff",
-			"boxColor": "#ffffff",
-			"boxImage": "images/outerRing.png",
-			"checkImage": "images/innerRing.png"
+			"boxColor": "#ffffff"
 		},
 		"button": {
 			"focusColor": "#cc1a004d",
@@ -49,8 +45,7 @@
 			"selectedTextColor": "#ffffff",
 			"selectedBackgroundColor": "#991a1a",
 			"borderColor": "#ffffffff",
-			"showDropDownColor": "#ffffff",
-			"showDropDownSprite": "images/triangle.png"
+			"showDropDownColor": "#ffffff"
 		},
 		"font": "fonts/Ubuntu-B.ttf",
 		"width": 860,
@@ -100,7 +95,7 @@
 	"ai2": "Default",
 	"ai3": "Default",
 	"ai4": "Default",
-	
+
 	"ais": [
 		{
 			"name": "Default2",

@@ -4,7 +4,7 @@
 #include "scene.h"
 
 #include "types.h"
-#include "tetrisdata.h"
+#include "configuration.h"
 #include "ui/imguiextra.h"
 
 namespace mwetris::ui::scene {

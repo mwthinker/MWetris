@@ -1,6 +1,6 @@
 #include "ui/tetriswindow.h"
 #include "logger.h"
-#include "tetrisdata.h"
+#include "configuration.h"
 
 #include <sdl/initsdl.h>
 
@@ -13,6 +13,6 @@ int main(int, char**) {
 	mwetris::ui::TetrisWindow tetris;
 	//tetris.setStartPage(tetris::ui::scene::Event::Play);
 	tetris.startLoop();
-	mwetris::TetrisData::getInstance().quit();
+	mwetris::Configuration::getInstance().quit();
 	return 0;
 }

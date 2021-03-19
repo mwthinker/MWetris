@@ -80,11 +80,11 @@ set(SOURCES
 	src/ui/tetriswindow.cpp
 	src/ui/tetriswindow.h
 	
+	src/configuration.cpp
+	src/configuration.h
 	src/logger.cpp
 	src/logger.h
 	src/types.h
-	src/tetrisdata.cpp
-	src/tetrisdata.h
 	src/main.cpp
 
 	ExternalFetchContent.cmake

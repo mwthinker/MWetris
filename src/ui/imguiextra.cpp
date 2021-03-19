@@ -20,12 +20,12 @@ namespace ImGui {
 	}
 
 	void PushButtonStyle() {
-		ImGui::PushFont(mwetris::TetrisData::getInstance().getImGuiButtonFont());
-		ImGui::PushStyleColor(ImGuiCol_Text, mwetris::TetrisData::getInstance().getButtonTextColor().toImU32());
-		ImGui::PushStyleColor(ImGuiCol_Border, mwetris::TetrisData::getInstance().getButtonBorderColor().toImU32());
-		ImGui::PushStyleColor(ImGuiCol_Button, mwetris::TetrisData::getInstance().getButtonBackgroundColor().toImU32());
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, mwetris::TetrisData::getInstance().getButtonHoverColor().toImU32());
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, mwetris::TetrisData::getInstance().getButtonFocusColor().toImU32());
+		ImGui::PushFont(mwetris::Configuration::getInstance().getImGuiButtonFont());
+		ImGui::PushStyleColor(ImGuiCol_Text, mwetris::Configuration::getInstance().getButtonTextColor().toImU32());
+		ImGui::PushStyleColor(ImGuiCol_Border, mwetris::Configuration::getInstance().getButtonBorderColor().toImU32());
+		ImGui::PushStyleColor(ImGuiCol_Button, mwetris::Configuration::getInstance().getButtonBackgroundColor().toImU32());
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, mwetris::Configuration::getInstance().getButtonHoverColor().toImU32());
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, mwetris::Configuration::getInstance().getButtonFocusColor().toImU32());
 	}
 
 	void PopButtonStyle() {

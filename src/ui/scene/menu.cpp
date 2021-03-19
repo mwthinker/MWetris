@@ -1,21 +1,21 @@
 #include "menu.h"
 
 #include "types.h"
-#include "tetrisdata.h"
+#include "configuration.h"
 #include "ui/imguiextra.h"
 
 namespace mwetris::ui::scene {
 
 	void Menu::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
-		auto menuHeight = mwetris::TetrisData::getInstance().getWindowBarHeight();
+		auto menuHeight = mwetris::Configuration::getInstance().getWindowBarHeight();
 
 		ImGui::Bar([&]() {
 			ImGui::PushButtonStyle();
 			ImGui::PopButtonStyle();
 		});
 
-		ImGui::PushFont(mwetris::TetrisData::getInstance().getImGuiHeaderFont());
-		ImGui::TextColored(mwetris::TetrisData::getInstance().getLabelTextColor(), "MWetris");
+		ImGui::PushFont(mwetris::Configuration::getInstance().getImGuiHeaderFont());
+		ImGui::TextColored(mwetris::Configuration::getInstance().getLabelTextColor(), "MWetris");
 		ImGui::PopFont();
 
 		ImGui::PushButtonStyle();

@@ -4,7 +4,7 @@
 namespace mwetris::ui::scene {
 
 	void Custom::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
-		auto menuHeight = mwetris::TetrisData::getInstance().getWindowBarHeight();
+		auto menuHeight = mwetris::Configuration::getInstance().getWindowBarHeight();
 
 		ImGui::Bar([&]() {
 			ImGui::PushButtonStyle();

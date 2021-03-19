@@ -7,7 +7,7 @@
 #include "game/sdldevice.h"
 #include "game/tetrisgame.h"
 #include "types.h"
-#include "tetrisdata.h"
+#include "configuration.h"
 #include "graphic/gamecomponent.h"
 #include "graphic/graphic.h"
 #include "ui/imguiextra.h"
@@ -51,9 +51,9 @@ namespace mwetris::ui::scene {
 		int nbrAis_{0};
 		std::vector<game::SdlDevicePtr> devices_;
 		graphic::Graphic& graphic_;
-		sdl::Sprite crossSprite_;
-		sdl::Sprite manSprite_;
-		sdl::Sprite aiSprite_;
+		sdl::TextureView crossSprite_;
+		sdl::TextureView manSprite_;
+		sdl::TextureView aiSprite_;
 		Vec2 size_{};
 		mw::signals::ScopedConnections connections_;
 	};

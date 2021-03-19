@@ -1,7 +1,7 @@
 #ifndef MWETRIS_GRAPHIC_DRAWBOARD_H
 #define MWETRIS_GRAPHIC_DRAWBOARD_H
 
-#include "tetrisdata.h"
+#include "configuration.h"
 #include "game/player.h"
 #include "tetrisboard.h"
 #include "graphic.h"
@@ -28,7 +28,7 @@ namespace mwetris::graphic {
 	private:
 		void drawBlock(Graphic& graphic, const tetris::Block& block, Vec2 pos = {}, bool center = false);
 
-		sdl::Sprite getSprite(tetris::BlockType blockType) const;
+		sdl::TextureView getSprite(tetris::BlockType blockType) const;
 
 		float squareSize_;
 		float borderSize_;
@@ -37,7 +37,7 @@ namespace mwetris::graphic {
 		const tetris::TetrisBoard& tetrisBoard_;
 		
 		float width_, height_;
-		sdl::Sprite spriteI_, spriteJ_, spriteL_, spriteO_, spriteS_, spriteT_, spriteZ_;
+		sdl::TextureView spriteI_, spriteJ_, spriteL_, spriteO_, spriteS_, spriteT_, spriteZ_;
 		sdl::Sprite name_;
 	};
 

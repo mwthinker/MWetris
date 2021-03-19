@@ -1,6 +1,6 @@
 #include "tetriswindow.h"
 #include "imguiextra.h"
-#include "tetrisdata.h"
+#include "configuration.h"
 
 #include "scene/menu.h"
 #include "scene/play.h"
@@ -16,14 +16,12 @@
 namespace mwetris::ui {
 
 	TetrisWindow::TetrisWindow() {
-		background_ = mwetris::TetrisData::getInstance().getBackgroundSprite();
-
-		setPosition(mwetris::TetrisData::getInstance().getWindowPositionX(), mwetris::TetrisData::getInstance().getWindowPositionY());
-		setSize(mwetris::TetrisData::getInstance().getWindowWidth(), mwetris::TetrisData::getInstance().getWindowHeight());
-		setResizeable(mwetris::TetrisData::getInstance().getWindowWidth());
+		setPosition(mwetris::Configuration::getInstance().getWindowPositionX(), mwetris::Configuration::getInstance().getWindowPositionY());
+		setSize(mwetris::Configuration::getInstance().getWindowWidth(), mwetris::Configuration::getInstance().getWindowHeight());
+		setResizeable(mwetris::Configuration::getInstance().getWindowWidth());
 		setTitle("MWetris");
-		setIcon(mwetris::TetrisData::getInstance().getWindowIcon());
-		setBordered(mwetris::TetrisData::getInstance().isWindowBordered());
+		setIcon(mwetris::Configuration::getInstance().getWindowIcon());
+		setBordered(mwetris::Configuration::getInstance().isWindowBordered());
 		setShowDemoWindow(true);
 		
 		sceneStateMachine_.setCallback([this](scene::Event event) {
@@ -37,14 +35,14 @@ namespace mwetris::ui {
 	void TetrisWindow::initPreLoop() {
 		sdl::ImGuiWindow::initPreLoop();
 		auto& io{ImGui::GetIO()};
+		
+		mwetris::Configuration::getInstance().bindTextureFromAtlas();
+		background_ = mwetris::Configuration::getInstance().getBackgroundSprite();
 
-		background_.bindTexture();
-		mwetris::TetrisData::getInstance().bindTextureFromAtlas();
-
-		ImGui::GetIO().Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 12);
-		TetrisData::getInstance().getImGuiButtonFont();
-		TetrisData::getInstance().getImGuiDefaultFont();
-		TetrisData::getInstance().getImGuiHeaderFont();
+		io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 12);
+		Configuration::getInstance().getImGuiButtonFont();
+		Configuration::getInstance().getImGuiDefaultFont();
+		Configuration::getInstance().getImGuiHeaderFont();
 
 		sceneStateMachine_.emplace<scene::Menu>();
 		sceneStateMachine_.emplace<scene::Play>(graphic_);
@@ -55,21 +53,21 @@ namespace mwetris::ui {
 		shader_ = sdl::Shader::CreateShaderGlsl_330();
 	}
 
-	void TetrisWindow::imGuiPreUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
+	void TetrisWindow::imGuiPreUpdate(const sdl::DeltaTime& deltaTime) {
 		shader_.useProgram();
 		graphic_.clearDraw();
-		graphic_.addRectangleImage({-1, -1}, {2, 2}, background_.getTextureView());
+		graphic_.addRectangleImage({-1, -1}, {2, 2}, background_);
 		graphic_.draw(shader_);
 		sceneStateMachine_.draw(shader_, deltaTime);
 	}
 	
-	void TetrisWindow::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
+	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
 		ImGui::MainWindow("Main", [&]() {
 			sceneStateMachine_.imGuiUpdate(deltaTime);
 		});
 	}
 
-	void TetrisWindow::imGuiPostUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
+	void TetrisWindow::imGuiPostUpdate(const sdl::DeltaTime& deltaTime) {
 	}
 
 	void TetrisWindow::imGuiEventUpdate(const SDL_Event& windowEvent) {

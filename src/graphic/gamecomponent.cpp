@@ -1,5 +1,5 @@
 #include "gamecomponent.h"
-#include "tetrisdata.h"
+#include "configuration.h"
 
 #include "game/tetrisgame.h"
 #include "game/tetrisparameters.h"
@@ -71,7 +71,7 @@ namespace mwetris::graphic {
 		graphic.multMatrix(calculateBoardMatrix(windowWidth, windowHeight));
 
 		if (!drawPlayers_.empty()) {
-			TetrisData::getInstance().bindTextureFromAtlas();
+			Configuration::getInstance().bindTextureFromAtlas();
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			
@@ -158,7 +158,7 @@ namespace mwetris::graphic {
 
 		// Handle InitGame event.
 		try {
-			//middleText_ = sdl::Text("", TetrisData::getInstance().getDefaultFont(50), 20);
+			//middleText_ = sdl::Text("", Configuration::getInstance().getDefaultFont(50), 20);
 			auto& initGameVar = dynamic_cast<game::InitGame&>(tetrisEvent);
 			initGame(initGameVar.players);
 
@@ -174,7 +174,7 @@ namespace mwetris::graphic {
 		// Handle RestartPlayer event.
 	//	try {
 			/*
-			middleText_ = mw::Text("", TetrisData::getInstance().getDefaultFont(50), 20);
+			middleText_ = mw::Text("", Configuration::getInstance().getDefaultFont(50), 20);
 			auto& restartPlayer = dynamic_cast<RestartPlayer&>(tetrisEvent);
 
 			for (auto& player : *restartPlayer.connection_) {
@@ -219,7 +219,7 @@ namespace mwetris::graphic {
 	//}
 
 	//void GameComponent::handleMiddleText(const game::PlayerPtr& player, int lastPostion) {
-		//sdl::Text middleText("", TetrisData::getInstance().getDefaultFont(50), 20);
+		//sdl::Text middleText("", Configuration::getInstance().getDefaultFont(50), 20);
 
 		// Test if the player is a local player, exception otherwise.
 		//if (tetrisGame_.getNbrOfPlayers() == 1) {

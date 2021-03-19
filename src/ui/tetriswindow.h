@@ -30,17 +30,17 @@ namespace mwetris::ui {
 	private:
 		void initPreLoop() override;
 
-		void imGuiPreUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) override;
+		void imGuiPreUpdate(const sdl::DeltaTime& deltaTime) override;
 
-		void imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) override;
+		void imGuiUpdate(const sdl::DeltaTime& deltaTime) override;
 
-		void imGuiPostUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) override;
+		void imGuiPostUpdate(const sdl::DeltaTime& deltaTime) override;
 
 		void imGuiEventUpdate(const SDL_Event& windowEvent) override;
 
 		void handleSceneMenuEvent(const scene::Event& menuEvent);
 	
-		sdl::Sprite background_;
+		sdl::TextureView background_;
 		scene::StateMachine sceneStateMachine_;
 		sdl::Shader shader_;
 		graphic::Graphic graphic_;

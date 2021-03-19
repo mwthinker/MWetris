@@ -4,8 +4,8 @@
 namespace mwetris::ui::scene {
 
 	void HighScore::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
-		auto menuHeight = mwetris::TetrisData::getInstance().getWindowBarHeight();
-		auto labelColor = mwetris::TetrisData::getInstance().getLabelTextColor();
+		auto menuHeight = mwetris::Configuration::getInstance().getWindowBarHeight();
+		auto labelColor = mwetris::Configuration::getInstance().getLabelTextColor();
 
 		ImGui::Bar([&]() {
 			ImGui::PushButtonStyle();
@@ -15,11 +15,11 @@ namespace mwetris::ui::scene {
 			ImGui::PopButtonStyle();
 		});
 
-		ImGui::PushFont(mwetris::TetrisData::getInstance().getImGuiHeaderFont());
+		ImGui::PushFont(mwetris::Configuration::getInstance().getImGuiHeaderFont());
 		ImGui::TextColored(labelColor, "Highscore");
 		ImGui::PopFont();
 
-		ImGui::PushFont(mwetris::TetrisData::getInstance().getImGuiDefaultFont());
+		ImGui::PushFont(mwetris::Configuration::getInstance().getImGuiDefaultFont());
 		ImGui::Columns(6, "Highscore");
 		ImGui::Separator();
 		ImGui::Text("Ranking"); ImGui::NextColumn();
@@ -30,7 +30,7 @@ namespace mwetris::ui::scene {
 		ImGui::Text("Date"); ImGui::NextColumn();
 		ImGui::Separator();
 
-		auto highscores = TetrisData::getInstance().getHighscoreRecordVector();
+		auto highscores = Configuration::getInstance().getHighscoreRecordVector();
 
 		int rankNbr = 1;
 		for (const auto& highscore : highscores) {

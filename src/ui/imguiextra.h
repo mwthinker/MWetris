@@ -2,7 +2,7 @@
 #define MWETRIS_IMGUIEXTRA_H
 
 #include "types.h"
-#include "tetrisdata.h"
+#include "configuration.h"
 
 #include <sdl/imguiauxiliary.h>
 
@@ -19,10 +19,10 @@ namespace ImGui {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
 		
-		auto color = mwetris::TetrisData::getInstance().getWindowBarColor();
+		auto color = mwetris::Configuration::getInstance().getWindowBarColor();
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, color.toImU32());
 		
-		float height = mwetris::TetrisData::getInstance().getWindowBarHeight();
+		float height = mwetris::Configuration::getInstance().getWindowBarHeight();
 
 		ImGui::ChildWindow("Bar", ImVec2{ImGui::GetWindowWidth(), height}, [&]() {
 			auto pos = ImGui::GetWindowPos();

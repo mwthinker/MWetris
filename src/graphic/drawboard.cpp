@@ -1,5 +1,5 @@
 #include "drawboard.h"
-#include "tetrisdata.h"
+#include "configuration.h"
 #include "tetrisboard.h"
 #include "graphic.h"
 #include "game/player.h"
@@ -30,8 +30,8 @@ namespace mwetris::graphic {
 			graphic.addRectangle({x, y}, {size, size}, color);
 		}
 
-		void addSquare(Graphic& graphic, float x, float y, float size, const sdl::Sprite& sprite) {
-			graphic.addRectangleImage({x, y}, {size, size}, sprite.getTextureView());
+		void addSquare(Graphic& graphic, float x, float y, float size, const sdl::TextureView& sprite) {
+			graphic.addRectangleImage({x, y}, {size, size}, sprite);
 		}
 
 		void addText(Graphic& graphic, float x, float y, const sdl::Sprite& text) {
@@ -47,19 +47,19 @@ namespace mwetris::graphic {
 	DrawBoard::DrawBoard(game::Player& player)
 		: tetrisBoard_{player.getTetrisBoard()} {
 
-		spriteZ_ = TetrisData::getInstance().getSprite(tetris::BlockType::Z);
-		spriteS_ = TetrisData::getInstance().getSprite(tetris::BlockType::S);
-		spriteJ_ = TetrisData::getInstance().getSprite(tetris::BlockType::J);
-		spriteI_ = TetrisData::getInstance().getSprite(tetris::BlockType::I);
-		spriteL_ = TetrisData::getInstance().getSprite(tetris::BlockType::L);
-		spriteT_ = TetrisData::getInstance().getSprite(tetris::BlockType::T);
-		spriteO_ = TetrisData::getInstance().getSprite(tetris::BlockType::O);
+		spriteZ_ = Configuration::getInstance().getSprite(tetris::BlockType::Z);
+		spriteS_ = Configuration::getInstance().getSprite(tetris::BlockType::S);
+		spriteJ_ = Configuration::getInstance().getSprite(tetris::BlockType::J);
+		spriteI_ = Configuration::getInstance().getSprite(tetris::BlockType::I);
+		spriteL_ = Configuration::getInstance().getSprite(tetris::BlockType::L);
+		spriteT_ = Configuration::getInstance().getSprite(tetris::BlockType::T);
+		spriteO_ = Configuration::getInstance().getSprite(tetris::BlockType::O);
 
-		squareSize_ = TetrisData::getInstance().getTetrisSquareSize();
-		borderSize_ = TetrisData::getInstance().getTetrisBorderSize();
+		squareSize_ = Configuration::getInstance().getTetrisSquareSize();
+		borderSize_ = Configuration::getInstance().getTetrisBorderSize();
 		infoSize_ = squareSize_ * 5.f;
 
-		name_ = sdl::Sprite{"Test", TetrisData::getInstance().getDefaultFont(50)};
+		name_ = sdl::Sprite{"Test", Configuration::getInstance().getDefaultFont(50)};
 		name_.bindTexture();
 
 		width_ = squareSize_ * tetrisBoard_.getColumns() + infoSize_ + borderSize_ * 2 + middleDistance + rightDistance;
@@ -103,7 +103,7 @@ namespace mwetris::graphic {
 		addRectangle(graphic,
 			x, y,
 			boardWidth + infoSize_ + middleDistance + rightDistance, squareSize_ * (rows - 2),
-			TetrisData::getInstance().getPlayerAreaColor());
+			Configuration::getInstance().getPlayerAreaColor());
 
 		// Draw the outer square.
 		x = borderSize_;
@@ -111,7 +111,7 @@ namespace mwetris::graphic {
 		addRectangle(graphic,
 			x, y,
 			squareSize_ * columns, squareSize_ * (rows - 2),
-			TetrisData::getInstance().getOuterSquareColor());
+			Configuration::getInstance().getOuterSquareColor());
 
 		// Draw the inner squares.
 		for (int row = 0; row < rows - 2; ++row) {
@@ -121,7 +121,7 @@ namespace mwetris::graphic {
 				addRectangle(graphic,
 					x, y,
 					squareSize_ * 0.8f, squareSize_ * 0.8f,
-					TetrisData::getInstance().getInnerSquareColor());
+					Configuration::getInstance().getInnerSquareColor());
 			}
 		}
 
@@ -131,7 +131,7 @@ namespace mwetris::graphic {
 		addRectangle(graphic,
 			x, y,
 			squareSize_ * columns, squareSize_ * 2,
-			TetrisData::getInstance().getStartAreaColor());
+			Configuration::getInstance().getStartAreaColor());
 			
 
 		// Draw the preview block area.
@@ -140,11 +140,11 @@ namespace mwetris::graphic {
 		addSquare(graphic,
 			x, y,
 			infoSize_,
-			TetrisData::getInstance().getStartAreaColor());
+			Configuration::getInstance().getStartAreaColor());
 
 		drawBlock(graphic, tetris::Block{tetrisBoard_.getNextBlockType(), 0, 0}, Vec2{x, y} + squareSize_ * 2.5f, true);
 
-		const Color borderColor = TetrisData::getInstance().getBorderColor();
+		const Color borderColor = Configuration::getInstance().getBorderColor();
 
 		// Add border.
 		// Left-up corner.
@@ -315,7 +315,7 @@ namespace mwetris::graphic {
 		*/
 	}
 
-	sdl::Sprite DrawBoard::getSprite(tetris::BlockType blockType) const {
+	sdl::TextureView DrawBoard::getSprite(tetris::BlockType blockType) const {
 		switch (blockType) {
 			case tetris::BlockType::I:
 				return spriteI_;

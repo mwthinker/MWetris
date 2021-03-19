@@ -1,21 +1,16 @@
-#ifndef MWETRIS_TETRISDATA_H
-#define MWETRIS_TETRISDATA_H
+#ifndef MWETRIS_CONFIGURATION_H
+#define MWETRIS_CONFIGURATION_H
 
 #include "block.h"
 #include "ai.h"
 
+#include <sdl/textureview.h>
 #include <sdl/sound.h>
-#include <sdl/sprite.h>
 #include <sdl/color.h>
 #include <sdl/font.h>
 #include <sdl/music.h>
-#include <sdl/textureatlas.h>
 
-#include <nlohmann/json.hpp>
 #include <imgui.h>
-
-#include <map>
-#include <vector>
 
 namespace mwetris {
 
@@ -30,30 +25,23 @@ namespace mwetris {
 		int rows{0};
 	};
 
-	class TetrisData {
+	class Configuration {
 	public:
-		static TetrisData& getInstance() {
-			static TetrisData instance;
-			return instance;
-		}
+		static Configuration& getInstance();
 
-		void quit() {
-			sounds_.clear();
-			fonts_.clear();
-			musics_.clear();
-		}
+		void quit();
 
-		TetrisData(TetrisData const&) = delete;
-		TetrisData& operator=(const TetrisData&) = delete;
+		Configuration(const Configuration&) = delete;
+		Configuration& operator=(const Configuration&) = delete;
 
 		void save();
 
 		const sdl::Font& loadFont(const std::string& file, int fontSize);
 		sdl::Sound loadSound(const std::string& file);
 		sdl::Music loadMusic(const std::string& file);
-		sdl::Sprite loadSprite(const std::string& file);
+		sdl::TextureView loadSprite(const std::string& file);
 
-		sdl::Sprite getSprite(tetris::BlockType blockType);
+		sdl::TextureView getSprite(tetris::BlockType blockType);
 
 		const sdl::Font& getDefaultFont(int size);
 
@@ -133,7 +121,7 @@ namespace mwetris {
 		std::string getIp() const;
 		void setIp(const std::string& ip);
 
-		sdl::Sprite getBackgroundSprite();
+		sdl::TextureView getBackgroundSprite();
 
 		std::string getAi1Name() const;
 		std::string getAi2Name() const;
@@ -153,16 +141,12 @@ namespace mwetris {
 		float getWindowBarHeight() const;
 
 		sdl::Color getWindowBarColor() const;
-
-		sdl::Sprite getCheckboxBoxSprite();
-		sdl::Sprite getCheckboxCheckSprite();
+		
 		sdl::Color getCheckboxTextColor() const;
 		sdl::Color getCheckboxBackgroundColor() const;
 		sdl::Color getCheckboxBoxColor() const;
 		sdl::Color getChecboxCheckColor() const;
-
-		sdl::Sprite getRadioButtonBoxSprite();
-		sdl::Sprite getRadioButtonCheckSprite();
+		
 		sdl::Color getRadioButtonTextColor() const;
 		sdl::Color getRadioButtonBackgroundColor() const;
 		sdl::Color getRadioButtonBoxColor() const;
@@ -185,12 +169,11 @@ namespace mwetris {
 		sdl::Color getComboBoxBackgroundColor() const;
 		sdl::Color getComboBoxBorderColor() const;
 		sdl::Color getComboBoxShowDropDownColor() const;
-		sdl::Sprite getComboBoxShowDropDownSprite();
 
-		sdl::Sprite getHumanSprite();
-		sdl::Sprite getComputerSprite();
-		sdl::Sprite getCrossSprite();
-		sdl::Sprite getZoomSprite();
+		sdl::TextureView getHumanSprite();
+		sdl::TextureView getComputerSprite();
+		sdl::TextureView getCrossSprite();
+		sdl::TextureView getZoomSprite();
 
 		sdl::Color getMiddleTextColor() const;
 		int getMiddleTextBoxSize() const;
@@ -201,18 +184,10 @@ namespace mwetris {
 		int getActiveLocalGameColumns() const;
 
 	private:
-		TetrisData();
+		Configuration();
 
-		std::string jsonPath_;
-		sdl::TextureAtlas textureAtlas_;
-		std::map<std::string, sdl::Sound> sounds_;
-		std::map<std::string, sdl::Font> fonts_;
-		std::map<std::string, sdl::Music> musics_;
-		nlohmann::json jsonObject_;
-
-		mutable ImFont* defaultFont_{};
-		mutable ImFont* headerFont_{};
-		mutable ImFont* buttonFont_{};
+		struct Impl;
+		std::unique_ptr<Impl> impl_;
 	};
 
 }

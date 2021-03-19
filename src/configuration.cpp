@@ -1,9 +1,11 @@
-#include "tetrisdata.h"
+#include "configuration.h"
 
-#include <sdl/color.h>
+#include <sdl/textureatlas.h>
 
 #include <nlohmann/json.hpp>
 
+#include <map>
+#include <vector>
 #include <fstream>
 #include <sstream>
 
@@ -147,549 +149,557 @@ namespace mwetris {
 		};
 	}
 
-	TetrisData::TetrisData() : textureAtlas_(2048, 2048, []() {
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	}) {
+	struct Configuration::Impl {
+		std::string jsonPath;
+		sdl::TextureAtlas textureAtlas;
+		std::map<std::string, sdl::Sound> sounds;
+		std::map<std::string, sdl::Font> fonts;
+		std::map<std::string, sdl::Music> musics;
+		nlohmann::json jsonObject;
+
+		mutable ImFont* defaultFont{};
+		mutable ImFont* headerFont{};
+		mutable ImFont* buttonFont{};
+	};
+
+	Configuration& Configuration::getInstance() {
+		static Configuration instance;
+		return instance;
+	}
+
+	void Configuration::quit() {
+		impl_->sounds.clear();
+		impl_->fonts.clear();
+		impl_->musics.clear();
+	}
+
+	Configuration::Configuration()
+		: impl_{std::make_unique<Configuration::Impl>()} {
+		
+		impl_->textureAtlas = sdl::TextureAtlas{2048, 2048, []() {
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			}
+		};
+
 		std::ifstream defaultStream{"USE_APPLICATION_JSON"};
 		bool applicationJson;
 		defaultStream >> applicationJson;
 		const std::string APPLICATION_JSON{"tetris.json"};
 		if (applicationJson) {
-			jsonPath_ = APPLICATION_JSON;
+			impl_->jsonPath = APPLICATION_JSON;
 		} else {
 			// Find default path to save/load file from.
-			jsonPath_ = SDL_GetPrefPath("mwthinker", "MWetris2") + APPLICATION_JSON;
+			impl_->jsonPath = SDL_GetPrefPath("mwthinker", "MWetris2") + APPLICATION_JSON;
 		}
-		std::ifstream stream(jsonPath_);
+		std::ifstream stream(impl_->jsonPath);
 		if (!stream.is_open()) {
 			// Assume that the file does not exist, load file from application folder.
 			stream = std::ifstream(APPLICATION_JSON);
 		}
-		stream >> jsonObject_;
+		stream >> impl_->jsonObject;
 	}
 
-	void TetrisData::save() {
-		std::ofstream stream{jsonPath_};
-		stream << jsonObject_.dump(1);
+	void Configuration::save() {
+		std::ofstream stream{impl_->jsonPath};
+		stream << impl_->jsonObject.dump(1);
 	}
 	
-	const sdl::Font& TetrisData::loadFont(const std::string& file, int fontSize) {
+	const sdl::Font& Configuration::loadFont(const std::string& file, int fontSize) {
 		assert(fontSize > 0);
 
-		size_t size = fonts_.size();
+		size_t size = impl_->fonts.size();
 		std::string key = file;
 		key += fontSize;
-		sdl::Font& font = fonts_[key];
-		if (fonts_.size() > size) {
+		auto& font = impl_->fonts[key];
+		if (impl_->fonts.size() > size) {
 			font = sdl::Font{file, fontSize};
 		}
 		return font;
 	}
 
-	sdl::Sound TetrisData::loadSound(const std::string& file) {
-		size_t size = sounds_.size();
-		sdl::Sound& sound = sounds_[file];
+	sdl::Sound Configuration::loadSound(const std::string& file) {
+		size_t size = impl_->sounds.size();
+		sdl::Sound& sound = impl_->sounds[file];
 
 		// Sound not found?
-		if (sounds_.size() > size) {
+		if (impl_->sounds.size() > size) {
 			sound = sdl::Sound(file);
 		}
 
 		return sound;
 	}
 
-	sdl::Music TetrisData::loadMusic(const std::string& file) {
-		size_t size = musics_.size();
-		sdl::Music& music = musics_[file];
+	sdl::Music Configuration::loadMusic(const std::string& file) {
+		size_t size = impl_->musics.size();
+		sdl::Music& music = impl_->musics[file];
 
 		// Music not found?
-		if (musics_.size() > size) {
+		if (impl_->musics.size() > size) {
 			music = sdl::Music{file};
 		}
 
 		return music;
 	}
 
-	sdl::Sprite TetrisData::loadSprite(const std::string& file) {
-		return textureAtlas_.add(file, 1);;
+	sdl::TextureView Configuration::loadSprite(const std::string& file) {
+		return impl_->textureAtlas.add(file, 1).getTextureView();
 	}
 
-	sdl::Sprite TetrisData::getSprite(tetris::BlockType blockType) {
+	sdl::TextureView Configuration::getSprite(tetris::BlockType blockType) {
 		switch (blockType) {
 			case tetris::BlockType::I:
-				return loadSprite(jsonObject_["window"]["tetrisBoard"]["sprites"]["squareI"].get<std::string>());
+				return loadSprite(impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareI"].get<std::string>());
 			case tetris::BlockType::J:
-				return loadSprite(jsonObject_["window"]["tetrisBoard"]["sprites"]["squareJ"].get<std::string>());
+				return loadSprite(impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareJ"].get<std::string>());
 			case tetris::BlockType::L:
-				return loadSprite(jsonObject_["window"]["tetrisBoard"]["sprites"]["squareL"].get<std::string>());
+				return loadSprite(impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareL"].get<std::string>());
 			case tetris::BlockType::O:
-				return loadSprite(jsonObject_["window"]["tetrisBoard"]["sprites"]["squareO"].get<std::string>());
+				return loadSprite(impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareO"].get<std::string>());
 			case tetris::BlockType::S:
-				return loadSprite(jsonObject_["window"]["tetrisBoard"]["sprites"]["squareS"].get<std::string>());
+				return loadSprite(impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareS"].get<std::string>());
 			case tetris::BlockType::T:
-				return loadSprite(jsonObject_["window"]["tetrisBoard"]["sprites"]["squareT"].get<std::string>());
+				return loadSprite(impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareT"].get<std::string>());
 			case tetris::BlockType::Z:
-				return loadSprite(jsonObject_["window"]["tetrisBoard"]["sprites"]["squareZ"].get<std::string>());
+				return loadSprite(impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareZ"].get<std::string>());
 		}
 		return {};
 	}
 
-	const sdl::Font& TetrisData::getDefaultFont(int size) {
-		return loadFont(jsonObject_["window"]["font"].get<std::string>(), size);
+	const sdl::Font& Configuration::getDefaultFont(int size) {
+		return loadFont(impl_->jsonObject["window"]["font"].get<std::string>(), size);
 	}
 
-	ImFont* TetrisData::getImGuiDefaultFont() const {
-		if (!defaultFont_) {
-			defaultFont_ = ImGui::GetIO().Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 16);
+	ImFont* Configuration::getImGuiDefaultFont() const {
+		if (!impl_->defaultFont) {
+			impl_->defaultFont = ImGui::GetIO().Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 16);
 		}
 
-		return defaultFont_;
+		return impl_->defaultFont;
 	}
 
-	ImFont* TetrisData::getImGuiHeaderFont() const {
-		if (!headerFont_) {
-			headerFont_ = ImGui::GetIO().Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 50);
+	ImFont* Configuration::getImGuiHeaderFont() const {
+		if (!impl_->headerFont) {
+			impl_->headerFont = ImGui::GetIO().Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 50);
 		}
 
-		return headerFont_;
+		return impl_->headerFont;
 	}
 
-	ImFont* TetrisData::getImGuiButtonFont() const {
-		if (!buttonFont_) {
-			buttonFont_ = ImGui::GetIO().Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 35);
+	ImFont* Configuration::getImGuiButtonFont() const {
+		if (!impl_->buttonFont) {
+			impl_->buttonFont = ImGui::GetIO().Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 35);
 		}
 
-		return buttonFont_;
+		return impl_->buttonFont;
 	}
 
-	void TetrisData::bindTextureFromAtlas() const {
-		textureAtlas_.get().bindTexture();
+	void Configuration::bindTextureFromAtlas() const {
+		impl_->textureAtlas.get().bindTexture();
 	}
 
-	sdl::Color TetrisData::getOuterSquareColor() const {
-		return jsonObject_["window"]["tetrisBoard"]["outerSquareColor"].get<sdl::Color>();
+	sdl::Color Configuration::getOuterSquareColor() const {
+		return impl_->jsonObject["window"]["tetrisBoard"]["outerSquareColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getInnerSquareColor() const {
-		return jsonObject_["window"]["tetrisBoard"]["innerSquareColor"].get<sdl::Color>();
+	sdl::Color Configuration::getInnerSquareColor() const {
+		return impl_->jsonObject["window"]["tetrisBoard"]["innerSquareColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getStartAreaColor() const {
-		return jsonObject_["window"]["tetrisBoard"]["startAreaColor"].get<sdl::Color>();
+	sdl::Color Configuration::getStartAreaColor() const {
+		return impl_->jsonObject["window"]["tetrisBoard"]["startAreaColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getPlayerAreaColor() const {
-		return jsonObject_["window"]["tetrisBoard"]["playerAreaColor"].get<sdl::Color>();
+	sdl::Color Configuration::getPlayerAreaColor() const {
+		return impl_->jsonObject["window"]["tetrisBoard"]["playerAreaColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getBorderColor() const {
-		return jsonObject_["window"]["tetrisBoard"]["borderColor"].get<sdl::Color>();
+	sdl::Color Configuration::getBorderColor() const {
+		return impl_->jsonObject["window"]["tetrisBoard"]["borderColor"].get<sdl::Color>();
 	}
 
-
-	bool TetrisData::isShowDownBlock() const {
+	bool Configuration::isShowDownBlock() const {
 		try {
-			return jsonObject_.at("window").at("tetrisBoard").at("showDownBlock").get<bool>();
+			return impl_->jsonObject.at("window").at("tetrisBoard").at("showDownBlock").get<bool>();
 		} catch (nlohmann::detail::out_of_range&) {
 			return true;
 		}
 	}
 
-	void TetrisData::setShowDownBlock(bool showDownColor) {
-		jsonObject_["window"]["tetrisBoard"]["showDownBlock"] = showDownColor;
+	void Configuration::setShowDownBlock(bool showDownColor) {
+		impl_->jsonObject["window"]["tetrisBoard"]["showDownBlock"] = showDownColor;
 	}
 
-	sdl::Color TetrisData::getDownBlockColor() const {
+	sdl::Color Configuration::getDownBlockColor() const {
 		try {
-			return jsonObject_.at("window").at("tetrisBoard").at("downBlockColor").get<sdl::Color>();
+			return impl_->jsonObject.at("window").at("tetrisBoard").at("downBlockColor").get<sdl::Color>();
 		} catch (nlohmann::detail::out_of_range) {
 			return sdl::Color{1.f, 1.f, 1.f, 0.15f};
 		}
 	}
 
-	float TetrisData::getTetrisSquareSize() const {
-		return jsonObject_["window"]["tetrisBoard"]["squareSize"].get<float>();
+	float Configuration::getTetrisSquareSize() const {
+		return impl_->jsonObject["window"]["tetrisBoard"]["squareSize"].get<float>();
 	}
 
-	float TetrisData::getTetrisBorderSize() const {
-		return jsonObject_["window"]["tetrisBoard"]["borderSize"].get<float>();
+	float Configuration::getTetrisBorderSize() const {
+		return impl_->jsonObject["window"]["tetrisBoard"]["borderSize"].get<float>();
 	}
 
-	bool TetrisData::isLimitFps() const {
+	bool Configuration::isLimitFps() const {
 		try {
-			return jsonObject_.at("window").at("limitFps").get<bool>();
+			return impl_->jsonObject.at("window").at("limitFps").get<bool>();
 		} catch (const nlohmann::detail::out_of_range&) {
 			return false;
 		}
 	}
 
-	void TetrisData::setLimitFps(bool limited) {
-		jsonObject_["window"]["limitFps"] = limited;
+	void Configuration::setLimitFps(bool limited) {
+		impl_->jsonObject["window"]["limitFps"] = limited;
 	}
 
-	int TetrisData::getWindowPositionX() const {
-		return jsonObject_["window"]["positionX"].get<int>();
+	int Configuration::getWindowPositionX() const {
+		return impl_->jsonObject["window"]["positionX"].get<int>();
 	}
 
-	int TetrisData::getWindowPositionY() const {
-		return jsonObject_["window"]["positionY"].get<int>();
+	int Configuration::getWindowPositionY() const {
+		return impl_->jsonObject["window"]["positionY"].get<int>();
 	}
 
-	void TetrisData::setWindowPositionX(int x) {
-		jsonObject_["window"]["positionX"] = x;
+	void Configuration::setWindowPositionX(int x) {
+		impl_->jsonObject["window"]["positionX"] = x;
 	}
 
-	void TetrisData::setWindowPositionY(int y) {
-		jsonObject_["window"]["positionY"] = y;
+	void Configuration::setWindowPositionY(int y) {
+		impl_->jsonObject["window"]["positionY"] = y;
 	}
 
-	int TetrisData::getWindowWidth() const {
-		return jsonObject_["window"]["width"].get<int>();
+	int Configuration::getWindowWidth() const {
+		return impl_->jsonObject["window"]["width"].get<int>();
 	}
 
-	int TetrisData::getWindowHeight() const {
-		return jsonObject_["window"]["height"].get<int>();
+	int Configuration::getWindowHeight() const {
+		return impl_->jsonObject["window"]["height"].get<int>();
 	}
 
-	void TetrisData::setWindowWidth(int width) {
-		jsonObject_["window"]["width"] = width;
+	void Configuration::setWindowWidth(int width) {
+		impl_->jsonObject["window"]["width"] = width;
 	}
 
-	void TetrisData::setWindowHeight(int height) {
-		jsonObject_["window"]["height"] = height;
+	void Configuration::setWindowHeight(int height) {
+		impl_->jsonObject["window"]["height"] = height;
 	}
 
-	bool TetrisData::isWindowResizable() const {
-		return jsonObject_["window"]["resizeable"].get<bool>();
+	bool Configuration::isWindowResizable() const {
+		return impl_->jsonObject["window"]["resizeable"].get<bool>();
 	}
 
-	void TetrisData::setWindowResizable(bool resizeable) {
-		jsonObject_["window"]["resizeable"] = resizeable;
+	void Configuration::setWindowResizable(bool resizeable) {
+		impl_->jsonObject["window"]["resizeable"] = resizeable;
 	}
 
-	int TetrisData::getWindowMinWidth() const {
-		return jsonObject_["window"]["minWidth"].get<int>();
+	int Configuration::getWindowMinWidth() const {
+		return impl_->jsonObject["window"]["minWidth"].get<int>();
 	}
 
-	int TetrisData::getWindowMinHeight() const {
-		return jsonObject_["window"]["minHeight"].get<int>();
+	int Configuration::getWindowMinHeight() const {
+		return impl_->jsonObject["window"]["minHeight"].get<int>();
 	}
 
-	std::string TetrisData::getWindowIcon() const {
-		return jsonObject_["window"]["icon"].get<std::string>();
+	std::string Configuration::getWindowIcon() const {
+		return impl_->jsonObject["window"]["icon"].get<std::string>();
 	}
 
-	bool TetrisData::isWindowBordered() const {
-		return jsonObject_["window"]["border"].get<bool>();
+	bool Configuration::isWindowBordered() const {
+		return impl_->jsonObject["window"]["border"].get<bool>();
 	}
 
-	void TetrisData::setWindowBordered(bool border) {
-		jsonObject_["window"]["border"] = border;
+	void Configuration::setWindowBordered(bool border) {
+		impl_->jsonObject["window"]["border"] = border;
 	}
 
-	bool TetrisData::isWindowPauseOnLostFocus() const {
+	bool Configuration::isWindowPauseOnLostFocus() const {
 		try {
-			return jsonObject_.at("window").at("pauseOnLostFocus").get<bool>();
+			return impl_->jsonObject.at("window").at("pauseOnLostFocus").get<bool>();
 		} catch (const nlohmann::detail::out_of_range&) {
 			return true;
 		}
 	}
 
-	void TetrisData::setWindowPauseOnLostFocus(bool pauseOnFocus) {
-		jsonObject_["window"]["pauseOnLostFocus"] = pauseOnFocus;
+	void Configuration::setWindowPauseOnLostFocus(bool pauseOnFocus) {
+		impl_->jsonObject["window"]["pauseOnLostFocus"] = pauseOnFocus;
 	}
 
-	bool TetrisData::isWindowMaximized() const {
-		return jsonObject_["window"]["maximized"].get<bool>();
+	bool Configuration::isWindowMaximized() const {
+		return impl_->jsonObject["window"]["maximized"].get<bool>();
 	}
 
-	void TetrisData::setWindowMaximized(bool maximized) {
-		jsonObject_["window"]["maximized"] = maximized;
+	void Configuration::setWindowMaximized(bool maximized) {
+		impl_->jsonObject["window"]["maximized"] = maximized;
 	}
 
-	bool TetrisData::isWindowVsync() const {
-		return jsonObject_["window"]["vsync"].get<bool>();
+	bool Configuration::isWindowVsync() const {
+		return impl_->jsonObject["window"]["vsync"].get<bool>();
 	}
 
-	void TetrisData::setWindowVsync(bool activate) {
-		jsonObject_["window"]["vsync"] = activate;
+	void Configuration::setWindowVsync(bool activate) {
+		impl_->jsonObject["window"]["vsync"] = activate;
 	}
 
-	int TetrisData::getMultiSampleBuffers() const {
-		return jsonObject_["window"]["multiSampleBuffers"].get<int>();
+	int Configuration::getMultiSampleBuffers() const {
+		return impl_->jsonObject["window"]["multiSampleBuffers"].get<int>();
 	}
 
-	int TetrisData::getMultiSampleSamples() const {
-		return jsonObject_["window"]["multiSampleSamples"].get<int>();
+	int Configuration::getMultiSampleSamples() const {
+		return impl_->jsonObject["window"]["multiSampleSamples"].get<int>();
 	}
 
-	float TetrisData::getRowFadingTime() const {
-		return jsonObject_["window"]["rowFadingTime"].get<float>();
+	float Configuration::getRowFadingTime() const {
+		return impl_->jsonObject["window"]["rowFadingTime"].get<float>();
 	}
 
-	void TetrisData::setRowFadingTime(float time) {
-		jsonObject_["window"]["rowFadingTime"] = time;
+	void Configuration::setRowFadingTime(float time) {
+		impl_->jsonObject["window"]["rowFadingTime"] = time;
 	}
 
-	float TetrisData::getRowMovingTime() const {
-		return jsonObject_["window"]["rowMovingTime"].get<float>();
+	float Configuration::getRowMovingTime() const {
+		return impl_->jsonObject["window"]["rowMovingTime"].get<float>();
 	}
 
-	void TetrisData::setRowMovingTime(float time) {
-		jsonObject_["window"]["rowMovingTime"] = time;
+	void Configuration::setRowMovingTime(float time) {
+		impl_->jsonObject["window"]["rowMovingTime"] = time;
 	}
 
-	sdl::Sprite TetrisData::getBackgroundSprite() {
-		return loadSprite(jsonObject_["window"]["sprites"]["background"].get<std::string>());
+	sdl::TextureView Configuration::getBackgroundSprite() {
+		return loadSprite(impl_->jsonObject["window"]["sprites"]["background"].get<std::string>());
 	}
 
-	std::string TetrisData::getAi1Name() const {
-		return jsonObject_["ai1"].get<std::string>();
+	std::string Configuration::getAi1Name() const {
+		return impl_->jsonObject["ai1"].get<std::string>();
 	}
-	std::string TetrisData::getAi2Name() const {
-		return jsonObject_["ai2"].get<std::string>();
+	std::string Configuration::getAi2Name() const {
+		return impl_->jsonObject["ai2"].get<std::string>();
 	}
-	std::string TetrisData::getAi3Name() const {
-		return jsonObject_["ai3"].get<std::string>();
+	std::string Configuration::getAi3Name() const {
+		return impl_->jsonObject["ai3"].get<std::string>();
 	}
-	std::string TetrisData::getAi4Name() const {
-		return jsonObject_["ai4"].get<std::string>();
-	}
-
-	void TetrisData::setAi1Name(const std::string& name) {
-		jsonObject_["ai1"] = name;
+	std::string Configuration::getAi4Name() const {
+		return impl_->jsonObject["ai4"].get<std::string>();
 	}
 
-	void TetrisData::setAi2Name(const std::string& name) {
-		jsonObject_["ai2"] = name;
+	void Configuration::setAi1Name(const std::string& name) {
+		impl_->jsonObject["ai1"] = name;
 	}
 
-	void TetrisData::setAi3Name(const std::string& name) {
-		jsonObject_["ai3"] = name;
+	void Configuration::setAi2Name(const std::string& name) {
+		impl_->jsonObject["ai2"] = name;
 	}
 
-	void TetrisData::setAi4Name(const std::string& name) {
-		jsonObject_["ai4"] = name;
+	void Configuration::setAi3Name(const std::string& name) {
+		impl_->jsonObject["ai3"] = name;
 	}
 
-	std::vector<tetris::Ai> TetrisData::getAiVector() const {
+	void Configuration::setAi4Name(const std::string& name) {
+		impl_->jsonObject["ai4"] = name;
+	}
+
+	std::vector<tetris::Ai> Configuration::getAiVector() const {
 		std::vector<tetris::Ai> ais;
 		ais.push_back({});
-		ais.insert(ais.end(), jsonObject_["ais"].begin(), jsonObject_["ais"].end());
+		ais.insert(ais.end(), impl_->jsonObject["ais"].begin(), impl_->jsonObject["ais"].end());
 		return ais;
 	}
 
-	std::vector<HighscoreRecord> TetrisData::getHighscoreRecordVector() const {
-		return std::vector<HighscoreRecord>(jsonObject_["highscore"].begin(), jsonObject_["highscore"].end());
+	std::vector<HighscoreRecord> Configuration::getHighscoreRecordVector() const {
+		return std::vector<HighscoreRecord>(impl_->jsonObject["highscore"].begin(), impl_->jsonObject["highscore"].end());
 	}
 
-	void TetrisData::setHighscoreRecordVector(const std::vector<HighscoreRecord>& highscoreVector) {
-		jsonObject_["highscore"].clear();
+	void Configuration::setHighscoreRecordVector(const std::vector<HighscoreRecord>& highscoreVector) {
+		impl_->jsonObject["highscore"].clear();
 		for (const auto& record : highscoreVector) {
-			jsonObject_["highscore"].push_back(record);
+			impl_->jsonObject["highscore"].push_back(record);
 		}
 	}
 
-	int TetrisData::getActiveLocalGameRows() const {
-		return jsonObject_["activeGames"]["localGame"]["rows"].get<int>();
+	int Configuration::getActiveLocalGameRows() const {
+		return impl_->jsonObject["activeGames"]["localGame"]["rows"].get<int>();
 	}
 
-	int TetrisData::getActiveLocalGameColumns() const {
-		return jsonObject_["activeGames"]["localGame"]["columns"].get<int>();
+	int Configuration::getActiveLocalGameColumns() const {
+		return impl_->jsonObject["activeGames"]["localGame"]["columns"].get<int>();
 	}
 
-	bool TetrisData::isFullscreenOnDoubleClick() const {
-		return jsonObject_["window"]["fullscreenOnDoubleClick"].get<bool>();
+	bool Configuration::isFullscreenOnDoubleClick() const {
+		return impl_->jsonObject["window"]["fullscreenOnDoubleClick"].get<bool>();
 	}
 
-	void TetrisData::setFullscreenOnDoubleClick(bool activate) {
-		jsonObject_["window"]["fullscreenOnDoubleClick"] = activate;
+	void Configuration::setFullscreenOnDoubleClick(bool activate) {
+		impl_->jsonObject["window"]["fullscreenOnDoubleClick"] = activate;
 	}
 
-	bool TetrisData::isMoveWindowByHoldingDownMouse() const {
-		return jsonObject_["window"]["moveWindowByHoldingDownMouse"].get<bool>();
+	bool Configuration::isMoveWindowByHoldingDownMouse() const {
+		return impl_->jsonObject["window"]["moveWindowByHoldingDownMouse"].get<bool>();
 	}
 
-	void TetrisData::setMoveWindowByHoldingDownMouse(bool activate) {
-		jsonObject_["window"]["moveWindowByHoldingDownMouse"] = activate;
+	void Configuration::setMoveWindowByHoldingDownMouse(bool activate) {
+		impl_->jsonObject["window"]["moveWindowByHoldingDownMouse"] = activate;
 	}
 
-	int TetrisData::getPort() const {
-		return jsonObject_["window"]["port"].get<int>();
+	int Configuration::getPort() const {
+		return impl_->jsonObject["window"]["port"].get<int>();
 	}
 
-	void TetrisData::setPort(int port) {
-		jsonObject_["window"]["port"] = port;
+	void Configuration::setPort(int port) {
+		impl_->jsonObject["window"]["port"] = port;
 	}
 
-	int TetrisData::getTimeToConnectMS() const {
-		return jsonObject_["window"]["timeToConnectMS"].get<int>();
+	int Configuration::getTimeToConnectMS() const {
+		return impl_->jsonObject["window"]["timeToConnectMS"].get<int>();
 	}
 
-	std::string TetrisData::getIp() const {
-		return jsonObject_["window"]["ip"].get<std::string>();
+	std::string Configuration::getIp() const {
+		return impl_->jsonObject["window"]["ip"].get<std::string>();
 	}
 
-	void TetrisData::setIp(const std::string& ip) {
-		jsonObject_["window"]["ip"] = ip;
+	void Configuration::setIp(const std::string& ip) {
+		impl_->jsonObject["window"]["ip"] = ip;
 	}
 
-	float TetrisData::getWindowBarHeight() const {
-		return jsonObject_["window"]["bar"]["height"].get<float>();
+	float Configuration::getWindowBarHeight() const {
+		return impl_->jsonObject["window"]["bar"]["height"].get<float>();
 	}
 
-	sdl::Color TetrisData::getWindowBarColor() const {
-		return jsonObject_["window"]["bar"]["color"].get<sdl::Color>();
+	sdl::Color Configuration::getWindowBarColor() const {
+		return impl_->jsonObject["window"]["bar"]["color"].get<sdl::Color>();
 	}
 
-	sdl::Sprite TetrisData::getCheckboxBoxSprite() {
-		return loadSprite(jsonObject_["window"]["checkBox"]["boxImage"].get<std::string>());
+	sdl::Color Configuration::getCheckboxTextColor() const {
+		return impl_->jsonObject["window"]["checkBox"]["textColor"].get<sdl::Color>();
 	}
 
-	sdl::Sprite TetrisData::getCheckboxCheckSprite() {
-		return loadSprite(jsonObject_["window"]["checkBox"]["checkImage"].get<std::string>());
+	sdl::Color Configuration::getCheckboxBackgroundColor() const {
+		return impl_->jsonObject["window"]["checkBox"]["backgroundColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getCheckboxTextColor() const {
-		return jsonObject_["window"]["checkBox"]["textColor"].get<sdl::Color>();
+	sdl::Color Configuration::getCheckboxBoxColor() const {
+		return impl_->jsonObject["window"]["checkBox"]["boxColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getCheckboxBackgroundColor() const {
-		return jsonObject_["window"]["checkBox"]["backgroundColor"].get<sdl::Color>();
+	sdl::Color Configuration::getChecboxCheckColor() const {
+		return impl_->jsonObject["window"]["checkBox"]["checkColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getCheckboxBoxColor() const {
-		return jsonObject_["window"]["checkBox"]["boxColor"].get<sdl::Color>();
+	sdl::Color Configuration::getRadioButtonTextColor() const {
+		return impl_->jsonObject["window"]["radioButton"]["textColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getChecboxCheckColor() const {
-		return jsonObject_["window"]["checkBox"]["checkColor"].get<sdl::Color>();
+	sdl::Color Configuration::getRadioButtonBackgroundColor() const {
+		return impl_->jsonObject["window"]["radioButton"]["backgroundColor"].get<sdl::Color>();
 	}
 
-	sdl::Sprite TetrisData::getRadioButtonBoxSprite() {
-		return loadSprite(jsonObject_["window"]["radioButton"]["boxImage"].get<std::string>());
+	sdl::Color Configuration::getRadioButtonBoxColor() const {
+		return impl_->jsonObject["window"]["radioButton"]["boxColor"].get<sdl::Color>();
 	}
 
-	sdl::Sprite TetrisData::getRadioButtonCheckSprite() {
-		return loadSprite(jsonObject_["window"]["radioButton"]["checkImage"].get<std::string>());
+	sdl::Color Configuration::getRadioButtonCheckColor() const {
+		return impl_->jsonObject["window"]["radioButton"]["checkColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getRadioButtonTextColor() const {
-		return jsonObject_["window"]["radioButton"]["textColor"].get<sdl::Color>();
+	sdl::Color Configuration::getLabelTextColor() const {
+		return impl_->jsonObject["window"]["label"]["textColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getRadioButtonBackgroundColor() const {
-		return jsonObject_["window"]["radioButton"]["backgroundColor"].get<sdl::Color>();
+	sdl::Color Configuration::getLabelBackgroundColor() const {
+		return impl_->jsonObject["window"]["label"]["backgroundColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getRadioButtonBoxColor() const {
-		return jsonObject_["window"]["radioButton"]["boxColor"].get<sdl::Color>();
+	sdl::Color Configuration::getButtonFocusColor() const {
+		return impl_->jsonObject["window"]["button"]["focusColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getRadioButtonCheckColor() const {
-		return jsonObject_["window"]["radioButton"]["checkColor"].get<sdl::Color>();
+	sdl::Color Configuration::getButtonTextColor() const {
+		return impl_->jsonObject["window"]["button"]["textColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getLabelTextColor() const {
-		return jsonObject_["window"]["label"]["textColor"].get<sdl::Color>();
+	sdl::Color Configuration::getButtonHoverColor() const {
+		return impl_->jsonObject["window"]["button"]["hoverColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getLabelBackgroundColor() const {
-		return jsonObject_["window"]["label"]["backgroundColor"].get<sdl::Color>();
+	sdl::Color Configuration::getButtonPushColor() const {
+		return impl_->jsonObject["window"]["button"]["pushColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getButtonFocusColor() const {
-		return jsonObject_["window"]["button"]["focusColor"].get<sdl::Color>();
+	sdl::Color Configuration::getButtonBackgroundColor() const {
+		return impl_->jsonObject["window"]["button"]["backgroundColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getButtonTextColor() const {
-		return jsonObject_["window"]["button"]["textColor"].get<sdl::Color>();
+	sdl::Color Configuration::getButtonBorderColor() const {
+		return impl_->jsonObject["window"]["button"]["borderColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getButtonHoverColor() const {
-		return jsonObject_["window"]["button"]["hoverColor"].get<sdl::Color>();
+	sdl::Color Configuration::getComboBoxFocusColor() const {
+		return impl_->jsonObject["window"]["comboBox"]["focusColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getButtonPushColor() const {
-		return jsonObject_["window"]["button"]["pushColor"].get<sdl::Color>();
+	sdl::Color Configuration::getComboBoxTextColor() const {
+		return impl_->jsonObject["window"]["comboBox"]["textColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getButtonBackgroundColor() const {
-		return jsonObject_["window"]["button"]["backgroundColor"].get<sdl::Color>();
+	sdl::Color Configuration::getComboBoxSelectedTextColor() const {
+		return impl_->jsonObject["window"]["comboBox"]["selectedTextColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getButtonBorderColor() const {
-		return jsonObject_["window"]["button"]["borderColor"].get<sdl::Color>();
+	sdl::Color Configuration::getComboBoxSelectedBackgroundColor() const {
+		return impl_->jsonObject["window"]["comboBox"]["selectedBackgroundColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getComboBoxFocusColor() const {
-		return jsonObject_["window"]["comboBox"]["focusColor"].get<sdl::Color>();
+	sdl::Color Configuration::getComboBoxBackgroundColor() const {
+		return impl_->jsonObject["window"]["comboBox"]["backgroundColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getComboBoxTextColor() const {
-		return jsonObject_["window"]["comboBox"]["textColor"].get<sdl::Color>();
+	sdl::Color Configuration::getComboBoxBorderColor() const {
+		return impl_->jsonObject["window"]["comboBox"]["borderColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getComboBoxSelectedTextColor() const {
-		return jsonObject_["window"]["comboBox"]["selectedTextColor"].get<sdl::Color>();
+	sdl::Color Configuration::getComboBoxShowDropDownColor() const {
+		return impl_->jsonObject["window"]["comboBox"]["showDropDownColor"].get<sdl::Color>();
 	}
 
-	sdl::Color TetrisData::getComboBoxSelectedBackgroundColor() const {
-		return jsonObject_["window"]["comboBox"]["selectedBackgroundColor"].get<sdl::Color>();
+	sdl::TextureView Configuration::getHumanSprite() {
+		return loadSprite(impl_->jsonObject["window"]["sprites"]["human"].get<std::string>());
 	}
 
-	sdl::Color TetrisData::getComboBoxBackgroundColor() const {
-		return jsonObject_["window"]["comboBox"]["backgroundColor"].get<sdl::Color>();
+	sdl::TextureView Configuration::getComputerSprite() {
+		return loadSprite(impl_->jsonObject["window"]["sprites"]["computer"].get<std::string>());
 	}
 
-	sdl::Color TetrisData::getComboBoxBorderColor() const {
-		return jsonObject_["window"]["comboBox"]["borderColor"].get<sdl::Color>();
+	sdl::TextureView Configuration::getCrossSprite() {
+		return loadSprite(impl_->jsonObject["window"]["sprites"]["cross"].get<std::string>());
 	}
 
-	sdl::Color TetrisData::getComboBoxShowDropDownColor() const {
-		return jsonObject_["window"]["comboBox"]["showDropDownColor"].get<sdl::Color>();
+	sdl::TextureView Configuration::getZoomSprite() {
+		return loadSprite(impl_->jsonObject["window"]["sprites"]["zoom"].get<std::string>());
 	}
 
-	sdl::Sprite TetrisData::getComboBoxShowDropDownSprite() {
-		return loadSprite(jsonObject_["window"]["comboBox"]["showDropDownSprite"].get<std::string>());
-	}
-
-	sdl::Sprite TetrisData::getHumanSprite() {
-		return loadSprite(jsonObject_["window"]["sprites"]["human"].get<std::string>());
-	}
-
-	sdl::Sprite TetrisData::getComputerSprite() {
-		return loadSprite(jsonObject_["window"]["sprites"]["computer"].get<std::string>());
-	}
-
-	sdl::Sprite TetrisData::getCrossSprite() {
-		return loadSprite(jsonObject_["window"]["sprites"]["cross"].get<std::string>());
-	}
-
-	sdl::Sprite TetrisData::getZoomSprite() {
-		return loadSprite(jsonObject_["window"]["sprites"]["zoom"].get<std::string>());
-	}
-
-	sdl::Color TetrisData::getMiddleTextColor() const {
+	sdl::Color Configuration::getMiddleTextColor() const {
 		try {
-			return jsonObject_.at("window").at("tetrisBoard").at("middleTextColor").get<sdl::Color>();
+			return impl_->jsonObject.at("window").at("tetrisBoard").at("middleTextColor").get<sdl::Color>();
 		} catch (const nlohmann::detail::out_of_range&) {
 			return sdl::Color{0.2f, 0.2f, 0.2f, 0.5f};
 		}
 	}
 
-	int TetrisData::getMiddleTextBoxSize() const {
+	int Configuration::getMiddleTextBoxSize() const {
 		try {
-			return jsonObject_.at("window").at("tetrisBoard").at("middleTextBoxSize").get<int>();
+			return impl_->jsonObject.at("window").at("tetrisBoard").at("middleTextBoxSize").get<int>();
 		} catch (const nlohmann::detail::out_of_range&) {
 			return 7;
 		}
 	}
 	/*
-	void TetrisData::setActiveLocalGame(int columns, int rows, const std::vector<PlayerData>& playerDataVector) {
-		jsonObject_["activeGames"]["localGame"]["columns"] = columns;
-		jsonObject_["activeGames"]["localGame"]["rows"] = rows;
+	void Configuration::setActiveLocalGame(int columns, int rows, const std::vector<PlayerData>& playerDataVector) {
+		impl_->jsonObject["activeGames"]["localGame"]["columns"] = columns;
+		impl_->jsonObject["activeGames"]["localGame"]["rows"] = rows;
 
 		nlohmann::json playerJson = nlohmann::json::array();
 		for (const PlayerData& data : playerDataVector) {
@@ -712,13 +722,13 @@ namespace mwetris {
 				}}
 				});
 		}
-		jsonObject_["activeGames"]["localGame"]["players"] = playerJson;
+		impl_->jsonObject["activeGames"]["localGame"]["players"] = playerJson;
 	}
 	*/
 
 	/*
-	std::vector<game::PlayerData> TetrisData::getActiveLocalGamePlayers() {
-		nlohmann::json players = jsonObject_["activeGames"]["localGame"]["players"];
+	std::vector<game::PlayerData> Configuration::getActiveLocalGamePlayers() {
+		nlohmann::json players = impl_->jsonObject["activeGames"]["localGame"]["players"];
 
 		std::vector<game::PlayerData> playerDataVector;
 		for (nlohmann::json& player : players) {
