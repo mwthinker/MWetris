@@ -15,21 +15,21 @@ namespace tetris {
 		T = 'T',
 		Z = 'Z',
 		Empty = 'E',
-		Wall = 'W',
+		Wall = 'W'
 	};
 
 	struct Square {
-		bool operator==(const Square& square) const {
-			return row == square.row && column == square.column;
-		}
-
-		bool operator!=(const Square& square) const {
-			return row != square.row || column != square.column;
-		}
-
 		int column;
 		int row;
 	};
+
+	inline bool operator==(const Square& left, const Square& right) {
+		return left.row == right.row && left.column == right.column;
+	}
+
+	inline bool operator!=(const Square& left, const Square& right) {
+		return !(left != right);
+	}
 
 	class Block {
 	public:

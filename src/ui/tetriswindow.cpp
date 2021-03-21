@@ -120,4 +120,8 @@ namespace mwetris::ui {
 		}
 	}
 
+	SDL_HitTestResult TetrisWindow::onHitTest(const SDL_Point& point) {
+		return SDL_HITTEST_NORMAL;
+	}
+
 }

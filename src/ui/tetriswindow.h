@@ -39,6 +39,8 @@ namespace mwetris::ui {
 		void imGuiEventUpdate(const SDL_Event& windowEvent) override;
 
 		void handleSceneMenuEvent(const scene::Event& menuEvent);
+
+		SDL_HitTestResult onHitTest(const SDL_Point& point) override;
 	
 		sdl::TextureView background_;
 		scene::StateMachine sceneStateMachine_;
