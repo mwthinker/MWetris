@@ -30,8 +30,8 @@ namespace mwetris::graphic {
 			graphic.addRectangle({x, y}, {size, size}, color);
 		}
 
-		void addSquare(Graphic& graphic, float x, float y, float size, const sdl::TextureView& sprite) {
-			graphic.addRectangleImage({x, y}, {size, size}, sprite);
+		void addSquare(Graphic& graphic, float x, float y, float size, const sdl::TextureView& sprite, Color color = color::White) {
+			graphic.addRectangleImage({x, y}, {size, size}, sprite, color);
 		}
 
 		void addText(Graphic& graphic, float x, float y, const sdl::Sprite& text) {
@@ -45,7 +45,8 @@ namespace mwetris::graphic {
 	}
 
 	DrawBoard::DrawBoard(game::Player& player)
-		: tetrisBoard_{player.getTetrisBoard()} {
+		: tetrisBoard_{player.getTetrisBoard()}
+		, tmp_{tetrisBoard_} {
 
 		spriteZ_ = Configuration::getInstance().getSprite(tetris::BlockType::Z);
 		spriteS_ = Configuration::getInstance().getSprite(tetris::BlockType::S);
@@ -70,7 +71,7 @@ namespace mwetris::graphic {
 		return {width_, height_};
 	}
 
-	void DrawBoard::drawBlock(Graphic& graphic, const tetris::Block& block, Vec2 pos, bool center) {
+	void DrawBoard::drawBlock(Graphic& graphic, const tetris::Block& block, Vec2 pos, bool center, Color color) {
 		Vec2 delta{};
 		if (center) {
 			delta = (-Vec2{0.5f, 0.5f} - calculateCenterOfMass(block)) * squareSize_;
@@ -85,7 +86,8 @@ namespace mwetris::graphic {
 				addSquare(graphic,
 					x, y,
 					squareSize_,
-					getSprite(block.getBlockType()));
+					getSprite(block.getBlockType()),
+					color);
 			}
 		}
 	}
@@ -144,7 +146,7 @@ namespace mwetris::graphic {
 
 		drawBlock(graphic, tetris::Block{tetrisBoard_.getNextBlockType(), 0, 0}, Vec2{x, y} + squareSize_ * 2.5f, true);
 
-		const Color borderColor = Configuration::getInstance().getBorderColor();
+		const auto borderColor = Configuration::getInstance().getBorderColor();
 
 		// Add border.
 		// Left-up corner.
@@ -211,6 +213,10 @@ namespace mwetris::graphic {
 			borderSize_, height_ - 2 * borderSize_,
 			borderColor);
 
+		tmp_ = tetrisBoard_;
+		tmp_.update(tetris::Move::DownGround);
+		drawBlock(graphic, tmp_.getBlock(), {}, false, Color(1.f, 1.f, 1, 0.3f));
+		
 		drawBlock(graphic, tetrisBoard_.getBlock());
 
 		for (int i = 0; i < tetrisBoard_.getRows() - 2; ++i) {

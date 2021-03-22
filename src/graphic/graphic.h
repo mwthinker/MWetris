@@ -34,7 +34,7 @@ namespace mwetris::graphic {
 
 		void addRectangle(const Vec2& pos, const Vec2& size, Color color);
 
-		void addRectangleImage(const Vec2& pos, const Vec2& size, const sdl::TextureView& textureView);
+		void addRectangleImage(const Vec2& pos, const Vec2& size, const sdl::TextureView& textureView, Color color = sdl::color::White);
 
 		void addCircle(const Vec2& center, float radius, Color color, const int iterations = 40, float startAngle = 0);
 

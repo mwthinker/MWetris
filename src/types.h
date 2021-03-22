@@ -14,6 +14,8 @@ namespace mwetris {
 	using Vec3 = glm::vec3;
 	using Vec4 = glm::vec4;
 	using Color = sdl::Color;
+	
+	namespace color = sdl::color;
 
 }
 

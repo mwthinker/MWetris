@@ -75,10 +75,10 @@ namespace mwetris::graphic {
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			
-			auto model = graphic.currentMatrix();
+			const auto currentModel = graphic.currentMatrix();
 			float delta = 0;
 			for (auto& [player, drawBoardPtr] : drawPlayers_) {
-				model = glm::translate(model, Vec3{delta, 0.f, 0.f});
+				auto model = glm::translate(currentModel, Vec3{delta, 0.f, 0.f});
 				graphic.pushMatrix(model);
 				drawBoardPtr->draw(graphic);
 				delta += drawBoardPtr->getSize().x;

@@ -48,8 +48,8 @@ namespace mwetris::graphic {
 		batches_.emplace_back(sdlg::addRectangle(batch_, pos, size, color), currentMatrix_);
 	}
 
-	void Graphic::addRectangleImage(const Vec2& pos, const Vec2& size, const sdl::TextureView& textureView) {
-		batches_.emplace_back(sdlg::addRectangleImage(batch_, pos, size, textureView), textureView, currentMatrix_);
+	void Graphic::addRectangleImage(const Vec2& pos, const Vec2& size, const sdl::TextureView& textureView, Color color) {
+		batches_.emplace_back(sdlg::addRectangleImage(batch_, pos, size, textureView, color), textureView, currentMatrix_);
 	}
 
 	void Graphic::addFilledHexagon(const Vec2& center, float radius, Color color, float startAngle) {

@@ -26,7 +26,7 @@ namespace mwetris::graphic {
 		void callback(tetris::BoardEvent gameEvent, const tetris::TetrisBoard& tetrisBoard);
 
 	private:
-		void drawBlock(Graphic& graphic, const tetris::Block& block, Vec2 pos = {}, bool center = false);
+		void drawBlock(Graphic& graphic, const tetris::Block& block, Vec2 pos = {}, bool center = false, Color color = color::White);
 
 		sdl::TextureView getSprite(tetris::BlockType blockType) const;
 
@@ -35,6 +35,7 @@ namespace mwetris::graphic {
 		float infoSize_;
 		
 		const tetris::TetrisBoard& tetrisBoard_;
+		tetris::TetrisBoard tmp_;
 		
 		float width_, height_;
 		sdl::TextureView spriteI_, spriteJ_, spriteL_, spriteO_, spriteS_, spriteT_, spriteZ_;
