@@ -1,4 +1,5 @@
 {
+	"$schema": "./tetris.schema.json",
 	"window": {
 		"fullscreenOnDoubleClick": false,
 		"border": true,

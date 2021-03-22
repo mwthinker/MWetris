@@ -4,6 +4,7 @@
 
 	"type": "object",
 	"properties": {
+		"$schema":  { "type": "string" },
 		"window": { "$ref": "#/definitions/Window" },
 		"ai1": { "type": "string" },
 		"ai2": { "type": "string" },
