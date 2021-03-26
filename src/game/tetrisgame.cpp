@@ -68,17 +68,6 @@ namespace mwetris::game {
 		if (game_->isPaused()) {
 			game_->setPaused(false);
 		}
-
-		startNewCountDown();
-	}
-
-	void TetrisGame::startNewCountDown() {
-		// Must be called last, after all settings are defined for the current game.
-		if (currentGameHasCountDown()) {
-			timeLeftToStart_ = CountDownTime;
-			wholeTimeLeft_ = CountDownTime;
-			//eventHandler_(CountDown{wholeTimeLeft_});
-		}
 	}
 
 	void TetrisGame::restartGame() {
@@ -116,29 +105,8 @@ namespace mwetris::game {
 
 	void TetrisGame::update(double deltaTime) {
 		if (!game_->isPaused()) {
-			updateCurrentCountDown(deltaTime);
-
-			if (!hasActiveCountDown()) {
-				updateGame(deltaTime);
-			}
+			updateGame(deltaTime);
 		}
-	}
-
-	void TetrisGame::updateCurrentCountDown(double deltaTime) {
-		if (timeLeftToStart_ > 0) {
-			timeLeftToStart_ -= deltaTime;
-		}
-
-		if (currentGameHasCountDown() && wholeTimeLeft_ != static_cast<int>(timeLeftToStart_ + 1)
-			&& wholeTimeLeft_ > timeLeftToStart_ + 1) {
-
-			wholeTimeLeft_ = static_cast<int>(timeLeftToStart_ + 1);
-			//eventHandler_(CountDown{wholeTimeLeft_});
-		}
-	}
-
-	bool TetrisGame::hasActiveCountDown() const {
-		return players_.size() > 1 && currentGameHasCountDown() && timeLeftToStart_ > 0;
 	}
 
 	void TetrisGame::updateGame(double deltaTime) {
@@ -155,10 +123,6 @@ namespace mwetris::game {
 				player->update(FixedTimestep);
 			}
 		}
-	}
-
-	bool TetrisGame::isCurrentGameActive() const {
-		return game_->getNbrAlivePlayers() > 0;
 	}
 
 }

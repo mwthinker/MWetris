@@ -14,10 +14,6 @@ namespace mwetris::game {
 		gameRules_->restartGame();
 	}
 
-	int LocalGame::getNbrAlivePlayers() const {
-		return gameRules_->getNbrAlivePlayers();
-	}
-
 	LocalGame::LocalGame()
 		: gameRules_{std::make_unique<GameRules>()} {
 	}

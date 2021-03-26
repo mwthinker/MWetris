@@ -52,21 +52,11 @@ namespace mwetris::game {
 			return width_;
 		}
 
-		bool currentGameHasCountDown() const {
-			return players_.size() > 1 && CountDownTime > 0;
-		}
-
-		bool isCurrentGameActive() const;
-
 	private:
 		void createLocalPlayers(int columns, int rows, const std::vector<DevicePtr>& devices);
 
 		void initGame();
 		void updateGame(double deltaTime);
-
-		void startNewCountDown();
-		void updateCurrentCountDown(double deltaTime);
-		bool hasActiveCountDown() const;
 
 		std::vector<LocalPlayerPtr> players_;
 
@@ -77,8 +67,6 @@ namespace mwetris::game {
 		int maxLevel_{TetrisMaxLevel};
 
 		double accumulator_{0.0};
-		double timeLeftToStart_{-0.0}; // Time left for the count down.
-		int wholeTimeLeft_{0}; // Time left in whole seconds. E.g. timeLeftToStart_ = 1.4s means that wholeTimeLeft_ = 2s;
 	};
 
 }

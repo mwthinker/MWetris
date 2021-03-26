@@ -15,8 +15,6 @@ namespace mwetris::game {
 
 		virtual void restartGame() = 0;
 
-		virtual int getNbrAlivePlayers() const = 0;
-
 		virtual bool isPaused() const = 0;
 
 		virtual void setPaused(bool pause) = 0;
@@ -33,8 +31,6 @@ namespace mwetris::game {
 		void createGame(const std::vector<LocalPlayerPtr>& players) override;
 
 		void restartGame() override;
-
-		int getNbrAlivePlayers() const override;
 
 		bool isPaused() const override {
 			return false;

@@ -16,10 +16,6 @@ namespace mwetris::game {
 
 		void restartGame();
 
-		int getNbrAlivePlayers() const {
-			return nbrOfAlivePlayers_;
-		}
-
 	private:
 		void applyRules(tetris::BoardEvent gameEvent, int value, const LocalPlayerPtr& player);
 
@@ -40,7 +36,7 @@ namespace mwetris::game {
 		}
 
 		std::vector<LocalPlayerPtr> localPlayers_;
-		int nbrOfAlivePlayers_{};
+		int nbrAlivePlayers_{};
 		mw::signals::ScopedConnections connections_;
 	};
 

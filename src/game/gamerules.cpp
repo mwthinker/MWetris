@@ -31,7 +31,7 @@ namespace mwetris::game {
 			});
 
 			if (player->isGameOver()) {
-				++nbrOfAlivePlayers_;
+				++nbrAlivePlayers_;
 			}
 		}
 	}
@@ -40,7 +40,7 @@ namespace mwetris::game {
 		for (auto& player : localPlayers_) {
 			player->updateRestart();
 		}
-		nbrOfAlivePlayers_ = static_cast<int>(localPlayers_.size());
+		nbrAlivePlayers_ = static_cast<int>(localPlayers_.size());
 	}
 
 	void GameRules::applyRules(tetris::BoardEvent gameEvent, int value, const LocalPlayerPtr& player) {
@@ -55,13 +55,13 @@ namespace mwetris::game {
 	}
 
 	void GameRules::handleGameOverEvent(const LocalPlayerPtr& player) {
-		if (nbrOfAlivePlayers_ > 0) {
-			player->updateGameOverPosition(nbrOfAlivePlayers_);
-			--nbrOfAlivePlayers_;
+		if (nbrAlivePlayers_ > 0) {
+			player->updateGameOverPosition(nbrAlivePlayers_);
+			--nbrAlivePlayers_;
 
 			triggerGameOverEvent(player);
 
-			if (nbrOfAlivePlayers_ < 2) {
+			if (nbrAlivePlayers_ < 2) {
 				for (auto& opponent : localPlayers_) {
 					if (player != opponent && !opponent->isGameOver()) {
 						opponent->updateGameOver();
