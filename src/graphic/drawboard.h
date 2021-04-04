@@ -4,8 +4,9 @@
 #include "configuration.h"
 #include "game/player.h"
 #include "tetrisboard.h"
-#include "graphic.h"
+#include "types.h"
 
+#include <sdl/graphic.h>
 #include <sdl/imguiauxiliary.h>
 #include <sdl/sprite.h>
 
@@ -21,12 +22,12 @@ namespace mwetris::graphic {
 
 		Vec2 getSize() const;
 
-		void draw(Graphic& graphic);
+		void draw(sdl::Graphic& graphic);
 
 		void callback(tetris::BoardEvent gameEvent, const tetris::TetrisBoard& tetrisBoard);
 
 	private:
-		void drawBlock(Graphic& graphic, const tetris::Block& block, Vec2 pos = {}, bool center = false, Color color = color::White);
+		void drawBlock(sdl::Graphic& graphic, const tetris::Block& block, Vec2 pos = {}, bool center = false, Color color = color::White);
 
 		sdl::TextureView getSprite(tetris::BlockType blockType) const;
 

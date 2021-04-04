@@ -3,7 +3,7 @@
 
 namespace mwetris::ui::scene {
 
-	void HighScore::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
+	void HighScore::imGuiUpdate(const DeltaTime& deltaTime) {
 		auto menuHeight = mwetris::Configuration::getInstance().getWindowBarHeight();
 		auto labelColor = mwetris::Configuration::getInstance().getLabelTextColor();
 

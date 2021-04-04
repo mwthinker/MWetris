@@ -6,7 +6,7 @@
 
 namespace mwetris::ui::scene {
 
-	void Menu::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
+	void Menu::imGuiUpdate(const DeltaTime& deltaTime) {
 		auto menuHeight = mwetris::Configuration::getInstance().getWindowBarHeight();
 
 		ImGui::Bar([&]() {
@@ -21,17 +21,17 @@ namespace mwetris::ui::scene {
 		ImGui::PushButtonStyle();
 
 		//ImGui::Indent(10.f);
-		AddMenuButton("Play", Event::Play);
-		AddMenuButton("Custom Play", Event::CustomPlay);
-		AddMenuButton("Network Play", Event::NetworkPlay);
-		AddMenuButton("Highscore", Event::HighScore);
-		AddMenuButton("Settings", Event::Settings);
-		AddMenuButton("Exit", Event::Exit);
+		addMenuButton("Play", Event::Play);
+		addMenuButton("Custom Play", Event::CustomPlay);
+		addMenuButton("Network Play", Event::NetworkPlay);
+		addMenuButton("Highscore", Event::HighScore);
+		addMenuButton("Settings", Event::Settings);
+		addMenuButton("Exit", Event::Exit);
 
 		ImGui::PopButtonStyle();
 	}
 
-	void Menu::AddMenuButton(const std::string& label, Event event) {
+	void Menu::addMenuButton(const std::string& label, Event event) {
 		if (ImGui::Button(label.c_str())) {
 			emitEvent(event);
 

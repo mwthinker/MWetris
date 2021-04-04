@@ -66,7 +66,7 @@ namespace mwetris::graphic {
 		return glm::translate(Vec3{dx, dy, 0.f}) * glm::scale(Vec3{scale, scale, 1.f});
 	}
 
-	void GameComponent::draw(Graphic& graphic, int windowWidth, int windowHeight, double deltaTime) {
+	void GameComponent::draw(sdl::Graphic& graphic, int windowWidth, int windowHeight, double deltaTime) {
 		graphic.pushMatrix();
 		graphic.multMatrix(calculateBoardMatrix(windowWidth, windowHeight));
 
@@ -74,15 +74,13 @@ namespace mwetris::graphic {
 			Configuration::getInstance().bindTextureFromAtlas();
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			
-			const auto currentModel = graphic.currentMatrix();
-			float delta = 0;
-			for (auto& [player, drawBoardPtr] : drawPlayers_) {
-				auto model = glm::translate(currentModel, Vec3{delta, 0.f, 0.f});
-				graphic.pushMatrix(model);
-				drawBoardPtr->draw(graphic);
-				delta += drawBoardPtr->getSize().x;
-			}
+
+			graphic.pushMatrix([&] {
+				for (auto& [player, drawBoardPtr] : drawPlayers_) {
+					drawBoardPtr->draw(graphic);
+					graphic.translate({drawBoardPtr->getSize().x, 0.f});
+				}
+			});
 
 			sdl::assertGlError();
 		}

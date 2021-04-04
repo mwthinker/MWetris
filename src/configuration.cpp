@@ -294,8 +294,8 @@ namespace mwetris {
 		return impl_->buttonFont;
 	}
 
-	void Configuration::bindTextureFromAtlas() const {
-		impl_->textureAtlas.get().bindTexture();
+	void Configuration::bindTextureFromAtlas() {
+		impl_->textureAtlas.bind();
 	}
 
 	sdl::Color Configuration::getOuterSquareColor() const {

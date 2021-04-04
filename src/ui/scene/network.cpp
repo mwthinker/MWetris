@@ -3,7 +3,7 @@
 
 namespace mwetris::ui::scene {
 
-	void Network::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
+	void Network::imGuiUpdate(const DeltaTime& deltaTime) {
 		auto menuHeight = mwetris::Configuration::getInstance().getWindowBarHeight();
 
 		ImGui::Bar([&]() {

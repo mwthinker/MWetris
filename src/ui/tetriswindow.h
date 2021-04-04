@@ -6,6 +6,7 @@
 #include "scene/statemachine.h"
 #include "scene/event.h"
 
+#include <sdl/graphic.h>
 #include <sdl/imguiwindow.h>
 #include <sdl/shader.h>
 
@@ -39,13 +40,11 @@ namespace mwetris::ui {
 		void imGuiEventUpdate(const SDL_Event& windowEvent) override;
 
 		void handleSceneMenuEvent(const scene::Event& menuEvent);
-
-		SDL_HitTestResult onHitTest(const SDL_Point& point) override;
 	
 		sdl::TextureView background_;
 		scene::StateMachine sceneStateMachine_;
 		sdl::Shader shader_;
-		graphic::Graphic graphic_;
+		sdl::Graphic graphic_;
 	};
 
 }

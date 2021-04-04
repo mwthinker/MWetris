@@ -55,9 +55,9 @@ namespace mwetris::ui {
 
 	void TetrisWindow::imGuiPreUpdate(const sdl::DeltaTime& deltaTime) {
 		shader_.useProgram();
-		graphic_.clearDraw();
+		graphic_.clear();
 		graphic_.addRectangleImage({-1, -1}, {2, 2}, background_);
-		graphic_.draw(shader_);
+		graphic_.upload(shader_);
 		sceneStateMachine_.draw(shader_, deltaTime);
 	}
 	
@@ -118,10 +118,6 @@ namespace mwetris::ui {
 				quit();
 				return;
 		}
-	}
-
-	SDL_HitTestResult TetrisWindow::onHitTest(const SDL_Point& point) {
-		return SDL_HITTEST_NORMAL;
 	}
 
 }

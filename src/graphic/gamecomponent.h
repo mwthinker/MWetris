@@ -3,14 +3,11 @@
 
 #include "game/player.h"
 #include "drawboard.h"
-#include "graphic.h"
 
 #include "types.h"
 #include "game/tetrisgameevent.h"
 
-#include <sdl/vertexbufferobject.h>
-#include <sdl/shaderprogram.h>
-#include <sdl/batch.h>
+#include <sdl/graphic.h>
 
 #include <sdl/graphic.h>
 #include <mw/signal.h>
@@ -31,7 +28,7 @@ namespace mwetris::graphic {
 		GameComponent();
 		~GameComponent();
 
-		void draw(Graphic& graphic, int width, int height, double deltaTime);
+		void draw(sdl::Graphic& graphic, int width, int height, double deltaTime);
 
 		void initGame(const game::InitGameEvent& event);
 

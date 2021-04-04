@@ -9,10 +9,10 @@
 #include "types.h"
 #include "configuration.h"
 #include "graphic/gamecomponent.h"
-#include "graphic/graphic.h"
 #include "ui/imguiextra.h"
 #include "ai.h"
 
+#include <sdl/graphic.h>
 #include <sdl/sprite.h>
 
 #include <array>
@@ -24,13 +24,13 @@ namespace mwetris::ui::scene {
 
 	class Play : public Scene {
 	public:
-		explicit Play(graphic::Graphic& graphic);
+		explicit Play(sdl::Graphic& graphic);
 
 		void eventUpdate(const SDL_Event& windowEvent) override;
 
-		void draw(const sdl::Shader& shader, const std::chrono::high_resolution_clock::duration& deltaTime) override;
+		void draw(sdl::Shader& shader, const DeltaTime& deltaTime) override;
 
-		void imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) override;
+		void imGuiUpdate(const DeltaTime& deltaTime) override;
 
 	private:
 		void switchedFrom() override;
@@ -50,7 +50,7 @@ namespace mwetris::ui::scene {
 		int nbrHumans_{1};
 		int nbrAis_{0};
 		std::vector<game::SdlDevicePtr> devices_;
-		graphic::Graphic& graphic_;
+		sdl::Graphic& graphic_;
 		sdl::TextureView crossSprite_;
 		sdl::TextureView manSprite_;
 		sdl::TextureView aiSprite_;

@@ -5,7 +5,7 @@
 
 namespace mwetris::ui::scene {
 
-	Play::Play(graphic::Graphic& graphic) 
+	Play::Play(sdl::Graphic& graphic) 
 		: graphic_{graphic} {
 		
 		activeAis_[0] = findAiDevice(Configuration::getInstance().getAi1Name());
@@ -35,25 +35,27 @@ namespace mwetris::ui::scene {
 		}
 	}
 
-	void Play::draw(const sdl::Shader& shader, const std::chrono::high_resolution_clock::duration& deltaTime) {
+	void Play::draw(sdl::Shader& shader, const DeltaTime& deltaTime) {
 		glEnable(GL_BLEND);
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		graphic_.clearDraw();
+		graphic_.clear();
 
 		auto menuHeight = mwetris::Configuration::getInstance().getWindowBarHeight();
 		auto deltaTimeSeconds = std::chrono::duration<double>(deltaTime).count();
 
 		if (size_.x > 0 && size_.y > menuHeight) {
-			graphic_.pushMatrix(glm::ortho(0.f, size_.x, 0.f, size_.y));
-			gameComponent_->draw(graphic_, size_.x, size_.y - menuHeight, deltaTimeSeconds);
-			graphic_.draw(shader);
+			graphic_.pushMatrix([&] {
+				graphic_.setMatrix(glm::ortho(0.f, size_.x, 0.f, size_.y));
+				gameComponent_->draw(graphic_, size_.x, size_.y - menuHeight, deltaTimeSeconds);
+				graphic_.upload(shader);
+			});
 		}
 		game_->update(deltaTimeSeconds);
 	}
 
-	void Play::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
+	void Play::imGuiUpdate(const DeltaTime& deltaTime) {
 		auto menuHeight = mwetris::Configuration::getInstance().getWindowBarHeight();
 
 		ImGui::Bar([&]() {

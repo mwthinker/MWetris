@@ -1,7 +1,6 @@
 #ifndef MWETRIS_UI_SCENE_SCENE_H
 #define MWETRIS_UI_SCENE_SCENE_H
 
-#include "graphic/graphic.h"
 #include "event.h"
 
 #include <sdl/shader.h>
@@ -15,6 +14,8 @@ namespace mwetris::ui::scene {
 
 	class StateMachine;
 
+	using DeltaTime = std::chrono::high_resolution_clock::duration;
+
 	class Scene {
 	public:
 		friend class StateMachine;
@@ -23,9 +24,9 @@ namespace mwetris::ui::scene {
 
 		virtual void eventUpdate(const SDL_Event& windowEvent) {};
 
-		virtual void imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {};
+		virtual void imGuiUpdate(const DeltaTime& deltaTime) {};
 
-		virtual void draw(const sdl::Shader& shader, const std::chrono::high_resolution_clock::duration& deltaTime) {};
+		virtual void draw(sdl::Shader& shader, const DeltaTime& deltaTime) {};
 
 	protected:
 		class StateMachineWrapper {

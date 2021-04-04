@@ -22,14 +22,14 @@ namespace mwetris::ui::scene {
 
 		void eventUpdate(const SDL_Event& windowEvent);
 
-		void imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime);
+		void imGuiUpdate(const DeltaTime& deltaTime);
 
-		void draw(const sdl::Shader& shader, const std::chrono::high_resolution_clock::duration& deltaTime);
+		void draw(sdl::Shader& shader, const DeltaTime& deltaTime);
 		
 		template <typename Type>
 		std::shared_ptr<Type> add(std::shared_ptr<Type> scene);
 
-		template <typename Type, class... Args>
+		template <typename Type, typename... Args>
 		std::shared_ptr<Type> emplace(Args&&... args);
 		
 		template <typename Type>
@@ -48,12 +48,12 @@ namespace mwetris::ui::scene {
 	private:
 		void onCallback(scene::Event event);
 
-		template <class Type>
+		template <typename Type>
 		static constexpr void staticAssertIsBaseOfScene();
 
 		using Key = size_t;
 
-		template <class Type>
+		template <typename Type>
 		static Key getKey();
 
 		std::map<Key, std::shared_ptr<Scene>> scenes_;
@@ -61,13 +61,13 @@ namespace mwetris::ui::scene {
 		std::function<void(scene::Event)> callback_;
 	};
 
-	template <class Type>
+	template <typename Type>
 	constexpr void StateMachine::staticAssertIsBaseOfScene() {
 		static_assert(std::is_base_of<Scene, Type>::value,
 			"Type must have Scene as base class");
 	}
 
-	template <class Type>
+	template <typename Type>
 	std::shared_ptr<Type> StateMachine::add(std::shared_ptr<Type> scenePtr) {
 		staticAssertIsBaseOfScene<Type>();
 
@@ -97,12 +97,12 @@ namespace mwetris::ui::scene {
 		return std::move(scenePtr);
 	}
 
-	template <class Type, class... Args>
+	template <typename Type, typename... Args>
 	std::shared_ptr<Type> StateMachine::emplace(Args&&... args) {
 		return add(std::make_shared<Type>(std::forward<Args>(args)...));
 	}
 
-	template <class Type>
+	template <typename Type>
 	void StateMachine::switchTo() {
 		staticAssertIsBaseOfScene<Type>();
 		
@@ -118,12 +118,12 @@ namespace mwetris::ui::scene {
 		}
 	}
 
-	template <class Type>
+	template <typename Type>
 	bool StateMachine::isCurrentScene() const {
 		return getKey<Type>() == currentKey_;
 	}
 
-	template <class Type>
+	template <typename Type>
 	StateMachine::Key StateMachine::getKey() {
 		return typeid(Type).hash_code();
 	}

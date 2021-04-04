@@ -11,7 +11,7 @@ namespace mwetris::ui::scene {
 
 	class HighScore : public Scene {
 	public:
-		void imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) override;
+		void imGuiUpdate(const DeltaTime& deltaTime) override;
 
 	private:
 		

@@ -1,9 +1,9 @@
 #include "drawboard.h"
 #include "configuration.h"
 #include "tetrisboard.h"
-#include "graphic.h"
 #include "game/player.h"
 
+#include <sdl/graphic.h>
 #include <sdl/imguiauxiliary.h>
 
 #include <spdlog/spdlog.h>
@@ -22,19 +22,19 @@ namespace mwetris::graphic {
 			return 1.f / block.getSize() * pos;
 		}
 
-		void addRectangle(Graphic& graphic, float x, float y, float w, float h, Color color) {
+		void addRectangle(sdl::Graphic& graphic, float x, float y, float w, float h, Color color) {
 			graphic.addRectangle({x, y}, {w, h}, color);
 		}
 
-		void addSquare(Graphic& graphic, float x, float y, float size, Color color) {
+		void addSquare(sdl::Graphic& graphic, float x, float y, float size, Color color) {
 			graphic.addRectangle({x, y}, {size, size}, color);
 		}
 
-		void addSquare(Graphic& graphic, float x, float y, float size, const sdl::TextureView& sprite, Color color = color::White) {
+		void addSquare(sdl::Graphic& graphic, float x, float y, float size, const sdl::TextureView& sprite, Color color = color::White) {
 			graphic.addRectangleImage({x, y}, {size, size}, sprite, color);
 		}
 
-		void addText(Graphic& graphic, float x, float y, const sdl::Sprite& text) {
+		void addText(sdl::Graphic& graphic, float x, float y, const sdl::Sprite& text) {
 			auto view = text.getTextureView();
 			graphic.addRectangleImage(Vec2{x, y} + view.getPosition(), 0.5f * text.getSize(), view);
 		}
@@ -71,7 +71,7 @@ namespace mwetris::graphic {
 		return {width_, height_};
 	}
 
-	void DrawBoard::drawBlock(Graphic& graphic, const tetris::Block& block, Vec2 pos, bool center, Color color) {
+	void DrawBoard::drawBlock(sdl::Graphic& graphic, const tetris::Block& block, Vec2 pos, bool center, Color color) {
 		Vec2 delta{};
 		if (center) {
 			delta = (-Vec2{0.5f, 0.5f} - calculateCenterOfMass(block)) * squareSize_;
@@ -92,7 +92,7 @@ namespace mwetris::graphic {
 		}
 	}
 
-	void DrawBoard::draw(Graphic& graphic) {
+	void DrawBoard::draw(sdl::Graphic& graphic) {
 		const int columns = tetrisBoard_.getColumns();
 		const int rows = tetrisBoard_.getRows();
 		

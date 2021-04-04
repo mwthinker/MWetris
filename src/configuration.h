@@ -62,7 +62,7 @@ namespace mwetris {
 		void setShowDownBlock(bool showDownColor);
 		sdl::Color getDownBlockColor() const;
 
-		void bindTextureFromAtlas() const;
+		void bindTextureFromAtlas();
 
 		bool isLimitFps() const;
 		void setLimitFps(bool limited);

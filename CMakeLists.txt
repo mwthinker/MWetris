@@ -31,9 +31,7 @@ set(SOURCES
 	src/graphic/drawboard.h
 	src/graphic/gamecomponent.cpp
 	src/graphic/gamecomponent.h
-	src/graphic/graphic.cpp
-	src/graphic/graphic.h
-		
+	
 	src/game/actionhandler.cpp
 	src/game/actionhandler.h
 	src/game/computer.cpp
@@ -128,10 +126,10 @@ set(ExternalDependencies
 	ImGui
 )
 if (CppSdl2_Test)
-	set(ExternalDependencieTests "CppSdl2_Test")
+	set(ExternalDependencieTests "${ExternalDependencieTests};CppSdl2_Test")
 endif ()
 if (CppSdl2_Example)
-	set(ExternalDependencieTests "CppSdl2_Example")
+	set(ExternalDependencieTests "${ExternalDependencieTests};CppSdl2_Example")
 endif ()
 if (Calculator_Test)
 	set(ExternalDependencieTests "${ExternalDependencieTests};Calculator_Test")

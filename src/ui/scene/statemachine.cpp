@@ -9,15 +9,15 @@ namespace mwetris::ui::scene {
 		if (currentKey_) {
 			scenes_[currentKey_]->eventUpdate(windowEvent);
 		}
-	};
+	}
 
-	void StateMachine::imGuiUpdate(const std::chrono::high_resolution_clock::duration& deltaTime) {
+	void StateMachine::imGuiUpdate(const DeltaTime& deltaTime) {
 		if (currentKey_) {
 			scenes_[currentKey_]->imGuiUpdate(deltaTime);
 		}
 	}
 
-	void StateMachine::draw(const sdl::Shader& shader, const std::chrono::high_resolution_clock::duration& deltaTime) {
+	void StateMachine::draw(sdl::Shader& shader, const DeltaTime& deltaTime) {
 		if (currentKey_) {
 			scenes_[currentKey_]->draw(shader, deltaTime);
 		}
