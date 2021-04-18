@@ -182,8 +182,13 @@ if (MSVC)
 
 	target_compile_options(MWetris
 		PUBLIC
-			"/permissive-"
-			"/MP"
+			/W3 /WX /permissive-
+			/MP
+	)
+else ()
+	target_compile_options(MWetris
+		PRIVATE
+			-Wall -pedantic -Wcast-align -Woverloaded-virtual -Wno-unused-parameter -Wno-sign-compare -Wno-unused-function
 	)
 endif ()
 
