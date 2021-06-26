@@ -5,7 +5,7 @@ FetchContent_Declare(CppSdl2
 	GIT_REPOSITORY
 		https://github.com/mwthinker/CppSdl2.git
 	GIT_TAG
-		2548524f479b4402bf9c73a13faadd67f98b60e8
+		f9678c1d775faa453967cacf56d2926d2d0c0cc7
 )
 FetchContent_MakeAvailable(CppSdl2)
 
@@ -14,7 +14,7 @@ FetchContent_Declare(CppProtoNetwork
 	GIT_REPOSITORY
 		https://github.com/mwthinker/CppProtoNetwork.git
 	GIT_TAG
-		b4045c7a20871ed7b00bf303ba472b717f9ecd5f
+		ad924a5c393c44b6cb54a86fe1a22758f870ea3a
 )
 FetchContent_MakeAvailable(CppProtoNetwork)
 
@@ -23,7 +23,7 @@ FetchContent_Declare(Signal
 	GIT_REPOSITORY
 		https://github.com/mwthinker/Signal.git
 	GIT_TAG
-		2ce1a5505b167b76cf8ad7caaf4a0a527925cc08
+		c05de2bf17961b7b094582802eff9107becfa08a
 )
 FetchContent_MakeAvailable(Signal)
 
@@ -31,6 +31,8 @@ fetchcontent_declare(CmakeAuxiliary
 	GIT_SHALLOW 1
 	GIT_REPOSITORY
 		https://gist.github.com/mwthinker/e0539b200e3f0ac6da545af4843a6ff6
+	GIT_TAG
+		0f0aaa9201a5a4c11749cd5adfc496a3960014de
 )
 FetchContent_MakeAvailable(CmakeAuxiliary)
 FetchContent_GetProperties(CmakeAuxiliary

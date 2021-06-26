@@ -30,8 +30,11 @@ target_include_directories(TetrisEngineLib
 
 include(FetchContent)
 fetchcontent_declare(Calculator
+	GIT_SHALLOW 1
 	GIT_REPOSITORY
 		https://github.com/mwthinker/Calculator.git
+	GIT_TAG
+		c6437b6d9a73b4f6afac80f35302d33bc8f76bfd
 )
 FetchContent_MakeAvailable(Calculator)
 
