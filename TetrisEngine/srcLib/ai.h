@@ -64,13 +64,9 @@ namespace tetris {
 		}
 
 		struct State {
-			State() = default;
-
-			State(int left, int rotations);
-
-			int left{};
-			int rotationLeft{};
-			float value{std::numeric_limits<float>::lowest()};
+			int left = 0;
+			int rotationLeft = 0;
+			float value = std::numeric_limits<float>::lowest();
 		};
 
 		State calculateBestState(const TetrisBoard& board, int depth);
@@ -90,7 +86,7 @@ namespace tetris {
 		AiParameters parameters_{};
 	};
 
-	template <class Board>
+	template <typename Board>
 	void moveBlockToBeforeImpact(const Ai::State& state, Board& board) {
 		for (int i = 0; i < state.rotationLeft; ++i) {
 			board.update(Move::RotateLeft);

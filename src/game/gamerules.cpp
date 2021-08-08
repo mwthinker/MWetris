@@ -75,7 +75,7 @@ namespace mwetris::game {
 		if (isMultiplayerGame()) {
 			for (auto& opponent : localPlayers_) {
 				if (player != opponent && !opponent->isGameOver()) {
-					opponent->updateLevelUpCounter(opponent->getLevelUpCounter() + rows);
+					//opponent->updateLevelUpCounter(opponent->getLevelUpCounter() + rows);
 					
 					if (rows == 4) {
 						addRowsToOpponents(player);
@@ -83,8 +83,8 @@ namespace mwetris::game {
 				}
 			}
 		} else {
-			player->updateLevelUpCounter(player->getLevelUpCounter() + rows);
-			int level = (player->getLevelUpCounter() / LevelUpNbr) + 1;
+			//player->updateLevelUpCounter(player->getLevelUpCounter() + rows);
+			int level = 1;// = (player->getLevelUpCounter() / LevelUpNbr) + 1;
 			if (player->getLevel() != level) {
 				player->updateLevel(level);
 			}

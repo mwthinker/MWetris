@@ -16,15 +16,7 @@ namespace mwetris::game {
 	public:
 		~SdlDevice() override = default;
 
-		virtual void eventUpdate(const SDL_Event& windowEvent) {
-		}
-
-		void update(const tetris::TetrisBoard& board) override {
-		}
-
-		bool isAi() const override {
-			return false;
-		}
+		virtual void eventUpdate(const SDL_Event& windowEvent) = 0;
 	};
 
 }

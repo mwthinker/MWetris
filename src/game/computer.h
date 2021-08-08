@@ -6,13 +6,10 @@
 #include "tetrisboard.h"
 #include "ai.h"
 
-#include <calc/calculator.h>
-
-#include <vector>
-#include <string>
-#include <future>
-
 namespace mwetris::game {
+
+	class Computer;
+	using ComputerPtr = std::shared_ptr<Computer>;
 
 	class Computer : public Device {
 	public:
@@ -24,25 +21,17 @@ namespace mwetris::game {
 
 		std::string getName() const override;
 
-		void update(const tetris::TetrisBoard& board) override;
-
-		bool isAi() const override {
-			return true;
-		}
+		void onGameboardEvent(const tetris::TetrisBoard& board, tetris::BoardEvent, int value) override;
 
 	private:
-		static tetris::Ai::State calculateBestState(tetris::TetrisBoard board, tetris::Ai ai, int depth);
+		bool isHorizontalMoveDone(const tetris::TetrisBoard& board) const;
+		bool isRotationDone(const tetris::TetrisBoard& board) const;
 
-		// Calculate and return the best input to achieve the current state.
-		Input calculateInput(tetris::Ai::State state) const;
-
-		int currentTurn_{};
 		Input input_{};
-		tetris::Ai::State latestState_{};
-		tetris::Block latestBlock_;
+		tetris::Ai::State state_{};
+		tetris::Block block_;
 		tetris::Ai ai_;
-		bool activeThread_{};
-		std::future<tetris::Ai::State> handle_;
+		int turn_ = 0;
 	};
 
 }

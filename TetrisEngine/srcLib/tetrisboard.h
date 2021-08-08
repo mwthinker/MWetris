@@ -43,12 +43,12 @@ namespace tetris {
 		TetrisBoard(TetrisBoard&& other) = default;
 		TetrisBoard& operator=(TetrisBoard&& other) = default;
 
-		template <class Rows>
+		template <typename Rows>
 		int addExternalRows(const Rows& externalRows);
 
 		void update(Move move);
 
-		template <class EventCallback>
+		template <typename EventCallback>
 		void update(Move move, EventCallback&& eventCallback);
 
 		void setNextBlock(BlockType next);
@@ -118,10 +118,10 @@ namespace tetris {
 
 		void addBlockToBoard(const Block& block);
 
-		template <class EventCallback>
+		template <typename EventCallback>
 		void removeFilledRows(const Block& block, EventCallback& callback);
 
-		template <class EventCallback>
+		template <typename EventCallback>
 		void moveRowsOneStepDown(int rowToRemove, EventCallback& callback);
 
 		std::vector<BlockType> gameboard_;
@@ -132,7 +132,7 @@ namespace tetris {
 		bool isGameOver_{false};
 	};
 
-	template <class Rows>
+	template <typename Rows>
 	int TetrisBoard::addExternalRows(const Rows& externalRows) {
 		gameboard_.insert(gameboard_.begin(), std::begin(externalRows), std::end(externalRows));
 		return static_cast<int>(externalRows.size()) / columns_;
@@ -142,7 +142,7 @@ namespace tetris {
 		update(move, [](BoardEvent boardEvent, int value) {});
 	}
 
-	template <class EventCallback>
+	template <typename EventCallback>
 	void TetrisBoard::update(Move move, EventCallback&& eventCallback) {
 		static_assert(std::is_invocable_v<EventCallback, BoardEvent, int>, "EventCallback must be in the form: void(BoardEvent, int) ");
 
@@ -227,7 +227,7 @@ namespace tetris {
 		}
 	}
 
-	template <class EventCallback>
+	template <typename EventCallback>
 	void TetrisBoard::removeFilledRows(const Block& block, EventCallback& callback) {
 		int row = block.getLowestRow();
 		int rowsFilled = 0;
@@ -250,7 +250,7 @@ namespace tetris {
 		}
 	}
 
-	template <class EventCallback>
+	template <typename EventCallback>
 	void TetrisBoard::moveRowsOneStepDown(int rowToRemove, EventCallback& callback) {
 		callback(BoardEvent::RowToBeRemoved, rowToRemove);
 

@@ -24,8 +24,7 @@ namespace mwetris::game {
 			: tetrisBoard_{tetrisBoard} {
 		}
 
-		virtual ~Player() {
-		}
+		virtual ~Player() = default;
 
 		virtual std::string getName() const = 0;
 
@@ -34,8 +33,6 @@ namespace mwetris::game {
 		virtual int getPoints() const = 0;
 
 		virtual int getClearedRows() const = 0;
-
-		virtual int getLevelUpCounter() const = 0;
 
 		bool isGameOver() const;
 

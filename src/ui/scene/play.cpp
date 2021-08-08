@@ -5,13 +5,28 @@
 
 namespace mwetris::ui::scene {
 
+	namespace {
+
+		game::ComputerPtr findAiDevice(const std::string& name) {
+			auto ais = Configuration::getInstance().getAiVector();
+			for (const auto& ai : ais) {
+				if (ai.getName() == name) {
+					return std::make_shared<game::Computer>(ai);
+				}
+			}
+			return std::make_shared<game::Computer>(ais.back());
+		}
+
+	}
+
 	Play::Play(sdl::Graphic& graphic) 
 		: graphic_{graphic} {
-		
-		activeAis_[0] = findAiDevice(Configuration::getInstance().getAi1Name());
-		activeAis_[1] = findAiDevice(Configuration::getInstance().getAi2Name());
-		activeAis_[2] = findAiDevice(Configuration::getInstance().getAi3Name());
-		activeAis_[3] = findAiDevice(Configuration::getInstance().getAi4Name());
+
+		computers_.push_back(findAiDevice(Configuration::getInstance().getAi1Name()));
+		computers_.push_back(findAiDevice(Configuration::getInstance().getAi2Name()));
+		computers_.push_back(findAiDevice(Configuration::getInstance().getAi3Name()));
+		computers_.push_back(findAiDevice(Configuration::getInstance().getAi4Name()));
+
 
 		devices_.push_back(std::make_shared<game::Keyboard>("Keyboard 1", SDLK_DOWN, SDLK_LEFT, SDLK_RIGHT, SDLK_UP, SDLK_RCTRL));
 		devices_.push_back(std::make_shared<game::Keyboard>("Keyboard 2", SDLK_s, SDLK_a, SDLK_d, SDLK_w, SDLK_LCTRL));
@@ -53,6 +68,8 @@ namespace mwetris::ui::scene {
 			});
 		}
 		game_->update(deltaTimeSeconds);
+		for (auto& computer : computers_) {
+		}
 	}
 
 	void Play::imGuiUpdate(const DeltaTime& deltaTime) {
@@ -75,7 +92,7 @@ namespace mwetris::ui::scene {
 				game_->createGame(getCurrentDevices());
 			}
 			ImGui::SameLine();
-			if (ImGui::ManButton("Ai", nbrAis_, static_cast<int>(activeAis_.size()), crossSprite_, aiSprite_, {menuHeight, menuHeight})) {
+			if (ImGui::ManButton("Ai", nbrAis_, static_cast<int>(computers_.size()), crossSprite_, aiSprite_, {menuHeight, menuHeight})) {
 				game_->createGame(getCurrentDevices());
 			}
 			ImGui::PopButtonStyle();
@@ -88,31 +105,21 @@ namespace mwetris::ui::scene {
 		std::vector<game::DevicePtr> playerDevices(devices_.begin(), devices_.begin() + nbrHumans_);
 
 		for (int i = 0; i < nbrAis_; ++i) {
-			if (activeAis_[i]) {
-				playerDevices.push_back(activeAis_[i]);
+			if (computers_[i]) {
+				playerDevices.push_back(computers_[i]);
 			}
 		}
 
 		return playerDevices;
 	}
 
-	game::DevicePtr Play::findHumanDevice(std::string name) const {
+	game::DevicePtr Play::findHumanDevice(const std::string& name) const {
 		for (const auto& device : devices_) {
 			if (device->getName() == name) {
 				return device;
 			}
 		}
 		return devices_[0];
-	}
-
-	game::DevicePtr Play::findAiDevice(std::string name) const {
-		auto ais = Configuration::getInstance().getAiVector();
-		for (const auto& ai : ais) {
-			if (ai.getName() == name) {
-				return std::make_shared<game::Computer>(ai);
-			}
-		}
-		return std::make_shared<game::Computer>(ais.back());
 	}
 
 	void Play::switchedFrom() {

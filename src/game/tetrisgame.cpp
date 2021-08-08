@@ -116,7 +116,6 @@ namespace mwetris::game {
 		}
 
 		accumulator_ += deltaTime;
-		
 		while (accumulator_ >= FixedTimestep) {
 			accumulator_ -= FixedTimestep;
 			for (auto& player : players_) {

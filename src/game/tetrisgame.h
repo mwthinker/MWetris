@@ -59,7 +59,6 @@ namespace mwetris::game {
 		void updateGame(double deltaTime);
 
 		std::vector<LocalPlayerPtr> players_;
-
 		std::unique_ptr<GameManager> game_;
 
 		int width_{TetrisWidth};

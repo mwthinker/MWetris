@@ -45,11 +45,7 @@ namespace tetris {
 		void rotateLeft();
 		void rotateRight();
 
-		Square operator[](int index) const {
-			return squares_[index];
-		}
-
-		constexpr size_t getSize() const {
+		size_t getSize() const {
 			return squares_.size();
 		}
 
@@ -95,12 +91,12 @@ namespace tetris {
 		void rotate(int rotate);
 
 		std::array<Square, 4> squares_{};
-		int rotationSquareIndex_{};
-		int maxRotations_{4};
-		int currentRotation_{};
-		int lowestStartRow_{};
-		int startColumn_{};
-		BlockType blockType_{BlockType::Empty};
+		int rotationSquareIndex_ = 0;
+		int maxRotations_ = 4;
+		int currentRotation_ = 0;
+		int lowestStartRow_ = 0;
+		int startColumn_ = 0;
+		BlockType blockType_ = BlockType::Empty;
 	};
 
 }

@@ -61,7 +61,7 @@ namespace mwetris::graphic {
 		infoSize_ = squareSize_ * 5.f;
 
 		name_ = sdl::Sprite{"Test", Configuration::getInstance().getDefaultFont(50)};
-		name_.bindTexture();
+		name_.bind();
 
 		width_ = squareSize_ * tetrisBoard_.getColumns() + infoSize_ + borderSize_ * 2 + middleDistance + rightDistance;
 		height_ = squareSize_ * (tetrisBoard_.getRows() - 2) + borderSize_ * 2;

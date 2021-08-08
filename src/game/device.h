@@ -23,9 +23,7 @@ namespace mwetris::game {
 
 		virtual std::string getName() const = 0;
 
-		virtual void update(const tetris::TetrisBoard& board) = 0;
-
-		virtual bool isAi() const = 0;
+		virtual void onGameboardEvent(const tetris::TetrisBoard& board, tetris::BoardEvent, int value) {}
 	};
 
 }

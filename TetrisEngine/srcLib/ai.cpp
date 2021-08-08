@@ -24,8 +24,7 @@ namespace tetris {
 					horizontal.moveLeft();
 
 					int stepsLeft = 1;
-					// Go left until obstacle.
-					while (!board.collision(horizontal)) {
+					while (!board.collision(horizontal)) { // Go left until obstacle.
 						Block vertical = horizontal;
 						int stepsDown = 1;
 						vertical.moveDown();
@@ -33,7 +32,7 @@ namespace tetris {
 							++stepsDown;
 							vertical.moveDown();
 						}
-						states.emplace_back(stepsLeft, rotationLeft);
+						states.push_back(Ai::State{stepsLeft, rotationLeft});
 
 						++stepsLeft;
 						horizontal.moveLeft();
@@ -42,8 +41,7 @@ namespace tetris {
 					stepsLeft = 0;
 
 					horizontal = block;
-					// Go right until obstacle.
-					while (!board.collision(horizontal)) {
+					while (!board.collision(horizontal)) { // Go right until obstacle.
 						Block vertical = horizontal;
 						int stepsDown = 1;
 						vertical.moveDown();
@@ -51,7 +49,7 @@ namespace tetris {
 							++stepsDown;
 							vertical.moveDown();
 						}
-						states.emplace_back(stepsLeft, rotationLeft);
+						states.push_back(Ai::State{stepsLeft, rotationLeft});
 
 						--stepsLeft;
 						horizontal.moveRight();
@@ -330,11 +328,6 @@ namespace tetris {
 		return edges;
 	}
 	
-	Ai::State::State(int left, int rotations)
-		: left{left}
-		, rotationLeft{rotations} {
-	}
-
 	Ai::Ai()
 		: Ai{"Default", getDefaultValueFunction()} {
 	}

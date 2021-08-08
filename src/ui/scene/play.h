@@ -5,6 +5,7 @@
 
 #include "game/device.h"
 #include "game/sdldevice.h"
+#include "game/computer.h"
 #include "game/tetrisgame.h"
 #include "types.h"
 #include "configuration.h"
@@ -41,15 +42,16 @@ namespace mwetris::ui::scene {
 
 		std::vector<game::DevicePtr> getCurrentDevices() const;
 
-		game::DevicePtr findHumanDevice(std::string name) const;
-		game::DevicePtr findAiDevice(std::string name) const;
+		game::DevicePtr findHumanDevice(const std::string& name) const;
 
 		std::unique_ptr<graphic::GameComponent> gameComponent_;
-		std::array<game::DevicePtr, 4> activeAis_;
+
 		std::unique_ptr<game::TetrisGame> game_;
-		int nbrHumans_{1};
-		int nbrAis_{0};
+		int nbrHumans_ = 1;
+		int nbrAis_ = 0;
 		std::vector<game::SdlDevicePtr> devices_;
+		std::vector<game::ComputerPtr> computers_;
+
 		sdl::Graphic& graphic_;
 		sdl::TextureView crossSprite_;
 		sdl::TextureView manSprite_;

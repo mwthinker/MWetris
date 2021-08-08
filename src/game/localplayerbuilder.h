@@ -79,17 +79,17 @@ namespace mwetris::game {
 	private:
 		DevicePtr device_;
 		std::string name_{"PLAYER"};
-		int points_{0};
-		int level_{1};
-		int levelUpCounter_{0};
-		int clearedRows_{0};
-		int width_{10};
-		int height_{24};
+		int points_ = 0;
+		int level_ = 1;
+		int levelUpCounter_ = 0;
+		int clearedRows_ = 0;
+		int width_ = 10;
+		int height_ = 24;
 		tetris::Block movingBlock_;
-		tetris::BlockType movingBlockType_{tetris::BlockType::Empty};
-		tetris::BlockType next_{tetris::BlockType::Empty};
+		tetris::BlockType movingBlockType_ = tetris::BlockType::Empty;
+		tetris::BlockType next_ = tetris::BlockType::Empty;
 		std::vector<tetris::BlockType> board_;
-		int gameOverPosition_{};
+		int gameOverPosition_ = 0;
 	};
 
 }
