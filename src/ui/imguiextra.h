@@ -13,9 +13,8 @@ namespace ImGui {
 	void PushButtonStyle();
 
 	void PopButtonStyle();
-
-	template <class T>
-	bool Bar(T&& t) {
+	
+	bool Bar(std::invocable auto&& t) {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
 		

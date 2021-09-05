@@ -43,7 +43,7 @@ namespace mwetris::ui {
 		Configuration::getInstance().getImGuiButtonFont();
 		Configuration::getInstance().getImGuiDefaultFont();
 		Configuration::getInstance().getImGuiHeaderFont();
-
+				
 		sceneStateMachine_.emplace<scene::Menu>();
 		sceneStateMachine_.emplace<scene::Play>(graphic_);
 		sceneStateMachine_.emplace<scene::Network>();

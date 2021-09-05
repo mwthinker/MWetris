@@ -78,7 +78,6 @@ namespace mwetris::graphic {
 		}
 
 		for (const auto& sq : block) {
-			const int columns = tetrisBoard_.getColumns();
 			auto x = pos.x + borderSize_ + squareSize_ * sq.column + delta.x;
 			auto y = pos.y + borderSize_ + squareSize_ * sq.row + delta.y;
 
@@ -337,6 +336,10 @@ namespace mwetris::graphic {
 				return spriteT_;
 			case tetris::BlockType::Z:
 				return spriteZ_;
+			case tetris::BlockType::Empty:
+				[[fallthrough]];
+			case tetris::BlockType::Wall:
+				break;
 		}
 		return spriteI_;
 	}

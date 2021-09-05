@@ -73,8 +73,7 @@ namespace mwetris::game {
 
 	class InitGameEvent {
 	public:
-		template <typename InputIt>
-		InitGameEvent(InputIt begin, InputIt end)
+		InitGameEvent(std::input_iterator auto begin, std::input_iterator auto end)
 			: players(begin, end) {
 		}
 
@@ -89,9 +88,9 @@ namespace mwetris::game {
 			, oldLevel{oldLevel} {
 		}
 
+		PlayerPtr player;
 		int newLevel;
 		int oldLevel;
-		PlayerPtr player;
 	};
 
 	class PointsChange {
@@ -102,9 +101,9 @@ namespace mwetris::game {
 			, oldPoints{oldPoints} {
 		}
 
+		PlayerPtr player;
 		int newPoints;
 		int oldPoints;
-		PlayerPtr player;
 	};
 
 }

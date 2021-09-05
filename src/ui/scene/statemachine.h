@@ -13,8 +13,12 @@
 #include <map>
 #include <typeindex>
 #include <algorithm>
+#include <concepts>
 
 namespace mwetris::ui::scene {
+
+	template <typename Type>
+	concept DerivedFromScene = std::derived_from<Type, Scene>;
 
 	class StateMachine {
 	public:
@@ -26,21 +30,20 @@ namespace mwetris::ui::scene {
 
 		void draw(sdl::Shader& shader, const DeltaTime& deltaTime);
 		
-		template <typename Type>
+		template <typename Type> requires DerivedFromScene<Type>
 		std::shared_ptr<Type> add(std::shared_ptr<Type> scene);
 
-		template <typename Type, typename... Args>
+		template <typename Type, typename... Args> requires DerivedFromScene<Type>
 		std::shared_ptr<Type> emplace(Args&&... args);
-		
-		template <typename Type>
+
+		template <typename Type> requires DerivedFromScene<Type>
 		void switchTo();
 
-		template <typename Type>
+		template <typename Type> requires DerivedFromScene<Type>
 		bool isCurrentScene() const;
 
-		template<typename Callback>
-		void setCallback(Callback&& callback) {
-			callback_ = std::forward<Callback>(callback);
+		void setCallback(std::invocable<scene::Event> auto&& callback) {
+			callback_ = std::forward<decltype(callback)>(callback);
 		}
 
 		void emitEvent(Event event);
@@ -48,12 +51,9 @@ namespace mwetris::ui::scene {
 	private:
 		void onCallback(scene::Event event);
 
-		template <typename Type>
-		static constexpr void staticAssertIsBaseOfScene();
-
 		using Key = size_t;
 
-		template <typename Type>
+		template <typename Type> requires DerivedFromScene<Type>
 		static Key getKey();
 
 		std::map<Key, std::shared_ptr<Scene>> scenes_;
@@ -61,16 +61,8 @@ namespace mwetris::ui::scene {
 		std::function<void(scene::Event)> callback_;
 	};
 
-	template <typename Type>
-	constexpr void StateMachine::staticAssertIsBaseOfScene() {
-		static_assert(std::is_base_of<Scene, Type>::value,
-			"Type must have Scene as base class");
-	}
-
-	template <typename Type>
+	template <typename Type> requires DerivedFromScene<Type>
 	std::shared_ptr<Type> StateMachine::add(std::shared_ptr<Type> scenePtr) {
-		staticAssertIsBaseOfScene<Type>();
-
 		spdlog::info("[SceneStateMachine] Try to add Scene: {}", typeid(Type).name());
 
 		if (!scenePtr) {
@@ -97,15 +89,13 @@ namespace mwetris::ui::scene {
 		return std::move(scenePtr);
 	}
 
-	template <typename Type, typename... Args>
+	template <typename Type, typename... Args> requires DerivedFromScene<Type>
 	std::shared_ptr<Type> StateMachine::emplace(Args&&... args) {
 		return add(std::make_shared<Type>(std::forward<Args>(args)...));
 	}
 
-	template <typename Type>
+	template <typename Type> requires DerivedFromScene<Type>
 	void StateMachine::switchTo() {
-		staticAssertIsBaseOfScene<Type>();
-		
 		if (auto it = scenes_.find(getKey<Type>()); it != scenes_.end()) {
 			auto key = it->first;
 			if (currentKey_ != 0) {
@@ -118,12 +108,12 @@ namespace mwetris::ui::scene {
 		}
 	}
 
-	template <typename Type>
+	template <typename Type> requires DerivedFromScene<Type>
 	bool StateMachine::isCurrentScene() const {
 		return getKey<Type>() == currentKey_;
 	}
 
-	template <typename Type>
+	template <typename Type> requires DerivedFromScene<Type>
 	StateMachine::Key StateMachine::getKey() {
 		return typeid(Type).hash_code();
 	}

@@ -178,9 +178,7 @@ namespace tetris {
 				}
 				break;
 			case Move::DownGround: {
-				bool moved = false;
 				while (!collision(block)) {
-					moved = true;
 					current_ = block;
 					block.moveDown();
 				}

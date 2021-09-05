@@ -27,6 +27,8 @@ namespace mwetris::graphic {
 					return fmt::format("{}:nd place!", position);
 				case 3:
 					return fmt::format("{}:rd place!", position);
+				default:
+					break;
 			}
 			return fmt::format("{}:th place!", position);
 		}
@@ -89,9 +91,9 @@ namespace mwetris::graphic {
 	void GameComponent::initGame(const game::InitGameEvent& event) {
 		auto& players = event.players;
 
-		bool showPoints = false;
+		
 		if (players.size() == 1) {
-			showPoints = true;
+			
 		}
 		drawPlayers_.clear();
 
