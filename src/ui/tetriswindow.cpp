@@ -81,6 +81,7 @@ namespace mwetris::ui {
 						break;
 					case SDL_WINDOWEVENT_CLOSE:
 						sdl::Window::quit();
+						break;
 				}
 				break;
 			case SDL_KEYDOWN:

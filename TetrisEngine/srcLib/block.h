@@ -28,7 +28,7 @@ namespace tetris {
 	}
 
 	inline bool operator!=(const Square& left, const Square& right) {
-		return !(left != right);
+		return !(left == right);
 	}
 
 	class Block {
@@ -55,6 +55,11 @@ namespace tetris {
 
 		BlockType getBlockType() const {
 			return blockType_;
+		}
+
+		[[deprecated]]
+		Square operator[](int index) const {
+			return squares_[index];
 		}
 
 		// Return the lowest row when the block is in default rotation.
