@@ -23,7 +23,7 @@ namespace mwetris::ui {
 		~TetrisWindow();
 
 		void setStartPage(scene::Event event) {
-			handleSceneMenuEvent(event);
+			startEvent_ = event;
 		}
 	
 	private:
@@ -37,6 +37,7 @@ namespace mwetris::ui {
 	
 		sdl::TextureView background_;
 		scene::StateMachine sceneStateMachine_;
+		scene::Event startEvent_ = scene::Event::Menu;
 	};
 
 }

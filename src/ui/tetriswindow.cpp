@@ -49,6 +49,8 @@ namespace mwetris::ui {
 		sceneStateMachine_.emplace<scene::Network>();
 		sceneStateMachine_.emplace<scene::Settings>();
 		sceneStateMachine_.emplace<scene::HighScore>();
+		
+		handleSceneMenuEvent(startEvent_);
 	}
 	
 	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {

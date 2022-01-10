@@ -4,15 +4,22 @@
 
 #include <sdl/initsdl.h>
 
-int main(int, char**) {
+int main(int argc, char** argv) {
 	mwetris::logger::init();
 	spdlog::info("[main] MWetris Version:  {}", PROJECT_VERSION);
 	spdlog::info("[main] MWetris git hash:  {}", GIT_VERSION);
 
 	const sdl::InitSdl SDL;
-	mwetris::ui::TetrisWindow tetris;
-	//tetris.setStartPage(tetris::ui::scene::Event::Play);
-	tetris.startLoop();
+	mwetris::ui::TetrisWindow tetrisWindow;
+
+	if (argc == 2) {
+		std::string flag{argv[1]};
+		if (flag == "-p" || flag == "--page") {
+			tetrisWindow.setStartPage(mwetris::ui::scene::Event::Play);
+		}
+	}
+
+	tetrisWindow.startLoop();
 	mwetris::Configuration::getInstance().quit();
 	return 0;
 }
