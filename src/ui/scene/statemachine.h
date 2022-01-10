@@ -24,11 +24,11 @@ namespace mwetris::ui::scene {
 	public:
 		StateMachine();
 
+		~StateMachine() = default;
+
 		void eventUpdate(const SDL_Event& windowEvent);
 
 		void imGuiUpdate(const DeltaTime& deltaTime);
-
-		void draw(sdl::Shader& shader, const DeltaTime& deltaTime);
 		
 		template <typename Type> requires DerivedFromScene<Type>
 		std::shared_ptr<Type> add(std::shared_ptr<Type> scene);

@@ -19,9 +19,7 @@ namespace mwetris::ui::scene {
 
 	}
 
-	Play::Play(sdl::Graphic& graphic) 
-		: graphic_{graphic} {
-
+	Play::Play() {
 		computers_.push_back(findAiDevice(Configuration::getInstance().getAi1Name()));
 		computers_.push_back(findAiDevice(Configuration::getInstance().getAi2Name()));
 		computers_.push_back(findAiDevice(Configuration::getInstance().getAi3Name()));
@@ -50,29 +48,10 @@ namespace mwetris::ui::scene {
 		}
 	}
 
-	void Play::draw(sdl::Shader& shader, const DeltaTime& deltaTime) {
-		glEnable(GL_BLEND);
-		glBlendEquation(GL_FUNC_ADD);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		graphic_.clear();
-
-		auto menuHeight = mwetris::Configuration::getInstance().getWindowBarHeight();
-		auto deltaTimeSeconds = std::chrono::duration<double>(deltaTime).count();
-
-		if (size_.x > 0 && size_.y > menuHeight) {
-			graphic_.pushMatrix([&] {
-				graphic_.setMatrix(glm::ortho(0.f, size_.x, 0.f, size_.y));
-				gameComponent_->draw(graphic_, size_.x, size_.y - menuHeight, deltaTimeSeconds);
-				graphic_.upload(shader);
-			});
-		}
-		game_->update(deltaTimeSeconds);
-		for (auto& computer : computers_) {
-		}
-	}
-
 	void Play::imGuiUpdate(const DeltaTime& deltaTime) {
+		auto deltaTimeSeconds = std::chrono::duration<double>(deltaTime).count();
+		game_->update(deltaTimeSeconds);
+
 		auto menuHeight = mwetris::Configuration::getInstance().getWindowBarHeight();
 
 		ImGui::Bar([&]() {
@@ -99,6 +78,10 @@ namespace mwetris::ui::scene {
 		});
 
 		size_ = ImGui::GetWindowSize();
+		
+		if (gameComponent_) {
+			gameComponent_->draw(size_.x, size_.y - menuHeight, deltaTimeSeconds);
+		}
 	}
 
 	std::vector<game::DevicePtr> Play::getCurrentDevices() const {
@@ -131,7 +114,6 @@ namespace mwetris::ui::scene {
 		game_ = std::make_unique<game::TetrisGame>();
 		connections_.clear();
 		connections_ += game_->initGameEvent.connect(gameComponent_.get(), &mwetris::graphic::GameComponent::initGame);
-		connections_.cleanUp();
 
 		std::vector<game::DevicePtr> devices;
 		devices.push_back(devices_[0]);

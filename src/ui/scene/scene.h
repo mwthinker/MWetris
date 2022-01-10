@@ -26,8 +26,6 @@ namespace mwetris::ui::scene {
 
 		virtual void imGuiUpdate(const DeltaTime& deltaTime) {};
 
-		virtual void draw(sdl::Shader& shader, const DeltaTime& deltaTime) {};
-
 	protected:
 		class StateMachineWrapper {
 		public:

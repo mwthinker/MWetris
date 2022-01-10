@@ -17,12 +17,6 @@ namespace mwetris::ui::scene {
 		}
 	}
 
-	void StateMachine::draw(sdl::Shader& shader, const DeltaTime& deltaTime) {
-		if (currentKey_) {
-			scenes_[currentKey_]->draw(shader, deltaTime);
-		}
-	}
-
 	void StateMachine::onCallback(scene::Event event) {
 		if (callback_) {
 			callback_(event);

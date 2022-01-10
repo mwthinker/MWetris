@@ -2,7 +2,36 @@
 #include "tetrisgameevent.h"
 #include "helper.h"
 
+#include <random>
+
+namespace {
+
+	constexpr int UniqueIdSize = 8;
+
+	constexpr std::string_view Characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+	std::string generateRandomString(int size) {
+		std::mt19937 generator{std::random_device{}()};
+		std::uniform_int_distribution<> distribution{0, static_cast<int>(Characters.size() - 1)};
+
+		std::string unique(size, 'X');
+
+		for (auto& key : unique) {
+			unique = Characters[distribution(generator)];
+		}
+
+		return unique;
+	}
+
+}
+
+
 namespace mwetris::game {
+
+	Player::Player(const tetris::TetrisBoard& tetrisBoard)
+		: tetrisBoard_{tetrisBoard}
+		, uniqueId_{generateRandomString(UniqueIdSize)} {
+	}
 
 	bool Player::isGameOver() const {
 		return tetrisBoard_.isGameOver();
@@ -26,4 +55,7 @@ namespace mwetris::game {
 		gameboardEventUpdate.invoke(event, value);
 	}
 
+	const std::string& Player::getUniqueId() const {
+		return uniqueId_;
+	}
 }

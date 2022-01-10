@@ -41,70 +41,40 @@ namespace mwetris::graphic {
 	GameComponent::~GameComponent() {
 	}
 
-	Mat4 GameComponent::calculateBoardMatrix(int windowWidth, int windowHeight) const {
-		float width = 0;
-		float height = 0;
+	void GameComponent::draw(int windowWidth, int windowHeight, double deltaTime) {
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, Vec2{0.f, 0.f});
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, Vec2{0.f, 0.f});
 
-		for (const auto& [player, drawBoardPtr] : drawPlayers_) {
-			auto size = drawBoardPtr->getSize();
-			width += size.x;
-			height = size.y;
-		}
-		
-		float dx{}, dy{};
-		float scale{};
-		if (width / windowWidth > height / windowHeight) {
-			// Blank sides, up and down.
-			scale = windowWidth / width;
-			dx = 0;
-			dy = (windowHeight - scale * height) * 0.5f;
-		} else {
-			// Blank sides, left and right.
-			scale = windowHeight / height;
-			dx = (windowWidth - scale * width) * 0.5f;
-			dy = 0;
+		ImGui::PushStyleColor(ImGuiCol_Border, sdl::color::html::Red);
+
+		float width = windowWidth;
+		float height = windowHeight;
+		if (players_.size() > 1) {
+			width = windowWidth / players_.size();
 		}
 
-		return glm::translate(Vec3{dx, dy, 0.f}) * glm::scale(Vec3{scale, scale, 1.f});
-	}
+		int i = 0;
+		for (auto& [player, imguiBoard] : players_) {
+			ImGui::SetNextWindowSize({width, height});
 
-	void GameComponent::draw(sdl::Graphic& graphic, int windowWidth, int windowHeight, double deltaTime) {
-		graphic.pushMatrix();
-		graphic.multMatrix(calculateBoardMatrix(windowWidth, windowHeight));
+			ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar;
 
-		if (!drawPlayers_.empty()) {
-			Configuration::getInstance().bindTextureFromAtlas();
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-			graphic.pushMatrix([&] {
-				for (auto& [player, drawBoardPtr] : drawPlayers_) {
-					drawBoardPtr->draw(graphic);
-					graphic.translate({drawBoardPtr->getSize().x, 0.f});
-				}
-			});
-
-			sdl::assertGlError();
+			//ImGui::Window(player->getUniqueId().c_str(), nullptr, flags, [&]() {
+				//imguiBoard.draw(width, height);
+			//});
+			imguiBoard.draw(width, windowHeight);
+			//ImGui::Button("asdds", Vec2{width, windowHeight});
+			ImGui::SameLine();
 		}
+
+		ImGui::PopStyleColor(1);
+		ImGui::PopStyleVar(2);
 	}
 
 	void GameComponent::initGame(const game::InitGameEvent& event) {
-		auto& players = event.players;
-
-		
-		if (players.size() == 1) {
-			
-		}
-		drawPlayers_.clear();
-
-		float w = 0;
-		for (auto& player : players) {
-			auto& drawBoardPtr = drawPlayers_[player];
-			if (drawBoardPtr == nullptr) {
-				drawBoardPtr = std::make_unique<DrawBoard>(*player);
-			}
-			//graphic.restart(*staticBoardBatch_, *player, w, 0, tetrisGame_.isDefaultGame());
-			w += drawBoardPtr->getSize().x;
+		players_.clear();
+		for (auto& player : event.players) {
+			players_.insert({player, ImGuiBoard{player}});
 		}
 	}
 

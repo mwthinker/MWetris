@@ -37,7 +37,7 @@ namespace mwetris::game {
 
 		void updateGameOver();
 
-		std::string getName() const override {
+		const std::string& getName() const override {
 			return name_;
 		}
 
@@ -50,14 +50,14 @@ namespace mwetris::game {
 		}
 
 		int getClearedRows() const override {
-			return 0;
+			return clearedRows_;
 		}
 
 		int getGameOverPosition() const override {
 			return gameOverPosition_;
 		}
 
-		DevicePtr getDevice() const override {
+		const DevicePtr& getDevice() const override {
 			return device_;
 		}
 
@@ -72,6 +72,7 @@ namespace mwetris::game {
 		std::string name_;
 		int points_ = 0;
 		int level_ = 1;
+		int clearedRows_ = 0;
 		int levelUpCounter_ = 0;
 		int gameOverPosition_ = 0;
 

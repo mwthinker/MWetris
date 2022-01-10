@@ -12,6 +12,7 @@
 #include "graphic/gamecomponent.h"
 #include "ui/imguiextra.h"
 #include "ai.h"
+#include "graphic/imguiboard.h"
 
 #include <sdl/graphic.h>
 #include <sdl/sprite.h>
@@ -25,11 +26,9 @@ namespace mwetris::ui::scene {
 
 	class Play : public Scene {
 	public:
-		explicit Play(sdl::Graphic& graphic);
+		Play();
 
 		void eventUpdate(const SDL_Event& windowEvent) override;
-
-		void draw(sdl::Shader& shader, const DeltaTime& deltaTime) override;
 
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
 
@@ -45,14 +44,12 @@ namespace mwetris::ui::scene {
 		game::DevicePtr findHumanDevice(const std::string& name) const;
 
 		std::unique_ptr<graphic::GameComponent> gameComponent_;
-
 		std::unique_ptr<game::TetrisGame> game_;
 		int nbrHumans_ = 1;
 		int nbrAis_ = 0;
 		std::vector<game::SdlDevicePtr> devices_;
 		std::vector<game::ComputerPtr> computers_;
 
-		sdl::Graphic& graphic_;
 		sdl::TextureView crossSprite_;
 		sdl::TextureView manSprite_;
 		sdl::TextureView aiSprite_;

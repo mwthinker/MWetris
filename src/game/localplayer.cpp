@@ -83,6 +83,7 @@ namespace mwetris::game {
 		points_ = 0;
 		gameOverPosition_ = 0;
 		levelUpCounter_ = 0;
+		clearedRows_ = 0;
 		restartTetrisBoard(tetris::randomBlockType(), tetris::randomBlockType());
 	}
 
@@ -100,6 +101,9 @@ namespace mwetris::game {
 			leftHandler_.reset();
 			rightHandler_.reset();
 			downHandler_.reset();
+		}
+		if (boardEvent == tetris::BoardEvent::RowsRemoved) {
+			clearedRows_ += value;
 		}
 	}
 

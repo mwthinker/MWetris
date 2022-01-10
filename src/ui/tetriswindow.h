@@ -6,9 +6,7 @@
 #include "scene/statemachine.h"
 #include "scene/event.h"
 
-#include <sdl/graphic.h>
 #include <sdl/imguiwindow.h>
-#include <sdl/shader.h>
 
 namespace mwetris {
 
@@ -31,11 +29,7 @@ namespace mwetris::ui {
 	private:
 		void initPreLoop() override;
 
-		void imGuiPreUpdate(const sdl::DeltaTime& deltaTime) override;
-
 		void imGuiUpdate(const sdl::DeltaTime& deltaTime) override;
-
-		void imGuiPostUpdate(const sdl::DeltaTime& deltaTime) override;
 
 		void imGuiEventUpdate(const SDL_Event& windowEvent) override;
 
@@ -43,8 +37,6 @@ namespace mwetris::ui {
 	
 		sdl::TextureView background_;
 		scene::StateMachine sceneStateMachine_;
-		sdl::Shader shader_;
-		sdl::Graphic graphic_;
 	};
 
 }

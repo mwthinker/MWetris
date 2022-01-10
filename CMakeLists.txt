@@ -27,8 +27,8 @@ if (MSVC)
 endif ()
 
 set(SOURCES
-	src/graphic/drawboard.cpp
-	src/graphic/drawboard.h
+	src/graphic/imguiboard.cpp
+	src/graphic/imguiboard.h
 	src/graphic/gamecomponent.cpp
 	src/graphic/gamecomponent.h
 	

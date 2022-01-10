@@ -45,29 +45,17 @@ namespace mwetris::ui {
 		Configuration::getInstance().getImGuiHeaderFont();
 				
 		sceneStateMachine_.emplace<scene::Menu>();
-		sceneStateMachine_.emplace<scene::Play>(graphic_);
+		sceneStateMachine_.emplace<scene::Play>();
 		sceneStateMachine_.emplace<scene::Network>();
 		sceneStateMachine_.emplace<scene::Settings>();
 		sceneStateMachine_.emplace<scene::HighScore>();
-
-		shader_ = sdl::Shader::CreateShaderGlsl_330();
-	}
-
-	void TetrisWindow::imGuiPreUpdate(const sdl::DeltaTime& deltaTime) {
-		shader_.useProgram();
-		graphic_.clear();
-		graphic_.addRectangleImage({-1, -1}, {2, 2}, background_);
-		graphic_.upload(shader_);
-		sceneStateMachine_.draw(shader_, deltaTime);
 	}
 	
 	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
 		ImGui::MainWindow("Main", [&]() {
+			ImGui::ImageBackground(background_);
 			sceneStateMachine_.imGuiUpdate(deltaTime);
 		});
-	}
-
-	void TetrisWindow::imGuiPostUpdate(const sdl::DeltaTime& deltaTime) {
 	}
 
 	void TetrisWindow::imGuiEventUpdate(const SDL_Event& windowEvent) {

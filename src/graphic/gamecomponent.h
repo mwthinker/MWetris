@@ -2,17 +2,17 @@
 #define MWETRIS_GRAPHIC_GAMECOMPONENT_H
 
 #include "game/player.h"
-#include "drawboard.h"
 
 #include "types.h"
 #include "game/tetrisgameevent.h"
+#include "imguiboard.h"
 
 #include <sdl/graphic.h>
 
 #include <sdl/graphic.h>
 #include <mw/signal.h>
 
-#include <map>
+#include <set>
 
 namespace mwetris::game {
 
@@ -28,19 +28,14 @@ namespace mwetris::graphic {
 		GameComponent();
 		~GameComponent();
 
-		void draw(sdl::Graphic& graphic, int width, int height, double deltaTime);
+		void draw(int width, int height, double deltaTime);
 
 		void initGame(const game::InitGameEvent& event);
 
 	private:
-		Mat4 calculateBoardMatrix(int windowWidth, int windowHeight) const;
-
 		//void eventHandler(Event& tetrisGameEvent);
 		
 		void handleMiddleText(const game::PlayerPtr& player, int lastPostion);
-
-		using DrawBoardPtr = std::unique_ptr<DrawBoard>;
-		std::map<game::PlayerPtr, DrawBoardPtr> drawPlayers_;
 
 		// Fix time step.
 		Uint32 timeStep_{};
@@ -49,6 +44,8 @@ namespace mwetris::graphic {
 		// Font related.
 		float fontSize_{};
 		float borderSize_{};
+
+		std::map<mwetris::game::PlayerPtr, ImGuiBoard> players_;
 	};
 
 }
