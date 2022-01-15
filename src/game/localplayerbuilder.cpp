@@ -12,7 +12,6 @@ namespace mwetris::game {
 			player = std::make_shared<LocalPlayer>(board, device_);
 		}
 		player->updateName(name_);
-		player->updateLevelUpCounter(levelUpCounter_);
 		player->updateLevel(level_);
 		//player->updateClearedRows(clearedRows_);
 		player->updateGameOverPosition(gameOverPosition_);

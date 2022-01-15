@@ -5,6 +5,7 @@
 #include "tetrisgameevent.h"
 
 #include <vector>
+#include <unordered_map>
 
 namespace mwetris::game {
 
@@ -17,17 +18,17 @@ namespace mwetris::game {
 		void restartGame();
 
 	private:
+		struct PlayerData {
+			int points;
+			int levelUpCounter;
+			int level;
+		};
+
 		void applyRules(tetris::BoardEvent gameEvent, int value, const LocalPlayerPtr& player);
 
 		void handleGameOverEvent(const LocalPlayerPtr& player);
 
 		void handleRowsRemovedEvent(const LocalPlayerPtr& player, int rows);
-
-		void triggerPointEvent(const LocalPlayerPtr& player, int newPoints, int oldPoints);
-
-		void triggerGameOverEvent(const LocalPlayerPtr& player);
-
-		void triggerLevelUpEvent(const LocalPlayerPtr& player, int newLevel, int oldLevel);
 
 		void addRowsToOpponents(const LocalPlayerPtr& player);
 
@@ -35,8 +36,8 @@ namespace mwetris::game {
 			return localPlayers_.size() > 1;
 		}
 
-		std::vector<LocalPlayerPtr> localPlayers_;
-		int nbrAlivePlayers_{};
+		std::unordered_map<LocalPlayerPtr, PlayerData> localPlayers_;
+		int nbrAlivePlayers_ = 0;
 		mw::signals::ScopedConnections connections_;
 	};
 

@@ -27,8 +27,6 @@ namespace mwetris::game {
 
 		void updateName(const std::string& name);
 
-		void updateLevelUpCounter(int counter);
-
 		void updateLevel(int level);
 
 		void updateGameOverPosition(int gameOverPosition);
@@ -73,7 +71,6 @@ namespace mwetris::game {
 		int points_ = 0;
 		int level_ = 1;
 		int clearedRows_ = 0;
-		int levelUpCounter_ = 0;
 		int gameOverPosition_ = 0;
 
 		ActionHandler leftHandler_{0.09, false};

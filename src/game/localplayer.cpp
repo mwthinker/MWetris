@@ -66,10 +66,6 @@ namespace mwetris::game {
 		points_ = points;
 	}
 
-	void LocalPlayer::updateLevelUpCounter(int counter) {
-		levelUpCounter_ = counter;
-	}
-
 	void LocalPlayer::updateLevel(int level) {
 		level_ = level;
 	}
@@ -82,7 +78,6 @@ namespace mwetris::game {
 		level_ = 1;
 		points_ = 0;
 		gameOverPosition_ = 0;
-		levelUpCounter_ = 0;
 		clearedRows_ = 0;
 		restartTetrisBoard(tetris::randomBlockType(), tetris::randomBlockType());
 	}

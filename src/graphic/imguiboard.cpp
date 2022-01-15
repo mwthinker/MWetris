@@ -3,11 +3,10 @@
 #include "tetrisboard.h"
 #include "game/player.h"
 
+#include "configuration.h"
 #include <sdl/imguiauxiliary.h>
 
 #include <spdlog/spdlog.h>
-
-#include <vector>
 
 namespace mwetris::graphic {
 
@@ -179,6 +178,8 @@ namespace mwetris::graphic {
 
 			bool blankSideUpAndDown = (width / normalizedWidth) < (height / normalizedHeight);
 
+			const Vec2 startPosition = ImGui::GetCursorPos();
+
 			if (blankSideUpAndDown) {
 				squareSize_ = width / normalizedWidth;
 				height_ = rows * squareSize_;
@@ -219,88 +220,19 @@ namespace mwetris::graphic {
 				//ImGui::Button("4", {(width - normalizedWidth * squareSize_) * 0.5f, height});
 				ImGui::Dummy({(width - normalizedWidth * squareSize_) * 0.5f, height});
 			}
-		});
-	}
 
-	void ImGuiBoard::callback(tetris::BoardEvent gameEvent, const tetris::TetrisBoard& tetrisBoard) {
-		/*
-		for (auto& row : rows_) {
-			row->handleEvent(gameEvent, tetrisBoard);
-		}
-		rows_.remove_if([&](const DrawRowPtr& row) {
-			if (!row->isAlive()) {
-				freeRows_.push_front(row);
-				return true;
+			if (tetrisBoard.isGameOver()) {
+				auto pos = ImGui::GetCursorPos();
+
+				const char* text = "Game Over";
+				Vec2 delta = ImGui::CalcTextSize(text);
+
+				ImGui::SetCursorPos(startPosition + Vec2{width * 0.5f, height * 0.5f} - delta * 0.5f);
+				ImGui::Text(text);
+				
+				ImGui::SetCursorPos(pos);
 			}
-			return false;
 		});
-		switch (gameEvent) {
-			case BoardEvent::GAME_OVER:
-				break;
-			case BoardEvent::BLOCK_COLLISION:
-				break;
-			case BoardEvent::RESTARTED:
-				break;
-			case BoardEvent::EXTERNAL_ROWS_ADDED:
-			{
-				int rows = tetrisBoard.getNbrExternalRowsAdded();
-				for (int row = 0; row < rows; ++row) {
-					addDrawRowBottom(tetrisBoard, rows - row - 1);
-				}
-				int highestRow = tetrisBoard.getBoardVector().size() / tetrisBoard.getColumns();
-				assert(rows_.size() - highestRow >= 0); // Something is wrong. Should not be posssible.
-				for (int i = 0; i < (int) rows_.size() - highestRow; ++i) { // Remove unneeded empty rows at the top.
-					rows_.pop_back();
-				}
-			}
-			break;
-			case BoardEvent::NEXT_BLOCK_UPDATED:
-				nextBlock_.update(Block(tetrisBoard.getNextBlockType(), 0, 0));
-				break;
-			case BoardEvent::CURRENT_BLOCK_UPDATED:
-				// Fall through!
-			case BoardEvent::PLAYER_MOVES_BLOCK_ROTATE:
-				// Fall through!
-			case BoardEvent::PLAYER_MOVES_BLOCK_LEFT:
-				// Fall through!
-			case BoardEvent::PLAYER_MOVES_BLOCK_RIGHT:
-				currentBlock_.update(tetrisBoard.getBlock());
-				{
-					TetrisBoard board = tetrisBoard;
-					board.update(Move::DOWN_GROUND);
-					downBlock_.update(board.getBlock());
-				}
-				break;
-			case BoardEvent::PLAYER_MOVES_BLOCK_DOWN_GROUND:
-				blockDownGround_ = true;
-				latestBlockDownGround_ = tetrisBoard.getBlock();
-				break;
-			case BoardEvent::PLAYER_MOVES_BLOCK_DOWN:
-				if (blockDownGround_) {
-					currentBlock_.updateDown(tetrisBoard.getBlock());
-					blockDownGround_ = false;
-				}
-				// Fall through!
-			case BoardEvent::GRAVITY_MOVES_BLOCK:
-				currentBlock_.update(tetrisBoard.getBlock());
-				break;
-			case BoardEvent::ROW_TO_BE_REMOVED:
-				textClearedRows_.update("Rows " + std::to_string(tetrisBoard.getRemovedRows()));
-				break;
-			case BoardEvent::ONE_ROW_REMOVED:
-				addDrawRowAtTheTop(tetrisBoard, 1);
-				break;
-			case BoardEvent::TWO_ROW_REMOVED:
-				addDrawRowAtTheTop(tetrisBoard, 2);
-				break;
-			case BoardEvent::THREE_ROW_REMOVED:
-				addDrawRowAtTheTop(tetrisBoard, 3);
-				break;
-			case BoardEvent::FOUR_ROW_REMOVED:
-				addDrawRowAtTheTop(tetrisBoard, 4);
-				break;
-		}
-		*/
 	}
 
 	sdl::TextureView ImGuiBoard::getSprite(tetris::BlockType blockType) const {
