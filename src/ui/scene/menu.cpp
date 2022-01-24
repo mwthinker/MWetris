@@ -22,7 +22,6 @@ namespace mwetris::ui::scene {
 
 		//ImGui::Indent(10.f);
 		addMenuButton("Play", Event::Play);
-		addMenuButton("Custom Play", Event::CustomPlay);
 		addMenuButton("Network Play", Event::NetworkPlay);
 		addMenuButton("Highscore", Event::HighScore);
 		addMenuButton("Settings", Event::Settings);

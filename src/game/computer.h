@@ -31,7 +31,6 @@ namespace mwetris::game {
 		tetris::Ai::State state_{};
 		tetris::Block block_;
 		tetris::Ai ai_;
-		int turn_ = 0;
 	};
 
 }

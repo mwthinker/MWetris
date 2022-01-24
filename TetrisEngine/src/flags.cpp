@@ -44,7 +44,7 @@ Flags::Flags(const int argc, const char* const argv[])
 				delay_ = std::chrono::milliseconds{extractArgumentPositiveInteger(argv[i + 1])};
 				++i;
 			} else {
-				throw FlagsException{fmt::format("Missing argument after {} {} flag\n", arg)};
+				throw FlagsException{fmt::format("Missing argument after {} flag\n", arg)};
 			}
 		} else if (arg == "-D" || arg == "--depth") {
 			if (i + 1 < argc) {

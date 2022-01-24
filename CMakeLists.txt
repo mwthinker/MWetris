@@ -46,8 +46,6 @@ set(SOURCES
 	src/game/tetrisgame.h
 	src/game/taskqueue.h
 	
-	src/ui/scene/custom.cpp
-	src/ui/scene/custom.h
 	src/ui/scene/highscore.cpp
 	src/ui/scene/highscore.h
 	src/ui/scene/settings.cpp

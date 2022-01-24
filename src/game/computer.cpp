@@ -41,7 +41,6 @@ namespace mwetris::game {
 
 	void Computer::onGameboardEvent(const tetris::TetrisBoard& board, tetris::BoardEvent event, int value) {
 		if (event == tetris::BoardEvent::CurrentBlockUpdated) {
-			++turn_;
 			state_ = ai_.calculateBestState(board, 1);
 			block_ = board.getBlock();
 		}

@@ -40,10 +40,12 @@ namespace tetris {
 	}
 
 	void from_json(const json& j, tetris::Block& block) {
-		block = tetris::Block{j.at("blockType").get<tetris::BlockType>(),
+		block = tetris::Block{
+			j.at("blockType").get<tetris::BlockType>(),
 			j.at("leftColumn").get<int>(),
 			j.at("bottomRow").get<int>(),
-			j.at("currentRotation").get<int>()};
+			j.at("currentRotation").get<int>()
+		};
 	}
 
 	void to_json(json& j, const tetris::Block& block) {
@@ -153,8 +155,7 @@ namespace mwetris {
 		std::string jsonPath;
 		sdl::TextureAtlas textureAtlas;
 		std::map<std::string, sdl::Sound> sounds;
-		std::map<std::string, sdl::Font> fonts;
-		std::map<std::string, sdl::Music> musics;
+
 		nlohmann::json jsonObject;
 
 		mutable ImFont* defaultFont{};
@@ -169,8 +170,6 @@ namespace mwetris {
 
 	void Configuration::quit() {
 		impl_->sounds.clear();
-		impl_->fonts.clear();
-		impl_->musics.clear();
 	}
 
 	Configuration::Configuration()
@@ -204,19 +203,6 @@ namespace mwetris {
 		std::ofstream stream{impl_->jsonPath};
 		stream << impl_->jsonObject.dump(1);
 	}
-	
-	const sdl::Font& Configuration::loadFont(const std::string& file, int fontSize) {
-		assert(fontSize > 0);
-
-		size_t size = impl_->fonts.size();
-		std::string key = file;
-		key += fontSize;
-		auto& font = impl_->fonts[key];
-		if (impl_->fonts.size() > size) {
-			font = sdl::Font{file, fontSize};
-		}
-		return font;
-	}
 
 	sdl::Sound Configuration::loadSound(const std::string& file) {
 		size_t size = impl_->sounds.size();
@@ -228,18 +214,6 @@ namespace mwetris {
 		}
 
 		return sound;
-	}
-
-	sdl::Music Configuration::loadMusic(const std::string& file) {
-		size_t size = impl_->musics.size();
-		sdl::Music& music = impl_->musics[file];
-
-		// Music not found?
-		if (impl_->musics.size() > size) {
-			music = sdl::Music{file};
-		}
-
-		return music;
 	}
 
 	sdl::TextureView Configuration::loadSprite(const std::string& file) {
@@ -264,10 +238,6 @@ namespace mwetris {
 				return loadSprite(impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareZ"].get<std::string>());
 		}
 		return {};
-	}
-
-	const sdl::Font& Configuration::getDefaultFont(int size) {
-		return loadFont(impl_->jsonObject["window"]["font"].get<std::string>(), size);
 	}
 
 	ImFont* Configuration::getImGuiDefaultFont() const {

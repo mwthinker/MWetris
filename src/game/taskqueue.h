@@ -6,6 +6,7 @@
 #include <atomic>
 #include <chrono>
 #include <queue>
+#include <thread>
 
 class TaskQueue {
 public:
@@ -15,30 +16,12 @@ public:
 		: thread_{&TaskQueue::excecute, this} {
 	}
 
-	~TaskQueue() {
-		run_ = false;
-		thread_.join();
-	}
-
 	void start() {
 		pause_ = false;
 	}
 
 	void pause() {
 		pause_ = true;
-	}
-
-	void excecute() {
-		while (run_) {
-			std::unique_lock<std::mutex> lock(mutex_);
-			cv.wait(lock, [this]() { return !pause_;  });
-			
-			while (!tasks_.empty() && !pause_) {
-				auto& task = tasks_.front();
-				task();
-				tasks_.pop();
-			}
-		}
 	}
 
 	void push(const Task& item) {
@@ -59,16 +42,24 @@ public:
 	}
 
 private:
-	bool isWaiting() const {
-		return !run_;
+	void excecute(std::stop_token st) {
+		while (!st.stop_requested()) {
+			std::unique_lock<std::mutex> lock(mutex_);
+			cv.wait(lock, [this]() { return !pause_;  });
+
+			while (!tasks_.empty() && !pause_) {
+				auto& task = tasks_.front();
+				task();
+				tasks_.pop();
+			}
+		}
 	}
 
 	std::mutex mutex_;
+	std::atomic<bool> pause_ = true;
 	std::queue<Task> tasks_;
 	std::condition_variable cv;
-	std::thread thread_;
-	std::atomic<bool> run_{false};
-	std::atomic<bool> pause_{true};
+	std::jthread thread_;
 };
 
 #endif

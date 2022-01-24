@@ -16,12 +16,12 @@ namespace mwetris::game {
 		void reset();
 
 	private:
-		bool action_{};
-		double lastTime_{};
-		double waitingTime_{};
-		double time_{};
-		bool rebound_{};
-		bool lastAction_{};
+		bool action_ = false;
+		double lastTime_ = 0.0;
+		double waitingTime_ = 0.0;
+		double time_ = 0.0;
+		bool rebound_ = false;
+		bool lastAction_ = false;
 	};
 
 }

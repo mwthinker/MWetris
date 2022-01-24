@@ -20,9 +20,9 @@ namespace mwetris {
 	struct HighscoreRecord {
 		std::string name;
 		std::string date;
-		int points{0};
-		int level{1};
-		int rows{0};
+		int points = 0;
+		int level = 1;
+		int rows = 0;
 	};
 
 	class Configuration {
@@ -36,9 +36,7 @@ namespace mwetris {
 
 		void save();
 
-		const sdl::Font& loadFont(const std::string& file, int fontSize);
 		sdl::Sound loadSound(const std::string& file);
-		sdl::Music loadMusic(const std::string& file);
 		sdl::TextureView loadSprite(const std::string& file);
 
 		sdl::TextureView getSprite(tetris::BlockType blockType);

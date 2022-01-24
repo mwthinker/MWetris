@@ -7,7 +7,6 @@
 #include "scene/network.h"
 #include "scene/settings.h"
 #include "scene/highscore.h"
-#include "scene/custom.h"
 
 #include <sdl/imguiauxiliary.h>
 

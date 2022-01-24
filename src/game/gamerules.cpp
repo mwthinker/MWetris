@@ -1,8 +1,6 @@
 #include "gamerules.h"
 #include "tetrisgameevent.h"
 
-#include <ranges>
-
 namespace mwetris::game {
 
 	namespace {
