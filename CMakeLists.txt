@@ -1,14 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
-# 3.14 support for Visual Studio 2019
-
-set(VCPKG_ROOT $ENV{VCPKG_ROOT})
-if (DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-	set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-		CACHE STRING ""
-	)
-	message(STATUS "Uses VCPKG CMAKE_TOOLCHAIN_FILE")
-endif()
-
+cmake_minimum_required(VERSION 3.21)
 project(MWetris
 	DESCRIPTION
 		"A C++ clone of Tetris"
