@@ -35,7 +35,7 @@ fetchcontent_declare(Calculator
 	GIT_REPOSITORY
 		https://github.com/mwthinker/Calculator.git
 	GIT_TAG
-		c6437b6d9a73b4f6afac80f35302d33bc8f76bfd
+		7d64fcaa0b10e8aa39c2779bd4fd162f6f9ea2a5 
 )
 FetchContent_MakeAvailable(Calculator)
 
@@ -77,7 +77,7 @@ endif ()
 target_link_libraries(TetrisEngine
 	PRIVATE
 		TetrisEngineLib
-		fmt::fmt fmt::fmt-header-only
+		fmt::fmt-header-only
 )
 
 # Copy data to build folder.

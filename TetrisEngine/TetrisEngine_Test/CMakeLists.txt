@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1...3.14)
+cmake_minimum_required(VERSION 3.23)
 project(TetrisEngine_Test
 	DESCRIPTION
 		"Test the project TetrisEngine using Catch2"
@@ -15,7 +15,6 @@ endif ()
 find_package(Catch2 CONFIG)
 if (Catch2_FOUND)
 	add_executable(TetrisEngine_Test
-		src/main.cpp
 		src/testspeed.cpp
 		src/testtetrisengine.cpp
 	)
@@ -25,7 +24,7 @@ if (Catch2_FOUND)
 	target_link_libraries(TetrisEngine_Test
 		PRIVATE
 			TetrisEngineLib
-			Catch2::Catch2
+			Catch2::Catch2 Catch2::Catch2WithMain
 	)
 else (Catch2_FOUND)
 	message(WARNING "Catch2 not found, TetrisEngine_Test not created")

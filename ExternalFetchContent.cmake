@@ -5,7 +5,7 @@ FetchContent_Declare(CppSdl2
 	GIT_REPOSITORY
 		https://github.com/mwthinker/CppSdl2.git
 	GIT_TAG
-		fe50c96251883a0c5f40cba4d1c76b31cc82ad2b
+		9bae1c86e168ecf05fd896b152b35e15bc709466
 )
 FetchContent_MakeAvailable(CppSdl2)
 
@@ -14,7 +14,7 @@ FetchContent_Declare(CppProtoNetwork
 	GIT_REPOSITORY
 		https://github.com/mwthinker/CppProtoNetwork.git
 	GIT_TAG
-		ad924a5c393c44b6cb54a86fe1a22758f870ea3a
+		3658ca73051d0ec8f565bc491b27bbf56f350454
 )
 FetchContent_MakeAvailable(CppProtoNetwork)
 
