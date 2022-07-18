@@ -228,7 +228,7 @@ namespace mwetris::graphic {
 				Vec2 delta = ImGui::CalcTextSize(text);
 
 				ImGui::SetCursorPos(startPosition + Vec2{width * 0.5f, height * 0.5f} - delta * 0.5f);
-				ImGui::Text(text);
+				ImGui::Text("%s", text);
 				
 				ImGui::SetCursorPos(pos);
 			}

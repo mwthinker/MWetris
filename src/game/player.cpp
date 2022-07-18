@@ -16,7 +16,7 @@ namespace {
 
 		std::string unique(size, 'X');
 
-		for (auto& key : unique) {
+		for ([[maybe_unused]] auto _ : unique) {
 			unique = Characters[distribution(generator)];
 		}
 

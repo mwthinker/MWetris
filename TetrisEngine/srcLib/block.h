@@ -45,8 +45,8 @@ namespace tetris {
 		void rotateLeft();
 		void rotateRight();
 
-		size_t getSize() const {
-			return squares_.size();
+		int getSize() const {
+			return static_cast<int>(squares_.size());
 		}
 
 		Square getRotationSquare() const {

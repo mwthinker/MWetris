@@ -13,6 +13,10 @@ endif ()
 
 find_package(Catch2 CONFIG)
 if (Catch2_FOUND)
+	enable_testing()
+		
+	include(Catch)
+
 	add_executable(TetrisEngine_Test
 		src/testspeed.cpp
 		src/testtetrisengine.cpp
@@ -25,6 +29,8 @@ if (Catch2_FOUND)
 			TetrisEngineLib
 			Catch2::Catch2 Catch2::Catch2WithMain
 	)
+
+	catch_discover_tests(TetrisEngine_Test)
 else (Catch2_FOUND)
 	message(WARNING "Catch2 not found, TetrisEngine_Test not created")
 endif (Catch2_FOUND)

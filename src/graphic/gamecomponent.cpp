@@ -53,17 +53,9 @@ namespace mwetris::graphic {
 			width = windowWidth / players_.size();
 		}
 
-		int i = 0;
 		for (auto& [player, imguiBoard] : players_) {
 			ImGui::SetNextWindowSize({width, height});
-
-			ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar;
-
-			//ImGui::Window(player->getUniqueId().c_str(), nullptr, flags, [&]() {
-				//imguiBoard.draw(width, height);
-			//});
 			imguiBoard.draw(width, windowHeight);
-			//ImGui::Button("asdds", Vec2{width, windowHeight});
 			ImGui::SameLine();
 		}
 

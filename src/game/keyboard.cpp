@@ -8,12 +8,12 @@ namespace mwetris::game {
 
 	Keyboard::Keyboard(std::string name, SDL_Keycode down, SDL_Keycode left,
 		SDL_Keycode right, SDL_Keycode rotate, SDL_Keycode downGround)
-		: name_{name}
-		, down_{down}
+		: down_{down}
 		, right_{right}
 		, left_{left}
 		, rotate_{rotate}
-		, downGround_{downGround} {
+		, downGround_{downGround}
+		, name_{name} {
 	}
 
 	Input Keyboard::getInput() const {

@@ -67,7 +67,7 @@ namespace ImGui {
 		buttons = (nbr > 0 ? nbr : 2);
 		drawList->PrimReserve(6 * buttons, 4 * buttons);
 		
-		for (int i = 1; i <= nbr || nbr == 0 && i == 1; ++i) {
+		for (int i = 1; i <= nbr || (nbr == 0 && i == 1); ++i) {
 			float x = p.x;
 			if (nbr != 0) {
 				x = p.x + size.x * (i -1);

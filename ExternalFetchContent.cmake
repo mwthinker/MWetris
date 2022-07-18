@@ -1,7 +1,6 @@
 include(FetchContent)
 # Load external github projects
 FetchContent_Declare(CppSdl2
-	GIT_SHALLOW 1
 	GIT_REPOSITORY
 		https://github.com/mwthinker/CppSdl2.git
 	GIT_TAG
@@ -10,16 +9,14 @@ FetchContent_Declare(CppSdl2
 FetchContent_MakeAvailable(CppSdl2)
 
 FetchContent_Declare(CppProtoNetwork
-	GIT_SHALLOW 1
 	GIT_REPOSITORY
 		https://github.com/mwthinker/CppProtoNetwork.git
 	GIT_TAG
-		3658ca73051d0ec8f565bc491b27bbf56f350454
+		13dfa51590b971c67fc23e58615af6ea39125109
 )
 FetchContent_MakeAvailable(CppProtoNetwork)
 
 FetchContent_Declare(Signal
-	GIT_SHALLOW 1
 	GIT_REPOSITORY
 		https://github.com/mwthinker/Signal.git
 	GIT_TAG
@@ -28,7 +25,6 @@ FetchContent_Declare(Signal
 FetchContent_MakeAvailable(Signal)
 
 fetchcontent_declare(CmakeAuxiliary
-	GIT_SHALLOW 1
 	GIT_REPOSITORY
 		https://gist.github.com/mwthinker/e0539b200e3f0ac6da545af4843a6ff6
 	GIT_TAG
@@ -43,7 +39,6 @@ include(${CmakeAuxiliary_SOURCE_DIR}/auxiliary.cmake)
 
 # Load data.
 FetchContent_Declare(MWetrisData
-	GIT_SHALLOW 1
 	GIT_REPOSITORY
 		https://github.com/mwthinker/MWetrisData.git
 	GIT_TAG
