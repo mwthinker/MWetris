@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.0)
 project(Protocol)
 
 find_package(Protobuf REQUIRED)
@@ -35,3 +34,10 @@ if (MSVC)
 			_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
 	)
 endif (MSVC)
+
+set_target_properties(Protocol
+	PROPERTIES
+		CXX_STANDARD 17
+		CXX_STANDARD_REQUIRED YES
+		CXX_EXTENSIONS NO
+)

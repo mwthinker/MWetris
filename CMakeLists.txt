@@ -27,8 +27,6 @@ set(SOURCES
 	src/game/computer.cpp
 	src/game/computer.h
 	src/game/device.h
-	src/game/gamerules.cpp
-	src/game/gamerules.h
 	src/game/input.h
 	src/game/keyboard.cpp
 	src/game/keyboard.h

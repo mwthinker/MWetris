@@ -7,56 +7,32 @@
 
 namespace mwetris::game {
 
-	class GameManager {
-	public:
-		virtual ~GameManager() = default;
-
-		virtual void createGame(const std::vector<LocalPlayerPtr>& players) = 0;
-
-		virtual void restartGame() = 0;
-
-		virtual bool isPaused() const = 0;
-
-		virtual void setPaused(bool pause) = 0;
-
-		virtual void close() = 0;
-	};
-
-	class GameRules;
-
-	class LocalGame : public GameManager {
+	class LocalGame {
 	public:
 		LocalGame();
 
-		void createGame(const std::vector<LocalPlayerPtr>& players) override;
+		void createGame(LocalPlayerPtr player);
 
-		void restartGame() override;
+		void restartGame();
 
-		bool isPaused() const override {
+		bool isPaused() const {
 			return false;
 		}
 
-		void setPaused(bool pause) override {
+		void setPaused(bool pause) {
 			pause_ = pause;
 		}
 
-		void close() override {
-		}
-
 	private:
-		std::unique_ptr<GameRules> gameRules_;
-		bool pause_{};
-	};
+		void applyRules(tetris::BoardEvent gameEvent, int value, const LocalPlayerPtr& player);
 
-	class GameFactory {
-	public:
-		virtual ~GameFactory() = default;
-
-		virtual std::unique_ptr<GameManager> createLocalGame() const = 0;
-
-		virtual std::unique_ptr<GameManager> createClientGame() const = 0;
-
-		virtual std::unique_ptr<GameManager> createServerGame() const = 0;
+		LocalPlayerPtr player_;
+		
+		int points_ = 0;
+		int rows_ = 0;
+		int level_ = 1;
+		bool pause_ = false;
+		mw::signals::ScopedConnection connection_;
 	};
 
 }

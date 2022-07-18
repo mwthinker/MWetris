@@ -5,7 +5,6 @@
 #include "tetrisgameevent.h"
 #include "localplayer.h"
 #include "tetrisparameters.h"
-#include "gamerules.h"
 #include "localplayerbuilder.h"
 #include "localgame.h"
 
@@ -20,8 +19,7 @@ namespace mwetris::game {
 
 	}
 
-	TetrisGame::TetrisGame()
-		: game_{std::make_unique<LocalGame>()} {
+	TetrisGame::TetrisGame() {
 	}
 
 	TetrisGame::~TetrisGame() {
@@ -54,7 +52,10 @@ namespace mwetris::game {
 		height_ = rows;
 
 		createLocalPlayers(columns, rows, devices);
-		game_->createGame(players_);
+		if (players_.size() == 1) {
+			localGame_.createGame(players_.front());
+		}
+
 		initGame();
 	}
 
@@ -65,25 +66,22 @@ namespace mwetris::game {
 	void TetrisGame::initGame() {
 		initGameEvent.invoke(InitGameEvent{players_.begin(), players_.end()});
 
-		if (game_->isPaused()) {
-			game_->setPaused(false);
-		}
+		localGame_.isPaused();
 	}
 
 	void TetrisGame::restartGame() {
 		accumulator_ = 0.0;
-		game_->restartGame();
+		localGame_.restartGame();
 
 		initGame();
 	}
 
 	bool TetrisGame::isPaused() const {
-		return game_->isPaused();
+		return localGame_.isPaused();
 	}
 
 	void TetrisGame::pause() {
-		game_->setPaused(!game_->isPaused());
-		//eventHandler_(GamePause{game_->isPaused(), true});
+		localGame_.setPaused(!localGame_.isPaused());
 	}
 
 	int TetrisGame::getNbrOfPlayers() const {
@@ -94,17 +92,18 @@ namespace mwetris::game {
 		if (width > TetrisMinWidth && width <= TetrisMaxWidth &&
 			height > TetrisMinHeight && height <= TetrisMaxHeight &&
 			(width_ != width || height_ != height)) {
-
+			
 			width_ = width;
 			height_ = height;
 
-			game_->createGame(players_);
+			localGame_.restartGame();
+
 			initGame();
 		}
 	}
 
 	void TetrisGame::update(double deltaTime) {
-		if (!game_->isPaused()) {
+		if (!localGame_.isPaused()) {
 			updateGame(deltaTime);
 		}
 	}

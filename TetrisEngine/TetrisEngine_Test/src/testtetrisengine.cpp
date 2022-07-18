@@ -1,4 +1,3 @@
-// main() provided by Catch in file testmain.cpp.
 #include <catch2/catch_all.hpp>
 
 #include <ai.h>

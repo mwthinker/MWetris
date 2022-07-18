@@ -6,7 +6,6 @@
 #include "tetrisparameters.h"
 #include "tetrisgameevent.h"
 #include "player.h"
-#include "gamerules.h"
 
 #include <vector>
 #include <memory>
@@ -59,13 +58,13 @@ namespace mwetris::game {
 		void updateGame(double deltaTime);
 
 		std::vector<LocalPlayerPtr> players_;
-		std::unique_ptr<GameManager> game_;
+		LocalGame localGame_;
 
-		int width_{TetrisWidth};
-		int height_{TetrisHeight};
-		int maxLevel_{TetrisMaxLevel};
+		int width_ = TetrisWidth;
+		int height_ = TetrisHeight;
+		int maxLevel_ = TetrisMaxLevel;
 
-		double accumulator_{0.0};
+		double accumulator_ = 0.0;
 	};
 
 }

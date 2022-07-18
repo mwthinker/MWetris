@@ -126,20 +126,6 @@ namespace mwetris::ui::scene {
 
 		nbrAis_ = 0;
 		nbrHumans_ = 0;
-
-		/*
-		auto playerDataVector = Configuration::getInstance().getActiveLocalGamePlayers();
-		for (auto& playerData : playerDataVector) {
-			if (playerData.ai_) {
-				playerData.device_ = findAiDevice(playerData.deviceName_);
-				++nbrAis_;
-			} else {
-				playerData.device_ = findHumanDevice(playerData.deviceName_);
-				++nbrHumans_;
-			}
-		}
-		game_.resumeGame(columns, rows, playerDataVector);
-		*/
 	}
 
 }

@@ -33,6 +33,7 @@ if (MSVC)
 	# Tell CMake to install the windows runtime libraries to the programs
 	# directory and tell CPack that they belong to the "applications" component
 	set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION ".")
+
 	include(InstallRequiredSystemLibraries)
 	file(GLOB DLL_FILES_DEBUG "${CMAKE_BINARY_DIR}/Debug/*.dll")
 	file(GLOB DLL_FILES_MINSIZEREL "${CMAKE_BINARY_DIR}/MinSizeRel/*.dll")
