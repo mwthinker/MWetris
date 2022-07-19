@@ -178,6 +178,8 @@ else ()
 	)
 endif ()
 
+set(nlohmann-json_IMPLICIT_CONVERSIONS OFF)
+
 target_link_libraries(MWetris
 	PRIVATE
 		TetrisEngineLib

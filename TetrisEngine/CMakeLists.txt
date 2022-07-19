@@ -22,6 +22,10 @@ set(SOURCES_LIB
 	srcLib/tetrisboard.h
 )
 
+if (MSVC)
+	configure_file(properties.rc ${CMAKE_CURRENT_BINARY_DIR}/properties.rc)
+endif ()
+
 add_library(TetrisEngineLib ${SOURCES_LIB})
 
 target_include_directories(TetrisEngineLib
@@ -31,7 +35,6 @@ target_include_directories(TetrisEngineLib
 
 include(FetchContent)
 fetchcontent_declare(Calculator
-	GIT_SHALLOW 1
 	GIT_REPOSITORY
 		https://github.com/mwthinker/Calculator.git
 	GIT_TAG
@@ -53,7 +56,7 @@ message(STATUS "TetrisEngine_Test is available to add: -DTetrisEngine_Test=1")
 option(TetrisEngine_Test "Add TetrisEngine_Test to project." OFF)
 if (TetrisEngine_Test)
 	add_subdirectory(TetrisEngine_Test)
-endif (TetrisEngine_Test)
+endif ()
 
 # ----- TetrisEngine -------------
 set(SOURCES_MAIN
@@ -66,7 +69,7 @@ set(SOURCES_MAIN
 if (MSVC)
 	add_executable(TetrisEngine 
 		${SOURCES_MAIN}
-		tetrisengine.rc
+		${CMAKE_CURRENT_BINARY_DIR}/properties.rc
 	)
 else ()
 	add_executable(TetrisEngine
