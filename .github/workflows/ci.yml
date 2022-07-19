@@ -44,7 +44,9 @@ jobs:
       - name: Display help text for TetrisEngine 
         shell: bash
         run: ./build/TetrisEngine/TetrisEngine --help
+        if: runner.os == 'Linux'
 
       - name: Run TetrisEngine and print every move
         shell: bash
         run: ./build/TetrisEngine/TetrisEngine -p
+        if: runner.os == 'Linux'
