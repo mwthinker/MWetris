@@ -31,7 +31,7 @@ jobs:
 
       - name: Run CMake with manifest mode vcpkg
         shell: bash
-        run: cmake --preset=${{ matrix.preset }} -B build -DTetrisEngine_Test=1
+        run: cmake --preset=${{ matrix.preset }} -B build -DTetrisEngine_Test=1 -DUSE_WIX_GENERATOR=1
 
       - name: Compile binaries
         shell: bash
@@ -50,3 +50,14 @@ jobs:
         shell: bash
         run: ./build/TetrisEngine/TetrisEngine -p
         if: runner.os == 'Linux'
+
+      - name: Extract msi output
+        shell: bash
+        run: echo "msi_output=$(ls -1 build | grep '.msi$')"" >> $GITHUB_ENV
+        if: runner.os == 'Windows'
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: installer
+          path: build/${{ env.msi_output }}
+          if: runner.os == 'Windows'
