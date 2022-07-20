@@ -31,7 +31,7 @@ jobs:
 
       - name: Run CMake with manifest mode vcpkg
         shell: bash
-        run: cmake --preset=${{ matrix.preset }} -B build -DTetrisEngine_Test=1 -DUSE_WIX_GENERATOR=1
+        run: cmake --preset=${{ matrix.preset }} -B build -DTetrisEngine_Test=1 -DUSE_WIX_GENERATOR=1 -DCMAKE_BUILD_TYPE=Release
 
       - name: Compile binaries
         shell: bash
