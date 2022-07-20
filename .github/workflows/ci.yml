@@ -51,6 +51,10 @@ jobs:
         run: ./build/TetrisEngine/TetrisEngine -p
         if: runner.os == 'Linux'
 
+      - name: Run cpack
+        shell: bash
+        run: cd build && cpack
+
       - name: Extract msi output
         shell: bash
         run: echo "msi_output=$(ls -1 build | grep '.msi$')"" >> $GITHUB_ENV
