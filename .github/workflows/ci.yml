@@ -57,10 +57,11 @@ jobs:
 
       - name: Extract msi output
         shell: bash
-        run: echo "msi_output=$(ls -1 | grep '.msi$')"" >> $GITHUB_ENV
+        run: echo "msi_output=$(ls -1 build | grep '.msi$')" >> $GITHUB_ENV
         if: runner.os == 'Windows'
 
       - uses: actions/upload-artifact@v3
+        if: runner.os == 'Windows' && {{ env.msi_output }} != ''
         with:
           name: installer
-          path: ${{ env.msi_output }}
+          path: build/${{ env.msi_output }}
