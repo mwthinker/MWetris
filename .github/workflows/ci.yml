@@ -35,7 +35,7 @@ jobs:
 
       - name: Compile binaries
         shell: bash
-        run: cmake --build build
+        run: cmake --build build --config Release
 
       - name: Run tests
         shell: bash
