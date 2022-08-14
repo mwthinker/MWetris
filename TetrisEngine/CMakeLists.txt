@@ -33,14 +33,7 @@ target_include_directories(TetrisEngineLib
 		srcLib
 )
 
-include(FetchContent)
-fetchcontent_declare(Calculator
-	GIT_REPOSITORY
-		https://github.com/mwthinker/Calculator.git
-	GIT_TAG
-		7d64fcaa0b10e8aa39c2779bd4fd162f6f9ea2a5 
-)
-FetchContent_MakeAvailable(Calculator)
+find_package(Calculator REQUIRED)
 
 target_compile_definitions(TetrisEngineLib
 	PUBLIC

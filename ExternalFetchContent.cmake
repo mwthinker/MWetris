@@ -5,24 +5,32 @@ FetchContent_Declare(CppSdl2
 		https://github.com/mwthinker/CppSdl2.git
 	GIT_TAG
 		027598edd18900b766a7d4d6643fad3e7db141d2
+	OVERRIDE_FIND_PACKAGE
 )
-FetchContent_MakeAvailable(CppSdl2)
 
 FetchContent_Declare(CppProtoNetwork
 	GIT_REPOSITORY
 		https://github.com/mwthinker/CppProtoNetwork.git
 	GIT_TAG
 		13dfa51590b971c67fc23e58615af6ea39125109
+	OVERRIDE_FIND_PACKAGE
 )
-FetchContent_MakeAvailable(CppProtoNetwork)
 
 FetchContent_Declare(Signal
 	GIT_REPOSITORY
 		https://github.com/mwthinker/Signal.git
 	GIT_TAG
 		56a20197ab61a936cbdaace49c98fca50e1584ad
+	OVERRIDE_FIND_PACKAGE
 )
-FetchContent_MakeAvailable(Signal)
+
+fetchcontent_declare(Calculator
+	GIT_REPOSITORY
+		https://github.com/mwthinker/Calculator.git
+	GIT_TAG
+		7d64fcaa0b10e8aa39c2779bd4fd162f6f9ea2a5
+	OVERRIDE_FIND_PACKAGE
+)
 
 fetchcontent_declare(CmakeAuxiliary
 	GIT_REPOSITORY

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.24)
 project(MWetris
 	DESCRIPTION
 		"A C++ clone of Tetris"
@@ -89,14 +89,18 @@ source_group(TREE
 		${SOURCES}
 )
 
+include(ExternalFetchContent.cmake)
+
 find_package(Threads REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 
+find_package(CppSdl2 REQUIRED)
+find_package(CppProtoNetwork REQUIRED)
+find_package(Signal REQUIRED)
+
 add_subdirectory(TetrisEngine)
 add_subdirectory(Protocol)
-
-include(ExternalFetchContent.cmake)
 
 extract_git_hash()
 create_guid()
