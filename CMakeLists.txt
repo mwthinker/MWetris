@@ -113,7 +113,6 @@ set(ExternalDependencies
 	CppSdl2
 	CppProtoNetwork
 	Calculator
-	ImGui
 )
 if (CppSdl2_Test)
 	set(ExternalDependencieTests "${ExternalDependencieTests};CppSdl2_Test")

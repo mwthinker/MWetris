@@ -5,8 +5,6 @@ project(TetrisEngine_Test
 		CXX
 )
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if (MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4275") # non - DLL-interface class 'class_1' used as base for DLL-interface class 'class_2'
 endif ()
@@ -18,19 +16,23 @@ if (Catch2_FOUND)
 	include(Catch)
 
 	add_executable(TetrisEngine_Test
-		src/testspeed.cpp
 		src/testtetrisengine.cpp
 	)
 	
-	add_compile_definitions(CATCH_CONFIG_ENABLE_BENCHMARKING)
-
 	target_link_libraries(TetrisEngine_Test
 		PRIVATE
 			TetrisEngineLib
 			Catch2::Catch2 Catch2::Catch2WithMain
 	)
 
+	set_target_properties(TetrisEngine_Test
+		PROPERTIES
+			CXX_STANDARD 20
+			CXX_STANDARD_REQUIRED YES
+			CXX_EXTENSIONS NO
+	)
+
 	catch_discover_tests(TetrisEngine_Test)
-else (Catch2_FOUND)
+else ()
 	message(WARNING "Catch2 not found, TetrisEngine_Test not created")
-endif (Catch2_FOUND)
+endif ()

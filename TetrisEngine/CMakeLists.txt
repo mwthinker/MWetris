@@ -51,6 +51,12 @@ if (TetrisEngine_Test)
 	add_subdirectory(TetrisEngine_Test)
 endif ()
 
+message(STATUS "TetrisEngine_Benchmark is available to add: -DTetrisEngine_Benchmark=1")
+option(TetrisEngine_Benchmark "Add TetrisEngine_Benchmark to project." OFF)
+if (TetrisEngine_Benchmark)
+	add_subdirectory(TetrisEngine_Benchmark)
+endif ()
+
 # ----- TetrisEngine -------------
 set(SOURCES_MAIN
 	src/flags.cpp

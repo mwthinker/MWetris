@@ -19,6 +19,7 @@
 		"spdlog",
 		"glm",
 		"catch2",
+		"benchmark",
 		"fmt",
 		"protobuf",
 		"nlohmann-json",
