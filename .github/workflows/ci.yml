@@ -10,23 +10,23 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            vcpkgCommitId: '4826ede84084395b0f87476e48ff6d4070eba0e4'
+            vcpkgCommitId: 'f6a1d122a02877e6217e9ac6a637474a34b0f288'
             preset: 'windows'
           - os: ubuntu-22.04
-            vcpkgCommitId: '4826ede84084395b0f87476e48ff6d4070eba0e4'
+            vcpkgCommitId: 'f6a1d122a02877e6217e9ac6a637474a34b0f288'
             preset: 'unix'
           - os: macos-12
-            vcpkgCommitId: '4826ede84084395b0f87476e48ff6d4070eba0e4'
+            vcpkgCommitId: 'f6a1d122a02877e6217e9ac6a637474a34b0f288'
             preset: 'unix'
 
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
 
-      - name: Set C++/C compiler on macOs
+      - name: Set C++/C compiler on macOS
         shell: bash
         run: echo "CC=gcc-11" >> $GITHUB_ENV; echo "CXX=g++-11" >> $GITHUB_ENV; cat "$GITHUB_ENV"
-        if: runner.os == 'macOs'
+        if: runner.os == 'macOS'
 
       - uses: friendlyanon/setup-vcpkg@v1
         with:
@@ -47,17 +47,17 @@ jobs:
 
       - name: Run tests
         shell: bash
-        run: ctest --test-dir build/TetrisEngine/TetrisEngine_Test/
+        run: ctest --rerun-failed --output-on-failure --test-dir build/TetrisEngine/TetrisEngine_Test/
       
       - name: Display help text for TetrisEngine 
         shell: bash
         run: ./build/TetrisEngine/TetrisEngine --help
-        if: runner.os == 'Linux' || runner.os == 'macOs'
+        if: runner.os == 'Linux' || runner.os == 'macOS'
 
       - name: Run TetrisEngine and print every move
         shell: bash
         run: ./build/TetrisEngine/TetrisEngine -p
-        if: runner.os == 'Linux' || runner.os == 'macOs'
+        if: runner.os == 'Linux' || runner.os == 'macOS'
 
       - name: Run cpack
         shell: bash

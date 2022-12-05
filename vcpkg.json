@@ -18,7 +18,7 @@
 		},
 		"spdlog",
 		"glm",
-		"catch2",
+		"gtest",
 		"benchmark",
 		"fmt",
 		"protobuf",

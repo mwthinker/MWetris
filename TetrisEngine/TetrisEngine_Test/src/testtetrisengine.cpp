@@ -1,4 +1,4 @@
-#include <catch2/catch_all.hpp>
+#include <gtest/gtest.h>
 
 #include <ai.h>
 
@@ -41,33 +41,47 @@ bool blockEqual(const Block& block1, const Block& block2) {
 	return true;
 }
 
-TEST_CASE("Test Square", "[square]") {
-	INFO("Testing square");
+class TetrisTest : public ::testing::Test {
+protected:
 
+	TetrisTest() {
+
+	}
+
+	~TetrisTest() override {}
+
+	void SetUp() override {}
+
+	void TearDown() override {}
+};
+
+TEST_F(TetrisTest, squareConstructorGiveCorrectResult) {
 	const Square sq{1, 5};
-	SECTION("square constuctor give the correct result") {
-		REQUIRE((sq.column == 1 && sq.row == 5));
-	}
 
-	SECTION("square copy give the same result") {
-		const Square sqCopy = sq;
-		REQUIRE((sqCopy.column == sq.column && sqCopy.row == sq.row));
-	}
+	EXPECT_EQ(1, sq.column);
+	EXPECT_EQ(5, sq.row);
+}
 
-	SECTION("testing equality") {
-		SECTION("changing row") {
-			Square sqCopy = sq;
-			++sqCopy.row;
-			REQUIRE(sqCopy != sq);
-			REQUIRE(!(sqCopy == sq));
-		}
-		SECTION("changing column") {
-			Square sqCopy = sq;
-			++sqCopy.column;
-			REQUIRE(sqCopy != sq);
-			REQUIRE(!(sqCopy == sq));
-		}
-	}
+TEST_F(TetrisTest, squareCopy) {
+	const Square sq{1, 5};
+	const Square sqCopy = sq;
+	EXPECT_EQ(sq.column, sqCopy.column);
+	EXPECT_EQ(sq.row, sqCopy.row);
+}
+
+TEST_F(TetrisTest, squareEquality) {
+	const Square sq{1, 5};
+	Square sqCopy = sq;
+	++sqCopy.row;
+
+	EXPECT_TRUE(sqCopy != sq);
+	EXPECT_TRUE(!(sqCopy == sq));
+
+	sqCopy = sq;
+	++sqCopy.column;
+
+	EXPECT_TRUE(sqCopy != sq);
+	EXPECT_TRUE(!(sqCopy == sq));
 }
 
 void rotateBlock(Block& block, int rotation) {
@@ -83,101 +97,123 @@ void rotateBlock(Block& block, int rotation) {
 	}
 }
 
-TEST_CASE("Test Block", "[block][square]") {
-	INFO("Default tetrisboard");
+TEST_F(TetrisTest, moveBlockDown) {
+	Block block{BlockType::J, 0, 0};
 
-	SECTION("Move block") {
-		Block block{BlockType::J, 0, 0};
+	block.moveDown();
+	Block tmpBlock{BlockType::J, 0, -1};
+	EXPECT_TRUE(blockEqual(tmpBlock, block));
 
-		SECTION("Move down") {
-			block.moveDown();
-			Block tmpBlock{BlockType::J, 0, -1};
-			REQUIRE(blockEqual(tmpBlock, block));
-
-			block.moveDown();
-			block.moveDown();
-			tmpBlock = Block{BlockType::J, 0, -3};
-			REQUIRE(blockEqual(tmpBlock, block));
-		}
-
-		SECTION("Move left") {
-			block.moveLeft();
-			Block tmpBlock{BlockType::J, -1, 0};
-			REQUIRE(blockEqual(tmpBlock, block));
-
-			block.moveLeft();
-			block.moveLeft();
-			tmpBlock = Block{BlockType::J, -3, 0};
-			REQUIRE(blockEqual(tmpBlock, block));
-		}
-
-		SECTION("Move right") {
-			block.moveRight();
-			Block tmpBlock{BlockType::J, 1, 0};
-			REQUIRE(blockEqual(tmpBlock, block));
-
-			block.moveRight();
-			block.moveRight();
-			tmpBlock = Block{BlockType::J, 3, 0};
-			REQUIRE(blockEqual(tmpBlock, block));
-		}
-	}
-
-	SECTION("Rotating block") {
-		Block block{BlockType::J, 0, 0};
-		REQUIRE(block.getNumberOfRotations() == 4);
-		
-		SECTION("Rotating clockwise in a full circle") {
-			Block tmpBlock = block;
-			block.rotateLeft();
-			REQUIRE(!blockEqual(block, tmpBlock));
-			block.rotateLeft();
-			REQUIRE(!blockEqual(block, tmpBlock));
-			block.rotateLeft();
-			REQUIRE(!blockEqual(block, tmpBlock));
-			block.rotateLeft();
-			REQUIRE(blockEqual(block, tmpBlock));
-		}
-
-		SECTION("Rotating counter clockwise in a full circle") {
-			Block tmpBlock = block;
-			block.rotateRight();
-			REQUIRE(!blockEqual(block, tmpBlock));
-			block.rotateRight();
-			REQUIRE(!blockEqual(block, tmpBlock));
-			block.rotateRight();
-			REQUIRE(!blockEqual(block, tmpBlock));
-			block.rotateRight();
-			REQUIRE(blockEqual(block, tmpBlock));
-		}
-
-		SECTION("Rotating in both directions") {
-			const Block copyBlock = block;
-			SECTION("Rotating one/three step") {
-				Block rightBlock = block;
-				rightBlock.rotateRight();
-				rightBlock.rotateRight();
-				rightBlock.rotateRight();
-				block.rotateLeft(); // One step.
-				REQUIRE(!blockEqual(block, copyBlock));
-				REQUIRE(!blockEqual(rightBlock, copyBlock));
-				REQUIRE(blockEqual(block, rightBlock));
-			}
-
-			SECTION("Rotating two/two steps") {
-				Block rightBlock = block;
-				rightBlock.rotateRight();
-				rightBlock.rotateRight();
-				block.rotateLeft(); // One step.
-				block.rotateLeft(); // Two step.
-				REQUIRE(!blockEqual(block, copyBlock));
-				REQUIRE(!blockEqual(rightBlock, copyBlock));
-				REQUIRE(blockEqual(block, rightBlock));
-			}
-		}
-	}
+	block.moveDown();
+	block.moveDown();
+	tmpBlock = Block{BlockType::J, 0, -3};
+	EXPECT_TRUE(blockEqual(tmpBlock, block));
 }
 
+TEST_F(TetrisTest, moveBlockLeft) {
+	Block block{BlockType::J, 0, 0};
+
+	block.moveLeft();
+	Block tmpBlock{BlockType::J, -1, 0};
+	EXPECT_TRUE(blockEqual(tmpBlock, block));
+
+	block.moveLeft();
+	block.moveLeft();
+	tmpBlock = Block{BlockType::J, -3, 0};
+	EXPECT_TRUE(blockEqual(tmpBlock, block));
+}
+
+TEST_F(TetrisTest, moveBlockRight) {
+	Block block{BlockType::J, 0, 0};
+
+	block.moveRight();
+	Block tmpBlock{BlockType::J, 1, 0};
+	EXPECT_TRUE(blockEqual(tmpBlock, block));;
+
+	block.moveRight();
+	block.moveRight();
+	tmpBlock = Block{BlockType::J, 3, 0};
+	EXPECT_TRUE(blockEqual(tmpBlock, block));;
+}
+
+TEST_F(TetrisTest, rotateBlockClockwise) {
+	Block block{BlockType::J, 0, 0};
+	EXPECT_EQ(4, block.getNumberOfRotations());
+
+	Block tmpBlock = block;
+	block.rotateLeft();
+	EXPECT_TRUE(!blockEqual(block, tmpBlock));
+	block.rotateLeft();
+	EXPECT_TRUE(!blockEqual(block, tmpBlock));
+	block.rotateLeft();
+	EXPECT_TRUE(!blockEqual(block, tmpBlock));
+	block.rotateLeft();
+	EXPECT_TRUE(blockEqual(block, tmpBlock));
+}
+
+TEST_F(TetrisTest, rotateBlockCounterClockwise) {
+	Block block{BlockType::J, 0, 0};
+	EXPECT_EQ(4, block.getNumberOfRotations());
+
+	Block tmpBlock = block;
+	block.rotateRight();
+	EXPECT_TRUE(!blockEqual(block, tmpBlock));
+	block.rotateRight();
+	EXPECT_TRUE(!blockEqual(block, tmpBlock));
+	block.rotateRight();
+	EXPECT_TRUE(!blockEqual(block, tmpBlock));
+	block.rotateRight();
+	EXPECT_TRUE(blockEqual(block, tmpBlock));
+}
+
+TEST_F(TetrisTest, rotateBlockInBothDirection1_3) {
+	Block block{BlockType::J, 0, 0};
+	EXPECT_EQ(4, block.getNumberOfRotations());
+
+	const Block copyBlock = block;
+	Block rightBlock = block;
+	rightBlock.rotateRight();
+	rightBlock.rotateRight();
+	rightBlock.rotateRight();
+	block.rotateLeft(); // One step.
+	EXPECT_TRUE(!blockEqual(block, copyBlock));
+	EXPECT_TRUE(!blockEqual(rightBlock, copyBlock));
+	EXPECT_TRUE(blockEqual(block, rightBlock));
+}
+
+TEST_F(TetrisTest, rotateBlockInBothDirection2_2) {
+	Block block{BlockType::J, 0, 0};
+	EXPECT_EQ(4, block.getNumberOfRotations());
+
+	const Block copyBlock = block;
+	Block rightBlock = block;
+	rightBlock.rotateRight();
+	rightBlock.rotateRight();
+	block.rotateLeft(); // One step.
+	block.rotateLeft(); // Two step.
+	EXPECT_TRUE(!blockEqual(block, copyBlock));
+	EXPECT_TRUE(!blockEqual(rightBlock, copyBlock));
+	EXPECT_TRUE(blockEqual(block, rightBlock));
+}
+
+TEST_F(TetrisTest, boardIsGameOver) {
+	const BlockType firstNextBlockType = BlockType::L;
+	const BlockType firstCurrentBlockType = BlockType::S;
+	TetrisBoard board{TetrisWidth, TetrisHeight, firstCurrentBlockType, firstNextBlockType};
+
+	EXPECT_FALSE(board.isGameOver());
+	EXPECT_EQ(TetrisWidth, board.getColumns());
+	EXPECT_EQ(TetrisHeight, board.getRows());
+	EXPECT_EQ(firstCurrentBlockType, board.getBlockType());
+	EXPECT_EQ(firstNextBlockType, board.getNextBlockType());
+
+	const BlockType newBlockType = BlockType::I;
+	EXPECT_TRUE(newBlockType != board.getNextBlockType());
+	board.setNextBlock(newBlockType);
+	EXPECT_EQ(newBlockType, board.getNextBlockType());
+}
+
+/*
 TEST_CASE("Test tetrisboard", "[tetrisboard]") {
 	INFO("Default tetrisboard");
 
@@ -348,3 +384,4 @@ TEST_CASE("Test ai", "[ai]") {
 		REQUIRE(calculateRowHoles(tetrisBoard) == 9);
 	}
 }
+*/
