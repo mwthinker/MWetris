@@ -176,8 +176,8 @@ namespace mwetris {
 		: impl_{std::make_unique<Configuration::Impl>()} {
 		
 		impl_->textureAtlas = sdl::TextureAtlas{2048, 2048, []() {
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				gl::glTexParameteri(gl::GL_TEXTURE_2D, gl::GL_TEXTURE_MIN_FILTER, gl::GL_NEAREST);
+				gl::glTexParameteri(gl::GL_TEXTURE_2D, gl::GL_TEXTURE_MAG_FILTER, gl::GL_NEAREST);
 			}
 		};
 

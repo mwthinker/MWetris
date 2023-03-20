@@ -64,7 +64,7 @@ namespace mwetris::ui {
 			case SDL_WINDOWEVENT:
 				switch (windowEvent.window.event) {
 					case SDL_WINDOWEVENT_RESIZED:
-						glViewport(0, 0, windowEvent.window.data1, windowEvent.window.data2);
+						gl::glViewport(0, 0, windowEvent.window.data1, windowEvent.window.data2);
 						break;
 					case SDL_WINDOWEVENT_LEAVE:
 						break;
