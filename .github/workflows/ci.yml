@@ -1,5 +1,9 @@
 name: CI
-on: [push, workflow_dispatch]
+on: 
+  push:
+  workflow_dispatch:
+  schedule:
+    - cron: 55 19 * * 5 # 19:55 every friday
 
 jobs:
   job:
@@ -10,27 +14,13 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            vcpkgCommitId: 'f6a1d122a02877e6217e9ac6a637474a34b0f288'
             preset: 'windows'
-          - os: ubuntu-22.04
-            vcpkgCommitId: 'f6a1d122a02877e6217e9ac6a637474a34b0f288'
-            preset: 'unix'
-          - os: macos-12
-            vcpkgCommitId: 'f6a1d122a02877e6217e9ac6a637474a34b0f288'
+          - os: ubuntu-latest
             preset: 'unix'
 
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-
-      - name: Set C++/C compiler on macOS
-        shell: bash
-        run: echo "CC=gcc-11" >> $GITHUB_ENV; echo "CXX=g++-11" >> $GITHUB_ENV; cat "$GITHUB_ENV"
-        if: runner.os == 'macOS'
-
-      - uses: friendlyanon/setup-vcpkg@v1
-        with:
-          committish: ${{ matrix.vcpkgCommitId }}
 
       - name: GCC version on Linux
         shell: bash
@@ -52,12 +42,12 @@ jobs:
       - name: Display help text for TetrisEngine 
         shell: bash
         run: ./build/TetrisEngine/TetrisEngine --help
-        if: runner.os == 'Linux' || runner.os == 'macOS'
+        if: runner.os == 'Linux'
 
       - name: Run TetrisEngine and print every move
         shell: bash
         run: ./build/TetrisEngine/TetrisEngine -p
-        if: runner.os == 'Linux' || runner.os == 'macOS'
+        if: runner.os == 'Linux'
 
       - name: Run cpack
         shell: bash
