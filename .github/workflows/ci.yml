@@ -27,39 +27,88 @@ jobs:
         run: g++ --version
         if: runner.os == 'Linux'
 
+      - name: Set C++ VCPKG_ROOT
+        shell: bash
+        run: echo VCPKG_ROOT="$VCPKG_INSTALLATION_ROOT" >> "$GITHUB_ENV"; cat "$GITHUB_ENV"
+
+# Debug build
       - name: Run CMake with manifest mode vcpkg
         shell: bash
-        run: cmake --preset=${{ matrix.preset }} -B build -DTetrisEngine_Test=1 -DUSE_WIX_GENERATOR=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=1
+        run: cmake --preset=${{ matrix.preset }} -B build_debug -DTetrisEngine_Test=1 -DUSE_WIX_GENERATOR=1 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=1
 
       - name: Compile binaries
         shell: bash
-        run: cmake --build build --config Release
+        run: cmake --build build_debug --config Debug
 
       - name: Run tests
         shell: bash
-        run: ctest --rerun-failed --output-on-failure --test-dir build/TetrisEngine/TetrisEngine_Test/
+        run: ctest --rerun-failed --output-on-failure --test-dir build_debug/TetrisEngine/TetrisEngine_Test/
       
       - name: Display help text for TetrisEngine 
         shell: bash
-        run: ./build/TetrisEngine/TetrisEngine --help
+        run: ./build_debug/TetrisEngine/TetrisEngine --help
+        if: runner.os == 'Linux'
+
+      - name: Display help text for TetrisEngine 
+        shell: bash
+        run: ./build_debug/TetrisEngine/Release/TetrisEngine --help
+        if: runner.os == 'Windows'
+
+      - name: Run TetrisEngine and print every move
+        shell: bash
+        run: ./build_debug/TetrisEngine/TetrisEngine -p
         if: runner.os == 'Linux'
 
       - name: Run TetrisEngine and print every move
         shell: bash
-        run: ./build/TetrisEngine/TetrisEngine -p
+        run: ./build_debug/TetrisEngine/Release/TetrisEngine -p
+        if: runner.os == 'Windows'
+
+# Release build
+      - name: Run CMake with manifest mode vcpkg
+        shell: bash
+        run: cmake --preset=${{ matrix.preset }} -B build_release -DTetrisEngine_Test=1 -DUSE_WIX_GENERATOR=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=1
+
+      - name: Compile binaries
+        shell: bash
+        run: cmake --build build_release --config Release
+
+      - name: Run tests
+        shell: bash
+        run: ctest --rerun-failed --output-on-failure --test-dir build_release/TetrisEngine/TetrisEngine_Test/
+      
+      - name: Display help text for TetrisEngine 
+        shell: bash
+        run: ./build_release/TetrisEngine/TetrisEngine --help
         if: runner.os == 'Linux'
 
+      - name: Display help text for TetrisEngine 
+        shell: bash
+        run: ./build_release/TetrisEngine/Release/TetrisEngine --help
+        if: runner.os == 'Windows'
+
+      - name: Run TetrisEngine and print every move
+        shell: bash
+        run: ./build_release/TetrisEngine/TetrisEngine -p
+        if: runner.os == 'Linux'
+
+      - name: Run TetrisEngine and print every move
+        shell: bash
+        run: ./build_release/TetrisEngine/Release/TetrisEngine -p
+        if: runner.os == 'Windows'
+
+# Create installer
       - name: Run cpack
         shell: bash
-        run: cd build && cpack
+        run: cd build_release && cpack
 
       - name: Extract msi output
         shell: bash
-        run: echo "msi_output=$(ls -1 build | grep '.msi$')" >> $GITHUB_ENV
+        run: echo "msi_output=$(ls -1 build_release | grep '.msi$')" >> $GITHUB_ENV
         if: runner.os == 'Windows'
 
       - uses: actions/upload-artifact@v3
         if: runner.os == 'Windows' && env.msi_output != ''
         with:
           name: installer
-          path: build/${{ env.msi_output }}
+          path: build_release/${{ env.msi_output }}
