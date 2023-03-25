@@ -51,7 +51,7 @@ jobs:
 
       - name: Display help text for TetrisEngine 
         shell: bash
-        run: ./build_debug/TetrisEngine/Release/TetrisEngine --help
+        run: ./build_debug/TetrisEngine/Debug/TetrisEngine --help
         if: runner.os == 'Windows'
 
       - name: Run TetrisEngine and print every move
@@ -61,7 +61,7 @@ jobs:
 
       - name: Run TetrisEngine and print every move
         shell: bash
-        run: ./build_debug/TetrisEngine/Release/TetrisEngine -p
+        run: ./build_debug/TetrisEngine/Debug/TetrisEngine -p
         if: runner.os == 'Windows'
 
 # Release build
