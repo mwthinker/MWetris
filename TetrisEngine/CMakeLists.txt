@@ -5,10 +5,6 @@ project(TetrisEngine
 		CXX
 )
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 # ----- TetrisEngineLib -------------
 set(SOURCES_LIB
 	srcLib/ai.cpp
@@ -43,6 +39,13 @@ target_compile_definitions(TetrisEngineLib
 target_link_libraries(TetrisEngineLib
 	PUBLIC
 		Calculator
+)
+
+set_target_properties(TetrisEngineLib
+	PROPERTIES
+		CXX_STANDARD 20
+		CXX_STANDARD_REQUIRED YES
+		CXX_EXTENSIONS NO
 )
 
 message(STATUS "TetrisEngine_Test is available to add: -DTetrisEngine_Test=1")
@@ -80,6 +83,13 @@ target_link_libraries(TetrisEngine
 	PRIVATE
 		TetrisEngineLib
 		fmt::fmt-header-only
+)
+
+set_target_properties(TetrisEngine
+	PROPERTIES
+		CXX_STANDARD 20
+		CXX_STANDARD_REQUIRED YES
+		CXX_EXTENSIONS NO
 )
 
 # Copy data to build folder.

@@ -1,76 +1,16 @@
 cmake_minimum_required(VERSION 3.24)
 project(MWetris
 	DESCRIPTION
-		"A C++ clone of Tetris"
+		"A C++ Tetris Game"
 	VERSION
 		0.1.0
 	LANGUAGES
 		CXX
 )
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-if (MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4275") # non - DLL-interface class 'class_1' used as base for DLL-interface class 'class_2'
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251") # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
-endif ()
-
 set(SOURCES
-	src/graphic/imguiboard.cpp
-	src/graphic/imguiboard.h
-	src/graphic/gamecomponent.cpp
-	src/graphic/gamecomponent.h
-	
-	src/game/actionhandler.cpp
-	src/game/actionhandler.h
-	src/game/computer.cpp
-	src/game/computer.h
-	src/game/device.h
-	src/game/input.h
-	src/game/keyboard.cpp
-	src/game/keyboard.h
-	src/game/localgame.cpp
-	src/game/localgame.h
-	src/game/localplayer.cpp
-	src/game/localplayer.h
-	src/game/localplayerbuilder.cpp
-	src/game/localplayerbuilder.h
-	src/game/player.cpp
-	src/game/player.h
-	src/game/sdldevice.h
-	src/game/tetrisgame.cpp
-	src/game/tetrisgameevent.h
-	src/game/tetrisgame.h
-	src/game/taskqueue.h
-	src/game/serialize.cpp
-	src/game/serialize.h
-	
-	src/ui/scene/highscore.cpp
-	src/ui/scene/highscore.h
-	src/ui/scene/settings.cpp
-	src/ui/scene/settings.h
-	src/ui/scene/event.h
-	src/ui/scene/play.cpp
-	src/ui/scene/play.h
-	src/ui/scene/menu.cpp
-	src/ui/scene/menu.h
-	src/ui/scene/network.cpp
-	src/ui/scene/network.h
-	src/ui/scene/scene.h
-	src/ui/scene/statemachine.cpp
-	src/ui/scene/statemachine.h
-
-	src/ui/imguiextra.cpp
-	src/ui/imguiextra.h
-	src/ui/tetriswindow.cpp
-	src/ui/tetriswindow.h
-	
-	src/configuration.cpp
-	src/configuration.h
 	src/logger.cpp
 	src/logger.h
-	src/types.h
 	src/main.cpp
 
 	ExternalFetchContent.cmake
@@ -100,10 +40,7 @@ find_package(fmt CONFIG REQUIRED)
 find_package(CppSdl2 REQUIRED)
 find_package(CppProtoNetwork REQUIRED)
 find_package(Signal REQUIRED)
-
-add_subdirectory(TetrisEngine)
-add_subdirectory(Protocol)
-add_subdirectory(MWetris_Test)
+find_package(Calculator REQUIRED)
 
 extract_git_hash()
 create_guid()
@@ -141,6 +78,11 @@ set_target_properties(
 	PROPERTIES FOLDER
 		ExternalDependencies
 )
+
+add_subdirectory(TetrisEngine)
+add_subdirectory(Protocol)
+add_subdirectory(MWetris_Lib)
+add_subdirectory(MWetris_Test)
 
 # Copy data to build folder.
 file(COPY ${MWetrisData_SOURCE_DIR}/package DESTINATION ${CMAKE_CURRENT_BINARY_DIR}) 
@@ -185,22 +127,22 @@ else ()
 	)
 endif ()
 
-set(nlohmann-json_IMPLICIT_CONVERSIONS OFF)
-
 target_link_libraries(MWetris
 	PRIVATE
-		TetrisEngineLib
-		nlohmann_json
-		nlohmann_json::nlohmann_json
-		Protocol
-		Signal
-		${ExternalDependencies}
+		MWetris_Lib
 )
 
 target_compile_definitions(MWetris
 	PRIVATE
 		GIT_VERSION="${GIT_HASH}"
 		PROJECT_VERSION="${PROJECT_VERSION}"
+)
+
+set_target_properties(MWetris
+	PROPERTIES
+		CXX_STANDARD 20
+		CXX_STANDARD_REQUIRED YES
+		CXX_EXTENSIONS NO
 )
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/CPack.cmake)
