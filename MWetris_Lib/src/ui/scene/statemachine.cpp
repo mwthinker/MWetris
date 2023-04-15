@@ -5,6 +5,12 @@ namespace mwetris::ui::scene {
 	StateMachine::StateMachine() {
 	}
 
+	StateMachine::~StateMachine() {
+		if (currentKey_ != 0) {
+			scenes_[currentKey_]->switchedFrom();
+		}
+	}
+
 	void StateMachine::eventUpdate(const SDL_Event& windowEvent) {
 		if (currentKey_) {
 			scenes_[currentKey_]->eventUpdate(windowEvent);

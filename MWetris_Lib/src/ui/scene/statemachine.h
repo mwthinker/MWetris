@@ -24,7 +24,7 @@ namespace mwetris::ui::scene {
 	public:
 		StateMachine();
 
-		~StateMachine() = default;
+		~StateMachine();
 
 		void eventUpdate(const SDL_Event& windowEvent);
 
