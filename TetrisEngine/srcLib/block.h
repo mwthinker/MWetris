@@ -6,7 +6,7 @@
 
 namespace tetris {
 
-	enum class BlockType : char {
+	enum class BlockType {
 		I = 'I',
 		J = 'J',
 		L = 'L',

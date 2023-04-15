@@ -12,6 +12,24 @@ namespace mwetris::game {
 
 	namespace {
 
+		template <tetris::BlockType type, tp::BlockType tpType, char chr>
+		consteval void staticAssertBlockType() {
+			static_assert(static_cast<char>(type) == static_cast<char>(tpType));
+			static_assert(static_cast<int>(type) == chr);
+		}
+
+		consteval void staticTestBlockType() {
+			staticAssertBlockType<tetris::BlockType::I, tp::BlockType::I, 'I'>();
+			staticAssertBlockType<tetris::BlockType::J, tp::BlockType::J, 'J'>();
+			staticAssertBlockType<tetris::BlockType::L, tp::BlockType::L, 'L'>();
+			staticAssertBlockType<tetris::BlockType::O, tp::BlockType::O, 'O'>();
+			staticAssertBlockType<tetris::BlockType::S, tp::BlockType::S, 'S'>();
+			staticAssertBlockType<tetris::BlockType::T, tp::BlockType::T, 'T'>();
+			staticAssertBlockType<tetris::BlockType::Z, tp::BlockType::Z, 'Z'>();
+			staticAssertBlockType<tetris::BlockType::Empty, tp::BlockType::EMPTY, 'E'>();
+			staticAssertBlockType<tetris::BlockType::Wall, tp::BlockType::WALL, 'W'>();
+		}
+
 		tetris::Block toBlock(const tp::Block& block) {
 			return tetris::Block{static_cast<tetris::BlockType>(block.type()), block.start_column(), block.lowest_start_row(), block.rotations()};
 		}

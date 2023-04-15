@@ -75,8 +75,8 @@ namespace mwetris::ui::scene {
 		auto& scene = static_cast<Scene&>(*scenePtr);
 
 		scene.stateMachine_ = this;
-		auto it = scenes_.find(key);
-		if (it == scenes_.end()) {
+		
+		if (auto it = scenes_.find(key);  it == scenes_.end()) {
 			if (scenes_.empty()) {
 				currentKey_ = key;
 				scene.switchedTo();
