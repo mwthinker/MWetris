@@ -29,6 +29,8 @@ namespace mwetris::game {
 
 		void updateLevel(int level);
 
+		void updateClearedRows(int clearedRows);
+
 		void updateGameOverPosition(int gameOverPosition);
 
 		void updateRestart();

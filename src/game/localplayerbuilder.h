@@ -20,58 +20,58 @@ namespace mwetris::game {
 			return *this;
 		}
 
-		LocalPlayerBuilder& widthMovingBlock(const tetris::Block& block) {
+		LocalPlayerBuilder& withMovingBlock(const tetris::Block& block) {
 			movingBlockType_ = tetris::BlockType::Empty;
 			movingBlock_ = block;
 			return *this;
 		}
 
-		LocalPlayerBuilder& widthMovingBlockType(const tetris::BlockType& blockType) {
+		LocalPlayerBuilder& withMovingBlockType(const tetris::BlockType& blockType) {
 			movingBlockType_ = blockType;
 			return *this;
 		}
 
-		LocalPlayerBuilder& widthNextBlockType(tetris::BlockType next) {
+		LocalPlayerBuilder& withNextBlockType(tetris::BlockType next) {
 			next_ = next;
 			return *this;
 		}
 
-		LocalPlayerBuilder& widthDevice(DevicePtr device) {
+		LocalPlayerBuilder& withDevice(DevicePtr device) {
 			device_ = device;
 			return *this;
 		}
 
-		LocalPlayerBuilder& widthPoints(int points) {
+		LocalPlayerBuilder& withPoints(int points) {
 			points_ = points;
 			return *this;
 		}
 
-		LocalPlayerBuilder& widthLevel(int level) {
+		LocalPlayerBuilder& withLevel(int level) {
 			level_ = level;
 			return *this;
 		}
 
-		LocalPlayerBuilder& widthLevelUpCounter(int counter) {
+		LocalPlayerBuilder& withLevelUpCounter(int counter) {
 			levelUpCounter_ = counter;
 			return *this;
 		}
 
-		LocalPlayerBuilder& widthClearedRows(int rows) {
+		LocalPlayerBuilder& withClearedRows(int rows) {
 			clearedRows_ = rows;
 			return *this;
 		}
 
-		LocalPlayerBuilder& widthBoard(const std::vector<tetris::BlockType>& board) {
+		LocalPlayerBuilder& withBoard(const std::vector<tetris::BlockType>& board) {
 			board_ = board;
 			return *this;
 		}
 
-		LocalPlayerBuilder& widthGameOverPosition(int gameOverPosition) {
+		LocalPlayerBuilder& withGameOverPosition(int gameOverPosition) {
 			gameOverPosition_ = gameOverPosition;
 			return *this;
 		}
 
-		LocalPlayerBuilder& widthName(const std::string& name) {
+		LocalPlayerBuilder& withName(const std::string& name) {
 			name_ = name;
 			return *this;
 		}

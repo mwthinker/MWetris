@@ -43,6 +43,11 @@ namespace mwetris::ui::scene {
 				switch (windowEvent.key.keysym.sym) {
 					case SDLK_F2:
 						game_->restartGame();
+						break;
+					case SDLK_p: [[fallthrough]];
+					case SDLK_PAUSE:
+						game_->pause();
+						break;
 				}
 				break;
 		}
@@ -106,7 +111,7 @@ namespace mwetris::ui::scene {
 	}
 
 	void Play::switchedFrom() {
-
+		game_->saveCurrentGame();
 	}
 
 	void Play::switchedTo() {

@@ -43,6 +43,8 @@ set(SOURCES
 	src/game/tetrisgameevent.h
 	src/game/tetrisgame.h
 	src/game/taskqueue.h
+	src/game/serialize.cpp
+	src/game/serialize.h
 	
 	src/ui/scene/highscore.cpp
 	src/ui/scene/highscore.h
@@ -101,6 +103,7 @@ find_package(Signal REQUIRED)
 
 add_subdirectory(TetrisEngine)
 add_subdirectory(Protocol)
+add_subdirectory(MWetris_Test)
 
 extract_git_hash()
 create_guid()

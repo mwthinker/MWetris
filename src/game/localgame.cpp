@@ -29,8 +29,10 @@ namespace mwetris::game {
 		if (tetris::BoardEvent::RowsRemoved == gameEvent) {
 			rows_ += value;
 			level_ = rows_ / LevelUpNbr + 1;
-			player->updateLevel(level_);
 			points_ += level_ * value * value;
+
+			player->updateLevel(level_);
+			player->updatePoints(points_);
 		}
 	}
 

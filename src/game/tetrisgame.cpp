@@ -7,6 +7,7 @@
 #include "tetrisparameters.h"
 #include "localplayerbuilder.h"
 #include "localgame.h"
+#include "serialize.h"
 
 #include <vector>
 #include <algorithm>
@@ -29,22 +30,26 @@ namespace mwetris::game {
 		players_.clear();
 		LocalPlayerBuilder builder;
 		for (const auto& device : devices) {
-			builder.widthDevice(device);
-			builder.widthClearedRows(0);
-			builder.widthGameOverPosition(0);
-			builder.widthLevel(1);
-			builder.widthLevelUpCounter(0);
+			builder.withDevice(device);
+			builder.withClearedRows(0);
+			builder.withGameOverPosition(0);
+			builder.withLevel(1);
+			builder.withLevelUpCounter(0);
 			//builder.widthMovingBlock(data.current_);
 			//builder.widthName(data.name_);
-			builder.widthMovingBlockType(tetris::randomBlockType());
-			builder.widthNextBlockType(tetris::randomBlockType());
-			builder.widthPoints(0);
+			builder.withMovingBlockType(tetris::randomBlockType());
+			builder.withNextBlockType(tetris::randomBlockType());
+			builder.withPoints(0);
 			builder.withHeight(height_);
 			builder.withWidth(width_);
 
 			auto player = builder.build();
 			players_.push_back(player);
 		}
+	}
+
+	void TetrisGame::saveCurrentGame() {
+		saveGame(players_);
 	}
 
 	void TetrisGame::createGame(int columns, int rows, const std::vector<DevicePtr>& devices) {
@@ -60,7 +65,18 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::createGame(const std::vector<DevicePtr>& devices) {
-		createGame(width_, height_, devices);
+		auto players = loadGame(devices);
+		if (!players.empty() && players.size() <= devices.size()) {
+			players_ = players;
+			
+			if (players_.size() == 1) {
+				localGame_.createGame(players_.front());
+			}
+
+			initGame();
+		} else {
+			createGame(width_, height_, devices);
+		}
 	}
 
 	void TetrisGame::initGame() {

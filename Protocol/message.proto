@@ -3,19 +3,27 @@ syntax = "proto3";
 package tetris_protocol;
 
 enum BlockType {
-	I = 0;
-	J = 1;
-	L = 2;
-	O = 3;
-	S = 4;
-	T = 5;
-	Z = 6;
-	EMPTY = 7;
-	WALL = 8;
+	UNSPECIFIED = 0;
+	I = 73;
+	J = 74;
+	L = 76;
+	O = 79;
+	S = 83;
+	T = 84;
+	Z = 90;
+	EMPTY = 69;
+	WALL = 87;
 }
 
 message PlayerName {
 	string name = 1;
+}
+
+message Block {
+	int32 start_column = 1;
+	int32 lowest_start_row = 2;
+	int32 rotations = 3;
+	BlockType type = 4;
 }
 
 message Player {
@@ -23,10 +31,17 @@ message Player {
 	int32 level = 2;
 	int32 points = 3;
 	bool ai = 4;
-	BlockType current = 5;
+	Block current = 5;
 	BlockType next = 6;
 	int32 id = 7;
-	repeated BlockType board = 8;
+	int32 width = 8;
+	int32 height = 9;
+	int32 cleared_rows = 10;
+	repeated BlockType board = 11;
+}
+
+message Game {
+	repeated Player player = 1;
 }
 
 message ConnectionInfo {
@@ -76,5 +91,5 @@ message GameInfo {
 
 message Wrapper {
 	string text = 1;
-    GameInfo game_info = 2;
+	GameInfo game_info = 2;
 }

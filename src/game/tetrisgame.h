@@ -51,6 +51,8 @@ namespace mwetris::game {
 			return width_;
 		}
 
+		void saveCurrentGame();
+
 	private:
 		void createLocalPlayers(int columns, int rows, const std::vector<DevicePtr>& devices);
 

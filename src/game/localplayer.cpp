@@ -70,6 +70,10 @@ namespace mwetris::game {
 		level_ = level;
 	}
 
+	void LocalPlayer::updateClearedRows(int clearedRows) {
+		clearedRows_ = clearedRows;
+	}
+
 	void LocalPlayer::updateGameOverPosition(int gameOverPosition) {
 		gameOverPosition_ = gameOverPosition;
 	}
