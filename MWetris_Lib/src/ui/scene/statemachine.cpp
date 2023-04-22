@@ -11,10 +11,11 @@ namespace mwetris::ui::scene {
 		}
 	}
 
-	void StateMachine::eventUpdate(const SDL_Event& windowEvent) {
+	bool StateMachine::eventUpdate(const SDL_Event& windowEvent) {
 		if (currentKey_) {
-			scenes_[currentKey_]->eventUpdate(windowEvent);
+			return scenes_[currentKey_]->eventUpdate(windowEvent);
 		}
+		return true;
 	}
 
 	void StateMachine::imGuiUpdate(const DeltaTime& deltaTime) {
@@ -30,6 +31,7 @@ namespace mwetris::ui::scene {
 	}
 
 	void StateMachine::emitEvent(Event event) {
+		lastEvent_ = event;
 		if (callback_) {
 			callback_(event);
 		}
@@ -43,6 +45,13 @@ namespace mwetris::ui::scene {
 		if (stateMachine_) {
 			stateMachine_->emitEvent(event);
 		}
+	}
+
+	Event Scene::StateMachineWrapper::getLastEvent() const {
+		if (stateMachine_ != nullptr) {
+			return stateMachine_->getLastEvent();
+		}
+		return Event::NotDefined;
 	}
 
 	Scene::StateMachineWrapper::operator bool() const {

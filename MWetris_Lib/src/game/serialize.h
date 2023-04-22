@@ -2,6 +2,7 @@
 #define MWETRIS_GAME_SERIALIZE_H
 
 #include "localplayer.h"
+#include <chrono>
 
 namespace mwetris::game {
 

@@ -22,7 +22,11 @@ namespace mwetris::ui::scene {
 
 		virtual ~Scene() = default;
 
-		virtual void eventUpdate(const SDL_Event& windowEvent) {};
+		// Handle event updates.
+		// return true when event should bubble up else false.
+		virtual bool eventUpdate(const SDL_Event& windowEvent) {
+			return true;
+		};
 
 		virtual void imGuiUpdate(const DeltaTime& deltaTime) {};
 
@@ -34,11 +38,17 @@ namespace mwetris::ui::scene {
 
 			void emitEvent(Event event);
 
+			Event getLastEvent() const;
+
 			explicit operator bool() const;
 
 		private:
 			StateMachine* stateMachine_ = nullptr;
 		};
+
+		Event getLastEvent() const {
+			return stateMachine_.getLastEvent();
+		}
 
 		void emitEvent(Event event) {
 			if (!stateMachine_)

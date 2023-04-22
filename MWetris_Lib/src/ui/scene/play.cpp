@@ -17,6 +17,10 @@ namespace mwetris::ui::scene {
 			return std::make_shared<game::Computer>(ais.back());
 		}
 
+		int acceptNameInput(ImGuiInputTextCallbackData* data) {
+			return data->BufTextLen < 30;
+		}
+
 	}
 
 	Play::Play() {
@@ -34,11 +38,18 @@ namespace mwetris::ui::scene {
 		aiSprite_ = mwetris::Configuration::getInstance().getComputerSprite();
 	}
 
-	void Play::eventUpdate(const SDL_Event& windowEvent) {
+	bool Play::eventUpdate(const SDL_Event& windowEvent) {
 		for (auto& device : devices_) {
 			device->eventUpdate(windowEvent);
 		}
 		switch (windowEvent.type) {
+			case SDL_WINDOWEVENT:
+				switch (windowEvent.window.event) {
+					case SDL_WINDOWEVENT_CLOSE:
+						emitEvent(Event::Menu);
+						return false;
+				}
+				break;
 			case SDL_KEYDOWN:
 				switch (windowEvent.key.keysym.sym) {
 					case SDLK_F2:
@@ -51,9 +62,54 @@ namespace mwetris::ui::scene {
 				}
 				break;
 		}
+		return true;
 	}
 
 	void Play::imGuiUpdate(const DeltaTime& deltaTime) {
+		if (getLastEvent() == Event::ResumePlay) {
+			imGuiGame(deltaTime);
+			return;
+		}
+
+		if (openPopup_) {
+			openPopup_ = false;
+			ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+			ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+			ImGui::SetNextWindowSize({500, 500}, ImGuiCond_Appearing);
+
+			ImGui::OpenPopup("Popup");
+		}
+
+		if (!ImGui::PopupModal("Popup", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {100, 100});
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
+			ImGui::PushStyleColor(ImGuiCol_PopupBg, {0, 0, 0, 0});
+
+			ImGui::SetCursorPos({20, 230});
+
+			if (ImGui::IsWindowAppearing()) {
+				ImGui::SetKeyboardFocusHere(0);
+				name_ = "Player";
+			}
+
+			if (ImGui::InputText("Name: ", &name_, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CallbackAlways, acceptNameInput)
+				&& name_.size() > 0) {
+				ImGui::CloseCurrentPopup();
+			}
+
+			if (ImGui::IsKeyDown(ImGuiKey_Escape)) {
+				emitEvent(Event::Menu);
+			}
+
+			ImGui::PopStyleColor();
+			ImGui::PopStyleVar(3);
+		})) {
+			imGuiGame(deltaTime);
+		}
+	}
+
+	void Play::imGuiGame(const DeltaTime& deltaTime) {
 		auto deltaTimeSeconds = std::chrono::duration<double>(deltaTime).count();
 		game_->update(deltaTimeSeconds);
 
@@ -61,11 +117,11 @@ namespace mwetris::ui::scene {
 
 		ImGui::Bar([&]() {
 			ImGui::PushButtonStyle();
-			
+
 			if (ImGui::Button("Menu", {100.5f, menuHeight})) {
 				emitEvent(Event::Menu);
 			}
-			
+
 			ImGui::SameLine();
 			if (ImGui::Button("Restart", {120.5f, menuHeight})) {
 				game_->restartGame();
@@ -83,7 +139,7 @@ namespace mwetris::ui::scene {
 		});
 
 		size_ = ImGui::GetWindowSize();
-		
+
 		if (gameComponent_) {
 			gameComponent_->draw(size_.x, size_.y - menuHeight, deltaTimeSeconds);
 		}
@@ -115,14 +171,21 @@ namespace mwetris::ui::scene {
 	}
 
 	void Play::switchedTo() {
-		gameComponent_ = std::make_unique<graphic::GameComponent>();
 		game_ = std::make_unique<game::TetrisGame>();
+		gameComponent_ = std::make_unique<graphic::GameComponent>();
+
 		connections_.clear();
 		connections_ += game_->initGameEvent.connect(gameComponent_.get(), &mwetris::graphic::GameComponent::initGame);
-
 		std::vector<game::DevicePtr> devices;
 		devices.push_back(devices_[0]);
-		game_->createGame(devices);
+
+		if (getLastEvent() == Event::ResumePlay) {
+			game_->resumeGame(devices);
+			openPopup_ = false;
+		} else {
+			openPopup_ = true;
+			game_->createGame(devices);
+		}
 	}
 
 	void Play::resumeGame() {

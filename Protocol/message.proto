@@ -41,55 +41,6 @@ message Player {
 }
 
 message Game {
-	repeated Player player = 1;
-}
-
-message ConnectionInfo {
-	repeated Player players = 1;
-}
-
-message PlayerCode {
-
-}
-
-message ConnectionStartBlock {
-	BlockType current = 1;
-	BlockType next = 2;
-}
-
-message PlayerLevel {
-	int32 id = 1;
-	int32 player_id = 2;
-	int32 level = 3;
-}
-
-message PlayerTetris {
-	string name = 1;
-}
-
-message PlayerMove {
-	string name = 1;
-}
-
-message Restart {
-	string name = 1;
-}
-
-message Pause {
-	string name = 1;
-}
-
-message Connection {
-	string name = 1;
-}
-
-message GameInfo {
-	string text = 1;
-	int32 width = 2;
-	int32 height = 3;
-}
-
-message Wrapper {
-	string text = 1;
-	GameInfo game_info = 2;
+	int64 last_played_seconds = 1;
+	repeated Player player = 2;
 }

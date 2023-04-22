@@ -22,6 +22,8 @@ namespace mwetris::game {
 		// Updates everything. Should be called each frame.
 		void update(double deltaTime);
 
+		void resumeGame(const std::vector<DevicePtr>& devices);
+
 		// Uses the same settings as last call.
 		void createGame(const std::vector<DevicePtr>& devices);
 

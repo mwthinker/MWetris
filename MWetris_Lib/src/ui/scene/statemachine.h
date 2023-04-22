@@ -26,7 +26,9 @@ namespace mwetris::ui::scene {
 
 		~StateMachine();
 
-		void eventUpdate(const SDL_Event& windowEvent);
+		// Handle event updates.
+		// return true when event should bubble up else false.
+		bool eventUpdate(const SDL_Event& windowEvent);
 
 		void imGuiUpdate(const DeltaTime& deltaTime);
 		
@@ -46,7 +48,14 @@ namespace mwetris::ui::scene {
 			callback_ = std::forward<decltype(callback)>(callback);
 		}
 
+		template <typename Type> requires DerivedFromScene<Type>
+		std::shared_ptr<Type> getScene();
+
 		void emitEvent(Event event);
+
+		Event getLastEvent() const {
+			return lastEvent_;
+		}
 
 	private:
 		void onCallback(scene::Event event);
@@ -56,6 +65,7 @@ namespace mwetris::ui::scene {
 		template <typename Type> requires DerivedFromScene<Type>
 		static Key getKey();
 
+		Event lastEvent_ = Event::NotDefined;
 		std::map<Key, std::shared_ptr<Scene>> scenes_;
 		Key currentKey_{};
 		std::function<void(scene::Event)> callback_;
@@ -116,6 +126,14 @@ namespace mwetris::ui::scene {
 	template <typename Type> requires DerivedFromScene<Type>
 	StateMachine::Key StateMachine::getKey() {
 		return typeid(Type).hash_code();
+	}
+
+	template <typename Type> requires DerivedFromScene<Type>
+	std::shared_ptr<Type> StateMachine::getScene() {
+		if (auto it = scenes_.find(getKey<Type>()); it != scenes_.end()) {
+			return std::static_pointer_cast<Type>(it.second);
+		}
+		return nullptr;
 	}
 
 }

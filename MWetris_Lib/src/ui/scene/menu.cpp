@@ -7,15 +7,16 @@
 namespace mwetris::ui::scene {
 
 	void Menu::imGuiUpdate(const DeltaTime& deltaTime) {
-		auto menuHeight = mwetris::Configuration::getInstance().getWindowBarHeight();
+		auto menuHeight = Configuration::getInstance().getWindowBarHeight();
 
 		ImGui::Bar([&]() {
 			ImGui::PushButtonStyle();
+			addMenuButton("Resume", Event::ResumePlay);
 			ImGui::PopButtonStyle();
 		});
 
-		ImGui::PushFont(mwetris::Configuration::getInstance().getImGuiHeaderFont());
-		ImGui::TextColored(mwetris::Configuration::getInstance().getLabelTextColor(), "MWetris");
+		ImGui::PushFont(Configuration::getInstance().getImGuiHeaderFont());
+		ImGui::TextColored(Configuration::getInstance().getLabelTextColor(), "MWetris");
 		ImGui::PopFont();
 
 		ImGui::PushButtonStyle();

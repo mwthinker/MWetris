@@ -52,6 +52,21 @@ namespace mwetris::game {
 		saveGame(players_);
 	}
 
+	void TetrisGame::resumeGame(const std::vector<DevicePtr>& devices) {
+		auto players = loadGame(devices);
+		if (!players.empty() && players.size() <= devices.size()) {
+			players_ = players;
+
+			if (players_.size() == 1) {
+				localGame_.createGame(players_.front());
+			}
+
+			initGame();
+		} else {
+			createGame(width_, height_, devices);
+		}
+	}
+
 	void TetrisGame::createGame(int columns, int rows, const std::vector<DevicePtr>& devices) {
 		width_ = columns;
 		height_ = rows;
@@ -65,18 +80,7 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::createGame(const std::vector<DevicePtr>& devices) {
-		auto players = loadGame(devices);
-		if (!players.empty() && players.size() <= devices.size()) {
-			players_ = players;
-			
-			if (players_.size() == 1) {
-				localGame_.createGame(players_.front());
-			}
-
-			initGame();
-		} else {
-			createGame(width_, height_, devices);
-		}
+		createGame(width_, height_, devices);
 	}
 
 	void TetrisGame::initGame() {

@@ -15,30 +15,31 @@
 namespace mwetris::ui {
 
 	TetrisWindow::TetrisWindow() {
-		setPosition(mwetris::Configuration::getInstance().getWindowPositionX(), mwetris::Configuration::getInstance().getWindowPositionY());
-		setSize(mwetris::Configuration::getInstance().getWindowWidth(), mwetris::Configuration::getInstance().getWindowHeight());
-		setResizeable(mwetris::Configuration::getInstance().getWindowWidth());
+		setPosition(Configuration::getInstance().getWindowPositionX(), Configuration::getInstance().getWindowPositionY());
+		setSize(Configuration::getInstance().getWindowWidth(), Configuration::getInstance().getWindowHeight());
+		setResizeable(Configuration::getInstance().getWindowWidth());
 		setTitle("MWetris");
-		setIcon(mwetris::Configuration::getInstance().getWindowIcon());
-		setBordered(mwetris::Configuration::getInstance().isWindowBordered());
+		setIcon(Configuration::getInstance().getWindowIcon());
+		setBordered(Configuration::getInstance().isWindowBordered());
 		setShowDemoWindow(true);
 		
-		sceneStateMachine_.setCallback([this](scene::Event event) {
+		sceneStateMachine_.setCallback([&](scene::Event event) {
 			handleSceneMenuEvent(event);
 		});
 	}
 
 	TetrisWindow::~TetrisWindow() {
+		Configuration::getInstance().quit();
 	}
 
 	void TetrisWindow::initPreLoop() {
 		sdl::ImGuiWindow::initPreLoop();
 		auto& io{ImGui::GetIO()};
 		
-		mwetris::Configuration::getInstance().bindTextureFromAtlas();
-		background_ = mwetris::Configuration::getInstance().getBackgroundSprite();
-
-		io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 12);
+		Configuration::getInstance().bindTextureFromAtlas();
+		background_ = Configuration::getInstance().getBackgroundSprite();
+		
+		io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 12); // Used by demo window.
 		Configuration::getInstance().getImGuiButtonFont();
 		Configuration::getInstance().getImGuiDefaultFont();
 		Configuration::getInstance().getImGuiHeaderFont();
@@ -53,13 +54,19 @@ namespace mwetris::ui {
 	}
 	
 	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
+		ImGui::PushFont(Configuration::getInstance().getImGuiDefaultFont());
 		ImGui::MainWindow("Main", [&]() {
 			ImGui::ImageBackground(background_);
 			sceneStateMachine_.imGuiUpdate(deltaTime);
 		});
+		ImGui::PopFont();
 	}
 
 	void TetrisWindow::imGuiEventUpdate(const SDL_Event& windowEvent) {
+		if (!sceneStateMachine_.eventUpdate(windowEvent)) {
+			return; // Don't bubble up.
+		}
+
 		switch (windowEvent.type) {
 			case SDL_WINDOWEVENT:
 				switch (windowEvent.window.event) {
@@ -84,7 +91,6 @@ namespace mwetris::ui {
 				sdl::Window::quit();
 				break;
 		}
-		sceneStateMachine_.eventUpdate(windowEvent);
 	}
 
 	void TetrisWindow::handleSceneMenuEvent(const scene::Event& menuEvent) {
@@ -92,6 +98,7 @@ namespace mwetris::ui {
 			case scene::Event::Menu:
 				sceneStateMachine_.switchTo<scene::Menu>();
 				break;
+			case scene::Event::ResumePlay: [[fallthrough]];
 			case scene::Event::Play:
 				sceneStateMachine_.switchTo<scene::Play>();
 				break;

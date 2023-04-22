@@ -20,6 +20,5 @@ int main(int argc, char** argv) {
 	}
 
 	tetrisWindow.startLoop();
-	mwetris::Configuration::getInstance().quit();
 	return 0;
 }

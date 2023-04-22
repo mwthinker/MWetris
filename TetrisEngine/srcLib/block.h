@@ -57,7 +57,7 @@ namespace tetris {
 			return blockType_;
 		}
 
-		[[deprecated]]
+		[[deprecated("Better to not assume layout, use iterator")]]
 		Square operator[](int index) const {
 			return squares_[index];
 		}

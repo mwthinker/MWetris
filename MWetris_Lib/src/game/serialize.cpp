@@ -12,6 +12,8 @@ namespace mwetris::game {
 
 	namespace {
 
+		const std::string SavedGameFile{"savedGame.mw"};
+
 		template <tetris::BlockType type, tp::BlockType tpType, char chr>
 		consteval void staticAssertBlockType() {
 			static_assert(static_cast<char>(type) == static_cast<char>(tpType));
@@ -89,19 +91,31 @@ namespace mwetris::game {
 				.build();
 		}
 
+		int64_t toTpSeconds(std::chrono::time_point<std::chrono::system_clock> timePoint) {
+			auto seconds = std::chrono::duration_cast<std::chrono::seconds>(timePoint.time_since_epoch()).count();
+			return static_cast<int64_t>(seconds);
+		}
+
+		std::chrono::time_point<std::chrono::system_clock> tpSecondsToDate(int64_t seconds) {
+			std::chrono::time_point<std::chrono::system_clock> date{std::chrono::seconds{seconds}};
+			return date;
+		}
+
 	}
 
 	void saveGame(const std::vector<LocalPlayerPtr>& players) {
 		tp::Game game;
+		game.set_last_played_seconds(toTpSeconds(std::chrono::system_clock::now()));
+
 		for (const auto& localPlayer: players) {
 			setTpPlayer(*game.add_player(), *localPlayer);
 		}
-		std::ofstream output("currentGame.mw");
+		std::ofstream output{SavedGameFile};
 		game.SerializePartialToOstream(&output);
 	}
 
 	std::vector<LocalPlayerPtr> loadGame(const std::vector<DevicePtr>& availableDevices) {
-		std::ifstream input("currentGame.mw");
+		std::ifstream input{SavedGameFile};
 		if (input.fail() || availableDevices.empty()) {
 			return {};
 		}

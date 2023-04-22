@@ -28,11 +28,13 @@ namespace mwetris::ui::scene {
 	public:
 		Play();
 
-		void eventUpdate(const SDL_Event& windowEvent) override;
+		bool eventUpdate(const SDL_Event& windowEvent) override;
 
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
 
 	private:
+		void imGuiGame(const DeltaTime& deltaTime);
+
 		void switchedFrom() override;
 
 		void switchedTo() override;
@@ -43,6 +45,7 @@ namespace mwetris::ui::scene {
 
 		game::DevicePtr findHumanDevice(const std::string& name) const;
 
+		bool openPopup_ = false;
 		std::unique_ptr<graphic::GameComponent> gameComponent_;
 		std::unique_ptr<game::TetrisGame> game_;
 		int nbrHumans_ = 1;
@@ -55,6 +58,7 @@ namespace mwetris::ui::scene {
 		sdl::TextureView aiSprite_;
 		Vec2 size_{};
 		mw::signals::ScopedConnections connections_;
+		std::string name_;
 	};
 
 }
