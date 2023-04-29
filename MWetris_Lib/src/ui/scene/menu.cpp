@@ -3,6 +3,7 @@
 #include "types.h"
 #include "configuration.h"
 #include "ui/imguiextra.h"
+#include "game/serialize.h"
 
 namespace mwetris::ui::scene {
 
@@ -10,9 +11,11 @@ namespace mwetris::ui::scene {
 		auto menuHeight = Configuration::getInstance().getWindowBarHeight();
 
 		ImGui::Bar([&]() {
-			ImGui::PushButtonStyle();
-			addMenuButton("Resume", Event::ResumePlay);
-			ImGui::PopButtonStyle();
+			if (game::hasSavedGame()) {
+				ImGui::PushButtonStyle();
+				addMenuButton("Resume", Event::ResumePlay);
+				ImGui::PopButtonStyle();
+			}
 		});
 
 		ImGui::PushFont(Configuration::getInstance().getImGuiHeaderFont());

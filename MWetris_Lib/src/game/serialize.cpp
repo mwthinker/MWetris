@@ -4,7 +4,9 @@
 
 #include <message.pb.h>
 
+#include <concepts>
 #include <fstream>
+#include <filesystem>
 
 namespace tp = tetris_protocol;
 
@@ -12,7 +14,9 @@ namespace mwetris::game {
 
 	namespace {
 
+		constexpr int NbrHighScoreResults = 10;
 		const std::string SavedGameFile{"savedGame.mw"};
+		const std::string SavedHighScoreFile{"highScore.mw"};
 
 		template <tetris::BlockType type, tp::BlockType tpType, char chr>
 		consteval void staticAssertBlockType() {
@@ -96,11 +100,81 @@ namespace mwetris::game {
 			return static_cast<int64_t>(seconds);
 		}
 
+		int64_t toTpSeconds(std::chrono::year_month_day ymd) {
+			std::chrono::system_clock::time_point tp = std::chrono::sys_days{ymd};
+			auto seconds = std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch()).count();
+			return static_cast<int64_t>(seconds);
+		}
+
 		std::chrono::time_point<std::chrono::system_clock> tpSecondsToDate(int64_t seconds) {
 			std::chrono::time_point<std::chrono::system_clock> date{std::chrono::seconds{seconds}};
 			return date;
 		}
 
+		template <typename Type>
+		bool loadFromFile(Type& type, const std::string& file) {
+			std::ifstream input{file};
+			if (input.fail()) {
+				return false;
+			}
+			return type.ParseFromIstream(&input);
+		}
+
+		template <typename Type>
+		void saveToFile(const Type& type, const std::string& file) {
+			std::ofstream output{file};
+			type.SerializePartialToOstream(&output);
+		}
+
+		std::vector<HighScoreResult> toHighScoreResults(const google::protobuf::RepeatedPtrField<tp::HighScore_Result>& repeatedField) {
+			std::vector<HighScoreResult> results;
+			for (const auto& result : repeatedField) {
+				auto time = tpSecondsToDate(result.last_played_seconds());
+				auto ymd = std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(time)};
+				results.emplace_back(result.name(), result.points(), result.rows(), result.level(), ymd);
+			}
+			std::sort(results.begin(), results.end(), [](const HighScoreResult& a, const HighScoreResult& b) {
+				return a.points > b.points || a.points == b.points && a.lastPlayed < b.lastPlayed;
+			});
+			return results;
+		}
+
+		void setTpHighScoreResults(tp::HighScore& highScore, const std::vector<HighScoreResult>& results) {
+			highScore.clear_results();
+			for (const auto& result : results) {
+				auto tpResult = highScore.add_results();
+				tpResult->set_last_played_seconds(toTpSeconds(result.lastPlayed));
+
+			}
+		}
+
+		int getIndexForNewResult(const std::vector<HighScoreResult>& results, int points) {
+			int index = 0;
+			for (const auto& result : results) {
+				if (points > result.points) {
+					return index;
+				}
+				++index;
+			}
+			return index;
+		}
+
+	}
+
+	int getPlacement(int points) {
+		auto results = loadHighScore();
+		return getIndexForNewResult(results, points) + 1;
+	}
+
+	bool hasSavedGame() {
+		return std::filesystem::exists(SavedGameFile);
+	}
+
+	void clearSavedGame() {
+		std::filesystem::path filepath{SavedGameFile};
+		if (std::filesystem::exists(filepath)) {
+			std::filesystem::remove(filepath);
+		}
 	}
 
 	void saveGame(const std::vector<LocalPlayerPtr>& players) {
@@ -121,13 +195,45 @@ namespace mwetris::game {
 		}
 
 		tp::Game game;
-		game.ParseFromIstream(&input);
+		if (!loadFromFile(game, SavedGameFile)) {
+			return {};
+		}
 
 		std::vector<LocalPlayerPtr> players_;
 		for (const auto& pbPlayer : game.player()) {
 			players_.push_back(createPlayer(pbPlayer, availableDevices.front()));
 		}
 		return players_;
+	}
+
+	std::vector<HighScoreResult> loadHighScore() {
+		tp::HighScore highScore;
+		loadFromFile(highScore, SavedHighScoreFile);
+
+		auto results = toHighScoreResults(highScore.results());
+		results.resize(NbrHighScoreResults);
+		return results;
+	}
+
+	bool isNewHighScore(const PlayerPtr& player) {
+		auto results = loadHighScore();
+		return getIndexForNewResult(results, player->getPoints()) < NbrHighScoreResults;
+	}
+
+	void saveHighScore(const std::string& name, int points, int rows, int level) {
+		tp::HighScore highScore;
+		loadFromFile(highScore, SavedHighScoreFile);
+
+		auto result = highScore.add_results();
+		result->set_name(name);
+		result->set_points(points);
+		result->set_rows(rows);
+		result->set_level(level);
+		result->set_last_played_seconds(toTpSeconds(std::chrono::system_clock::now()));
+
+		auto highScoreResults = toHighScoreResults(highScore.results());
+		highScoreResults.resize(NbrHighScoreResults);
+		saveToFile(highScore, SavedHighScoreFile);
 	}
 
 }

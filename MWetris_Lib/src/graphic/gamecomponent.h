@@ -32,20 +32,11 @@ namespace mwetris::graphic {
 
 		void initGame(const game::InitGameEvent& event);
 
+		void gamePause(const game::GamePause& event);
+
 	private:
-		//void eventHandler(Event& tetrisGameEvent);
-		
-		void handleMiddleText(const game::PlayerPtr& player, int lastPostion);
-
-		// Fix time step.
-		Uint32 timeStep_{};
-		Uint32 accumulator_{};
-
-		// Font related.
-		float fontSize_{};
-		float borderSize_{};
-
 		std::map<mwetris::game::PlayerPtr, ImGuiBoard> players_;
+		bool paused_ = false;
 	};
 
 }

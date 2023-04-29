@@ -11,10 +11,14 @@
 #include <memory>
 
 namespace mwetris::game {
-	
+
+	constexpr double CountDownSeconds = 3.0;
+
 	class TetrisGame {
 	public:
 		mw::PublicSignal<TetrisGame, InitGameEvent> initGameEvent;
+		mw::PublicSignal<TetrisGame, CountDown> countDownGameEvent;
+		mw::PublicSignal<TetrisGame, GameOver> gameOverEvent;
 
 		TetrisGame();
 		~TetrisGame();
@@ -63,12 +67,17 @@ namespace mwetris::game {
 
 		std::vector<LocalPlayerPtr> players_;
 		LocalGame localGame_;
+		mw::signals::ScopedConnections connections_;
 
 		int width_ = TetrisWidth;
 		int height_ = TetrisHeight;
 		int maxLevel_ = TetrisMaxLevel;
 
+		double countDown = 0;
+		int counter = 0;
+
 		double accumulator_ = 0.0;
+		bool pause_ = false;
 	};
 
 }

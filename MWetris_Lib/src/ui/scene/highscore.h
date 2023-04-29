@@ -6,6 +6,7 @@
 #include "types.h"
 #include "configuration.h"
 #include "ui/imguiextra.h"
+#include "game/serialize.h"
 
 namespace mwetris::ui::scene {
 
@@ -14,7 +15,9 @@ namespace mwetris::ui::scene {
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
 
 	private:
+		void switchedTo() override;
 		
+		std::vector<game::HighScoreResult> results_;
 	};
 
 }

@@ -104,4 +104,8 @@ namespace ImGui {
 		ImGui::GetWindowDrawList()->AddRectFilled({ x, pos.y }, { x + width, pos.y + size.y }, color2.toImU32());
 	}
 
+	void Text(const std::chrono::year_month_day& ymd) {
+		ImGui::Text("%d-%02d-%02d", ymd.year(), ymd.month(), ymd.day());
+	}
+
 }

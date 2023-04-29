@@ -49,7 +49,18 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::saveCurrentGame() {
-		saveGame(players_);
+		int nbrGameOver = 0;
+		for (const auto& player : players_) {
+			if (player->isGameOver()) {
+				++nbrGameOver;
+			}
+		}
+		
+		if (players_.size() > 1 && nbrGameOver == players_.size() - 1 || players_.size() == 0 || players_.size() == 1 && nbrGameOver == 1) {
+			game::clearSavedGame();
+		} else {
+			saveGame(players_);
+		}
 	}
 
 	void TetrisGame::resumeGame(const std::vector<DevicePtr>& devices) {
@@ -84,9 +95,16 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::initGame() {
+		connections_.clear();
 		initGameEvent.invoke(InitGameEvent{players_.begin(), players_.end()});
 
-		localGame_.isPaused();
+		for (const auto& player : players_) {
+			connections_ += player->gameboardEventUpdate.connect([this, player = player](tetris::BoardEvent event, int) {
+				if (event == tetris::BoardEvent::GameOver) {
+					gameOverEvent(GameOver{player});
+				}
+			});
+		}
 	}
 
 	void TetrisGame::restartGame() {
@@ -97,11 +115,11 @@ namespace mwetris::game {
 	}
 
 	bool TetrisGame::isPaused() const {
-		return localGame_.isPaused();
+		return pause_;
 	}
 
 	void TetrisGame::pause() {
-		localGame_.setPaused(!localGame_.isPaused());
+		pause_ = !pause_;
 	}
 
 	int TetrisGame::getNbrOfPlayers() const {
@@ -123,7 +141,7 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::update(double deltaTime) {
-		if (!localGame_.isPaused()) {
+		if (pause_) {
 			updateGame(deltaTime);
 		}
 	}

@@ -19,11 +19,9 @@
 					"valueFunction": { "type": "string" }
 				}
 			}
-		},
-		"highscore": { "$ref": "#/definitions/Highscore" },
-		"activeGames": { "$ref": "#/definitions/ActiveGames" }
+		}
 	},
-	"required": ["window", "ai1", "ai2", "ai3" ,"ai4", "ais", "highscore", "activeGames"],
+	"required": ["window", "ai1", "ai2", "ai3" ,"ai4", "ais"],
 	"additionalProperties": false,
 	
 	"definitions": {
@@ -250,28 +248,6 @@
 				"required": ["name", "date", "points"],
 				"additionalProperties": false
 			}
-		},
-		"ActiveGames": {
-			"type": "object",
-			"properties": {
-				"localGame": {
-					"type": "object",
-					"properties": {
-						"rows": { "type": "integer" },
-						"columns": { "type": "integer" },
-						"players": {
-							"type": "array",
-							"items": { "$ref": "#/definitions/Player" },
-							"additionalItems": false
-						},
-						"additionalProperties": false
-					},
-					"required": ["rows", "columns", "players"],
-					"additionalProperties": false
-				}
-			},
-			"required": ["localGame"],
-			"additionalProperties": false
 		}
 	}
 }

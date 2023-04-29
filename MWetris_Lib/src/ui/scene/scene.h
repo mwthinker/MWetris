@@ -51,8 +51,7 @@ namespace mwetris::ui::scene {
 		}
 
 		void emitEvent(Event event) {
-			if (!stateMachine_)
-			{
+			if (!stateMachine_) {
 				spdlog::warn("[Scene] Failed emitEvent, missing dispatcher");
 				return;
 			}

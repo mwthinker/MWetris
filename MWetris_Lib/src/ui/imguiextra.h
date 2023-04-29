@@ -7,6 +7,7 @@
 #include <sdl/imguiauxiliary.h>
 
 #include <sdl/sprite.h>
+#include <chrono>
 
 namespace ImGui {
 
@@ -42,6 +43,8 @@ namespace ImGui {
 	void LoadingBar(sdl::Color color1 = sdl::Color{0.8f, 0.8f, 0.8f, 1.f},
 		sdl::Color color2 = sdl::Color{0.5f, 0.5f, 0.5f, 1.f},
 		const ImVec2& size = {150.f, 25.f});
+
+	void Text(const std::chrono::year_month_day& ymd);
 
 }
 

@@ -59,6 +59,7 @@ namespace mwetris::ui::scene {
 		Vec2 size_{};
 		mw::signals::ScopedConnections connections_;
 		std::string name_;
+		game::GameOver gameOver_{nullptr};
 	};
 
 }

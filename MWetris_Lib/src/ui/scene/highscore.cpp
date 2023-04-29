@@ -1,5 +1,6 @@
 #include "highscore.h"
 #include "event.h"
+#include "../imguiextra.h"
 
 namespace mwetris::ui::scene {
 
@@ -20,29 +21,33 @@ namespace mwetris::ui::scene {
 		ImGui::PopFont();
 
 		ImGui::PushFont(mwetris::Configuration::getInstance().getImGuiDefaultFont());
-		ImGui::Columns(6, "Highscore");
-		ImGui::Separator();
-		ImGui::Text("Ranking"); ImGui::NextColumn();
-		ImGui::Text("Points"); ImGui::NextColumn();
-		ImGui::Text("Name"); ImGui::NextColumn();
-		ImGui::Text("Rows"); ImGui::NextColumn();
-		ImGui::Text("Level"); ImGui::NextColumn();
-		ImGui::Text("Date"); ImGui::NextColumn();
-		ImGui::Separator();
 
-		auto highscores = Configuration::getInstance().getHighscoreRecordVector();
+		ImGui::Table("HighScore", 6, ImGuiTableFlags_Borders, {500, 0}, [&]() {
+			ImGui::TableSetupColumn("Ranking", ImGuiTableColumnFlags_WidthFixed, 70);
+			ImGui::TableSetupColumn("Points");
+			ImGui::TableSetupColumn("Name");
+			ImGui::TableSetupColumn("Rows");
+			ImGui::TableSetupColumn("Level");
+			ImGui::TableSetupColumn("Date");
+			ImGui::TableHeadersRow();
 
-		int rankNbr = 1;
-		for (const auto& highscore : highscores) {
-			ImGui::Text("%i", rankNbr++); ImGui::NextColumn();
-			ImGui::Text("%i", highscore.points); ImGui::NextColumn();
-			ImGui::TextUnformatted(highscore.name.c_str()); ImGui::NextColumn();
-			ImGui::Text("%i", highscore.rows); ImGui::NextColumn();
-			ImGui::Text("%i", highscore.level); ImGui::NextColumn();
-			ImGui::TextUnformatted(highscore.date.c_str()); ImGui::NextColumn();
-		}
-		ImGui::Separator();
+			int rankNbr = 1;
+			for (const auto& highscore : results_) {
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn(); ImGui::Text("%i", rankNbr++);
+				ImGui::TableNextColumn(); ImGui::Text("%i", highscore.points);
+				ImGui::TableNextColumn(); ImGui::TextUnformatted(highscore.name.c_str());
+				ImGui::TableNextColumn(); ImGui::Text("%i", highscore.rows);
+				ImGui::TableNextColumn(); ImGui::Text("%i", highscore.level);
+				ImGui::TableNextColumn(); ImGui::Text(highscore.lastPlayed);
+			}
+		});
+
 		ImGui::PopFont();
+	}
+
+	void HighScore::switchedTo() {
+		results_ = game::loadHighScore();
 	}
 
 }

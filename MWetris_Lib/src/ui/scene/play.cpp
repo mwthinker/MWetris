@@ -2,6 +2,7 @@
 #include "event.h"
 #include "game/keyboard.h"
 #include "game/computer.h"
+#include "game/serialize.h"
 
 namespace mwetris::ui::scene {
 
@@ -93,8 +94,15 @@ namespace mwetris::ui::scene {
 				name_ = "Player";
 			}
 
+			ImGui::PushFont(mwetris::Configuration::getInstance().getImGuiHeaderFont());
+			ImGui::Text("Place %d", game::getPlacement(gameOver_.player->getPoints()));
+			ImGui::PopFont();
+
 			if (ImGui::InputText("Name: ", &name_, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CallbackAlways, acceptNameInput)
 				&& name_.size() > 0) {
+				
+				game::saveHighScore(name_, gameOver_.player->getPoints(), gameOver_.player->getClearedRows(), gameOver_.player->getLevel());
+				emitEvent(Event::HighScore);
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -176,14 +184,19 @@ namespace mwetris::ui::scene {
 
 		connections_.clear();
 		connections_ += game_->initGameEvent.connect(gameComponent_.get(), &mwetris::graphic::GameComponent::initGame);
+		connections_ += game_->gameOverEvent.connect([this](game::GameOver gameOver) {
+			if (game_->getNbrOfPlayers() == 1 && game::isNewHighScore(gameOver.player)) {
+				openPopup_ = true;
+				gameOver_ = gameOver;
+			}
+		});
+
 		std::vector<game::DevicePtr> devices;
 		devices.push_back(devices_[0]);
 
 		if (getLastEvent() == Event::ResumePlay) {
 			game_->resumeGame(devices);
-			openPopup_ = false;
 		} else {
-			openPopup_ = true;
 			game_->createGame(devices);
 		}
 	}

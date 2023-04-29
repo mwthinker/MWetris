@@ -40,6 +40,7 @@ set(SOURCES_LIB
 	src/game/serialize.cpp
 	src/game/serialize.h
 	
+	src/ui/resumegame.h
 	src/ui/scene/highscore.cpp
 	src/ui/scene/highscore.h
 	src/ui/scene/settings.cpp
@@ -51,6 +52,8 @@ set(SOURCES_LIB
 	src/ui/scene/menu.h
 	src/ui/scene/network.cpp
 	src/ui/scene/network.h
+	src/ui/scene/rungame.cpp
+	src/ui/scene/rungame.h
 	src/ui/scene/scene.h
 	src/ui/scene/statemachine.cpp
 	src/ui/scene/statemachine.h

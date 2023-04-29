@@ -28,9 +28,8 @@ namespace mwetris::graphic {
 				case 3:
 					return fmt::format("{}:rd place!", position);
 				default:
-					break;
+					return fmt::format("{}:th place!", position);
 			}
-			return fmt::format("{}:th place!", position);
 		}
 
 	}
@@ -53,11 +52,31 @@ namespace mwetris::graphic {
 			width = windowWidth / players_.size();
 		}
 
+		Vec2 pos = ImGui::GetCursorPos();
+
 		for (auto& [player, imguiBoard] : players_) {
 			ImGui::SetNextWindowSize({width, height});
 			imguiBoard.draw(width, windowHeight);
 			ImGui::SameLine();
 		}
+
+		/*
+		if (!ImGui::IsPopupOpen("AAAAA")) {
+			ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+			ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+			ImGui::SetNextWindowSize({500, 500}, ImGuiCond_Appearing);
+
+			ImGui::OpenPopup("AAAAA");
+		}
+
+		if (ImGui::PopupModal("AAAAA", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, []() {
+			ImGui::Text("Paused");
+		})) {
+			if (!paused_) {
+				ImGui::CloseCurrentPopup();
+			}
+		}
+		*/
 
 		ImGui::PopStyleColor(1);
 		ImGui::PopStyleVar(2);
@@ -68,6 +87,10 @@ namespace mwetris::graphic {
 		for (auto& player : event.players) {
 			players_.insert({player, ImGuiBoard{player}});
 		}
+	}
+
+	void GameComponent::gamePause(const game::GamePause& event) {
+		paused_ = event.pause;
 	}
 
 	//void GameComponent::eventHandler(Event& tetrisEvent) {
