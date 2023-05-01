@@ -67,11 +67,6 @@ namespace mwetris::ui::scene {
 	}
 
 	void Play::imGuiUpdate(const DeltaTime& deltaTime) {
-		if (getLastEvent() == Event::ResumePlay) {
-			imGuiGame(deltaTime);
-			return;
-		}
-
 		if (openPopup_) {
 			openPopup_ = false;
 			ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -194,7 +189,7 @@ namespace mwetris::ui::scene {
 		std::vector<game::DevicePtr> devices;
 		devices.push_back(devices_[0]);
 
-		if (getLastEvent() == Event::ResumePlay) {
+		if (game::hasSavedGame()) {
 			game_->resumeGame(devices);
 		} else {
 			game_->createGame(devices);

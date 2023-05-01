@@ -11,11 +11,6 @@ namespace mwetris::ui::scene {
 		auto menuHeight = Configuration::getInstance().getWindowBarHeight();
 
 		ImGui::Bar([&]() {
-			if (game::hasSavedGame()) {
-				ImGui::PushButtonStyle();
-				addMenuButton("Resume", Event::ResumePlay);
-				ImGui::PopButtonStyle();
-			}
 		});
 
 		ImGui::PushFont(Configuration::getInstance().getImGuiHeaderFont());

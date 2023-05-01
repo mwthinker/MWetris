@@ -98,7 +98,6 @@ namespace mwetris::ui {
 			case scene::Event::Menu:
 				sceneStateMachine_.switchTo<scene::Menu>();
 				break;
-			case scene::Event::ResumePlay: [[fallthrough]];
 			case scene::Event::Play:
 				sceneStateMachine_.switchTo<scene::Play>();
 				break;

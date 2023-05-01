@@ -6,7 +6,6 @@ namespace mwetris::ui::scene {
 	enum class Event {
 		NotDefined,
 		Menu,
-		ResumePlay,
 		Play,
 		NetworkPlay,
 		HighScore,
