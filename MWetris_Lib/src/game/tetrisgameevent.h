@@ -53,13 +53,7 @@ namespace mwetris::game {
 
 	class GamePause {
 	public:
-		GamePause(bool pause, bool printPause)
-			: pause{pause}
-			, printPause{printPause} {
-		}
-
-		bool pause{};
-		bool printPause{};
+		bool pause;
 	};
 
 	class GameOver {

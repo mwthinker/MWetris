@@ -19,6 +19,7 @@ namespace mwetris::game {
 		mw::PublicSignal<TetrisGame, InitGameEvent> initGameEvent;
 		mw::PublicSignal<TetrisGame, CountDown> countDownGameEvent;
 		mw::PublicSignal<TetrisGame, GameOver> gameOverEvent;
+		mw::PublicSignal<TetrisGame, GamePause> gamePauseEvent;
 
 		TetrisGame();
 		~TetrisGame();

@@ -120,6 +120,7 @@ namespace mwetris::game {
 
 	void TetrisGame::pause() {
 		pause_ = !pause_;
+		gamePauseEvent(GamePause{pause_});
 	}
 
 	int TetrisGame::getNbrOfPlayers() const {
@@ -141,7 +142,7 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::update(double deltaTime) {
-		if (pause_) {
+		if (!pause_) {
 			updateGame(deltaTime);
 		}
 	}

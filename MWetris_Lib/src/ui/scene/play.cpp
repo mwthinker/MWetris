@@ -185,6 +185,9 @@ namespace mwetris::ui::scene {
 				gameOver_ = gameOver;
 			}
 		});
+		connections_ += game_->gamePauseEvent.connect([this](game::GamePause gamePause) {
+			gameComponent_->gamePause(gamePause);
+		});
 
 		std::vector<game::DevicePtr> devices;
 		devices.push_back(devices_[0]);

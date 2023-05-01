@@ -1,5 +1,6 @@
 #include "gamecomponent.h"
 #include "configuration.h"
+#include "ui/imguiextra.h"
 
 #include "game/tetrisgame.h"
 #include "game/tetrisparameters.h"
@@ -57,26 +58,18 @@ namespace mwetris::graphic {
 		for (auto& [player, imguiBoard] : players_) {
 			ImGui::SetNextWindowSize({width, height});
 			imguiBoard.draw(width, windowHeight);
+			auto pos = ImGui::GetCursorScreenPos();
+			ImGui::SetCursorPos({width / 2.f, height / 2.f});
+			
+			if (paused_) {
+				ImGui::PushFont(Configuration::getInstance().getImGuiHeaderFont());
+				ImGui::TextWithBackgroundColor("Paus", sdl::Color{0.f, 0.f, 0.f ,0.5f}, {5.f, 5.f});
+				ImGui::SetCursorPos(pos);
+				ImGui::PopFont();
+			}
+			
 			ImGui::SameLine();
 		}
-
-		/*
-		if (!ImGui::IsPopupOpen("AAAAA")) {
-			ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-			ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-			ImGui::SetNextWindowSize({500, 500}, ImGuiCond_Appearing);
-
-			ImGui::OpenPopup("AAAAA");
-		}
-
-		if (ImGui::PopupModal("AAAAA", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, []() {
-			ImGui::Text("Paused");
-		})) {
-			if (!paused_) {
-				ImGui::CloseCurrentPopup();
-			}
-		}
-		*/
 
 		ImGui::PopStyleColor(1);
 		ImGui::PopStyleVar(2);

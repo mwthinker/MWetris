@@ -108,4 +108,13 @@ namespace ImGui {
 		ImGui::Text("%d-%02d-%02d", ymd.year(), ymd.month(), ymd.day());
 	}
 
+	void TextWithBackgroundColor(const char* str, sdl::Color color, const ImVec2& padding) {
+		auto pos = ImGui::GetCursorScreenPos();
+		auto size = ImGui::CalcTextSize(str);
+
+		ImGui::GetWindowDrawList()->AddRectFilled({pos.x - padding.x, pos.y - padding.y}, ImVec2{pos.x + size.x + padding.x, pos.y + size.y + padding.y}, color.toImU32());
+		ImGui::Text(str);
+		
+	}
+
 }

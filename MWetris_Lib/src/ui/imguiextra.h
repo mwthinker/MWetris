@@ -46,6 +46,8 @@ namespace ImGui {
 
 	void Text(const std::chrono::year_month_day& ymd);
 
+	void TextWithBackgroundColor(const char* str, sdl::Color color, const ImVec2& padding = {});
+
 }
 
 #endif
