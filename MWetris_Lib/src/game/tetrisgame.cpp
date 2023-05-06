@@ -46,6 +46,7 @@ namespace mwetris::game {
 		if (!players.empty() && players.size() <= devices.size()) {
 			players_ = players;
 
+			pause();
 			localGame_.resume(players_);
 
 			initGame();

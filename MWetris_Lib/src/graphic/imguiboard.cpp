@@ -110,7 +110,6 @@ namespace mwetris::graphic {
 		const int rows = player_->getTetrisBoard().getRows();
 		
 		drawGrid(columns, rows - 2);
-		
 		drawBoardSquares();
 
 		tmp_ = player_->getTetrisBoard();
@@ -185,24 +184,23 @@ namespace mwetris::graphic {
 				height_ = rows * squareSize_;
 
 				ImGui::Dummy({width, (height - height_) * 0.5f});
-				//ImGui::Button("1", {width, (height - height_) * 0.5f});
 			} else {
 				height_ = height;
 				squareSize_ = height_ / normalizedHeight;
 
-				//ImGui::Button("2", {(width - normalizedWidth * squareSize_) * 0.5f, height});
 				ImGui::Dummy({(width - normalizedWidth * squareSize_) * 0.5f, height});
 				ImGui::SameLine();
 			}
 
 			drawBorder(normalizedWidth * squareSize_, normalizedHeight * squareSize_, color::Red);
-
 			drawBoard();
 
 			ImGui::SameLine();
 
 			ImGui::Group([&]() {
 				drawPreviewBlock(tetrisBoard.getNextBlockType(), Color(1.f, 1.f, 1, 0.3f));
+
+				ImGui::Indent(10.f);
 
 				ImGui::Text("%s:", player_->getName().c_str());
 				ImGui::Text("%s: %d", "Level", player_->getLevel());
@@ -213,11 +211,9 @@ namespace mwetris::graphic {
 
 
 			if (blankSideUpAndDown) {
-				//ImGui::Button("3", {width, (height - height_) * 0.5f});
 				ImGui::Dummy({width, (height - height_) * 0.5f});
 			} else {
 				ImGui::SameLine();
-				//ImGui::Button("4", {(width - normalizedWidth * squareSize_) * 0.5f, height});
 				ImGui::Dummy({(width - normalizedWidth * squareSize_) * 0.5f, height});
 			}
 

@@ -31,6 +31,9 @@ namespace tetris {
 		GameOver
 	};
 
+	template <typename F>
+	concept EventCallback = std::invocable<F, BoardEvent, int>;
+
 	class TetrisBoard {
 	public:
 		TetrisBoard(int columns, int rows, BlockType current, BlockType next);
@@ -48,8 +51,7 @@ namespace tetris {
 
 		void update(Move move);
 
-		template <typename EventCallback>
-		void update(Move move, EventCallback&& eventCallback);
+		void update(Move move, EventCallback auto&& eventCallback);
 
 		void setNextBlock(BlockType next);
 
@@ -118,11 +120,9 @@ namespace tetris {
 
 		void addBlockToBoard(const Block& block);
 
-		template <typename EventCallback>
-		void removeFilledRows(const Block& block, EventCallback& callback);
+		void removeFilledRows(const Block& block, EventCallback auto&& callback);
 
-		template <typename EventCallback>
-		void moveRowsOneStepDown(int rowToRemove, EventCallback& callback);
+		void moveRowsOneStepDown(int rowToRemove, EventCallback auto&& callback);
 
 		std::vector<BlockType> gameboard_;
 		BlockType next_;
@@ -142,10 +142,7 @@ namespace tetris {
 		update(move, [](BoardEvent boardEvent, int value) {});
 	}
 
-	template <typename EventCallback>
-	void TetrisBoard::update(Move move, EventCallback&& eventCallback) {
-		static_assert(std::is_invocable_v<EventCallback, BoardEvent, int>, "EventCallback must be in the form: void(BoardEvent, int) ");
-
+	void TetrisBoard::update(Move move, EventCallback auto&& eventCallback) {
 		if (isGameOver_) {
 			return;
 		}
@@ -225,8 +222,7 @@ namespace tetris {
 		}
 	}
 
-	template <typename EventCallback>
-	void TetrisBoard::removeFilledRows(const Block& block, EventCallback& callback) {
+	void TetrisBoard::removeFilledRows(const Block& block, EventCallback auto&& callback) {
 		int row = block.getLowestRow();
 		int rowsFilled = 0;
 		const int nbrOfSquares = static_cast<int>(current_.getSize());
@@ -248,8 +244,7 @@ namespace tetris {
 		}
 	}
 
-	template <typename EventCallback>
-	void TetrisBoard::moveRowsOneStepDown(int rowToRemove, EventCallback& callback) {
+	void TetrisBoard::moveRowsOneStepDown(int rowToRemove, EventCallback auto&& callback) {
 		callback(BoardEvent::RowToBeRemoved, rowToRemove);
 
 		auto indexStartOfRow = rowToRemove * columns_;
