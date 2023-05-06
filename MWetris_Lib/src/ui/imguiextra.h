@@ -48,6 +48,10 @@ namespace ImGui {
 
 	void TextWithBackgroundColor(const char* str, sdl::Color color, const ImVec2& padding = {});
 
+	void TextWithBackgroundColor(int nbr, sdl::Color color, const ImVec2& padding = {});
+
+	void IgnoreCursor(std::invocable auto&& t);
+
 }
 
 #endif

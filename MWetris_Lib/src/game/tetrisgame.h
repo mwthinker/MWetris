@@ -61,8 +61,6 @@ namespace mwetris::game {
 		void saveCurrentGame();
 
 	private:
-		void createLocalPlayers(int columns, int rows, const std::vector<DevicePtr>& devices);
-
 		void initGame();
 		void updateGame(double deltaTime);
 

@@ -26,28 +26,6 @@ namespace mwetris::game {
 	TetrisGame::~TetrisGame() {
 	}
 
-	void TetrisGame::createLocalPlayers(int columns, int rows, const std::vector<DevicePtr>& devices) {
-		players_.clear();
-		LocalPlayerBuilder builder;
-		for (const auto& device : devices) {
-			builder.withDevice(device);
-			builder.withClearedRows(0);
-			builder.withGameOverPosition(0);
-			builder.withLevel(1);
-			builder.withLevelUpCounter(0);
-			//builder.widthMovingBlock(data.current_);
-			//builder.widthName(data.name_);
-			builder.withMovingBlockType(tetris::randomBlockType());
-			builder.withNextBlockType(tetris::randomBlockType());
-			builder.withPoints(0);
-			builder.withHeight(height_);
-			builder.withWidth(width_);
-
-			auto player = builder.build();
-			players_.push_back(player);
-		}
-	}
-
 	void TetrisGame::saveCurrentGame() {
 		int nbrGameOver = 0;
 		for (const auto& player : players_) {
@@ -68,9 +46,7 @@ namespace mwetris::game {
 		if (!players.empty() && players.size() <= devices.size()) {
 			players_ = players;
 
-			if (players_.size() == 1) {
-				localGame_.createGame(players_.front());
-			}
+			localGame_.resume(players_);
 
 			initGame();
 		} else {
@@ -81,11 +57,8 @@ namespace mwetris::game {
 	void TetrisGame::createGame(int columns, int rows, const std::vector<DevicePtr>& devices) {
 		width_ = columns;
 		height_ = rows;
-
-		createLocalPlayers(columns, rows, devices);
-		if (players_.size() == 1) {
-			localGame_.createGame(players_.front());
-		}
+		
+		players_ = localGame_.create(columns, rows, devices);
 
 		initGame();
 	}
@@ -109,7 +82,7 @@ namespace mwetris::game {
 
 	void TetrisGame::restartGame() {
 		accumulator_ = 0.0;
-		localGame_.restartGame();
+		localGame_.restart();
 
 		initGame();
 	}
@@ -121,6 +94,10 @@ namespace mwetris::game {
 	void TetrisGame::pause() {
 		pause_ = !pause_;
 		gamePauseEvent(GamePause{pause_});
+		if (!pause_) {
+			counter = 4;
+			countDown = 3;
+		}
 	}
 
 	int TetrisGame::getNbrOfPlayers() const {
@@ -135,14 +112,24 @@ namespace mwetris::game {
 			width_ = width;
 			height_ = height;
 
-			localGame_.restartGame();
+			localGame_.restart();
 
 			initGame();
 		}
 	}
 
 	void TetrisGame::update(double deltaTime) {
-		if (!pause_) {
+		int tmp = std::ceil(countDown);
+		if (countDown >= 0) {
+			countDown -= deltaTime;
+		}
+
+		if (tmp < counter && counter >= 0) {
+			counter = tmp;
+			countDownGameEvent(tmp);
+		}
+
+		if (!pause_ && counter <= 0) {
 			updateGame(deltaTime);
 		}
 	}

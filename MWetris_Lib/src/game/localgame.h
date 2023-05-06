@@ -11,18 +11,21 @@ namespace mwetris::game {
 	public:
 		LocalGame();
 
-		void createGame(LocalPlayerPtr player);
+		void resume(const std::vector<LocalPlayerPtr>& players);
 
-		void restartGame();
+		[[nodiscard]] std::vector<LocalPlayerPtr> create(int columns, int rows, const std::vector<DevicePtr>& devices);
+
+		void restart();
 
 	private:
 		void applyRules(tetris::BoardEvent gameEvent, int value, const LocalPlayerPtr& player);
-		LocalPlayerPtr player_;
+		
+		std::vector<LocalPlayerPtr> players_;
 		
 		int points_ = 0;
 		int rows_ = 0;
 		int level_ = 1;
-		mw::signals::ScopedConnection connection_;
+		mw::signals::ScopedConnections connections_;
 	};
 
 }

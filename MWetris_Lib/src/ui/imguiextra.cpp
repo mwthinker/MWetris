@@ -114,7 +114,20 @@ namespace ImGui {
 
 		ImGui::GetWindowDrawList()->AddRectFilled({pos.x - padding.x, pos.y - padding.y}, ImVec2{pos.x + size.x + padding.x, pos.y + size.y + padding.y}, color.toImU32());
 		ImGui::Text(str);
-		
+	}
+
+	void TextWithBackgroundColor(int nbr, sdl::Color color, const ImVec2& padding) {
+		auto pos = ImGui::GetCursorScreenPos();
+		auto size = ImGui::CalcTextSize("%d");
+
+		ImGui::GetWindowDrawList()->AddRectFilled({pos.x - padding.x, pos.y - padding.y}, ImVec2{pos.x + size.x + padding.x, pos.y + size.y + padding.y}, color.toImU32());
+		ImGui::Text("%d", nbr);
+	}
+
+	void IgnoreCursor(std::invocable auto&& t) {
+		auto pos = ImGui::GetCursorPos();
+		t();
+		ImGui::SetCursorPos(pos);
 	}
 
 }

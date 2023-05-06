@@ -33,10 +33,13 @@ namespace mwetris::graphic {
 		void initGame(const game::InitGameEvent& event);
 
 		void gamePause(const game::GamePause& event);
+		
+		void countDown(const game::CountDown& countDown);
 
 	private:
 		std::map<mwetris::game::PlayerPtr, ImGuiBoard> players_;
 		bool paused_ = false;
+		int timeLeft_ = -1;
 	};
 
 }

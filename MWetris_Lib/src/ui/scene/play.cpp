@@ -188,6 +188,9 @@ namespace mwetris::ui::scene {
 		connections_ += game_->gamePauseEvent.connect([this](game::GamePause gamePause) {
 			gameComponent_->gamePause(gamePause);
 		});
+		connections_ += game_->countDownGameEvent.connect([this](game::CountDown countDown) {
+			gameComponent_->countDown(countDown);
+		});
 
 		std::vector<game::DevicePtr> devices;
 		devices.push_back(devices_[0]);

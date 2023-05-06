@@ -53,22 +53,24 @@ namespace mwetris::graphic {
 			width = windowWidth / players_.size();
 		}
 
+		ImGui::SetNextWindowSize({width, height});
+
 		Vec2 pos = ImGui::GetCursorPos();
+		for (auto& [player, imguiBoard] : players_) {
+			imguiBoard.draw(width, height);
+			ImGui::SameLine();
+		}
 
 		for (auto& [player, imguiBoard] : players_) {
-			ImGui::SetNextWindowSize({width, height});
-			imguiBoard.draw(width, windowHeight);
-			auto pos = ImGui::GetCursorScreenPos();
-			ImGui::SetCursorPos({width / 2.f, height / 2.f});
-			
+			ImGui::SetCursorPos(pos + Vec2{width / 2.f, height / 2.f});
+			pos.x += width;
+			ImGui::PushFont(Configuration::getInstance().getImGuiHeaderFont());
 			if (paused_) {
-				ImGui::PushFont(Configuration::getInstance().getImGuiHeaderFont());
 				ImGui::TextWithBackgroundColor("Paus", sdl::Color{0.f, 0.f, 0.f ,0.5f}, {5.f, 5.f});
-				ImGui::SetCursorPos(pos);
-				ImGui::PopFont();
+			} else if (timeLeft_ > 0) {
+				ImGui::TextWithBackgroundColor(timeLeft_, sdl::Color{0.f, 0.f, 0.f ,0.5f}, {5.f, 5.f});
 			}
-			
-			ImGui::SameLine();
+			ImGui::PopFont();
 		}
 
 		ImGui::PopStyleColor(1);
@@ -84,6 +86,10 @@ namespace mwetris::graphic {
 
 	void GameComponent::gamePause(const game::GamePause& event) {
 		paused_ = event.pause;
+	}
+
+	void GameComponent::countDown(const game::CountDown& countDown) {
+		timeLeft_ = countDown.timeLeft;
 	}
 
 	//void GameComponent::eventHandler(Event& tetrisEvent) {
