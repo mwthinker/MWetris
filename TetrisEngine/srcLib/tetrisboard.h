@@ -59,6 +59,9 @@ namespace tetris {
 
 		void restart(int column, int row, BlockType current, BlockType next);
 
+		Block getBlockDown() const;
+		Block getBlockDown(Block current) const;
+
 		int getRows() const {
 			return rows_;
 		}
@@ -81,7 +84,7 @@ namespace tetris {
 		}
 
 		// Return the type of the moving block.
-		BlockType getBlockType() const {
+		BlockType getCurrentBlockType() const {
 			return current_.getBlockType();
 		}
 

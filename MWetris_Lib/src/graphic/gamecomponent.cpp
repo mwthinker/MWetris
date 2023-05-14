@@ -47,19 +47,19 @@ namespace mwetris::graphic {
 
 		float width = windowWidth;
 		float height = windowHeight;
-		if (players_.size() > 1) {
-			width = windowWidth / players_.size();
+		if (imguiBoards_.size() > 1) {
+			width = windowWidth / imguiBoards_.size();
 		}
 
 		ImGui::SetNextWindowSize({width, height});
 
 		Vec2 pos = ImGui::GetCursorPos();
-		for (auto& [player, imguiBoard] : players_) {
-			imguiBoard.draw(width, height);
+		for (auto& imguiBoard : imguiBoards_) {
+			imguiBoard.draw(width, height, deltaTime);
 			ImGui::SameLine();
 		}
 
-		for (auto& [player, imguiBoard] : players_) {
+		for (auto& imguiBoard : imguiBoards_) {
 			ImGui::SetCursorPos(pos + Vec2{width / 2.f, height / 2.f});
 			pos.x += width;
 			ImGui::PushFont(Configuration::getInstance().getImGuiHeaderFont());
@@ -76,9 +76,9 @@ namespace mwetris::graphic {
 	}
 
 	void GameComponent::initGame(const game::InitGameEvent& event) {
-		players_.clear();
+		imguiBoards_.clear();
 		for (auto& player : event.players) {
-			players_.insert({player, ImGuiBoard{player}});
+			imguiBoards_.emplace_back(player);
 		}
 	}
 

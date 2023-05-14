@@ -65,6 +65,19 @@ namespace tetris {
 		isGameOver_ = false;
 	}
 
+	Block TetrisBoard::getBlockDown() const {
+		return getBlockDown(current_);
+	}
+
+	Block TetrisBoard::getBlockDown(Block current) const {
+		auto block = current;
+		while (!collision(block)) {
+			current = block;
+			block.moveDown();
+		}
+		return current;
+	}
+
 	const std::vector<BlockType>& TetrisBoard::getBoardVector() const {
 		return gameboard_;
 	}

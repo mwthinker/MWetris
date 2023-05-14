@@ -37,7 +37,7 @@ namespace mwetris::graphic {
 		void countDown(const game::CountDown& countDown);
 
 	private:
-		std::map<mwetris::game::PlayerPtr, ImGuiBoard> players_;
+		std::vector<ImGuiBoard> imguiBoards_;
 		bool paused_ = false;
 		int timeLeft_ = -1;
 	};

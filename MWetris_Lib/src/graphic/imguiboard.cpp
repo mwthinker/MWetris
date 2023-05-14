@@ -32,8 +32,7 @@ namespace mwetris::graphic {
 	}
 
 	ImGuiBoard::ImGuiBoard(game::PlayerPtr playerPtr)
-		: player_{std::move(playerPtr)}
-		, tmp_{player_->getTetrisBoard()} {
+		: player_{std::move(playerPtr)} {
 
 		spriteZ_ = Configuration::getInstance().getSprite(tetris::BlockType::Z);
 		spriteS_ = Configuration::getInstance().getSprite(tetris::BlockType::S);
@@ -45,6 +44,18 @@ namespace mwetris::graphic {
 
 		squareSize_ = Configuration::getInstance().getTetrisSquareSize();
 		borderSize_ = Configuration::getInstance().getTetrisBorderSize();
+
+		connections_ += player_->gameboardEventUpdate.connect(this, &ImGuiBoard::gameBoardEvent);
+	}
+
+	void ImGuiBoard::gameBoardEvent(tetris::BoardEvent boardEvent, int nbr) {
+		switch (boardEvent) {
+			case tetris::BoardEvent::RowToBeRemoved:
+				for (int y = nbr + 1; y < rows_.size(); ++y) {
+					rows_[y] += 1;
+				}
+				break;
+		}
 	}
 
 	void ImGuiBoard::drawBlock(const tetris::Block& block, Vec2 pos, bool center, Color color) {
@@ -105,17 +116,15 @@ namespace mwetris::graphic {
 		ImGui::Dummy(sqSize);
 	}
 
-	void ImGuiBoard::drawBoard() {
+	void ImGuiBoard::drawBoard(double deltaTime) {
 		const int columns = player_->getTetrisBoard().getColumns();
 		const int rows = player_->getTetrisBoard().getRows();
 		
 		drawGrid(columns, rows - 2);
-		drawBoardSquares();
-
-		tmp_ = player_->getTetrisBoard();
-		tmp_.update(tetris::Move::DownGround);
+		drawBoardSquares(deltaTime);
+		
 		Vec2 cursorPos = ImGui::GetCursorScreenPos();
-		drawBlock(tmp_.getBlock(), cursorPos, false, Color(1.f, 1.f, 1, 0.3f));
+		drawBlock(player_->getTetrisBoard().getBlockDown(), cursorPos, false, Color(1.f, 1.f, 1, 0.3f));
 		drawBlock(player_->getTetrisBoard().getBlock(), cursorPos);
 
 		ImGui::Dummy({squareSize_ * columns, squareSize_ * (rows - 2)});
@@ -138,17 +147,23 @@ namespace mwetris::graphic {
 		drawList->AddRectFilled(pos + Vec2{0.f, height - borderSize_}, pos + Vec2{width, height}, color.toImU32());
 	}
 
-	void ImGuiBoard::drawBoardSquares() {
+	void ImGuiBoard::drawBoardSquares(double deltaTime) {
 		Vec2 cursorPos = ImGui::GetCursorScreenPos();
 
 		auto drawList = ImGui::GetWindowDrawList();
 
 		const auto& tetrisBoard = player_->getTetrisBoard();
 
+		rows_.resize(tetrisBoard.getRows() - 2);
+
 		for (int i = 0; i < tetrisBoard.getRows() - 2; ++i) {
+			rows_[i] -= 5.0 * deltaTime;
+			if (rows_[i] < 0) {
+				rows_[i] = 0.0;
+			}
 			for (int j = 0; j < tetrisBoard.getColumns(); ++j) {
 				float x = squareSize_ * j + cursorPos.x;
-				float y = height_ - squareSize_ * (i + 1) + cursorPos.y;
+				float y = height_ - squareSize_ * (i + 1) + cursorPos.y - rows_[i] * squareSize_;
 
 				auto blockType = tetrisBoard.getBlockType(j, i);
 				if (blockType != tetris::BlockType::Empty
@@ -165,7 +180,7 @@ namespace mwetris::graphic {
 		}
 	}
 
-	void ImGuiBoard::draw(float width, float height) {
+	void ImGuiBoard::draw(float width, float height, double deltaTime) {
 		ImGui::Group([&]() {
 			const auto& tetrisBoard = player_->getTetrisBoard();
 
@@ -193,7 +208,7 @@ namespace mwetris::graphic {
 			}
 
 			drawBorder(normalizedWidth * squareSize_, normalizedHeight * squareSize_, color::Red);
-			drawBoard();
+			drawBoard(deltaTime);
 
 			ImGui::SameLine();
 
@@ -229,6 +244,10 @@ namespace mwetris::graphic {
 				ImGui::SetCursorPos(pos);
 			}
 		});
+	}
+
+	const game::Player& ImGuiBoard::getPlayer() const {
+		return *player_;
 	}
 
 	sdl::TextureView ImGuiBoard::getSprite(tetris::BlockType blockType) const {
