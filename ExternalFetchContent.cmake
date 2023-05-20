@@ -28,7 +28,7 @@ fetchcontent_declare(Calculator
 	GIT_REPOSITORY
 		https://github.com/mwthinker/Calculator.git
 	GIT_TAG
-		7d64fcaa0b10e8aa39c2779bd4fd162f6f9ea2a5
+		7e552e5ce4338aa0e9399b54e5672c5d13b0f589
 	OVERRIDE_FIND_PACKAGE
 )
 
