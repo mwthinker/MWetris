@@ -1,17 +1,13 @@
 project(Protocol)
 
-find_package(Protobuf REQUIRED)
+find_package(protobuf CONFIG REQUIRED)
 
 set(PROTO_FILES
 	"message.proto"
 )
 
-# Hide options in cmake
-mark_as_advanced(FORCE Protobuf_SRC_ROOT_FOLDER)
-mark_as_advanced(FORCE Protobuf_DIR)
-
-PROTOBUF_GENERATE_CPP(PROTO_SRC PROTO_HEADER ${PROTO_FILES})
-add_library(Protocol ${PROTO_HEADER} ${PROTO_SRC} ${PROTO_FILES})
+protobuf_generate_cpp(PROTO_SRC PROTO_HDRS ${PROTO_FILES})
+add_library(Protocol ${PROTO_HDRS} ${PROTO_SRC} ${PROTO_FILES})
 if (MSVC)
 	target_compile_options(Protocol
 		PUBLIC
@@ -21,11 +17,17 @@ if (MSVC)
 	)
 endif ()
 
-
 target_include_directories(Protocol
 	PUBLIC
-		${PROTOBUF_INCLUDE_DIR}
 		${CMAKE_CURRENT_BINARY_DIR}
+)
+
+target_link_libraries(Protocol
+	PUBLIC
+		protobuf::libprotobuf
+		protobuf::libprotobuf-lite
+	PRIVATE
+		protobuf::libprotoc
 )
 
 if (MSVC)
@@ -33,7 +35,7 @@ if (MSVC)
 		PRIVATE
 			_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
 	)
-endif (MSVC)
+endif ()
 
 set_target_properties(Protocol
 	PROPERTIES
