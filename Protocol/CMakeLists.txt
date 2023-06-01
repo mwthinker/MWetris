@@ -1,6 +1,6 @@
 project(Protocol)
 
-find_package(protobuf CONFIG REQUIRED)
+find_package(Protobuf CONFIG REQUIRED)
 
 set(PROTO_FILES
 	"message.proto"

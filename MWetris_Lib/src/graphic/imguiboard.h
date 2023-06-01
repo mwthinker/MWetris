@@ -18,6 +18,10 @@ namespace mwetris::graphic {
 		void draw(float width, float height, double deltaTime);
 
 		const game::Player& getPlayer() const;
+
+		ImGuiBoard(const ImGuiBoard& imGuiBoard);
+		ImGuiBoard& operator=(const ImGuiBoard& imGuiBoard);
+
 	private:
 		void gameBoardEvent(tetris::BoardEvent gameEvent, int nbr);
 

@@ -4,6 +4,7 @@
 #include "game/player.h"
 
 #include "configuration.h"
+
 #include <sdl/imguiauxiliary.h>
 
 #include <spdlog/spdlog.h>
@@ -46,6 +47,41 @@ namespace mwetris::graphic {
 		borderSize_ = Configuration::getInstance().getTetrisBorderSize();
 
 		connections_ += player_->gameboardEventUpdate.connect(this, &ImGuiBoard::gameBoardEvent);
+	}
+
+	ImGuiBoard::ImGuiBoard(const ImGuiBoard& imGuiBoard)
+		: squareSize_{imGuiBoard.squareSize_}
+		, borderSize_{imGuiBoard.borderSize_}
+		, player_{imGuiBoard.player_}
+		, rows_{imGuiBoard.rows_}
+		, height_{height_}
+		, spriteI_{spriteI_}
+		, spriteJ_{spriteJ_}
+		, spriteL_{spriteL_}
+		, spriteO_{spriteO_}
+		, spriteS_{spriteS_}
+		, spriteT_{spriteT_}
+		, spriteZ_{spriteZ_} {
+
+		connections_ += player_->gameboardEventUpdate.connect(this, &ImGuiBoard::gameBoardEvent);
+	}
+
+	ImGuiBoard& ImGuiBoard::operator=(const ImGuiBoard& imGuiBoard) {
+		squareSize_ = imGuiBoard.squareSize_;
+		borderSize_ = imGuiBoard.borderSize_;
+		player_ = imGuiBoard.player_;
+		rows_ = imGuiBoard.rows_;
+		height_ = height_;
+		spriteI_ = spriteI_;
+		spriteJ_ = spriteJ_;
+		spriteL_ = spriteL_;
+		spriteO_ = spriteO_;
+		spriteS_ = spriteS_;
+		spriteT_ = spriteT_;
+		spriteZ_ = spriteZ_;
+
+		connections_ += player_->gameboardEventUpdate.connect(this, &ImGuiBoard::gameBoardEvent);
+		return *this;
 	}
 
 	void ImGuiBoard::gameBoardEvent(tetris::BoardEvent boardEvent, int nbr) {
