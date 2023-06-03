@@ -54,14 +54,14 @@ namespace mwetris::graphic {
 		, borderSize_{imGuiBoard.borderSize_}
 		, player_{imGuiBoard.player_}
 		, rows_{imGuiBoard.rows_}
-		, height_{height_}
-		, spriteI_{spriteI_}
-		, spriteJ_{spriteJ_}
-		, spriteL_{spriteL_}
-		, spriteO_{spriteO_}
-		, spriteS_{spriteS_}
-		, spriteT_{spriteT_}
-		, spriteZ_{spriteZ_} {
+		, height_{imGuiBoard.height_}
+		, spriteI_{imGuiBoard.spriteI_}
+		, spriteJ_{imGuiBoard.spriteJ_}
+		, spriteL_{imGuiBoard.spriteL_}
+		, spriteO_{imGuiBoard.spriteO_}
+		, spriteS_{imGuiBoard.spriteS_}
+		, spriteT_{imGuiBoard.spriteT_}
+		, spriteZ_{imGuiBoard.spriteZ_} {
 
 		connections_ += player_->gameboardEventUpdate.connect(this, &ImGuiBoard::gameBoardEvent);
 	}
@@ -71,14 +71,14 @@ namespace mwetris::graphic {
 		borderSize_ = imGuiBoard.borderSize_;
 		player_ = imGuiBoard.player_;
 		rows_ = imGuiBoard.rows_;
-		height_ = height_;
-		spriteI_ = spriteI_;
-		spriteJ_ = spriteJ_;
-		spriteL_ = spriteL_;
-		spriteO_ = spriteO_;
-		spriteS_ = spriteS_;
-		spriteT_ = spriteT_;
-		spriteZ_ = spriteZ_;
+		height_ = imGuiBoard.height_;
+		spriteI_ = imGuiBoard.spriteI_;
+		spriteJ_ = imGuiBoard.spriteJ_;
+		spriteL_ = imGuiBoard.spriteL_;
+		spriteO_ = imGuiBoard.spriteO_;
+		spriteS_ = imGuiBoard.spriteS_;
+		spriteT_ = imGuiBoard.spriteT_;
+		spriteZ_ = imGuiBoard.spriteZ_;
 
 		connections_ += player_->gameboardEventUpdate.connect(this, &ImGuiBoard::gameBoardEvent);
 		return *this;
