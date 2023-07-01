@@ -2,6 +2,7 @@
 #define MWETRIS_GAME_SERIALIZE_H
 
 #include "localplayer.h"
+
 #include <chrono>
 
 namespace mwetris::game {
@@ -27,8 +28,6 @@ namespace mwetris::game {
 	void saveGame(const std::vector<LocalPlayerPtr>& players);
 
 	std::vector<LocalPlayerPtr> loadGame(const std::vector<DevicePtr>& availableDevices);
-
-	bool isHighScore(const PlayerPtr& player);
 
 	void saveHighScore(const std::string& name, int points, int rows, int level);
 

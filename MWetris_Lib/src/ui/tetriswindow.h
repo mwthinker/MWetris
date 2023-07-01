@@ -2,9 +2,9 @@
 #define MWETRIS_UI_TETRISWINDOW_H
 
 #include "scene/scene.h"
-#include "scene/menu.h"
 #include "scene/statemachine.h"
-#include "scene/event.h"
+
+#include "game/serialize.h"
 
 #include <sdl/imguiwindow.h>
 
@@ -14,6 +14,10 @@ namespace mwetris {
 
 }
 
+namespace mwetris::ui::scene {
+	class Play;
+}
+
 namespace mwetris::ui {
 
 	class TetrisWindow : public sdl::ImGuiWindow {
@@ -21,10 +25,6 @@ namespace mwetris::ui {
 		TetrisWindow();
 
 		~TetrisWindow();
-
-		void setStartPage(scene::Event event) {
-			startEvent_ = event;
-		}
 	
 	private:
 		void initPreLoop() override;
@@ -33,11 +33,17 @@ namespace mwetris::ui {
 
 		void imGuiEventUpdate(const SDL_Event& windowEvent) override;
 
-		void handleSceneMenuEvent(const scene::Event& menuEvent);
+		template <typename Scene>
+		void openPopUp() {
+			openPopUp_ = true;
+			sceneStateMachine_.switchTo<Scene>();
+		}
 	
 		sdl::TextureView background_;
 		scene::StateMachine sceneStateMachine_;
-		scene::Event startEvent_ = scene::Event::Menu;
+		std::vector<game::HighScoreResult> results_;
+		bool openPopUp_ = false;
+		std::unique_ptr<scene::Play> play_;
 	};
 
 }

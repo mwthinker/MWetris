@@ -24,20 +24,18 @@
 
 namespace mwetris::ui::scene {
 
-	class Play : public Scene {
+	class Play {
 	public:
 		Play();
 
-		bool eventUpdate(const SDL_Event& windowEvent) override;
+		bool eventUpdate(const SDL_Event& windowEvent);
 
-		void imGuiUpdate(const DeltaTime& deltaTime) override;
+		void imGuiUpdate(const DeltaTime& deltaTime);
+
+		void startNewGame();
 
 	private:
 		void imGuiGame(const DeltaTime& deltaTime);
-
-		void switchedFrom() override;
-
-		void switchedTo() override;
 
 		void resumeGame();
 

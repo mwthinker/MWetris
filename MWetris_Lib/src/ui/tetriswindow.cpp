@@ -2,11 +2,13 @@
 #include "imguiextra.h"
 #include "configuration.h"
 
-#include "scene/menu.h"
 #include "scene/play.h"
+#include "scene/about.h"
 #include "scene/network.h"
 #include "scene/settings.h"
 #include "scene/highscore.h"
+
+#include "game/serialize.h"
 
 #include <sdl/imguiauxiliary.h>
 
@@ -14,18 +16,26 @@
 
 namespace mwetris::ui {
 
+	constexpr ImGuiWindowFlags ImguiNoWindow
+		= ImGuiWindowFlags_NoTitleBar
+		| ImGuiWindowFlags_NoResize
+		| ImGuiWindowFlags_NoBringToFrontOnFocus
+		| ImGuiWindowFlags_NoMove
+		| ImGuiWindowFlags_NoDocking
+		| ImGuiWindowFlags_NoScrollbar
+		| ImGuiWindowFlags_NoBackground
+		| ImGuiWindowFlags_NoScrollWithMouse
+		| ImGuiWindowFlags_MenuBar;
+		//| ImGuiWindowFlags_NoNavInputs;
+
 	TetrisWindow::TetrisWindow() {
 		setPosition(Configuration::getInstance().getWindowPositionX(), Configuration::getInstance().getWindowPositionY());
 		setSize(Configuration::getInstance().getWindowWidth(), Configuration::getInstance().getWindowHeight());
-		setResizeable(Configuration::getInstance().getWindowWidth());
+		setResizeable(true);
 		setTitle("MWetris");
 		setIcon(Configuration::getInstance().getWindowIcon());
 		setBordered(Configuration::getInstance().isWindowBordered());
 		setShowDemoWindow(true);
-		
-		sceneStateMachine_.setCallback([&](scene::Event event) {
-			handleSceneMenuEvent(event);
-		});
 	}
 
 	TetrisWindow::~TetrisWindow() {
@@ -35,7 +45,9 @@ namespace mwetris::ui {
 	void TetrisWindow::initPreLoop() {
 		sdl::ImGuiWindow::initPreLoop();
 		auto& io{ImGui::GetIO()};
-		
+		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
 		Configuration::getInstance().bindTextureFromAtlas();
 		background_ = Configuration::getInstance().getBackgroundSprite();
 		
@@ -43,27 +55,84 @@ namespace mwetris::ui {
 		Configuration::getInstance().getImGuiButtonFont();
 		Configuration::getInstance().getImGuiDefaultFont();
 		Configuration::getInstance().getImGuiHeaderFont();
-				
-		sceneStateMachine_.emplace<scene::Menu>();
-		sceneStateMachine_.emplace<scene::Play>();
-		sceneStateMachine_.emplace<scene::Network>();
+		
 		sceneStateMachine_.emplace<scene::Settings>();
 		sceneStateMachine_.emplace<scene::HighScore>();
-		
-		handleSceneMenuEvent(startEvent_);
+		sceneStateMachine_.emplace<scene::About>();
+
+		play_ = std::make_unique<scene::Play>();
 	}
-	
+
 	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
 		ImGui::PushFont(Configuration::getInstance().getImGuiDefaultFont());
-		ImGui::MainWindow("Main", [&]() {
-			ImGui::ImageBackground(background_);
+
+		if (openPopUp_) {
+			openPopUp_ = false;
+			ImGui::OpenPopup("Popup");
+		}
+		ImGui::PopupModal("Popup", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
 			sceneStateMachine_.imGuiUpdate(deltaTime);
+
+			if (ImGui::IsKeyDown(ImGuiKey_Escape)) {
+				ImGui::CloseCurrentPopup();
+			}
 		});
+
+		ImGui::MainWindow("MainWindow", ImguiNoWindow, [&]() {
+			ImGui::ImageBackground(background_);
+			play_->imGuiUpdate(deltaTime);
+
+			ImGui::MenuBar([&]() {
+				ImGui::Menu("Main", [&]() {
+					if (ImGui::MenuItem("New Game", "F2")) {
+						play_->startNewGame();
+					}
+					if (ImGui::MenuItem("Custom Game")) {
+
+					}
+					if (ImGui::MenuItem("Highscore")) {
+						ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+						ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+						ImGui::SetNextWindowSize({500, 500}, ImGuiCond_Appearing);
+
+						openPopUp<mwetris::ui::scene::HighScore>();
+
+						results_ = game::loadHighScore();
+					}
+					if (ImGui::MenuItem("Quit", "ESQ")) {
+						sdl::Window::quit();
+					}
+				});
+				ImGui::Menu("Settings", [&]() {
+					if (ImGui::MenuItem("Preferences")) {
+						openPopUp<mwetris::ui::scene::Settings>();
+					}
+				});
+				ImGui::Menu("In Game", []() {
+					if (ImGui::MenuItem("Pause", "P OR Pause")) {}
+					if (ImGui::MenuItem("Restart", "F2")) {}
+				});
+				ImGui::Menu("Network Game", []() {
+					if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
+					if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
+					ImGui::Separator();
+					if (ImGui::MenuItem("Cut", "CTRL+X")) {}
+					if (ImGui::MenuItem("Copy", "CTRL+C")) {}
+					if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+				});
+				ImGui::Menu("Help", [&]() {
+					if (ImGui::MenuItem("About")) {
+						openPopUp<mwetris::ui::scene::About>();
+					}
+				});
+			});
+		});
+
 		ImGui::PopFont();
 	}
 
 	void TetrisWindow::imGuiEventUpdate(const SDL_Event& windowEvent) {
-		if (!sceneStateMachine_.eventUpdate(windowEvent)) {
+		if (!play_->eventUpdate(windowEvent)) {
 			return; // Don't bubble up.
 		}
 
@@ -90,29 +159,6 @@ namespace mwetris::ui {
 			case SDL_QUIT:
 				sdl::Window::quit();
 				break;
-		}
-	}
-
-	void TetrisWindow::handleSceneMenuEvent(const scene::Event& menuEvent) {
-		switch (menuEvent) {
-			case scene::Event::Menu:
-				sceneStateMachine_.switchTo<scene::Menu>();
-				break;
-			case scene::Event::Play:
-				sceneStateMachine_.switchTo<scene::Play>();
-				break;
-			case scene::Event::NetworkPlay:
-				sceneStateMachine_.switchTo<scene::Network>();
-				break;
-			case scene::Event::Settings:
-				sceneStateMachine_.switchTo<scene::Settings>();
-				break;
-			case scene::Event::HighScore:
-				sceneStateMachine_.switchTo<scene::HighScore>();
-				break;
-			case scene::Event::Exit:
-				quit();
-				return;
 		}
 	}
 

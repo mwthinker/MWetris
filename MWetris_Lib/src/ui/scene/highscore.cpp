@@ -1,20 +1,10 @@
 #include "highscore.h"
-#include "event.h"
 #include "../imguiextra.h"
 
 namespace mwetris::ui::scene {
 
 	void HighScore::imGuiUpdate(const DeltaTime& deltaTime) {
-		auto menuHeight = mwetris::Configuration::getInstance().getWindowBarHeight();
 		auto labelColor = mwetris::Configuration::getInstance().getLabelTextColor();
-
-		ImGui::Bar([&]() {
-			ImGui::PushButtonStyle();
-			if (ImGui::Button("Menu", {100.5f, menuHeight})) {
-				emitEvent(Event::Menu);
-			}
-			ImGui::PopButtonStyle();
-		});
 
 		ImGui::PushFont(mwetris::Configuration::getInstance().getImGuiHeaderFont());
 		ImGui::TextColored(labelColor, "Highscore");
@@ -22,7 +12,7 @@ namespace mwetris::ui::scene {
 
 		ImGui::PushFont(mwetris::Configuration::getInstance().getImGuiDefaultFont());
 
-		ImGui::Table("HighScore", 6, ImGuiTableFlags_Borders, {500, 0}, [&]() {
+		ImGui::Table("Highscore", 6, ImGuiTableFlags_Borders, {500, 0}, [&]() {
 			ImGui::TableSetupColumn("Ranking", ImGuiTableColumnFlags_WidthFixed, 70);
 			ImGui::TableSetupColumn("Points");
 			ImGui::TableSetupColumn("Name");

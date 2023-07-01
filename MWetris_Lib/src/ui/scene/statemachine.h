@@ -2,7 +2,6 @@
 #define MWETRIS_UI_SCENE_STATEMACHINE_H
 
 #include "scene.h"
-#include "event.h"
 
 #include <sdl/shader.h>
 
@@ -44,31 +43,18 @@ namespace mwetris::ui::scene {
 		template <typename Type> requires DerivedFromScene<Type>
 		bool isCurrentScene() const;
 
-		void setCallback(std::invocable<scene::Event> auto&& callback) {
-			callback_ = std::forward<decltype(callback)>(callback);
-		}
-
 		template <typename Type> requires DerivedFromScene<Type>
 		std::shared_ptr<Type> getScene();
 
-		void emitEvent(Event event);
-
-		Event getLastEvent() const {
-			return lastEvent_;
-		}
-
 	private:
-		void onCallback(scene::Event event);
-
 		using Key = size_t;
 
 		template <typename Type> requires DerivedFromScene<Type>
 		static Key getKey();
 
-		Event lastEvent_ = Event::NotDefined;
 		std::map<Key, std::shared_ptr<Scene>> scenes_;
 		Key currentKey_{};
-		std::function<void(scene::Event)> callback_;
+		bool firstRun_ = true; // Make sure switchedTo() is called for the first scene.
 	};
 
 	template <typename Type> requires DerivedFromScene<Type>

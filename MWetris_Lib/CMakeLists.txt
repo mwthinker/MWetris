@@ -44,16 +44,16 @@ set(SOURCES_LIB
 	src/ui/scene/highscore.h
 	src/ui/scene/settings.cpp
 	src/ui/scene/settings.h
-	src/ui/scene/event.h
 	src/ui/scene/play.cpp
 	src/ui/scene/play.h
-	src/ui/scene/menu.cpp
-	src/ui/scene/menu.h
 	src/ui/scene/network.cpp
 	src/ui/scene/network.h
 	src/ui/scene/scene.h
 	src/ui/scene/statemachine.cpp
 	src/ui/scene/statemachine.h
+
+	src/ui/scene/about.cpp
+	src/ui/scene/about.h
 
 	src/ui/imguiextra.cpp
 	src/ui/imguiextra.h
@@ -85,6 +85,13 @@ add_library(MWetris_Lib ${SOURCES_LIB})
 target_include_directories(MWetris_Lib
 	PUBLIC
 		src
+)
+
+target_compile_definitions(MWetris_Lib
+	PUBLIC
+		GIT_VERSION="${GIT_HASH}"
+		PROJECT_VERSION="${CMAKE_PROJECT_VERSION}"
+		GUID="${GUID}"
 )
 
 if (MSVC)

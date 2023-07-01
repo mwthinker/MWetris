@@ -1,5 +1,4 @@
 #include "play.h"
-#include "event.h"
 #include "game/keyboard.h"
 #include "game/computer.h"
 #include "game/serialize.h"
@@ -37,6 +36,37 @@ namespace mwetris::ui::scene {
 		crossSprite_ = mwetris::Configuration::getInstance().getCrossSprite();
 		manSprite_ = mwetris::Configuration::getInstance().getHumanSprite();
 		aiSprite_ = mwetris::Configuration::getInstance().getComputerSprite();
+
+		game_ = std::make_unique<game::TetrisGame>();
+		gameComponent_ = std::make_unique<graphic::GameComponent>();
+
+		startNewGame();
+	}
+
+	void Play::startNewGame() {
+		connections_.clear();
+		connections_ += game_->initGameEvent.connect(gameComponent_.get(), &mwetris::graphic::GameComponent::initGame);
+		connections_ += game_->gameOverEvent.connect([this](game::GameOver gameOver) {
+			if (game_->getNbrOfPlayers() == 1 && game::isNewHighScore(gameOver.player)) {
+				openPopup_ = true;
+				gameOver_ = gameOver;
+			}
+		});
+		connections_ += game_->gamePauseEvent.connect([this](game::GamePause gamePause) {
+			gameComponent_->gamePause(gamePause);
+		});
+		connections_ += game_->countDownGameEvent.connect([this](game::CountDown countDown) {
+			gameComponent_->countDown(countDown);
+		});
+
+		std::vector<game::DevicePtr> devices;
+		devices.push_back(devices_[0]);
+
+		if (game::hasSavedGame()) {
+			game_->resumeGame(devices);
+		} else {
+			game_->createGame(devices);
+		}
 	}
 
 	bool Play::eventUpdate(const SDL_Event& windowEvent) {
@@ -47,7 +77,6 @@ namespace mwetris::ui::scene {
 			case SDL_WINDOWEVENT:
 				switch (windowEvent.window.event) {
 					case SDL_WINDOWEVENT_CLOSE:
-						emitEvent(Event::Menu);
 						return false;
 				}
 				break;
@@ -97,12 +126,7 @@ namespace mwetris::ui::scene {
 				&& name_.size() > 0) {
 				
 				game::saveHighScore(name_, gameOver_.player->getPoints(), gameOver_.player->getClearedRows(), gameOver_.player->getLevel());
-				emitEvent(Event::HighScore);
 				ImGui::CloseCurrentPopup();
-			}
-
-			if (ImGui::IsKeyDown(ImGuiKey_Escape)) {
-				emitEvent(Event::Menu);
 			}
 
 			ImGui::PopStyleColor();
@@ -117,30 +141,6 @@ namespace mwetris::ui::scene {
 		game_->update(deltaTimeSeconds);
 
 		auto menuHeight = mwetris::Configuration::getInstance().getWindowBarHeight();
-
-		ImGui::Bar([&]() {
-			ImGui::PushButtonStyle();
-
-			if (ImGui::Button("Menu", {100.5f, menuHeight})) {
-				emitEvent(Event::Menu);
-			}
-
-			ImGui::SameLine();
-			if (ImGui::Button("Restart", {120.5f, menuHeight})) {
-				game_->restartGame();
-			}
-
-			ImGui::SameLine();
-			if (ImGui::ManButton("Human", nbrHumans_, static_cast<int>(devices_.size()), crossSprite_, manSprite_, {menuHeight, menuHeight})) {
-				game_->createGame(getCurrentDevices());
-			}
-			ImGui::SameLine();
-			if (ImGui::ManButton("Ai", nbrAis_, static_cast<int>(computers_.size()), crossSprite_, aiSprite_, {menuHeight, menuHeight})) {
-				game_->createGame(getCurrentDevices());
-			}
-			ImGui::PopButtonStyle();
-		});
-
 		size_ = ImGui::GetWindowSize();
 
 		if (gameComponent_) {
@@ -167,39 +167,6 @@ namespace mwetris::ui::scene {
 			}
 		}
 		return devices_[0];
-	}
-
-	void Play::switchedFrom() {
-		game_->saveCurrentGame();
-	}
-
-	void Play::switchedTo() {
-		game_ = std::make_unique<game::TetrisGame>();
-		gameComponent_ = std::make_unique<graphic::GameComponent>();
-
-		connections_.clear();
-		connections_ += game_->initGameEvent.connect(gameComponent_.get(), &mwetris::graphic::GameComponent::initGame);
-		connections_ += game_->gameOverEvent.connect([this](game::GameOver gameOver) {
-			if (game_->getNbrOfPlayers() == 1 && game::isNewHighScore(gameOver.player)) {
-				openPopup_ = true;
-				gameOver_ = gameOver;
-			}
-		});
-		connections_ += game_->gamePauseEvent.connect([this](game::GamePause gamePause) {
-			gameComponent_->gamePause(gamePause);
-		});
-		connections_ += game_->countDownGameEvent.connect([this](game::CountDown countDown) {
-			gameComponent_->countDown(countDown);
-		});
-
-		std::vector<game::DevicePtr> devices;
-		devices.push_back(devices_[0]);
-
-		if (game::hasSavedGame()) {
-			game_->resumeGame(devices);
-		} else {
-			game_->createGame(devices);
-		}
 	}
 
 	void Play::resumeGame() {

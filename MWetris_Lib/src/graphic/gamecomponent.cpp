@@ -51,7 +51,7 @@ namespace mwetris::graphic {
 			width = windowWidth / imguiBoards_.size();
 		}
 
-		ImGui::SetNextWindowSize({width, height});
+		//ImGui::SetNextWindowSize({width, height}); // FIX! Will effect main menu size.
 
 		Vec2 pos = ImGui::GetCursorPos();
 		for (auto& imguiBoard : imguiBoards_) {

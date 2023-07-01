@@ -8,6 +8,7 @@ int main(int argc, char** argv) {
 	mwetris::logger::init();
 	spdlog::info("[main] MWetris Version:  {}", PROJECT_VERSION);
 	spdlog::info("[main] MWetris git hash:  {}", GIT_VERSION);
+	spdlog::info("[main] MWetris GUI:  {}", GUID);
 
 	const sdl::InitSdl SDL;
 	mwetris::ui::TetrisWindow tetrisWindow;
@@ -15,7 +16,7 @@ int main(int argc, char** argv) {
 	if (argc == 2) {
 		std::string flag{argv[1]};
 		if (flag == "-p" || flag == "--page") {
-			tetrisWindow.setStartPage(mwetris::ui::scene::Event::Play);
+			//tetrisWindow.setStartPage(mwetris::ui::scene::Event::Play);
 		}
 	}
 

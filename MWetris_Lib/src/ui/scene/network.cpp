@@ -1,18 +1,13 @@
 #include "network.h"
-#include "event.h"
+
+#include "types.h"
+#include "configuration.h"
+#include "ui/imguiextra.h"
 
 namespace mwetris::ui::scene {
 
 	void Network::imGuiUpdate(const DeltaTime& deltaTime) {
 		auto menuHeight = mwetris::Configuration::getInstance().getWindowBarHeight();
-
-		ImGui::Bar([&]() {
-			ImGui::PushButtonStyle();
-			if (ImGui::Button("Menu", {100.5f, menuHeight})) {
-				emitEvent(Event::Menu);
-			}
-			ImGui::PopButtonStyle();
-		});
 
 		ImGui::Indent(10.f);
 		ImGui::Dummy({0.0f, 5.0f});
@@ -42,7 +37,7 @@ namespace mwetris::ui::scene {
 		ImGui::PopItemWidth();
 		ImGui::Dummy({0.f, 5.f});
 
-		if (ImGui::Button("Connect", {100.5f, menuHeight})) {
+		if (ImGui::Button("Connect")) {
 
 		}
 		ImGui::LoadingBar();

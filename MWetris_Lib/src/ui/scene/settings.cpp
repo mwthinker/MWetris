@@ -1,5 +1,7 @@
 #include "settings.h"
-#include "event.h"
+#include "types.h"
+#include "configuration.h"
+#include "ui/imguiextra.h"
 
 namespace mwetris::ui::scene {
 
@@ -26,16 +28,7 @@ namespace mwetris::ui::scene {
 	}
 
 	void Settings::imGuiUpdate(const DeltaTime& deltaTime) {
-		auto menuHeight = mwetris::Configuration::getInstance().getWindowBarHeight();
 		auto labelColor = mwetris::Configuration::getInstance().getLabelTextColor();
-
-		ImGui::Bar([&]() {
-			ImGui::PushButtonStyle();
-			if (ImGui::Button("Menu", {100.5f, menuHeight})) {
-				emitEvent(Event::Menu);
-			}
-			ImGui::PopButtonStyle();
-		});
 
 		ImGui::PushFont(mwetris::Configuration::getInstance().getImGuiHeaderFont());
 		ImGui::TextColored(labelColor, "Settings");

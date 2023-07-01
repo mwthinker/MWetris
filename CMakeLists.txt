@@ -46,7 +46,7 @@ extract_git_hash()
 create_guid()
 
 message(STATUS "GIT_HASH: ${GIT_HASH}")
-message(STATUS "PROJECT_VERSION: ${PROJECT_VERSION}")
+message(STATUS "CMAKE_PROJECT_VERSION: ${CMAKE_PROJECT_VERSION}")
 message(STATUS "GUID: ${GUID}")
 
 set(ExternalDependencies
