@@ -5,6 +5,8 @@
 #include "scene/statemachine.h"
 
 #include "game/serialize.h"
+#include "game/sdldevice.h"
+#include "game/computer.h"
 
 #include <sdl/imguiwindow.h>
 
@@ -14,8 +16,16 @@ namespace mwetris {
 
 }
 
-namespace mwetris::ui::scene {
-	class Play;
+namespace mwetris::graphic {
+
+	class GameComponent;
+
+}
+
+namespace mwetris::game {
+
+	class TetrisGame;
+
 }
 
 namespace mwetris::ui {
@@ -38,12 +48,27 @@ namespace mwetris::ui {
 			openPopUp_ = true;
 			sceneStateMachine_.switchTo<Scene>();
 		}
+
+		void resumeGame();
+
+		void startNewGame();
+
+		std::vector<game::DevicePtr> getCurrentDevices() const;
+
+		game::DevicePtr findHumanDevice(const std::string& name) const;
 	
 		sdl::TextureView background_;
 		scene::StateMachine sceneStateMachine_;
-		std::vector<game::HighScoreResult> results_;
+		
+		std::unique_ptr<graphic::GameComponent> gameComponent_;
+		std::unique_ptr<game::TetrisGame> game_;
+		int nbrHumans_ = 1;
+		int nbrAis_ = 0;
+		std::vector<game::SdlDevicePtr> devices_;
+		std::vector<game::ComputerPtr> computers_;
+		mw::signals::ScopedConnections connections_;
+		
 		bool openPopUp_ = false;
-		std::unique_ptr<scene::Play> play_;
 	};
 
 }

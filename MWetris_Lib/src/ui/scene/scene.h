@@ -14,17 +14,17 @@ namespace mwetris::ui::scene {
 
 	using DeltaTime = std::chrono::high_resolution_clock::duration;
 
+	class SceneData {
+	public:
+		virtual ~SceneData() = default;
+	
+	};
+
 	class Scene {
 	public:
 		friend class StateMachine;
 
 		virtual ~Scene() = default;
-
-		// Handle event updates.
-		// return true when event should bubble up else false.
-		virtual bool eventUpdate(const SDL_Event& windowEvent) {
-			return true;
-		};
 
 		virtual void imGuiUpdate(const DeltaTime& deltaTime) {};
 
@@ -43,8 +43,8 @@ namespace mwetris::ui::scene {
 	private:
 		virtual void switchedFrom() {};
 
-		virtual void switchedTo() {};
-
+		virtual void switchedTo(SceneData& data) {};
+		
 		StateMachineWrapper stateMachine_;
 	};
 

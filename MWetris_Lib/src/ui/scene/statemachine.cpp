@@ -11,19 +11,13 @@ namespace mwetris::ui::scene {
 		}
 	}
 
-	bool StateMachine::eventUpdate(const SDL_Event& windowEvent) {
-		if (!firstRun_ && currentKey_) {
-			return scenes_[currentKey_]->eventUpdate(windowEvent);
-		}
-		return true;
-	}
-
 	void StateMachine::imGuiUpdate(const DeltaTime& deltaTime) {
 		if (currentKey_) {
 			auto& scene = *scenes_[currentKey_];
 			if (firstRun_) {
 				firstRun_ = false;
-				scene.switchedTo();
+				SceneData sceneData;
+				scene.switchedTo(sceneData);
 			}
 
 			scene.imGuiUpdate(deltaTime);

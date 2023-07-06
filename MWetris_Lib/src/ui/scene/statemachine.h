@@ -25,10 +25,6 @@ namespace mwetris::ui::scene {
 
 		~StateMachine();
 
-		// Handle event updates.
-		// return true when event should bubble up else false.
-		bool eventUpdate(const SDL_Event& windowEvent);
-
 		void imGuiUpdate(const DeltaTime& deltaTime);
 		
 		template <typename Type> requires DerivedFromScene<Type>
@@ -39,6 +35,9 @@ namespace mwetris::ui::scene {
 
 		template <typename Type> requires DerivedFromScene<Type>
 		void switchTo();
+
+		template <typename Type> requires DerivedFromScene<Type>
+		void switchTo(SceneData& sceneData);
 
 		template <typename Type> requires DerivedFromScene<Type>
 		bool isCurrentScene() const;
@@ -75,7 +74,8 @@ namespace mwetris::ui::scene {
 		if (auto it = scenes_.find(key);  it == scenes_.end()) {
 			if (scenes_.empty()) {
 				currentKey_ = key;
-				scene.switchedTo();
+				SceneData sceneData;
+				scene.switchedTo(sceneData);
 			}
 			scenes_[key] = scenePtr;
 			spdlog::info("[SceneStateMachine] Scene added: {}={}", typeid(Type).name(), getKey<Type>());
@@ -92,13 +92,19 @@ namespace mwetris::ui::scene {
 
 	template <typename Type> requires DerivedFromScene<Type>
 	void StateMachine::switchTo() {
+		SceneData sceneData;
+		switchTo<Type>(sceneData);
+	}
+
+	template <typename Type> requires DerivedFromScene<Type>
+	void StateMachine::switchTo(SceneData& sceneData) {
 		if (auto it = scenes_.find(getKey<Type>()); it != scenes_.end()) {
 			auto key = it->first;
 			if (currentKey_ != 0) {
 				scenes_[currentKey_]->switchedFrom();
 			}
 			currentKey_ = key;
-			scenes_[currentKey_]->switchedTo();
+			scenes_[currentKey_]->switchedTo(sceneData);
 		} else {
 			spdlog::warn("[SceneStateMachine] Failed to switch to scene {}={} .", typeid(Type).name(), getKey<Type>());
 		}

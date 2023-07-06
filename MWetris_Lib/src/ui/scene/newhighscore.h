@@ -1,5 +1,5 @@
-#ifndef MWETRIS_UI_SCENE_HIGHSCORE_H
-#define MWETRIS_UI_SCENE_HIGHSCORE_H
+#ifndef MWETRIS_UI_SCENE_NEWHIGHSCORE_H
+#define MWETRIS_UI_SCENE_NEWHIGHSCORE_H
 
 #include "scene.h"
 
@@ -10,14 +10,14 @@
 
 namespace mwetris::ui::scene {
 
-	class HighScore : public Scene {
+	class NewHighScore : public Scene {
 	public:
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
 
 	private:
 		void switchedTo(SceneData& sceneData) override;
 		
-		std::vector<game::HighScoreResult> results_;
+		std::string name_;
 	};
 
 }
