@@ -45,8 +45,14 @@ namespace mwetris::ui {
 
 		template <typename Scene>
 		void openPopUp() {
+			scene::SceneData data;
+			openPopUp<Scene>(data);
+		}
+
+		template <typename Scene>
+		void openPopUp(const scene::SceneData& data) {
 			openPopUp_ = true;
-			sceneStateMachine_.switchTo<Scene>();
+			sceneStateMachine_.switchTo<Scene>(data);
 		}
 
 		void resumeGame();

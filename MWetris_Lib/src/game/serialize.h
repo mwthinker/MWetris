@@ -17,7 +17,7 @@ namespace mwetris::game {
 
 	bool isNewHighScore(const PlayerPtr& player);
 
-	int getPlacement(int points);
+	int getHighscorePlacement(int points);
 
 	std::vector<HighScoreResult> loadHighScore();
 

@@ -36,7 +36,7 @@ namespace mwetris::ui::scene {
 		ImGui::PopFont();
 	}
 
-	void HighScore::switchedTo(SceneData& sceneData) {
+	void HighScore::switchedTo(const SceneData& sceneData) {
 		results_ = game::loadHighScore();
 	}
 

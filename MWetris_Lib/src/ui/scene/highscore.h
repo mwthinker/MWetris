@@ -15,7 +15,7 @@ namespace mwetris::ui::scene {
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
 
 	private:
-		void switchedTo(SceneData& sceneData) override;
+		void switchedTo(const SceneData& sceneData) override;
 		
 		std::vector<game::HighScoreResult> results_;
 	};

@@ -8,16 +8,32 @@
 #include "ui/imguiextra.h"
 #include "game/serialize.h"
 
+#include <functional>
+
 namespace mwetris::ui::scene {
+
+	struct NewHighScoreData : public scene::SceneData {
+		std::string name;
+		int points;
+		int clearedRows;
+		int level;
+	};
 
 	class NewHighScore : public Scene {
 	public:
+		NewHighScore(std::function<void()> closeFunction) {
+			closeFunction_ = closeFunction;
+		}
+
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
 
 	private:
-		void switchedTo(SceneData& sceneData) override;
+		void save();
+
+		void switchedTo(const SceneData& sceneData) override;
 		
-		std::string name_;
+		NewHighScoreData data_{};
+		std::function<void()> closeFunction_;
 	};
 
 }

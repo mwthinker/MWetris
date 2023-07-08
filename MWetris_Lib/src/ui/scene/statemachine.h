@@ -37,7 +37,7 @@ namespace mwetris::ui::scene {
 		void switchTo();
 
 		template <typename Type> requires DerivedFromScene<Type>
-		void switchTo(SceneData& sceneData);
+		void switchTo(const SceneData& sceneData);
 
 		template <typename Type> requires DerivedFromScene<Type>
 		bool isCurrentScene() const;
@@ -53,7 +53,6 @@ namespace mwetris::ui::scene {
 
 		std::map<Key, std::shared_ptr<Scene>> scenes_;
 		Key currentKey_{};
-		bool firstRun_ = true; // Make sure switchedTo() is called for the first scene.
 	};
 
 	template <typename Type> requires DerivedFromScene<Type>
@@ -97,7 +96,7 @@ namespace mwetris::ui::scene {
 	}
 
 	template <typename Type> requires DerivedFromScene<Type>
-	void StateMachine::switchTo(SceneData& sceneData) {
+	void StateMachine::switchTo(const SceneData& sceneData) {
 		if (auto it = scenes_.find(getKey<Type>()); it != scenes_.end()) {
 			auto key = it->first;
 			if (currentKey_ != 0) {

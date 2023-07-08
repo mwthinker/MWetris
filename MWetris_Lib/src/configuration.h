@@ -38,10 +38,7 @@ namespace mwetris {
 
 		sdl::Sound loadSound(const std::string& file);
 		sdl::TextureView loadSprite(const std::string& file);
-
 		sdl::TextureView getSprite(tetris::BlockType blockType);
-
-		const sdl::Font& getDefaultFont(int size);
 
 		ImFont* getImGuiDefaultFont() const;
 		ImFont* getImGuiHeaderFont() const;

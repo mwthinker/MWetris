@@ -161,7 +161,7 @@ namespace mwetris::game {
 
 	}
 
-	int getPlacement(int points) {
+	int getHighscorePlacement(int points) {
 		auto results = loadHighScore();
 		return getIndexForNewResult(results, points) + 1;
 	}

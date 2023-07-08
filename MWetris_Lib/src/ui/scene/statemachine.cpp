@@ -13,14 +13,7 @@ namespace mwetris::ui::scene {
 
 	void StateMachine::imGuiUpdate(const DeltaTime& deltaTime) {
 		if (currentKey_) {
-			auto& scene = *scenes_[currentKey_];
-			if (firstRun_) {
-				firstRun_ = false;
-				SceneData sceneData;
-				scene.switchedTo(sceneData);
-			}
-
-			scene.imGuiUpdate(deltaTime);
+			scenes_[currentKey_]->imGuiUpdate(deltaTime);
 		}
 	}
 	

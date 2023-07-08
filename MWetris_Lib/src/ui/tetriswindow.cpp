@@ -81,6 +81,9 @@ namespace mwetris::ui {
 		
 		sceneStateMachine_.emplace<scene::Settings>();
 		sceneStateMachine_.emplace<scene::HighScore>();
+		sceneStateMachine_.emplace<scene::NewHighScore>([this]() {
+			openPopUp<scene::HighScore>();
+		});
 		sceneStateMachine_.emplace<scene::About>();
 		sceneStateMachine_.emplace<scene::Network>();
 		
@@ -120,8 +123,8 @@ namespace mwetris::ui {
 
 				ImGui::MenuBar([&]() {
 					ImGui::Menu("Main", [&]() {
-						if (ImGui::MenuItem("New Game", "F2")) {
-							startNewGame();
+						if (ImGui::MenuItem("New Single Game", "F2")) {
+							game_->restartGame();
 						}
 						if (ImGui::MenuItem("Custom Game")) {
 
@@ -243,9 +246,12 @@ namespace mwetris::ui {
 		connections_ += game_->initGameEvent.connect(gameComponent_.get(), &mwetris::graphic::GameComponent::initGame);
 		connections_ += game_->gameOverEvent.connect([this](game::GameOver gameOver) {
 			if (game_->getNbrOfPlayers() == 1 && game::isNewHighScore(gameOver.player)) {
-				sceneStateMachine_.switchTo<scene::NewHighScore>();
-				//openPopup_ = true;
-				//gameOver_ = gameOver;
+				scene::NewHighScoreData data;
+				data.name = gameOver.player->getName();
+				data.points = gameOver.player->getPoints();
+				data.clearedRows = gameOver.player->getClearedRows();
+				data.level = gameOver.player->getLevel();
+				openPopUp<scene::NewHighScore>(data);
 			}
 		});
 		connections_ += game_->gamePauseEvent.connect([this](game::GamePause gamePause) {

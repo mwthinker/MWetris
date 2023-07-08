@@ -43,7 +43,7 @@ namespace mwetris::ui::scene {
 	private:
 		virtual void switchedFrom() {};
 
-		virtual void switchedTo(SceneData& data) {};
+		virtual void switchedTo(const SceneData& data) {};
 		
 		StateMachineWrapper stateMachine_;
 	};
