@@ -50,7 +50,6 @@ namespace mwetris::ui {
 		| ImGuiWindowFlags_NoBackground
 		| ImGuiWindowFlags_NoScrollWithMouse
 		| ImGuiWindowFlags_MenuBar;
-		//| ImGuiWindowFlags_NoNavInputs;
 
 	TetrisWindow::TetrisWindow() {
 		setPosition(Configuration::getInstance().getWindowPositionX(), Configuration::getInstance().getWindowPositionY());
@@ -69,8 +68,6 @@ namespace mwetris::ui {
 	void TetrisWindow::initPreLoop() {
 		sdl::ImGuiWindow::initPreLoop();
 		auto& io{ImGui::GetIO()};
-		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
 		Configuration::getInstance().bindTextureFromAtlas();
 		background_ = Configuration::getInstance().getBackgroundSprite();
@@ -113,6 +110,9 @@ namespace mwetris::ui {
 		if (openPopUp_) {
 			openPopUp_ = false;
 			ImGui::OpenPopup("Popup");
+			ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+			ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+			ImGui::SetNextWindowSize({800, 800}, ImGuiCond_Appearing);
 		}
 		if (!ImGui::PopupModal("Popup", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
 			sceneStateMachine_.imGuiUpdate(deltaTime);
@@ -121,60 +121,60 @@ namespace mwetris::ui {
 				ImGui::CloseCurrentPopup();
 			}
 		})) {
-			ImGui::MainWindow("MainWindow", ImguiNoWindow, [&]() {
-				ImGui::ImageBackground(background_);
-
-				ImGui::MenuBar([&]() {
-					ImGui::Menu("Main", [&]() {
-						if (ImGui::MenuItem("New Single Game", "F2")) {
-							game_->restartGame();
-						}
-						if (ImGui::MenuItem("Custom Game")) {
-							openPopUp<scene::CustomGame>();
-						}
-						if (ImGui::MenuItem("Highscore")) {
-							ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-							ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-							ImGui::SetNextWindowSize({500, 500}, ImGuiCond_Appearing);
-
-							openPopUp<mwetris::ui::scene::HighScore>();
-						}
-						if (ImGui::MenuItem("Quit", "ESQ")) {
-							sdl::Window::quit();
-						}
-					});
-					ImGui::Menu("Settings", [&]() {
-						if (ImGui::MenuItem("Preferences")) {
-							openPopUp<mwetris::ui::scene::Settings>();
-						}
-					});
-					ImGui::Menu("In Game", []() {
-						if (ImGui::MenuItem("Pause", "P OR Pause")) {}
-						if (ImGui::MenuItem("Restart", "F2")) {}
-					});
-					ImGui::Menu("Network Game", [&]() {
-						if (ImGui::MenuItem("Undo", "CTRL+Z")) {
-							openPopUp<mwetris::ui::scene::Network>();
-						}
-						if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
-						ImGui::Separator();
-						if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-						if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-						if (ImGui::MenuItem("Paste", "CTRL+V")) {}
-					});
-					ImGui::Menu("Help", [&]() {
-						if (ImGui::MenuItem("About")) {
-							openPopUp<mwetris::ui::scene::About>();
-						}
-					});
-				});
-				auto h = ImGui::GetCursorPosY();
-				auto size = ImGui::GetWindowSize();
-				gameComponent_->draw(size.x, size.y - h, deltaTimeSeconds);
-			});
+			imGuiMainMenu(deltaTime);
 		}
 
 		ImGui::PopFont();
+	}
+
+	void TetrisWindow::imGuiMainMenu(const sdl::DeltaTime& deltaTime) {
+		ImGui::MainWindow("MainWindow", ImguiNoWindow, [&]() {
+			ImGui::ImageBackground(background_);
+
+			ImGui::MenuBar([&]() {
+				ImGui::Menu("Main", [&]() {
+					if (ImGui::MenuItem("New Single Game", "F2")) {
+						game_->restartGame();
+					}
+					if (ImGui::MenuItem("Custom Game")) {
+						openPopUp<scene::CustomGame>();
+					}
+					if (ImGui::MenuItem("Highscore")) {
+						openPopUp<mwetris::ui::scene::HighScore>();
+					}
+					if (ImGui::MenuItem("Quit", "ESQ")) {
+						sdl::Window::quit();
+					}
+				});
+				ImGui::Menu("Settings", [&]() {
+					if (ImGui::MenuItem("Preferences")) {
+						openPopUp<mwetris::ui::scene::Settings>();
+					}
+				});
+				ImGui::Menu("In Game", []() {
+					if (ImGui::MenuItem("Pause", "P OR Pause")) {}
+					if (ImGui::MenuItem("Restart", "F2")) {}
+				});
+				ImGui::Menu("Network Game", [&]() {
+					if (ImGui::MenuItem("Undo", "CTRL+Z")) {
+						openPopUp<mwetris::ui::scene::Network>();
+					}
+					if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
+					ImGui::Separator();
+					if (ImGui::MenuItem("Cut", "CTRL+X")) {}
+					if (ImGui::MenuItem("Copy", "CTRL+C")) {}
+					if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+				});
+				ImGui::Menu("Help", [&]() {
+					if (ImGui::MenuItem("About")) {
+						openPopUp<mwetris::ui::scene::About>();
+					}
+				});
+			});
+			auto h = ImGui::GetCursorPosY();
+			auto size = ImGui::GetWindowSize();
+			gameComponent_->draw(size.x, size.y - h, std::chrono::duration<double>(deltaTime).count());
+		});
 	}
 
 	void TetrisWindow::imGuiEventUpdate(const SDL_Event& windowEvent) {
@@ -198,6 +198,7 @@ namespace mwetris::ui {
 			case SDL_KEYDOWN:
 				switch (windowEvent.key.keysym.sym) {
 					case SDLK_ESCAPE:
+						game_->saveCurrentGame();
 						sdl::Window::quit();
 						break;
 					case SDLK_F2:

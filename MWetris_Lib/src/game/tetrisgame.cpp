@@ -95,7 +95,9 @@ namespace mwetris::game {
 	void TetrisGame::pause() {
 		pause_ = !pause_;
 		gamePauseEvent(GamePause{pause_});
-		if (!pause_) {
+		if (pause_) {
+			saveGame(players_);
+		} else {
 			counter = 4;
 			countDown = 3;
 		}

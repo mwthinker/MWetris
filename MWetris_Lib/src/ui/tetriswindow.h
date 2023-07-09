@@ -55,6 +55,8 @@ namespace mwetris::ui {
 			sceneStateMachine_.switchTo<Scene>(data);
 		}
 
+		void imGuiMainMenu(const sdl::DeltaTime& deltaTime);
+
 		void resumeGame();
 
 		void startNewGame();
