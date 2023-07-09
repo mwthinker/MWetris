@@ -40,6 +40,8 @@ set(SOURCES_LIB
 	src/game/serialize.cpp
 	src/game/serialize.h
 	
+	src/ui/scene/customgame.cpp
+	src/ui/scene/customgame.h
 	src/ui/scene/highscore.cpp
 	src/ui/scene/highscore.h
 	src/ui/scene/settings.cpp

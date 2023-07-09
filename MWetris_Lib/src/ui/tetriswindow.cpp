@@ -7,6 +7,7 @@
 #include "scene/settings.h"
 #include "scene/highscore.h"
 #include "scene/newhighscore.h"
+#include "scene/customgame.h"
 
 #include "game/keyboard.h"
 #include "game/computer.h"
@@ -86,6 +87,8 @@ namespace mwetris::ui {
 		});
 		sceneStateMachine_.emplace<scene::About>();
 		sceneStateMachine_.emplace<scene::Network>();
+		sceneStateMachine_.emplace<scene::CustomGame>();
+		openPopUp<scene::CustomGame>();
 		
 		computers_.push_back(findAiDevice(Configuration::getInstance().getAi1Name()));
 		computers_.push_back(findAiDevice(Configuration::getInstance().getAi2Name()));
@@ -127,7 +130,7 @@ namespace mwetris::ui {
 							game_->restartGame();
 						}
 						if (ImGui::MenuItem("Custom Game")) {
-
+							openPopUp<scene::CustomGame>();
 						}
 						if (ImGui::MenuItem("Highscore")) {
 							ImVec2 center = ImGui::GetMainViewport()->GetCenter();
