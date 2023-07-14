@@ -20,25 +20,25 @@ namespace mwetris::game {
 		return input_;
 	}
 
-	std::string Keyboard::getName() const {
-		return name_;
+	const char* Keyboard::getName() const {
+		return name_.c_str();
 	}
 
-	void Keyboard::eventUpdate(const SDL_Event& windowEvent) {
+	bool Keyboard::eventUpdate(const SDL_Event& windowEvent) {
 		SDL_Keycode key = windowEvent.key.keysym.sym;
 
 		switch (windowEvent.type) {
 			case SDL_KEYDOWN:
 				if (key == down_) {
-					input_.down = true;
+					return input_.down = true;
 				} else if (key == left_) {
-					input_.left = true;
+					return input_.left = true;
 				} else if (key == right_) {
-					input_.right = true;
+					return input_.right = true;
 				} else if (key == rotate_) {
-					input_.rotate = true;
+					return input_.rotate = true;
 				} else if (key == downGround_) {
-					input_.downGround = true;
+					return input_.downGround = true;
 				}
 				break;
 			case SDL_KEYUP:
@@ -55,6 +55,7 @@ namespace mwetris::game {
 				}
 				break;
 		}
+		return false;
 	}
 
 }

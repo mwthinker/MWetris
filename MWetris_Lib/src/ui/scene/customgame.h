@@ -12,7 +12,17 @@ namespace mwetris::ui::scene {
 
 	class CustomGame : public Scene {
 	public:
+		CustomGame(std::shared_ptr<game::TetrisGame> tetrisGame, std::shared_ptr<game::DeviceManager> deviceManager);
+
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
+
+	private:
+		void switchedFrom() override;
+
+		std::shared_ptr<game::TetrisGame> tetrisGame_;
+		std::shared_ptr<game::DeviceManager> deviceManager_;
+
+		std::vector<game::DevicePtr> devices_;
 	};
 
 }

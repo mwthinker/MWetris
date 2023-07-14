@@ -26,7 +26,7 @@ namespace mwetris::ui::scene {
 
 		virtual ~Scene() = default;
 
-		virtual void imGuiUpdate(const DeltaTime& deltaTime) {};
+		virtual void imGuiUpdate(const DeltaTime& deltaTime) = 0;
 
 	protected:
 		class StateMachineWrapper {
@@ -46,6 +46,11 @@ namespace mwetris::ui::scene {
 		virtual void switchedTo(const SceneData& data) {};
 		
 		StateMachineWrapper stateMachine_;
+	};
+
+	class EmptyScene : public Scene {
+	public:
+		void imGuiUpdate(const DeltaTime& deltaTime) override {}
 	};
 
 }

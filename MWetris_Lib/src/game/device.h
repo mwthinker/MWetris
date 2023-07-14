@@ -21,7 +21,7 @@ namespace mwetris::game {
 
 		virtual Input getInput() const = 0;
 
-		virtual std::string getName() const = 0;
+		virtual const char* getName() const = 0;
 
 		virtual void onGameboardEvent(const tetris::TetrisBoard& board, tetris::BoardEvent, int value) {}
 	};

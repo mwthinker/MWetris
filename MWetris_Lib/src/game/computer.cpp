@@ -35,8 +35,8 @@ namespace mwetris::game {
 		return input_;
 	}
 
-	std::string Computer::getName() const {
-		return ai_.getName();
+	const char* Computer::getName() const {
+		return ai_.getName().c_str();
 	}
 
 	void Computer::onGameboardEvent(const tetris::TetrisBoard& board, tetris::BoardEvent event, int value) {

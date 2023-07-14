@@ -20,8 +20,14 @@ set(SOURCES_LIB
 	src/game/actionhandler.h
 	src/game/computer.cpp
 	src/game/computer.h
+	src/game/creategame.cpp
+	src/game/creategame.h
+	src/game/devicemanager.cpp
+	src/game/devicemanager.h
 	src/game/device.h
 	src/game/input.h
+	src/game/gamepad.cpp
+	src/game/gamepad.h
 	src/game/keyboard.cpp
 	src/game/keyboard.h
 	src/game/localgame.cpp

@@ -12,11 +12,11 @@ namespace mwetris::game {
 		Keyboard(std::string name, SDL_Keycode down, SDL_Keycode left, SDL_Keycode right, SDL_Keycode rotate, SDL_Keycode downGround);
 
 		Input getInput() const override;
-		std::string getName() const override;
+		const char* getName() const override;
+
+		bool eventUpdate(const SDL_Event& windowEvent) override;
 
 	private:
-		void eventUpdate(const SDL_Event& windowEvent) override;
-
 		Input input_{};
 		SDL_Keycode down_{}, right_{}, left_{}, rotate_{}, downGround_{};
 		std::string name_;

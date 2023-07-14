@@ -7,6 +7,7 @@
 #include "game/serialize.h"
 #include "game/sdldevice.h"
 #include "game/computer.h"
+#include "game/devicemanager.h"
 
 #include <sdl/imguiwindow.h>
 
@@ -39,6 +40,8 @@ namespace mwetris::ui {
 	private:
 		void initPreLoop() override;
 
+		void eventUpdate(const SDL_Event& windowEvent) override;
+
 		void imGuiUpdate(const sdl::DeltaTime& deltaTime) override;
 
 		void imGuiEventUpdate(const SDL_Event& windowEvent) override;
@@ -62,21 +65,19 @@ namespace mwetris::ui {
 		void startNewGame();
 
 		std::vector<game::DevicePtr> getCurrentDevices() const;
-
-		game::DevicePtr findHumanDevice(const std::string& name) const;
 	
 		sdl::TextureView background_;
 		scene::StateMachine sceneStateMachine_;
 		
 		std::unique_ptr<graphic::GameComponent> gameComponent_;
-		std::unique_ptr<game::TetrisGame> game_;
+		std::shared_ptr<game::TetrisGame> game_;
 		int nbrHumans_ = 1;
 		int nbrAis_ = 0;
-		std::vector<game::SdlDevicePtr> devices_;
 		std::vector<game::ComputerPtr> computers_;
 		mw::signals::ScopedConnections connections_;
 		
 		bool openPopUp_ = false;
+		std::shared_ptr<game::DeviceManager> deviceManager_;
 	};
 
 }

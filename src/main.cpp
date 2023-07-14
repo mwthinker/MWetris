@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
 	spdlog::info("[main] MWetris git hash:  {}", GIT_VERSION);
 	spdlog::info("[main] MWetris GUI:  {}", GUID);
 
-	const sdl::InitSdl SDL;
+	const sdl::InitSdl SDL{SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER};
 	mwetris::ui::TetrisWindow tetrisWindow;
 
 	if (argc == 2) {

@@ -19,7 +19,7 @@ namespace mwetris::game {
 
 		Input getInput() const override;
 
-		std::string getName() const override;
+		const char* getName() const override;
 
 		void onGameboardEvent(const tetris::TetrisBoard& board, tetris::BoardEvent, int value) override;
 

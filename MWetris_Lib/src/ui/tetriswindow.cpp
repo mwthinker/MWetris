@@ -59,6 +59,11 @@ namespace mwetris::ui {
 		setIcon(Configuration::getInstance().getWindowIcon());
 		setBordered(Configuration::getInstance().isWindowBordered());
 		setShowDemoWindow(true);
+
+		deviceManager_ = std::make_shared<game::DeviceManager>();
+		auto connection = deviceManager_->deviceFound.connect([](game::DevicePtr device) {
+			spdlog::info("Device found: {}", device->getName());
+		});
 	}
 
 	TetrisWindow::~TetrisWindow() {
@@ -77,6 +82,10 @@ namespace mwetris::ui {
 		Configuration::getInstance().getImGuiDefaultFont();
 		Configuration::getInstance().getImGuiHeaderFont();
 		
+		game_ = std::make_shared<game::TetrisGame>();
+		gameComponent_ = std::make_unique<graphic::GameComponent>();
+
+		sceneStateMachine_.emplace<scene::EmptyScene>();
 		sceneStateMachine_.emplace<scene::Settings>();
 		sceneStateMachine_.emplace<scene::HighScore>();
 		sceneStateMachine_.emplace<scene::NewHighScore>([this]() {
@@ -84,7 +93,7 @@ namespace mwetris::ui {
 		});
 		sceneStateMachine_.emplace<scene::About>();
 		sceneStateMachine_.emplace<scene::Network>();
-		sceneStateMachine_.emplace<scene::CustomGame>();
+		sceneStateMachine_.emplace<scene::CustomGame>(game_, deviceManager_);
 		openPopUp<scene::CustomGame>();
 		
 		computers_.push_back(findAiDevice(Configuration::getInstance().getAi1Name()));
@@ -92,13 +101,12 @@ namespace mwetris::ui {
 		computers_.push_back(findAiDevice(Configuration::getInstance().getAi3Name()));
 		computers_.push_back(findAiDevice(Configuration::getInstance().getAi4Name()));
 
-		devices_.push_back(std::make_shared<game::Keyboard>("Keyboard 1", SDLK_DOWN, SDLK_LEFT, SDLK_RIGHT, SDLK_UP, SDLK_RCTRL));
-		devices_.push_back(std::make_shared<game::Keyboard>("Keyboard 2", SDLK_s, SDLK_a, SDLK_d, SDLK_w, SDLK_LCTRL));
-
-		game_ = std::make_unique<game::TetrisGame>();
-		gameComponent_ = std::make_unique<graphic::GameComponent>();
-
 		startNewGame();
+	}
+
+	void TetrisWindow::eventUpdate(const SDL_Event& windowEvent) {
+		sdl::ImGuiWindow::eventUpdate(windowEvent);
+		deviceManager_->eventUpdate(windowEvent);
 	}
 
 	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
@@ -119,6 +127,7 @@ namespace mwetris::ui {
 
 			if (ImGui::IsKeyDown(ImGuiKey_Escape)) {
 				ImGui::CloseCurrentPopup();
+				sceneStateMachine_.switchTo<scene::EmptyScene>();
 			}
 		})) {
 			imGuiMainMenu(deltaTime);
@@ -178,10 +187,6 @@ namespace mwetris::ui {
 	}
 
 	void TetrisWindow::imGuiEventUpdate(const SDL_Event& windowEvent) {
-		for (auto& device : devices_) {
-			device->eventUpdate(windowEvent);
-		}
-
 		switch (windowEvent.type) {
 			case SDL_WINDOWEVENT:
 				switch (windowEvent.window.event) {
@@ -216,27 +221,6 @@ namespace mwetris::ui {
 		}
 	}
 
-	std::vector<game::DevicePtr> TetrisWindow::getCurrentDevices() const {
-		std::vector<game::DevicePtr> playerDevices(devices_.begin(), devices_.begin() + nbrHumans_);
-
-		for (int i = 0; i < nbrAis_; ++i) {
-			if (computers_[i]) {
-				playerDevices.push_back(computers_[i]);
-			}
-		}
-
-		return playerDevices;
-	}
-
-	game::DevicePtr TetrisWindow::findHumanDevice(const std::string& name) const {
-		for (const auto& device : devices_) {
-			if (device->getName() == name) {
-				return device;
-			}
-		}
-		return devices_[0];
-	}
-
 	void TetrisWindow::resumeGame() {
 		int rows = Configuration::getInstance().getActiveLocalGameRows();
 		int columns = Configuration::getInstance().getActiveLocalGameColumns();
@@ -265,13 +249,10 @@ namespace mwetris::ui {
 			gameComponent_->countDown(countDown);
 		});
 
-		std::vector<game::DevicePtr> devices;
-		devices.push_back(devices_[0]);
-
 		if (game::hasSavedGame()) {
-			game_->resumeGame(devices);
+			game_->resumeGame(deviceManager_->getAllDevicesAvailable());
 		} else {
-			game_->createGame(devices);
+			game_->createGame({deviceManager_->getDefaultDevice1()});
 		}
 	}
 
