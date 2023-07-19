@@ -5,7 +5,6 @@
 
 #include <limits>
 #include <cmath>
-#include <iostream>
 
 namespace tetris {
 

@@ -3,9 +3,8 @@
 
 #include <sstream>
 #include <limits>
-#include <iostream>
 
-#include <fmt/format.h>
+#include <fmt/core.h>
 
 using namespace std::chrono_literals;
 using namespace tetris;
@@ -129,63 +128,63 @@ Flags::Flags(const int argc, const char* const argv[])
 }
 
 void Flags::printHelpFunction() const {
-	std::cout << "Usage: " << programName_ << "\n";
-	std::cout << "\t" << "Simulate a tetris game, using a ai value-funtion.\n";
-	std::cout << "\t" << programName_ << " -d <DELAY>\n";
-	std::cout << "\t" << programName_ << " -a <VALUE_FUNCTION>\n";
-	std::cout << "\t" << programName_ << " -D <DEPTH>\n";
-	std::cout << "\t" << programName_ << " -m <MAX_TURNS>\n";
-	std::cout << "\t" << programName_ << " -f <FILE>\n";
-	std::cout << "\t" << programName_ << " -s <WIDTH> <HEIGHT>\n\n";
+	fmt::println("Usage: ", programName_);
+	fmt::println("\tSimulate a tetris game, using a ai value-funtion.");
+	fmt::println("\t{} -d <DELAY>", programName_);
+	fmt::println("\t{} -a <VALUE_FUNCTION>", programName_);
+	fmt::println("\t{} -D <DEPTH>", programName_);
+	fmt::println("\t{} -m <MAX_TURNS>", programName_);
+	fmt::println("\t{} -f <FILE>", programName_);
+	fmt::println("\t{} -s <WIDTH> <HEIGHT>\n", programName_);
 
 	Ai ai{};
-	std::cout << "\t" << "Default ai value function is \"" << ai.getValueFunction() << "\".\n";
-	std::cout << "\t" << "Variables available in the value function:\n";
+	fmt::println("\tDefault ai value function is \"{}\"", ai.getValueFunction());
+	fmt::println("\tVariables available in the value function:");
 	for (std::string var : ai.getCalculator().getVariables()) {
-		std::cout << "\t\t" << var << "\n";
+		fmt::println("\t\t{}", var);
 	}
 
-	std::cout << "\n";
-	std::cout << "\tIf using the -f flag, the file provided must be a text file and be filled with\n";
-	std::cout << "\tnumber, space, number etc. Other characters will be ignored.\n";
-	std::cout << "\tBlocktypes: \n";
-	std::cout << "\tI = 0\n";
-	std::cout << "\tJ = 1\n";
-	std::cout << "\tL = 2\n";
-	std::cout << "\tO = 3\n";
-	std::cout << "\tS = 4\n";
-	std::cout << "\tT = 5\n";
-	std::cout << "\tZ = 6\n";
-	std::cout << "\tExample of data in file is \"0 2 0 7 1 3\".\n";
-	std::cout << "\tWhen the simulation has used the whole file, it start to read from the beginning again, and so on.\n\n";
+	fmt::println("");
+	fmt::println("\tIf using the -f flag, the file provided must be a text file and be filled with");
+	fmt::println("\tnumber, space, number etc. Other characters will be ignored.");
+	fmt::println("\tBlocktypes: ");
+	fmt::println("\tI = 0");
+	fmt::println("\tJ = 1");
+	fmt::println("\tL = 2");
+	fmt::println("\tO = 3");
+	fmt::println("\tS = 4");
+	fmt::println("\tT = 5");
+	fmt::println("\tZ = 6");
+	fmt::println("\tExample of data in file is \"0 2 0 7 1 3\".");
+	fmt::println("\tWhen the simulation has used the whole file, it start to read from the beginning again, and so on.\n");
 
-	std::cout << "Options: " << "\n";
-	std::cout << "\t-h --help                show this help\n";
-	std::cout << "\t-d --delay               delay in milliseconds between each turn\n";
-	std::cout << "\t-a --ai-function         define the value function to be use by the ai\n";
-	std::cout << "\t-D --depth               the search depth for the ai (0, 1 or 2), default is 1\n";
-	std::cout << "\t-m --max-turns           define the max number of turns\n";
-	std::cout << "\t-f --file-data           use random data from a file\n";
-	std::cout << "\t-s --board-size          define the size of the board\n";
-	std::cout << "\t-v --verbose             show additional info\n";
-	std::cout << "\t-p --play                show board each turn\n";
-	std::cout << "\n";
-	std::cout << "\tOutput order:\n";
-	std::cout << "\t-T --time                print the time lapsed\n";
-	std::cout << "\t-t --turns               print the number of turns\n";
-	std::cout << "\t-c --cleared-rows        print cleared rows\n";
-	std::cout << "\t-c1 --cleared-rows-1     print cleared one rows\n";
-	std::cout << "\t-c2 --cleared-rows-2     print cleared two rows\n";
-	std::cout << "\t-c3 --cleared-rows-3     print cleared three rows\n";
-	std::cout << "\t-c4 --cleared-rows-4     print cleared four rows\n\n";
+	fmt::println("Options: ");
+	fmt::println("\t-h --help                show this help");
+	fmt::println("\t-d --delay               delay in milliseconds between each turn");
+	fmt::println("\t-a --ai-function         define the value function to be use by the ai");
+	fmt::println("\t-D --depth               the search depth for the ai (0, 1 or 2), default is 1");
+	fmt::println("\t-m --max-turns           define the max number of turns");
+	fmt::println("\t-f --file-data           use random data from a file");
+	fmt::println("\t-s --board-size          define the size of the board");
+	fmt::println("\t-v --verbose             show additional info");
+	fmt::println("\t-p --play                show board each turn");
+	fmt::println("");
+	fmt::println("\tOutput order:");
+	fmt::println("\t-T --time                print the time lapsed");
+	fmt::println("\t-t --turns               print the number of turns");
+	fmt::println("\t-c --cleared-rows        print cleared rows");
+	fmt::println("\t-c1 --cleared-rows-1     print cleared one rows");
+	fmt::println("\t-c2 --cleared-rows-2     print cleared two rows");
+	fmt::println("\t-c3 --cleared-rows-3     print cleared three rows");
+	fmt::println("\t-c4 --cleared-rows-4     print cleared four rows\n");
 
-	std::cout << "Example: " << "\n";
-	std::cout << "\tShow the default result for the default ai, in the same order as the abowe output order.\n";
-	std::cout << "\t" << programName_ << "\n\n";
+	fmt::println("Example: ");
+	fmt::println("\tShow the default result for the default ai, in the same order as the abowe output order.");
+	fmt::println("\t{}\n", programName_);
 
-	std::cout << "\tShow the tetrisboard each turn and delay 250 ms between each turn.\n";
-	std::cout << "\t" << programName_ << " --play -d 250\n\n";
+	fmt::println("\tShow the tetrisboard each turn and delay 250 ms between each turn.");
+	fmt::println("\t{} --play -d 250\n", programName_);
 
-	std::cout << "\tList the time and number of four-rows cleared.\n";
-	std::cout << "\t" << programName_ << " -T --cleared-row-4\n";
+	fmt::println("\tList the time and number of four-rows cleared.");
+	fmt::println("\t{} -T --cleared-row-4", programName_);
 }

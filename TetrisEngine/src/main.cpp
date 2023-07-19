@@ -6,12 +6,13 @@
 #include <ai.h>
 #include <calc/calculatorexception.h>
 
+#include <fmt/core.h>
+
 #include <fstream>
 #include <sstream>
 #include <thread>
 #include <limits>
 #include <queue>
-#include <iostream>
 #include <thread>
 #include <chrono>
 #include <iomanip>
@@ -61,9 +62,10 @@ struct Tetris {
 						BlockType blockType = readBlockType(infile);
 						tetrisBoard.setNextBlock(blockType);
 					} catch (const std::ifstream::failure& e) {
-						std::cerr << "Failed to read " << flags.randomFilePath_ << "\n";
+
+						fmt::println(stderr, "Failed to read {}", flags.randomFilePath_);
 						if (flags.verbose_) {
-							std::cerr << e.what() << "\n";
+							fmt::println(stderr, "{}", e.what());
 						}
 						std::exit(1);
 					}
@@ -118,18 +120,18 @@ void printBoard(const TetrisBoard& board) {
 	int rows = board.getRows();
 	int columns = board.getColumns();
 	Block block = board.getBlock();
-	std::cout << "\n|";
+	fmt::print("\n|");
 	for (int row = rows - 3; row > -1; --row) {
 		for (int column = 0; column < columns; ++column) {
 			if (column == 0 && row < rows - 3) {
 				// Add new row.
-				std::cout << "  " << row + 2 << "\n|";
+				fmt::print("  {}\n|", row + 2);
 			}
 
 			bool newSquare = false;
 			for (const auto& sq : block) {
 				if (sq.column == column && sq.row == row) {
-					std::cout << "X|";
+					fmt::print("X|");
 					newSquare = true;
 					break;
 				}
@@ -139,77 +141,76 @@ void printBoard(const TetrisBoard& board) {
 			}
 
 			if (BlockType::Empty == squares[row * columns + column]) {
-				std::cout << " |";
+				fmt::print("|");
 			} else {
-				std::cout << "X|";
+				fmt::print("X|");
 			}
 		}
 	}
 
-	std::cout << "  1\n";
+	fmt::println("  1");
 	for (int i = 0; i < columns; ++i) {
-		std::cout << "--";
+		fmt::print("--");
 	}
-	std::cout << "-\n\n";
+	fmt::println("-\n");
 }
 
 void printGameResult(const Tetris& tetris, const Flags& flags, const std::chrono::duration<double>& gameTime) {
 	std::queue<std::string> outputOrder = flags.outputOrder_;
-
-	std::cout << std::setprecision(2) << std::fixed;
+	
 	if (flags.play_) {
 		printBoard(tetris.tetrisBoard);
-		std::cout << "AI: " << flags.ai_.getValueFunction() << "\n";
-		std::cout << "Turns: " << tetris.turns << "\n";
-		std::cout << "Time in seconds: " << gameTime.count() << "\n";
+		fmt::println("AI: {}", flags.ai_.getValueFunction());
+		fmt::println("Turns: {}", tetris.turns);
+		fmt::println("Time in seconds: {:.{}f}", gameTime.count(), 2);
 	}
 
 	while (!outputOrder.empty()) {
 		const auto& flag = outputOrder.front();
 		if (flag == "-T") {
 			if (flags.verbose_) {
-				std::cout << "time = ";
+				fmt::print("time = ");
 			}
-			std::cout << gameTime.count();
+			fmt::print("{:.{}f}", gameTime.count(), 2);
 			if (flags.verbose_) {
-				std::cout << "s";
+				fmt::print("s");
 			}
-			std::cout << "\t";
+			fmt::print("\t");
 		} else if (flag == "-t") {
 			if (flags.verbose_) {
-				std::cout << "turns = ";
+				fmt::print("turns = ");
 			}
-			std::cout << tetris.turns << "\t";
+			fmt::print("{}\t", tetris.turns);
 		} else if (flag == "-c") {
 			if (flags.verbose_) {
-				std::cout << "cleared-rows = ";
+				fmt::print("cleared-rows = ");
 			}
-			std::cout << tetris.clearedOneRows + tetris.clearedTwoRows * 2 + tetris.clearedThreeRows * 3 + tetris.clearedFourRows * 4 << "\t";
+			fmt::print("{}\t", tetris.clearedOneRows + tetris.clearedTwoRows * 2 + tetris.clearedThreeRows * 3 + tetris.clearedFourRows * 4);
 		} else if (flag == "-c1") {
 			if (flags.verbose_) {
-				std::cout << "cleared-rows-1 = ";
+				fmt::print("cleared-rows-1 = ");
 			}
-			std::cout << tetris.clearedOneRows << "\t";
+			fmt::print("{}\t", tetris.clearedOneRows);
 		} else if (flag == "-c2") {
 			if (flags.verbose_) {
-				std::cout << "cleared-rows-2 = ";
+				fmt::print("cleared-rows-2 = ");
 			}
-			std::cout << tetris.clearedTwoRows << "\t";
+			fmt::print("{}\t", tetris.clearedTwoRows);
 		} else if (flag == "-c3") {
 			if (flags.verbose_) {
-				std::cout << "cleared-rows-3 = ";
+				fmt::print("cleared-rows-3 = ");
 			}
-			std::cout << tetris.clearedThreeRows << "\t";
+			fmt::print("{}\t", tetris.clearedThreeRows);
 		} else if (flag == "-c4") {
 			if (flags.verbose_) {
-				std::cout << "cleared-rows-4 = ";
+				fmt::print("cleared-rows-4 = ");
 			}
-			std::cout << tetris.clearedFourRows << "\t";
+			fmt::print("{}\t", tetris.clearedFourRows);
 		}
 		outputOrder.pop();
 	}
 
-	std::cout << "\n";
+	fmt::println("");
 }
 
 void runGame(Tetris& tetris) {
@@ -224,8 +225,8 @@ void runGame(Tetris& tetris) {
 		auto state = ai.calculateBestState(tetrisBoard, flags.depth_);
 
 		if (flags.play_) {
-			std::cout << "AI: " << ai.getValueFunction() << "\n";
-			std::cout << "Turns: " << tetris.turns << "\n";
+			fmt::println("AI: {}", ai.getValueFunction());
+			fmt::println("Turns: {}", tetris.turns);
 			playBoard = tetrisBoard;
 		}
 
@@ -234,10 +235,10 @@ void runGame(Tetris& tetris) {
 		moveBlockToBeforeImpact(state, tetrisBoard);
 
 		if (flags.play_) {
-			std::cout << "Value: " << value << "\n";
+			fmt::println("Value: {}", value);
 			const auto& variables = ai.getCalculator().getVariables();
 			for (const auto& name : variables) {
-				std::cout << name << " = " << ai.getCalculator().extractVariableValue(name) << "\t";
+				fmt::println("{} = {:.{}f}\t", name, ai.getCalculator().extractVariableValue(name), 2, "\t");
 			}
 			printBoard(playBoard);
 		}
@@ -256,7 +257,7 @@ int main(const int argc, const char* const argv[]) {
 	try {
 		flags = Flags{argc, argv};
 	} catch (const FlagsException& e) {
-		std::cerr << e.what();
+		fmt::println(stderr, "{}", e.what());
 		return 1;
 	}
 
@@ -275,9 +276,9 @@ int main(const int argc, const char* const argv[]) {
 		try {
 			infile.open(flags.randomFilePath_);
 		} catch (const std::ifstream::failure& e) {
-			std::cerr << "Failed to open file: " + flags.randomFilePath_;
+			fmt::println(stderr, "Failed to open file: {}", flags.randomFilePath_);
 			if (flags.verbose_) {
-				std::cerr << "\n" << e.what() << "\n";
+				fmt::println(stderr, "{}", e.what());
 			}
 			std::exit(1);
 		}
