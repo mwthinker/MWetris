@@ -27,17 +27,18 @@ message Block {
 }
 
 message Player {
-	string name = 1;
-	int32 level = 2;
-	int32 points = 3;
-	bool ai = 4;
-	Block current = 5;
-	BlockType next = 6;
-	int32 id = 7;
-	int32 width = 8;
-	int32 height = 9;
-	int32 cleared_rows = 10;
-	repeated BlockType board = 11;
+	string device_guid = 1;
+	string name = 2;
+	int32 level = 3;
+	int32 points = 4;
+	bool ai = 5;
+	Block current = 6;
+	BlockType next = 7;
+	int32 id = 8;
+	int32 width = 9;
+	int32 height = 10;
+	int32 cleared_rows = 11;
+	repeated BlockType board = 12;
 }
 
 message Game {

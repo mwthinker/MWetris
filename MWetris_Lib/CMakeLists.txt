@@ -20,10 +20,9 @@ set(SOURCES_LIB
 	src/game/actionhandler.h
 	src/game/computer.cpp
 	src/game/computer.h
-	src/game/creategame.cpp
-	src/game/creategame.h
 	src/game/devicemanager.cpp
 	src/game/devicemanager.h
+	src/game/device.cpp
 	src/game/device.h
 	src/game/input.h
 	src/game/gamepad.cpp
@@ -38,7 +37,6 @@ set(SOURCES_LIB
 	src/game/localplayerbuilder.h
 	src/game/player.cpp
 	src/game/player.h
-	src/game/sdldevice.h
 	src/game/tetrisgame.cpp
 	src/game/tetrisgameevent.h
 	src/game/tetrisgame.h

@@ -16,7 +16,7 @@ namespace mwetris::game {
 
 	namespace {
 
-		constexpr double FixedTimestep = 1.0 / 60.0;
+		constexpr double FixedTimestep = 1.0 / 144.0;
 
 	}
 
@@ -41,9 +41,9 @@ namespace mwetris::game {
 		}
 	}
 
-	void TetrisGame::resumeGame(const std::vector<DevicePtr>& devices) {
-		auto players = loadGame(devices);
-		if (!players.empty() && players.size() <= devices.size()) {
+	void TetrisGame::resumeGame(const DeviceManager& deviceManager) {
+		auto players = loadGame(deviceManager);
+		if (!players.empty()) {
 			players_ = players;
 
 			pause();
@@ -51,7 +51,7 @@ namespace mwetris::game {
 
 			initGame();
 		} else {
-			createGame(width_, height_, devices);
+			createGame(width_, height_, {deviceManager.getDefaultDevice1()});
 		}
 	}
 

@@ -18,7 +18,7 @@ namespace mwetris::game {
 	void LocalPlayer::update(double deltaTime) {
 		Input input = device_->getInput();
 
-		// The time beetween each "gravity" move.
+		// The time between each "gravity" move.
 		double downTime = 1.0 / getGravityDownSpeed();
 		gravityMove_.setWaitingTime(downTime);
 
@@ -91,7 +91,7 @@ namespace mwetris::game {
 	}
 
 	void LocalPlayer::handleBoardEvent(tetris::BoardEvent boardEvent, int value) {
-		device_->onGameboardEvent(tetrisBoard_, boardEvent, value);
+		//device_->onGameboardEvent(tetrisBoard_, boardEvent, value);
 
 		Player::handleBoardEvent(boardEvent, value);
 		if (boardEvent == tetris::BoardEvent::CurrentBlockUpdated) {

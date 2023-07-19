@@ -6,14 +6,9 @@
 
 namespace mwetris::game {
 
-	Keyboard::Keyboard(std::string name, SDL_Keycode down, SDL_Keycode left,
-		SDL_Keycode right, SDL_Keycode rotate, SDL_Keycode downGround)
-		: down_{down}
-		, right_{right}
-		, left_{left}
-		, rotate_{rotate}
-		, downGround_{downGround}
-		, name_{name} {
+	Keyboard::Keyboard(const std::string& name, const KeyboardMapping& keyboardMapping)
+		: name_{name}
+		, keyboardMapping_{keyboardMapping} {
 	}
 
 	Input Keyboard::getInput() const {
@@ -29,29 +24,39 @@ namespace mwetris::game {
 
 		switch (windowEvent.type) {
 			case SDL_KEYDOWN:
-				if (key == down_) {
-					return input_.down = true;
-				} else if (key == left_) {
-					return input_.left = true;
-				} else if (key == right_) {
-					return input_.right = true;
-				} else if (key == rotate_) {
-					return input_.rotate = true;
-				} else if (key == downGround_) {
-					return input_.downGround = true;
+				if (key == keyboardMapping_.down) {
+					input_.down = true;
+					return true;
+				} else if (key == keyboardMapping_.left) {
+					input_.left = true;
+					return true;
+				} else if (key == keyboardMapping_.right) {
+					input_.right = true;
+					return true;
+				} else if (key == keyboardMapping_.rotate) {
+					input_.rotate = true;
+					return true;
+				} else if (key == keyboardMapping_.downGround) {
+					input_.downGround = true;
+					return true;
 				}
 				break;
 			case SDL_KEYUP:
-				if (key == down_) {
+				if (key == keyboardMapping_.down) {
 					input_.down = false;
-				} else if (key == left_) {
+					return true;
+				} else if (key == keyboardMapping_.left) {
 					input_.left = false;
-				} else if (key == right_) {
+					return true;
+				} else if (key == keyboardMapping_.right) {
 					input_.right = false;
-				} else if (key == rotate_) {
+					return true;
+				} else if (key == keyboardMapping_.rotate) {
 					input_.rotate = false;
-				} else if (key == downGround_) {
+					return true;
+				} else if (key == keyboardMapping_.downGround) {
 					input_.downGround = false;
+					return true;
 				}
 				break;
 		}

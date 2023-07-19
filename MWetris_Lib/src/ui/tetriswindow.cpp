@@ -61,7 +61,7 @@ namespace mwetris::ui {
 		setShowDemoWindow(true);
 
 		deviceManager_ = std::make_shared<game::DeviceManager>();
-		auto connection = deviceManager_->deviceFound.connect([](game::DevicePtr device) {
+		auto connection = deviceManager_->deviceConnected.connect([](game::DevicePtr device) {
 			spdlog::info("Device found: {}", device->getName());
 		});
 	}
@@ -114,6 +114,7 @@ namespace mwetris::ui {
 		game_->update(deltaTimeSeconds);
 		
 		ImGui::PushFont(Configuration::getInstance().getImGuiDefaultFont());
+		imGuiMainMenu(deltaTime);
 
 		if (openPopUp_) {
 			openPopUp_ = false;
@@ -127,12 +128,11 @@ namespace mwetris::ui {
 
 			if (ImGui::IsKeyDown(ImGuiKey_Escape)) {
 				ImGui::CloseCurrentPopup();
-				sceneStateMachine_.switchTo<scene::EmptyScene>();
 			}
 		})) {
-			imGuiMainMenu(deltaTime);
+			sceneStateMachine_.switchTo<scene::EmptyScene>();
 		}
-
+		
 		ImGui::PopFont();
 	}
 
@@ -250,7 +250,7 @@ namespace mwetris::ui {
 		});
 
 		if (game::hasSavedGame()) {
-			game_->resumeGame(deviceManager_->getAllDevicesAvailable());
+			game_->resumeGame(*deviceManager_);
 		} else {
 			game_->createGame({deviceManager_->getDefaultDevice1()});
 		}

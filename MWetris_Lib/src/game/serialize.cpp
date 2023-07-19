@@ -73,6 +73,7 @@ namespace mwetris::game {
 			player.set_cleared_rows(localPlayer.getClearedRows());
 			player.set_width(localPlayer.getTetrisBoard().getColumns());
 			player.set_height(localPlayer.getTetrisBoard().getRows());
+			player.set_device_guid(localPlayer.getDevice()->getGuid());
 
 			player.mutable_current()->set_lowest_start_row(localPlayer.getTetrisBoard().getBlock().getLowestStartRow());
 			player.mutable_current()->set_start_column(localPlayer.getTetrisBoard().getBlock().getStartColumn());
@@ -161,7 +162,7 @@ namespace mwetris::game {
 
 	}
 
-	int getHighscorePlacement(int points) {
+	int getHighScorePlacement(int points) {
 		auto results = loadHighScore();
 		return getIndexForNewResult(results, points) + 1;
 	}
@@ -188,9 +189,9 @@ namespace mwetris::game {
 		game.SerializePartialToOstream(&output);
 	}
 
-	std::vector<LocalPlayerPtr> loadGame(const std::vector<DevicePtr>& availableDevices) {
+	std::vector<LocalPlayerPtr> loadGame(const DeviceManager& deviceManager) {
 		std::ifstream input{SavedGameFile};
-		if (input.fail() || availableDevices.empty()) {
+		if (input.fail()) {
 			return {};
 		}
 
@@ -201,7 +202,7 @@ namespace mwetris::game {
 
 		std::vector<LocalPlayerPtr> players_;
 		for (const auto& pbPlayer : game.player()) {
-			players_.push_back(createPlayer(pbPlayer, availableDevices.front()));
+			players_.push_back(createPlayer(pbPlayer, deviceManager.findDevice(pbPlayer.device_guid())));
 		}
 		return players_;
 	}

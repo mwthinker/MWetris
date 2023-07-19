@@ -1,24 +1,32 @@
 #ifndef GAMECONTROLLER_H
 #define GAMECONTROLLER_H
 
-#include "sdldevice.h"
+#include "input.h"
 
 #include <sdl/gamecontroller.h>
 
+#include <string>
+
 namespace mwetris::game {
 
-	class GamePad : public SdlDevice {
+	class GamePad {
 	public:
 		GamePad(sdl::GameController&& gameController, int rotateButton = 0, int downButton = 1);
 
-		Input getInput() const override;
-		const char* getName() const override;
+		Input getInput() const;
+		const char* getName() const;
 
 		int getInstanceId() const;
 
 		const std::string& getGuid() const;
 
-		bool eventUpdate(const SDL_Event& windowEvent) override;
+		bool eventUpdate(const SDL_Event& windowEvent);
+
+		bool isActive() const {
+			return true;
+		}
+
+		void setGameController(sdl::GameController&& gameController);
 
 	private:
 		bool updateInput(Uint8 button, bool state);
@@ -26,7 +34,6 @@ namespace mwetris::game {
 		Input input_{};
 		sdl::GameController gameController_;
 		int rotateButton_, downButton_;
-		std::string playerName_;
 		mutable std::string guid_; // Cache the value
 	};
 

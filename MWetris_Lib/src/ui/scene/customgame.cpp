@@ -6,55 +6,101 @@
 
 #include <array>
 #include <string>
+#include <map>
+#include <concepts> 
 
 namespace mwetris::ui::scene {
 
 	namespace {
 
-		void comboPlayers() {
-			static std::array<const char*, 3> types{"Human", "AI", "Internet player"};
-			static int item = 0;
+		template<typename T>
+		concept HasNameMember = requires(T t) {
+			{ t.name };
+		};
 
-			ImGui::ComboScoped("", types[item], ImGuiComboFlags_None, [&]() {
-				for (int n = 0; n < types.size(); ++n) {
-					ImGui::PushID(n);
-					bool isSelected = (item == n);
-					if (ImGui::Selectable(types[n], isSelected)) {
-						item = n;
-					}
-					if (isSelected) {
-						ImGui::SetItemDefaultFocus();
-					}
-					ImGui::PopID();
+		struct PlayerType {
+			std::string name;
+		};
+
+		std::vector<PlayerType> getPlayerTypes() {
+			return {
+				PlayerType{
+					.name = "Human",
+				},
+				PlayerType{
+					.name = "AI",
+				},
+				PlayerType{
+					.name = "Internet player",
 				}
-			});
+			};
 		}
 
-		void comboMode() {
-			static std::array<const char*, 2> modes{"Standard Game", "Something else"};
-			static int item = 0;
+		struct GameMode {
+			std::string name;
+		};
 
-			ImGui::ComboScoped("##Mode", modes[item], ImGuiComboFlags_None, [&]() {
-				for (int n = 0; n < modes.size(); ++n) {
-					bool isSelected = (item == n);
-					if (ImGui::Selectable(modes[n], isSelected)) {
-						item = n;
-					}
-					if (isSelected) {
-						ImGui::SetItemDefaultFocus();
-					}
+		std::vector<GameMode> getGameModes() {
+			return {
+				GameMode{
+					.name = "Standard Game",
+				},
+				GameMode{
+					.name = "Something else",
 				}
-			});
+			};
 		}
 
-		void comboBoardSize() {
-			static std::array<const char*, 4> boards{"Default", "Small 10x12", "Large 10x26", "Crazy 50x50"};
-			static int item = 0;
+		struct BoardSize {
+			std::string name;
+			int width;
+			int height;
+		};
 
-			ImGui::ComboScoped("##Board size", boards[item], ImGuiComboFlags_None, [&]() {
+		std::vector<BoardSize> getBoardSizes() {
+			return {
+				BoardSize{
+					.name = "Default",
+					.width = 10,
+					.height = 24
+				},
+				BoardSize{
+					.name = "Small 10x12",
+					.width = 10,
+					.height = 12
+				},
+				BoardSize{
+					.name = "Large 10x26",
+					.width = 10,
+					.height = 26
+				},
+				BoardSize{
+					.name = "Crazy 50x50",
+					.width = 50,
+					.height = 50
+				}
+			};
+		}
+
+		std::vector<DeviceType> getDeviceTypes(const std::vector<game::DevicePtr>& devices, const char* addGamePad) {
+			std::vector<DeviceType> types;
+
+			for (const auto& device : devices) {
+				types.emplace_back(device->getName(), device);
+			}
+			types.emplace_back(addGamePad, nullptr);
+			return types;
+		}
+
+		template <typename Type> requires HasNameMember<Type>
+		const Type& comboType(const char* label, const std::vector<Type>& boards) {
+			static std::map<const char*, int> indexByLabel;
+			auto& item = indexByLabel[label];
+
+			ImGui::ComboScoped(label, boards[item].name.c_str(), ImGuiComboFlags_None, [&]() {
 				for (int n = 0; n < boards.size(); ++n) {
 					bool isSelected = (item == n);
-					if (ImGui::Selectable(boards[n], isSelected)) {
+					if (ImGui::Selectable(boards[n].name.c_str(), isSelected)) {
 						item = n;
 					}
 					if (isSelected) {
@@ -62,38 +108,8 @@ namespace mwetris::ui::scene {
 					}
 				}
 			});
-		}
 
-		int comboPlayerDevice(const std::vector<game::DevicePtr>& devices) {
-			static int item = 0;
-
-			if (item == 2) {
-				//ImGui::ProgressBar(0.5f);
-				ImGui::Button("Click on the device to add");
-				return item;
-			}
-
-			const char* name = item < devices.size() ? devices[item]->getName() : "Add Gamepad";
-
-			ImGui::ComboScoped("##Mode", name, ImGuiComboFlags_None, [&]() {
-				for (int n = 0; n < devices.size(); ++n) {
-					bool isSelected = (item == n);
-					if (ImGui::Selectable(devices[n]->getName(), isSelected)) {
-						item = n;
-					}
-					if (isSelected) {
-						ImGui::SetItemDefaultFocus();
-					}
-				}
-				bool isSelected = (item == devices.size());
-				if (ImGui::Selectable("Add Gamepad", isSelected)) {
-					item = static_cast<int>(devices.size());
-				}
-				if (isSelected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			});
-			return item;
+			return boards[item];
 		}
 
 	}
@@ -101,6 +117,12 @@ namespace mwetris::ui::scene {
 	CustomGame::CustomGame(std::shared_ptr<game::TetrisGame> tetrisGame, std::shared_ptr<game::DeviceManager> deviceManager)
 		: tetrisGame_{tetrisGame}
 		, deviceManager_{deviceManager} {
+
+		connections_ += deviceManager->deviceConnected.connect(this, &CustomGame::deviceConnected);
+	}
+
+	void CustomGame::deviceConnected(game::DevicePtr device) {
+		allDevices_.emplace_back(device->getName(), device);
 	}
 
 	void CustomGame::imGuiUpdate(const DeltaTime& deltaTime) {
@@ -110,20 +132,17 @@ namespace mwetris::ui::scene {
 
 		ImGui::SeparatorText("Game Mode");
 		ImGui::SetNextItemWidth(150.f);
-		comboMode();
+
+		static auto gameModes = getGameModes();
+		comboType<GameMode>("##Game Mode", gameModes);
 
 		ImGui::SeparatorText("Board Size");
-		static int columns = 10;
-		static int rows = 22;
-		//ImGui::SliderInt("Width", &columns, 10, 50);
-		//ImGui::SliderInt("Heigt", &rows, 10, 50);
 		ImGui::SetNextItemWidth(150.f);
-		comboBoardSize();
-		
-		static std::vector<game::DevicePtr> devices{
-			deviceManager_->getDefaultDevice1(),
-			deviceManager_->getDefaultDevice2(),
-		};
+
+		static auto boardSizes = getBoardSizes();
+		const auto& boardSize = comboType<BoardSize>("##Board size", boardSizes);
+
+		static auto playerTypes = getPlayerTypes();
 		
 		ImGui::SeparatorText("Players");
 		static int players = 1;
@@ -131,16 +150,19 @@ namespace mwetris::ui::scene {
 			ImGui::PushID(i);
 			
 			ImGui::SetNextItemWidth(150.f);
-			comboPlayers();
+			comboType<PlayerType>("##Player Type", playerTypes);
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(150.f);
-			comboPlayerDevice(devices);
-			ImGui::SameLine();
-			ImGui::PushStyleColor(ImGuiCol_Button, sdl::color::Red);
-			if (ImGui::Button("Remove##")) {
-				--players;
+			//comboPlayerDevice(devices);
+			const auto& deviceType = comboType<DeviceType>("##Players", allDevices_);
+			if (i != 0) {
+				ImGui::SameLine();
+				ImGui::PushStyleColor(ImGuiCol_Button, sdl::color::Red);
+				if (ImGui::Button("Remove##")) {
+					--players;
+				}
+				ImGui::PopStyleColor();
 			}
-			ImGui::PopStyleColor();
 			ImGui::PopID();
 		}
 		ImGui::PushStyleColor(ImGuiCol_Button, sdl::color::Green);
@@ -148,15 +170,6 @@ namespace mwetris::ui::scene {
 			++players;
 		}
 		ImGui::PopStyleColor();
-
-		static bool active = false;
-		if (ImGui::Checkbox("AI", &active)) {
-			if (active) {
-				deviceManager_->searchForDevice();
-			} else {
-				deviceManager_->stopSearchForDevice();
-			}
-		}
 
 		ImGui::PushStyleColor(ImGuiCol_Button, sdl::color::Green);
 		
@@ -166,14 +179,18 @@ namespace mwetris::ui::scene {
 		
 		ImGui::SetCursorPosY(y);
 		if (ImGui::Button("Play", {width, height})) {
-			//tetrisGame_->createGame()
+			tetrisGame_->createGame(boardSize.width, boardSize.height, {deviceManager_->getDefaultDevice1()});
+			ImGui::CloseCurrentPopup();
 		}
-
+		
 		ImGui::PopStyleColor();
 	}
 
+	void CustomGame::switchedTo(const SceneData& sceneData) {
+		allDevices_ = getDeviceTypes(deviceManager_->getAllDevicesAvailable(), "Add Game Pad");
+	}
+
 	void CustomGame::switchedFrom() {
-		deviceManager_->stopSearchForDevice();
 	}
 
 }

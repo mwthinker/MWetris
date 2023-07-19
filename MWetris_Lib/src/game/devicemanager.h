@@ -1,9 +1,9 @@
 #ifndef MWETRIS_GAME_DEVICEMANAGER_H
 #define MWETRIS_GAME_DEVICEMANAGER_H
 
-#include "sdldevice.h"
-#include "game/keyboard.h"
-#include "game/gamepad.h"
+#include "keyboard.h"
+#include "gamepad.h"
+#include "device.h"
 
 #include <mw/signal.h>
 
@@ -12,17 +12,13 @@
 
 namespace mwetris::game {
 
-	class DeviceManager {
+	class DeviceManager : public std::enable_shared_from_this<DeviceManager> {
 	public:
-		mw::PublicSignal<DeviceManager, DevicePtr> deviceFound;
+		mw::PublicSignal<DeviceManager, DevicePtr> deviceConnected;
 
 		DeviceManager();
 
 		void eventUpdate(const SDL_Event& windowEvent);
-
-		void searchForDevice();
-
-		void stopSearchForDevice();
 
 		std::vector<DevicePtr> getAllDevicesAvailable() const;
 
@@ -30,15 +26,29 @@ namespace mwetris::game {
 		
 		DevicePtr getDefaultDevice2() const;
 
+		DevicePtr findDevice(const std::string& guid) const;
+
 	private:
+		struct KeyboardDevice {
+			std::unique_ptr<Keyboard> keyboard;
+			DevicePtr device;
+		};
+		
+		static KeyboardDevice createKeyboardDevice(std::unique_ptr<Keyboard> keyboard);
+
 		void controllerDeviceAddedEvent(const SDL_ControllerDeviceEvent& deviceEvent);
 
 		void controllerDeviceRemovedEvent(const SDL_ControllerDeviceEvent& deviceEvent);
+		
+		KeyboardDevice keyboard1_;
+		KeyboardDevice keyboard2_;
 
-		std::shared_ptr<Keyboard> keyboard1_;
-		std::shared_ptr<Keyboard> keyboard2_;
-		bool searchForDevice_ = false;
-		std::vector<std::shared_ptr<GamePad>> gamePads_;
+		struct Pair {
+			std::unique_ptr<GamePad> gamePad;
+			DevicePtr device;
+			SDL_JoystickGUID guid;
+		};
+		std::vector<Pair> devices_;
 	};
 
 }

@@ -2,10 +2,13 @@
 #define MWETRIS_GAME_SERIALIZE_H
 
 #include "localplayer.h"
+#include "devicemanager.h"
 
 #include <chrono>
 
 namespace mwetris::game {
+
+	class DeviceManager;
 
 	struct HighScoreResult {
 		std::string name;
@@ -17,7 +20,7 @@ namespace mwetris::game {
 
 	bool isNewHighScore(const PlayerPtr& player);
 
-	int getHighscorePlacement(int points);
+	int getHighScorePlacement(int points);
 
 	std::vector<HighScoreResult> loadHighScore();
 
@@ -27,7 +30,7 @@ namespace mwetris::game {
 
 	void saveGame(const std::vector<LocalPlayerPtr>& players);
 
-	std::vector<LocalPlayerPtr> loadGame(const std::vector<DevicePtr>& availableDevices);
+	std::vector<LocalPlayerPtr> loadGame(const DeviceManager& deviceManager);
 
 	void saveHighScore(const std::string& name, int points, int rows, int level);
 

@@ -38,11 +38,15 @@ namespace mwetris::game {
 				break;
 			case SDL_CONTROLLERBUTTONUP:
 				if (gameController_.isAttached() && windowEvent.cbutton.which == gameController_.getInstanceId()) {
-					updateInput(windowEvent.cbutton.button, false);
+					return updateInput(windowEvent.cbutton.button, false);
 				}
 				break;
 		}
 		return false;
+	}
+
+	void GamePad::setGameController(sdl::GameController&& gameController) {
+		gameController_ = std::move(gameController);
 	}
 
 	bool GamePad::updateInput(Uint8 button, bool state) {

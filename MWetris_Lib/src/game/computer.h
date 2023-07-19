@@ -1,27 +1,29 @@
 #ifndef MWETRIS_GAME_COMPUTER_H
 #define MWETRIS_GAME_COMPUTER_H
 
-#include "device.h"
 #include "block.h"
 #include "tetrisboard.h"
 #include "ai.h"
+#include "input.h"
+
+#include <memory>
 
 namespace mwetris::game {
 
 	class Computer;
 	using ComputerPtr = std::shared_ptr<Computer>;
 
-	class Computer : public Device {
+	class Computer {
 	public:
 		Computer() = default;
 
 		Computer(const tetris::Ai& ai);
 
-		Input getInput() const override;
+		Input getInput() const;
 
-		const char* getName() const override;
+		const char* getName() const;
 
-		void onGameboardEvent(const tetris::TetrisBoard& board, tetris::BoardEvent, int value) override;
+		void onGameboardEvent(const tetris::TetrisBoard& board, tetris::BoardEvent, int value);
 
 	private:
 		bool isHorizontalMoveDone(const tetris::TetrisBoard& board) const;

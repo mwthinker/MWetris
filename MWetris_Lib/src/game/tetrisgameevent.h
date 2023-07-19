@@ -5,6 +5,8 @@
 
 //#include "player.h"
 
+#include <tetrisboard.h>
+
 namespace mwetris::game {
 
 	class Player;

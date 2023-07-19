@@ -3,12 +3,10 @@
 
 #include "input.h"
 
-#include <tetrisboard.h>
+#include <mw/signal.h>
 
-#include <SDL.h>
-
-#include <string>
 #include <memory>
+#include <string>
 
 namespace mwetris::game {
 
@@ -17,13 +15,36 @@ namespace mwetris::game {
 
 	class Device {
 	public:
-		virtual ~Device() = default;
+		friend class DeviceManager;
 
-		virtual Input getInput() const = 0;
+		mw::PublicSignal<Device, bool> connection;
 
-		virtual const char* getName() const = 0;
+		Input getInput() const {
+			return input_;
+		}
 
-		virtual void onGameboardEvent(const tetris::TetrisBoard& board, tetris::BoardEvent, int value) {}
+		const std::string& getName() const {
+			return name_;
+		}
+
+		const std::string& getGuid() const {
+			return guid_;
+		}
+
+		bool isConnected() const {
+			return connected_;
+		}
+	
+	private:
+		void invokeConnection(bool connected) {
+			connected_ = connected;
+			connection.invoke(connected);
+		}
+
+		Input input_{};
+		bool connected_ = false;
+		std::string name_;
+		std::string guid_;
 	};
 
 }

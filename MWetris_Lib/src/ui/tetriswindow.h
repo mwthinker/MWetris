@@ -5,7 +5,6 @@
 #include "scene/statemachine.h"
 
 #include "game/serialize.h"
-#include "game/sdldevice.h"
 #include "game/computer.h"
 #include "game/devicemanager.h"
 

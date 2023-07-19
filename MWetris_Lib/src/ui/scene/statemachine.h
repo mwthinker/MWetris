@@ -97,6 +97,10 @@ namespace mwetris::ui::scene {
 
 	template <typename Type> requires DerivedFromScene<Type>
 	void StateMachine::switchTo(const SceneData& sceneData) {
+		if (isCurrentScene<Type>()) {
+			return;
+		}
+
 		if (auto it = scenes_.find(getKey<Type>()); it != scenes_.end()) {
 			auto key = it->first;
 			if (currentKey_ != 0) {

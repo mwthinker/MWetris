@@ -19,7 +19,7 @@ namespace mwetris::ui::scene {
 		}
 
 		ImGui::PushFont(mwetris::Configuration::getInstance().getImGuiHeaderFont());
-		ImGui::Text("Place %d", game::getHighscorePlacement(data_.points));
+		ImGui::Text("Place %d", game::getHighScorePlacement(data_.points));
 		ImGui::PopFont();
 
 		if (data_.points > 0) {
