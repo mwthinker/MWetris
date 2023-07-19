@@ -3,6 +3,7 @@
 #include "configuration.h"
 
 #include <sdl/initsdl.h>
+#include <sdl/gamecontroller.h>
 
 int main(int argc, char** argv) {
 	mwetris::logger::init();
@@ -12,6 +13,8 @@ int main(int argc, char** argv) {
 
 	const sdl::InitSdl SDL{SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER};
 	mwetris::ui::TetrisWindow tetrisWindow;
+
+	sdl::GameController::loadGameControllerMappings("gamecontrollerdb.txt");
 
 	if (argc == 2) {
 		std::string flag{argv[1]};

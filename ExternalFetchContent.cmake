@@ -4,8 +4,20 @@ FetchContent_Declare(CppSdl2
 	GIT_REPOSITORY
 		https://github.com/mwthinker/CppSdl2.git
 	GIT_TAG
-		e6524723463a64ca27c60354a80166d9d0ec1f44
+		bb98e024fe356bf4b019f8f4e3af140bec66eb5f
 	OVERRIDE_FIND_PACKAGE
+)
+
+fetchcontent_declare(SDL_GameControllerDB
+	GIT_REPOSITORY
+		https://github.com/gabomdq/SDL_GameControllerDB.git
+	GIT_TAG
+		da332bb484c2434269b9264f7dce3e6114227755
+)
+FetchContent_MakeAvailable(SDL_GameControllerDB)
+FetchContent_GetProperties(SDL_GameControllerDB
+	SOURCE_DIR
+		SDL_GameControllerDB_SOURCE_DIR
 )
 
 FetchContent_Declare(CppProtoNetwork
