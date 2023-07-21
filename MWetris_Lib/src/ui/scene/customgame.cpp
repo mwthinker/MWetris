@@ -82,20 +82,22 @@ namespace mwetris::ui::scene {
 			};
 		}
 
-		std::vector<DeviceType> getDeviceTypes(const std::vector<game::DevicePtr>& devices, const char* addGamePad) {
+		std::vector<DeviceType> getDeviceTypes(const std::vector<game::DevicePtr>& devices) {
 			std::vector<DeviceType> types;
 
 			for (const auto& device : devices) {
 				types.emplace_back(device->getName(), device);
 			}
-			types.emplace_back(addGamePad, nullptr);
 			return types;
 		}
 
+		
+
 		template <typename Type> requires HasNameMember<Type>
-		const Type& comboType(const char* label, const std::vector<Type>& boards) {
-			static std::map<const char*, int> indexByLabel;
-			auto& item = indexByLabel[label];
+		const Type& comboType(const char* label, const std::vector<Type>& boards, int id = 0) {
+			using Pair = std::pair<const char*, int>;
+			static std::map<Pair, int> indexByLabel;
+			auto& item = indexByLabel[Pair{label, id}];
 
 			ImGui::ComboScoped(label, boards[item].name.c_str(), ImGuiComboFlags_None, [&]() {
 				for (int n = 0; n < boards.size(); ++n) {
@@ -129,7 +131,7 @@ namespace mwetris::ui::scene {
 		ImGui::PushFont(mwetris::Configuration::getInstance().getImGuiHeaderFont());
 		ImGui::Text("Custom Game");
 		ImGui::PopFont();
-
+		
 		ImGui::SeparatorText("Game Mode");
 		ImGui::SetNextItemWidth(150.f);
 
@@ -145,21 +147,27 @@ namespace mwetris::ui::scene {
 		static auto playerTypes = getPlayerTypes();
 		
 		ImGui::SeparatorText("Players");
-		static int players = 1;
-		for (int i = 0; i < players; ++i) {
+		
+		for (int i = 0; i < playerNames_.size(); ++i) {
 			ImGui::PushID(i);
 			
 			ImGui::SetNextItemWidth(150.f);
-			comboType<PlayerType>("##Player Type", playerTypes);
+			comboType<PlayerType>("##Player Type", playerTypes, i);
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(150.f);
-			//comboPlayerDevice(devices);
-			const auto& deviceType = comboType<DeviceType>("##Players", allDevices_);
+			const auto& deviceType = comboType<DeviceType>("##Players", allDevices_, i);
+			devices_[i] = deviceType.device;
+
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(100.f);
+			ImGui::InputText("", &playerNames_[i]);
+
 			if (i != 0) {
 				ImGui::SameLine();
 				ImGui::PushStyleColor(ImGuiCol_Button, sdl::color::Red);
 				if (ImGui::Button("Remove##")) {
-					--players;
+					playerNames_.pop_back();
+					devices_.pop_back();
 				}
 				ImGui::PopStyleColor();
 			}
@@ -167,7 +175,8 @@ namespace mwetris::ui::scene {
 		}
 		ImGui::PushStyleColor(ImGuiCol_Button, sdl::color::Green);
 		if (ImGui::Button("Add new player", {300.f, 40.f})) {
-			++players;
+			playerNames_.push_back(fmt::format("Player {}", playerNames_.size() + 1));
+			devices_.push_back(deviceManager_->getDefaultDevice1());
 		}
 		ImGui::PopStyleColor();
 
@@ -179,7 +188,7 @@ namespace mwetris::ui::scene {
 		
 		ImGui::SetCursorPosY(y);
 		if (ImGui::Button("Play", {width, height})) {
-			tetrisGame_->createGame(boardSize.width, boardSize.height, {deviceManager_->getDefaultDevice1()});
+			tetrisGame_->createGame(boardSize.width, boardSize.height, devices_);
 			ImGui::CloseCurrentPopup();
 		}
 		
@@ -187,7 +196,9 @@ namespace mwetris::ui::scene {
 	}
 
 	void CustomGame::switchedTo(const SceneData& sceneData) {
-		allDevices_ = getDeviceTypes(deviceManager_->getAllDevicesAvailable(), "Add Game Pad");
+		playerNames_.push_back("Player 1");
+		devices_.push_back(deviceManager_->getDefaultDevice1());
+		allDevices_ = getDeviceTypes(deviceManager_->getAllDevicesAvailable());
 	}
 
 	void CustomGame::switchedFrom() {

@@ -18,16 +18,6 @@ namespace mwetris::game {
 
 }
 
-namespace ImGui {
-
-	class PlayerCombo {
-
-
-
-	};
-
-}
-
 namespace mwetris::ui::scene {
 
 	struct DeviceType {
@@ -50,9 +40,10 @@ namespace mwetris::ui::scene {
 		std::shared_ptr<game::TetrisGame> tetrisGame_;
 		std::shared_ptr<game::DeviceManager> deviceManager_;
 
-		std::vector<DeviceType> remainingDevices_;
-		std::vector<DeviceType> playerDevices_;
 		std::vector<DeviceType> allDevices_;
+
+		std::vector<std::string> playerNames_;
+		std::vector<game::DevicePtr> devices_;
 
 		mw::signals::ScopedConnections connections_;
 	};
