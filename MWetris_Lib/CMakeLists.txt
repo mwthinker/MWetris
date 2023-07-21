@@ -22,7 +22,6 @@ set(SOURCES_LIB
 	src/game/computer.h
 	src/game/devicemanager.cpp
 	src/game/devicemanager.h
-	src/game/device.cpp
 	src/game/device.h
 	src/game/input.h
 	src/game/gamepad.cpp
