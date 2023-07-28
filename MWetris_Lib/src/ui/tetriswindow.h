@@ -5,7 +5,6 @@
 #include "scene/statemachine.h"
 
 #include "game/serialize.h"
-#include "game/computer.h"
 #include "game/devicemanager.h"
 
 #include <sdl/imguiwindow.h>
@@ -37,6 +36,8 @@ namespace mwetris::ui {
 		~TetrisWindow();
 	
 	private:
+		int getCurrentMonitorHz() const;
+
 		void initPreLoop() override;
 
 		void eventUpdate(const SDL_Event& windowEvent) override;
@@ -59,8 +60,6 @@ namespace mwetris::ui {
 
 		void imGuiMainMenu(const sdl::DeltaTime& deltaTime);
 
-		void resumeGame();
-
 		void startNewGame();
 
 		sdl::TextureView background_;
@@ -68,9 +67,6 @@ namespace mwetris::ui {
 		
 		std::unique_ptr<graphic::GameComponent> gameComponent_;
 		std::shared_ptr<game::TetrisGame> game_;
-		int nbrHumans_ = 1;
-		int nbrAis_ = 0;
-		std::vector<game::ComputerPtr> computers_;
 		mw::signals::ScopedConnections connections_;
 		
 		bool openPopUp_ = false;

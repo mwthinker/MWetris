@@ -169,7 +169,7 @@ namespace mwetris {
 	}
 
 	void Configuration::quit() {
-		impl_->sounds.clear();
+		impl_ = nullptr;
 	}
 
 	Configuration::Configuration()

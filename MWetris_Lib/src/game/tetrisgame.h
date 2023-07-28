@@ -2,15 +2,15 @@
 #define MWETRIS_GAME_TETRISGAME_H
 
 #include "device.h"
-#include "localgame.h"
 #include "tetrisparameters.h"
 #include "tetrisgameevent.h"
-#include "player.h"
+#include "localplayer.h"
 
 #include <ai.h>
 
 #include <vector>
 #include <memory>
+#include <unordered_map>
 
 namespace mwetris::game {
 
@@ -31,8 +31,7 @@ namespace mwetris::game {
 
 		void resumeGame(const DeviceManager& deviceManager);
 
-		// Uses the same settings as last call.
-		void createGame(const std::vector<DevicePtr>& devices, const std::vector<tetris::Ai>& ais = {});
+		void createDefaultGame(const DeviceManager& deviceManager);
 
 		void createGame(int columns, int rows, const std::vector<DevicePtr>& devices, const std::vector<tetris::Ai>& ais = {});
 
@@ -46,39 +45,26 @@ namespace mwetris::game {
 
 		int getNbrOfPlayers() const;
 
-		int getMaxLevel() const {
-			return maxLevel_;
-		}
-
-		void resizeBoard(int width, int height);
-
-		int getRows() const {
-			return height_;
-		}
-
-		int getColumns() const {
-			return width_;
-		}
-
 		void saveCurrentGame();
+
+		void setFixTimestep(double delta) {
+			fixedTimestep = delta;
+		}
 
 	private:
 		void initGame();
 		void updateGame(double deltaTime);
+		void applyRules(tetris::BoardEvent gameEvent, int value, const LocalPlayerPtr& player);
 
 		std::vector<LocalPlayerPtr> players_;
-		LocalGame localGame_;
 		mw::signals::ScopedConnections connections_;
-
-		int width_ = TetrisWidth;
-		int height_ = TetrisHeight;
-		int maxLevel_ = TetrisMaxLevel;
 
 		double countDown = 0;
 		int counter = 0;
 
 		double accumulator_ = 0.0;
 		bool pause_ = false;
+		double fixedTimestep = 1.0 / 60.0;
 	};
 
 }

@@ -28,8 +28,6 @@ set(SOURCES_LIB
 	src/game/gamepad.h
 	src/game/keyboard.cpp
 	src/game/keyboard.h
-	src/game/localgame.cpp
-	src/game/localgame.h
 	src/game/localplayer.cpp
 	src/game/localplayer.h
 	src/game/localplayerbuilder.cpp

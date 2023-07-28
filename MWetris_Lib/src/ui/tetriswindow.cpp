@@ -24,16 +24,6 @@ namespace mwetris::ui {
 
 	namespace {
 
-		game::ComputerPtr findAiDevice(const std::string& name) {
-			auto ais = Configuration::getInstance().getAiVector();
-			for (const auto& ai : ais) {
-				if (ai.getName() == name) {
-					return std::make_shared<game::Computer>(ai);
-				}
-			}
-			return std::make_shared<game::Computer>(ais.back());
-		}
-
 		int acceptNameInput(ImGuiInputTextCallbackData* data) {
 			return data->BufTextLen < 30;
 		}
@@ -70,6 +60,20 @@ namespace mwetris::ui {
 		Configuration::getInstance().quit();
 	}
 
+	int TetrisWindow::getCurrentMonitorHz() const {
+		if (SDL_DisplayMode displayMode; SDL_GetCurrentDisplayMode(SDL_GetWindowDisplayIndex(getSdlWindow()), &displayMode) == 0) {
+			if (displayMode.refresh_rate > 0) {
+				spdlog::info("[TetrisWindow] Window {}Hz", displayMode.refresh_rate);
+				return displayMode.refresh_rate;
+			} else {
+				spdlog::info("[TetrisWindow] Window Hz is unspecified");
+			}
+		} else {
+			spdlog::warn("[TetrisWindow] Could not extract Window Hz: {}", SDL_GetError());
+		}
+		return 1.0 / 60.0;
+	}
+
 	void TetrisWindow::initPreLoop() {
 		sdl::ImGuiWindow::initPreLoop();
 		auto& io{ImGui::GetIO()};
@@ -95,11 +99,26 @@ namespace mwetris::ui {
 		sceneStateMachine_.emplace<scene::Network>();
 		sceneStateMachine_.emplace<scene::CustomGame>(game_, deviceManager_);
 		openPopUp<scene::CustomGame>();
-		
-		computers_.push_back(findAiDevice(Configuration::getInstance().getAi1Name()));
-		computers_.push_back(findAiDevice(Configuration::getInstance().getAi2Name()));
-		computers_.push_back(findAiDevice(Configuration::getInstance().getAi3Name()));
-		computers_.push_back(findAiDevice(Configuration::getInstance().getAi4Name()));
+
+		game_->setFixTimestep(1.0 / getCurrentMonitorHz());
+
+		connections_ += game_->initGameEvent.connect(gameComponent_.get(), &mwetris::graphic::GameComponent::initGame);
+		connections_ += game_->gameOverEvent.connect([this](game::GameOver gameOver) {
+			if (game_->getNbrOfPlayers() == 1 && game::isNewHighScore(gameOver.player)) {
+				scene::NewHighScoreData data;
+				data.name = gameOver.player->getName();
+				data.points = gameOver.player->getPoints();
+				data.clearedRows = gameOver.player->getClearedRows();
+				data.level = gameOver.player->getLevel();
+				openPopUp<scene::NewHighScore>(data);
+			}
+		});
+		connections_ += game_->gamePauseEvent.connect([this](game::GamePause gamePause) {
+			gameComponent_->gamePause(gamePause);
+		});
+		connections_ += game_->countDownGameEvent.connect([this](game::CountDown countDown) {
+			gameComponent_->countDown(countDown);
+		});
 
 		startNewGame();
 	}
@@ -119,8 +138,7 @@ namespace mwetris::ui {
 		if (openPopUp_) {
 			openPopUp_ = false;
 			ImGui::OpenPopup("Popup");
-			ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-			ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+			ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, {0.5f, 0.5f});
 			ImGui::SetNextWindowSize({800, 800}, ImGuiCond_Appearing);
 		}
 		if (!ImGui::PopupModal("Popup", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
@@ -202,7 +220,7 @@ namespace mwetris::ui {
 						sdl::Window::quit();
 						break;
 					case SDLK_F1:
-						game_->createGame({deviceManager_->getDefaultDevice1()});
+						game_->createDefaultGame(*deviceManager_);
 						break;
 					case SDLK_F5:
 						game_->restartGame();
@@ -219,38 +237,11 @@ namespace mwetris::ui {
 		}
 	}
 
-	void TetrisWindow::resumeGame() {
-		int rows = Configuration::getInstance().getActiveLocalGameRows();
-		int columns = Configuration::getInstance().getActiveLocalGameColumns();
-
-		nbrAis_ = 0;
-		nbrHumans_ = 0;
-	}
-
 	void TetrisWindow::startNewGame() {
-		connections_.clear();
-		connections_ += game_->initGameEvent.connect(gameComponent_.get(), &mwetris::graphic::GameComponent::initGame);
-		connections_ += game_->gameOverEvent.connect([this](game::GameOver gameOver) {
-			if (game_->getNbrOfPlayers() == 1 && game::isNewHighScore(gameOver.player)) {
-				scene::NewHighScoreData data;
-				data.name = gameOver.player->getName();
-				data.points = gameOver.player->getPoints();
-				data.clearedRows = gameOver.player->getClearedRows();
-				data.level = gameOver.player->getLevel();
-				openPopUp<scene::NewHighScore>(data);
-			}
-		});
-		connections_ += game_->gamePauseEvent.connect([this](game::GamePause gamePause) {
-			gameComponent_->gamePause(gamePause);
-		});
-		connections_ += game_->countDownGameEvent.connect([this](game::CountDown countDown) {
-			gameComponent_->countDown(countDown);
-		});
-
 		if (game::hasSavedGame()) {
 			game_->resumeGame(*deviceManager_);
 		} else {
-			game_->createGame({deviceManager_->getDefaultDevice1()});
+			game_->createDefaultGame(*deviceManager_);
 		}
 	}
 
