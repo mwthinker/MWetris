@@ -18,20 +18,30 @@ namespace mwetris::ui::scene {
 			{ t.name };
 		};
 
+		enum class Player {
+			Human,
+			Ai,
+			InternetPlayer
+		};
+
 		struct PlayerType {
+			Player player;
 			std::string name;
 		};
 
 		std::vector<PlayerType> getPlayerTypes() {
 			return {
 				PlayerType{
-					.name = "Human",
+					.player = Player::Human,
+					.name = "Human"
 				},
 				PlayerType{
-					.name = "AI",
+					.player = Player::Ai,
+					.name = "AI"
 				},
 				PlayerType{
-					.name = "Internet player",
+					.player = Player::InternetPlayer,
+					.name = "Internet player"
 				}
 			};
 		}
@@ -91,8 +101,6 @@ namespace mwetris::ui::scene {
 			return types;
 		}
 
-		
-
 		template <typename Type> requires HasNameMember<Type>
 		const Type& comboType(const char* label, const std::vector<Type>& boards, int id = 0) {
 			using Pair = std::pair<const char*, int>;
@@ -114,6 +122,17 @@ namespace mwetris::ui::scene {
 			return boards[item];
 		}
 
+		template <typename T>
+		std::vector<T> extractPlayers(const std::vector<std::variant<game::DevicePtr, tetris::Ai>>& players) {
+			std::vector<T> playersOfTypeT;
+			for (auto& player : players) {
+				if (std::holds_alternative<T>(player)) {
+					playersOfTypeT.push_back(std::get<T>(player));
+				}
+			}
+			return playersOfTypeT;
+		}
+
 	}
 
 	CustomGame::CustomGame(std::shared_ptr<game::TetrisGame> tetrisGame, std::shared_ptr<game::DeviceManager> deviceManager)
@@ -121,6 +140,11 @@ namespace mwetris::ui::scene {
 		, deviceManager_{deviceManager} {
 
 		connections_ += deviceManager->deviceConnected.connect(this, &CustomGame::deviceConnected);
+
+		auto ais = Configuration::getInstance().getAiVector();
+		for (auto& ai : ais) {
+			allAis_.emplace_back(ai.getName(), ai);
+		}
 	}
 
 	void CustomGame::deviceConnected(game::DevicePtr device) {
@@ -152,11 +176,17 @@ namespace mwetris::ui::scene {
 			ImGui::PushID(i);
 			
 			ImGui::SetNextItemWidth(150.f);
-			comboType<PlayerType>("##Player Type", playerTypes, i);
+			auto playerType = comboType<PlayerType>("##Player Type", playerTypes, i);
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(150.f);
-			const auto& deviceType = comboType<DeviceType>("##Players", allDevices_, i);
-			devices_[i] = deviceType.device;
+
+			if (playerType.player == Player::Human) {
+				const auto& deviceType = comboType<DeviceType>("##Players", allDevices_, i);
+				players_[i] = deviceType.device;
+			} else if (playerType.player == Player::Ai) {
+				const auto& aiType = comboType<AiType>("##Players", allAis_, i);
+				players_[i] = aiType.ai;
+			}
 
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(100.f);
@@ -167,18 +197,21 @@ namespace mwetris::ui::scene {
 				ImGui::PushStyleColor(ImGuiCol_Button, sdl::color::Red);
 				if (ImGui::Button("Remove##")) {
 					playerNames_.pop_back();
-					devices_.pop_back();
+					allAis_.pop_back();
 				}
 				ImGui::PopStyleColor();
 			}
 			ImGui::PopID();
 		}
+
+		//ImGui::BeginDisabled();
 		ImGui::PushStyleColor(ImGuiCol_Button, sdl::color::Green);
 		if (ImGui::Button("Add new player", {300.f, 40.f})) {
 			playerNames_.push_back(fmt::format("Player {}", playerNames_.size() + 1));
-			devices_.push_back(deviceManager_->getDefaultDevice1());
+			players_.push_back(deviceManager_->getDefaultDevice1());
 		}
 		ImGui::PopStyleColor();
+		//ImGui::EndDisabled();
 
 		ImGui::PushStyleColor(ImGuiCol_Button, sdl::color::Green);
 		
@@ -188,16 +221,22 @@ namespace mwetris::ui::scene {
 		
 		ImGui::SetCursorPosY(y);
 		if (ImGui::Button("Play", {width, height})) {
-			tetrisGame_->createGame(boardSize.width, boardSize.height, devices_);
+			tetrisGame_->createGame(boardSize.width, boardSize.height
+				, extractPlayers<game::DevicePtr>(players_)
+				, extractPlayers<tetris::Ai>(players_)
+			);
 			ImGui::CloseCurrentPopup();
 		}
-		
 		ImGui::PopStyleColor();
 	}
 
+
+
 	void CustomGame::switchedTo(const SceneData& sceneData) {
+		playerNames_.clear();
 		playerNames_.push_back("Player 1");
-		devices_.push_back(deviceManager_->getDefaultDevice1());
+		players_.clear();
+		players_.push_back(deviceManager_->getDefaultDevice1());
 		allDevices_ = getDeviceTypes(deviceManager_->getAllDevicesAvailable());
 	}
 

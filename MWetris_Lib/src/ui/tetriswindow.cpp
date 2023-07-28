@@ -142,13 +142,14 @@ namespace mwetris::ui {
 
 			ImGui::MenuBar([&]() {
 				ImGui::Menu("Main", [&]() {
-					if (ImGui::MenuItem("New Single Game", "F2")) {
+					if (ImGui::MenuItem("New Single Game", "F1")) {
 						game_->restartGame();
 					}
 					if (ImGui::MenuItem("Custom Game")) {
 						openPopUp<scene::CustomGame>();
 					}
 					if (ImGui::MenuItem("Highscore")) {
+						game_->pause();
 						openPopUp<mwetris::ui::scene::HighScore>();
 					}
 					if (ImGui::MenuItem("Quit", "ESQ")) {
@@ -160,19 +161,13 @@ namespace mwetris::ui {
 						openPopUp<mwetris::ui::scene::Settings>();
 					}
 				});
-				ImGui::Menu("In Game", []() {
-					if (ImGui::MenuItem("Pause", "P OR Pause")) {}
-					if (ImGui::MenuItem("Restart", "F2")) {}
-				});
-				ImGui::Menu("Network Game", [&]() {
-					if (ImGui::MenuItem("Undo", "CTRL+Z")) {
-						openPopUp<mwetris::ui::scene::Network>();
+				ImGui::Menu("In Game", [&]() {
+					if (ImGui::MenuItem("Pause", "P OR Pause")) {
+						game_->pause();
 					}
-					if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
-					ImGui::Separator();
-					if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-					if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-					if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+					if (ImGui::MenuItem("Restart", "F5")) {
+						game_->restartGame();
+					}
 				});
 				ImGui::Menu("Help", [&]() {
 					if (ImGui::MenuItem("About")) {
@@ -206,7 +201,10 @@ namespace mwetris::ui {
 						game_->saveCurrentGame();
 						sdl::Window::quit();
 						break;
-					case SDLK_F2:
+					case SDLK_F1:
+						game_->createGame({deviceManager_->getDefaultDevice1()});
+						break;
+					case SDLK_F5:
 						game_->restartGame();
 						break;
 					case SDLK_p: [[fallthrough]];

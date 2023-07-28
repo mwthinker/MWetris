@@ -63,8 +63,6 @@ namespace mwetris::ui {
 
 		void startNewGame();
 
-		std::vector<game::DevicePtr> getCurrentDevices() const;
-	
 		sdl::TextureView background_;
 		scene::StateMachine sceneStateMachine_;
 		

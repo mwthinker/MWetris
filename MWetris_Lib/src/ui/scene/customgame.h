@@ -11,6 +11,10 @@
 #include "game/serialize.h"
 #include "game/device.h"
 
+#include <ai.h>
+
+#include <variant>
+
 namespace mwetris::game {
 
 	class TetrisGame;
@@ -23,6 +27,11 @@ namespace mwetris::ui::scene {
 	struct DeviceType {
 		std::string name;
 		game::DevicePtr device;
+	};
+
+	struct AiType {
+		std::string name;
+		tetris::Ai ai;
 	};
 
 	class CustomGame : public Scene {
@@ -41,9 +50,11 @@ namespace mwetris::ui::scene {
 		std::shared_ptr<game::DeviceManager> deviceManager_;
 
 		std::vector<DeviceType> allDevices_;
+		std::vector<AiType> allAis_;
 
 		std::vector<std::string> playerNames_;
-		std::vector<game::DevicePtr> devices_;
+		std::vector<tetris::Ai> ais_;
+		std::vector<std::variant<game::DevicePtr, tetris::Ai>> players_;
 
 		mw::signals::ScopedConnections connections_;
 	};

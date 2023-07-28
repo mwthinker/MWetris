@@ -43,19 +43,19 @@ namespace mwetris::game {
 
 	void TetrisGame::resumeGame(const DeviceManager& deviceManager) {
 		auto players = loadGame(deviceManager);
-		if (!players.empty()) {
+		if (players.empty()) {
+			createGame(width_, height_, {deviceManager.getDefaultDevice1()});
+		} else {
 			players_ = players;
 
 			pause();
 			localGame_.resume(players_);
 
 			initGame();
-		} else {
-			createGame(width_, height_, {deviceManager.getDefaultDevice1()});
 		}
 	}
 
-	void TetrisGame::createGame(int columns, int rows, const std::vector<DevicePtr>& devices) {
+	void TetrisGame::createGame(int columns, int rows, const std::vector<DevicePtr>& devices, const std::vector<tetris::Ai>& ais) {
 		width_ = columns;
 		height_ = rows;
 		
@@ -64,7 +64,7 @@ namespace mwetris::game {
 		initGame();
 	}
 
-	void TetrisGame::createGame(const std::vector<DevicePtr>& devices) {
+	void TetrisGame::createGame(const std::vector<DevicePtr>& devices, const std::vector<tetris::Ai>& ais) {
 		createGame(width_, height_, devices);
 	}
 

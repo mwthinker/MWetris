@@ -50,7 +50,7 @@ namespace tetris {
 	public:
 		Ai();
 
-		Ai(std::string name, std::string valueFunction, bool allowException = false);
+		Ai(const std::string& name, const std::string& valueFunction, bool allowException = false);
 
 		const std::string& getName() const {
 			return name_;

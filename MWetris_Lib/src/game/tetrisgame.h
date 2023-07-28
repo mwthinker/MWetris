@@ -7,6 +7,8 @@
 #include "tetrisgameevent.h"
 #include "player.h"
 
+#include <ai.h>
+
 #include <vector>
 #include <memory>
 
@@ -30,9 +32,9 @@ namespace mwetris::game {
 		void resumeGame(const DeviceManager& deviceManager);
 
 		// Uses the same settings as last call.
-		void createGame(const std::vector<DevicePtr>& devices);
+		void createGame(const std::vector<DevicePtr>& devices, const std::vector<tetris::Ai>& ais = {});
 
-		void createGame(int columns, int rows, const std::vector<DevicePtr>& devices);
+		void createGame(int columns, int rows, const std::vector<DevicePtr>& devices, const std::vector<tetris::Ai>& ais = {});
 
 		bool isPaused() const;
 

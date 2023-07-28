@@ -59,12 +59,12 @@ namespace mwetris::graphic {
 			ImGui::SameLine();
 		}
 
-		for (auto& imguiBoard : imguiBoards_) {
+		for ([[maybe_unused]] auto& imguiBoard : imguiBoards_) {
 			ImGui::SetCursorPos(pos + Vec2{width / 2.f, height / 2.f});
 			pos.x += width;
 			ImGui::PushFont(Configuration::getInstance().getImGuiHeaderFont());
 			if (paused_) {
-				ImGui::TextWithBackgroundColor("Paus", sdl::Color{0.f, 0.f, 0.f ,0.5f}, {5.f, 5.f});
+				ImGui::TextWithBackgroundColor("Pause", sdl::Color{0.f, 0.f, 0.f ,0.5f}, {5.f, 5.f});
 			} else if (timeLeft_ > 0) {
 				ImGui::TextWithBackgroundColor(timeLeft_, sdl::Color{0.f, 0.f, 0.f ,0.5f}, {5.f, 5.f});
 			}
