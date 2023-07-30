@@ -178,7 +178,7 @@ namespace mwetris::ui {
 					}
 				});
 				ImGui::Menu("In Game", [&]() {
-					if (ImGui::MenuItem("Pause", "P OR Pause")) {
+					if (ImGui::MenuItem(game_->isPaused() ? "Unpause" : "Pause", "P")) {
 						game_->pause();
 					}
 					if (ImGui::MenuItem("Restart", "F5")) {
