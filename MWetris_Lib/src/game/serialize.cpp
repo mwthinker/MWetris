@@ -1,6 +1,7 @@
 #include "serialize.h"
 
 #include "localplayerbuilder.h"
+#include "tetrisgame.h"
 
 #include <message.pb.h>
 
@@ -73,7 +74,6 @@ namespace mwetris::game {
 			player.set_cleared_rows(localPlayer.getClearedRows());
 			player.set_width(localPlayer.getTetrisBoard().getColumns());
 			player.set_height(localPlayer.getTetrisBoard().getRows());
-			//player.set_device_guid(localPlayer.getDevice()->getGuid());
 
 			player.mutable_current()->set_lowest_start_row(localPlayer.getTetrisBoard().getBlock().getLowestStartRow());
 			player.mutable_current()->set_start_column(localPlayer.getTetrisBoard().getBlock().getStartColumn());
@@ -81,9 +81,8 @@ namespace mwetris::game {
 			player.mutable_current()->set_type(static_cast<tp::BlockType>(localPlayer.getTetrisBoard().getBlock().getBlockType()));
 		}
 
-		LocalPlayerPtr createPlayer(const tp::Player& player, DevicePtr device) {
+		LocalPlayerPtr createPlayer(const tp::Player& player) {
 			return LocalPlayerBuilder{}
-				//.withDevice(device)
 				.withBoard(toBoard(player))
 				.withMovingBlock(toBlock(player.current()))
 				.withHeight(player.height())
@@ -178,18 +177,20 @@ namespace mwetris::game {
 		}
 	}
 
-	void saveGame(const std::vector<LocalPlayerPtr>& players) {
+	void saveGame(const std::vector<PlayerDevice>& players) {
 		tp::Game game;
 		game.set_last_played_seconds(toTpSeconds(std::chrono::system_clock::now()));
 
-		for (const auto& localPlayer: players) {
-			setTpPlayer(*game.add_player(), *localPlayer);
+		for (const auto& playerDevice: players) {
+			auto human = game.add_human();
+			human->set_device_guid(playerDevice.device->getGuid());
+			setTpPlayer(*human->mutable_player(), *playerDevice.player);
 		}
 		std::ofstream output{SavedGameFile};
 		game.SerializePartialToOstream(&output);
 	}
 
-	std::vector<LocalPlayerPtr> loadGame(const DeviceManager& deviceManager) {
+	std::vector<PlayerDevice> loadGame(const DeviceManager& deviceManager) {
 		std::ifstream input{SavedGameFile};
 		if (input.fail()) {
 			return {};
@@ -200,9 +201,12 @@ namespace mwetris::game {
 			return {};
 		}
 
-		std::vector<LocalPlayerPtr> players_;
-		for (const auto& pbPlayer : game.player()) {
-			players_.push_back(createPlayer(pbPlayer, deviceManager.findDevice(pbPlayer.device_guid())));
+		std::vector<PlayerDevice> players_;
+		for (const auto& pbHuman : game.human()) {
+			players_.push_back(PlayerDevice{
+				.device = deviceManager.findDevice(pbHuman.device_guid()),
+				.player = createPlayer(pbHuman.player())
+			});
 		}
 		return players_;
 	}

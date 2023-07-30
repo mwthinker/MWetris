@@ -7,6 +7,7 @@
 #include "localplayer.h"
 #include "computer.h"
 #include "devicemanager.h"
+#include "snapshot.h"
 
 #include <ai.h>
 
@@ -72,7 +73,7 @@ namespace mwetris::game {
 		void updateGame(double deltaTime);
 		void applyRules(tetris::BoardEvent gameEvent, int value, const LocalPlayerPtr& player);
 
-		std::unordered_map<DevicePtr, LocalPlayerPtr> humans_;
+		std::vector<PlayerDevice> playerDevices_;
 		std::unordered_map<ComputerPtr, LocalPlayerPtr> computers_;
 		std::vector<PlayerPtr> players_;
 

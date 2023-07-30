@@ -7,6 +7,7 @@
 #include "tetrisparameters.h"
 #include "localplayerbuilder.h"
 #include "serialize.h"
+#include "snapshot.h"
 
 #include <vector>
 #include <algorithm>
@@ -43,17 +44,17 @@ namespace mwetris::game {
 
 	void TetrisGame::saveCurrentGame() {
 		int nbrGameOver = 0;
-		for (const auto& [device, player] : humans_) {
+		for (const auto& [device, player] : playerDevices_) {
 			if (player->isGameOver()) {
 				++nbrGameOver;
 			}
 		}
 		
 		// Only save one player default game.
-		if (humans_.size() > 1 && nbrGameOver == humans_.size() - 1 || humans_.size() == 0 || humans_.size() == 1 && nbrGameOver == 1) {
+		if (playerDevices_.size() > 1 && nbrGameOver == playerDevices_.size() - 1 || playerDevices_.size() == 0 || playerDevices_.size() == 1 && nbrGameOver == 1) {
 			game::clearSavedGame();
 		} else {
-			//saveGame(players_);
+			saveGame(playerDevices_);
 		}
 	}
 
@@ -62,12 +63,17 @@ namespace mwetris::game {
 		if (players.empty()) {
 			createDefaultGame(deviceManager);
 		} else {
-			//players_ = players;
+			playerDevices_ = players;
+			players_.clear();
+			computers_.clear();
+			for (auto& [device, player] : players) {
+				players_.push_back(player);
+			}
 
 			pause();
 			connections_.clear();
 
-			for (auto& [device, player] : humans_) {
+			for (auto& [device, player] : playerDevices_) {
 				connections_ += player->gameboardEventUpdate.connect([this, p = player](tetris::BoardEvent gameEvent, int value) {
 					applyRules(gameEvent, value, p);
 				});
@@ -80,12 +86,12 @@ namespace mwetris::game {
 	void TetrisGame::createGame(int columns, int rows, const std::vector<Human>& humans, const std::vector<Ai>& ais) {
 		connections_.clear();
 		players_.clear();
-		humans_.clear();
+		playerDevices_.clear();
 
 		for (auto& human : humans) {
 			auto localPlayer = createLocalPlayer(columns, rows, human.name);
 			players_.push_back(localPlayer);
-			humans_[human.device] = localPlayer;
+			playerDevices_.emplace_back(human.device, localPlayer);
 		}
 		for (auto& ai : ais) {
 			auto localPlayer = createLocalPlayer(columns, rows, ai.name);
@@ -93,7 +99,7 @@ namespace mwetris::game {
 			computers_[std::make_shared<Computer>(ai.ai)] = localPlayer;
 		}
 
-		for (auto& [device, player] : humans_) {
+		for (auto& [device, player] : playerDevices_) {
 			connections_ += player->gameboardEventUpdate.connect([this, p = player](tetris::BoardEvent gameEvent, int value) {
 				applyRules(gameEvent, value, p);
 			});
@@ -130,7 +136,7 @@ namespace mwetris::game {
 		accumulator_ = 0.0;
 		connections_.clear();
 		
-		for (auto& [device, player] : humans_) {
+		for (auto& [device, player] : playerDevices_) {
 			/*
 			connections_ += player->gameboardEventUpdate.connect([this, player = player](tetris::BoardEvent gameEvent, int value) {
 				applyRules(gameEvent, value, p);
@@ -158,7 +164,7 @@ namespace mwetris::game {
 		pause_ = !pause_;
 		gamePauseEvent(GamePause{pause_});
 		if (pause_) {
-			//saveGame(players_);
+			saveGame(playerDevices_);
 		} else {
 			counter = 4;
 			countDown = 3;
@@ -194,7 +200,7 @@ namespace mwetris::game {
 		accumulator_ += deltaTime;
 		while (accumulator_ >= fixedTimestep) {
 			accumulator_ -= fixedTimestep;
-			for (auto& [device, player] : humans_) {
+			for (auto& [device, player] : playerDevices_) {
 				player->update(device->getInput(), fixedTimestep);
 			}
 			for (auto& [computer, player] : computers_) {

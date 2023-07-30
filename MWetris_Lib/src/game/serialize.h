@@ -3,6 +3,7 @@
 
 #include "localplayer.h"
 #include "devicemanager.h"
+#include "snapshot.h"
 
 #include <chrono>
 
@@ -28,9 +29,9 @@ namespace mwetris::game {
 
 	void clearSavedGame();
 
-	void saveGame(const std::vector<LocalPlayerPtr>& players);
+	void saveGame(const std::vector<PlayerDevice>& players);
 
-	std::vector<LocalPlayerPtr> loadGame(const DeviceManager& deviceManager);
+	std::vector<PlayerDevice> loadGame(const DeviceManager& deviceManager);
 
 	void saveHighScore(const std::string& name, int points, int rows, int level);
 
