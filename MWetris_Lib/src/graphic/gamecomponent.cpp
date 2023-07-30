@@ -64,9 +64,11 @@ namespace mwetris::graphic {
 			pos.x += width;
 			ImGui::PushFont(Configuration::getInstance().getImGuiHeaderFont());
 			if (paused_) {
-				ImGui::TextWithBackgroundColor("Pause", sdl::Color{0.f, 0.f, 0.f ,0.5f}, {5.f, 5.f});
-			} else if (timeLeft_ > 0) {
-				ImGui::TextWithBackgroundColor(timeLeft_, sdl::Color{0.f, 0.f, 0.f ,0.5f}, {5.f, 5.f});
+				if (timeLeft_ > 0) {
+					ImGui::TextWithBackgroundColor(timeLeft_, sdl::Color{0.f, 0.f, 0.f, 0.5f}, {5.f, 5.f});
+				} else {
+					ImGui::TextWithBackgroundColor("Pause", sdl::Color{0.f, 0.f, 0.f, 0.5f}, {5.f, 5.f});
+				}
 			}
 			ImGui::PopFont();
 		}

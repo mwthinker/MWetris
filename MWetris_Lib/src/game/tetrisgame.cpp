@@ -24,7 +24,6 @@ namespace mwetris::game {
 				.withGameOverPosition(0)
 				.withLevel(1)
 				.withLevelUpCounter(0)
-				//.withMovingBlock(data.current_)
 				.withName(name)
 				.withMovingBlockType(tetris::randomBlockType())
 				.withNextBlockType(tetris::randomBlockType())
@@ -161,13 +160,21 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::pause() {
-		pause_ = !pause_;
-		gamePauseEvent(GamePause{pause_});
-		if (pause_) {
+		if (!pause_) {
+			pause_ = true;
 			saveGame(playerDevices_);
+			gamePauseEvent(GamePause{pause_});
 		} else {
-			counter = 4;
-			countDown = 3;
+			countDownGameEvent(CountDown{3});
+			timeHandler_.scheduleRepeat([&, nbr = 2]() mutable {
+				if (nbr == 0) {
+					pause_ = false;
+					countDownGameEvent(CountDown{0});
+					gamePauseEvent(GamePause{pause_});
+				} else {
+					countDownGameEvent(CountDown{nbr--});
+				}
+			}, 1.0, 3);
 		}
 	}
 
@@ -176,17 +183,9 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::update(double deltaTime) {
-		int tmp = std::ceil(countDown);
-		if (countDown >= 0) {
-			countDown -= deltaTime;
-		}
+		timeHandler_.update(deltaTime);
 
-		if (tmp < counter && counter >= 0) {
-			counter = tmp;
-			countDownGameEvent(tmp);
-		}
-
-		if (!pause_ && counter <= 0) {
+		if (!pause_) {
 			updateGame(deltaTime);
 		}
 	}

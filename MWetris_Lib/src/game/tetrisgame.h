@@ -8,6 +8,7 @@
 #include "computer.h"
 #include "devicemanager.h"
 #include "snapshot.h"
+#include "timerhandler.h"
 
 #include <ai.h>
 
@@ -30,7 +31,6 @@ namespace mwetris::game {
 	};
 
 	struct Remote {
-
 	};
 
 	class TetrisGame {
@@ -77,14 +77,12 @@ namespace mwetris::game {
 		std::unordered_map<ComputerPtr, LocalPlayerPtr> computers_;
 		std::vector<PlayerPtr> players_;
 
-		double countDown = 0;
-		int counter = 0;
-
 		double accumulator_ = 0.0;
 		bool pause_ = false;
 		double fixedTimestep = 1.0 / 60.0;
 
 		mw::signals::ScopedConnections connections_;
+		TimeHandler timeHandler_;
 	};
 
 }

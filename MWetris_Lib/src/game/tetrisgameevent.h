@@ -50,7 +50,7 @@ namespace mwetris::game {
 			: timeLeft{timeLeft} {
 		}
 
-		int timeLeft{};
+		int timeLeft;
 	};
 
 	class GamePause {

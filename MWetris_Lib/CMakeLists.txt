@@ -35,10 +35,11 @@ set(SOURCES_LIB
 	src/game/player.cpp
 	src/game/player.h
 	src/game/snapshot.h
+	src/game/taskqueue.h
 	src/game/tetrisgame.cpp
 	src/game/tetrisgameevent.h
 	src/game/tetrisgame.h
-	src/game/taskqueue.h
+	src/game/timerhandler.h
 	src/game/serialize.cpp
 	src/game/serialize.h
 	
