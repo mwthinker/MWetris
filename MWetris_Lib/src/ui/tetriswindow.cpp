@@ -3,7 +3,6 @@
 #include "configuration.h"
 
 #include "scene/about.h"
-#include "scene/network.h"
 #include "scene/settings.h"
 #include "scene/highscore.h"
 #include "scene/newhighscore.h"
@@ -96,7 +95,6 @@ namespace mwetris::ui {
 			openPopUp<scene::HighScore>();
 		});
 		sceneStateMachine_.emplace<scene::About>();
-		sceneStateMachine_.emplace<scene::Network>();
 		sceneStateMachine_.emplace<scene::CustomGame>(game_, deviceManager_);
 		openPopUp<scene::CustomGame>();
 

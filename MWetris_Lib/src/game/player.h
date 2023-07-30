@@ -20,11 +20,13 @@ namespace mwetris::game {
 	public:
 		mw::PublicSignal<Player, tetris::BoardEvent, int> gameboardEventUpdate;
 
-		explicit Player(const tetris::TetrisBoard& tetrisBoard);
+		Player(const tetris::TetrisBoard& tetrisBoard, const std::string& name);
 
 		virtual ~Player() = default;
 
-		virtual const std::string& getName() const = 0;
+		const std::string& getName() const {
+			return name_;
+		}
 
 		virtual int getLevel() const = 0;
 
@@ -35,8 +37,6 @@ namespace mwetris::game {
 		bool isGameOver() const;
 
 		virtual int getGameOverPosition() const = 0;
-
-		virtual const DevicePtr& getDevice() const = 0;
 
 		const tetris::TetrisBoard& getTetrisBoard() const {
 			return tetrisBoard_;
@@ -54,6 +54,7 @@ namespace mwetris::game {
 		virtual void handleBoardEvent(tetris::BoardEvent boardEvent, int value);
 
 		tetris::TetrisBoard tetrisBoard_;
+		std::string name_;
 		std::string uniqueId_;
 	};
 

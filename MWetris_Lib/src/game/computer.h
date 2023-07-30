@@ -15,8 +15,6 @@ namespace mwetris::game {
 
 	class Computer {
 	public:
-		Computer() = default;
-
 		Computer(const tetris::Ai& ai);
 
 		Input getInput() const;

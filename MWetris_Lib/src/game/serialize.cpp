@@ -73,7 +73,7 @@ namespace mwetris::game {
 			player.set_cleared_rows(localPlayer.getClearedRows());
 			player.set_width(localPlayer.getTetrisBoard().getColumns());
 			player.set_height(localPlayer.getTetrisBoard().getRows());
-			player.set_device_guid(localPlayer.getDevice()->getGuid());
+			//player.set_device_guid(localPlayer.getDevice()->getGuid());
 
 			player.mutable_current()->set_lowest_start_row(localPlayer.getTetrisBoard().getBlock().getLowestStartRow());
 			player.mutable_current()->set_start_column(localPlayer.getTetrisBoard().getBlock().getStartColumn());
@@ -83,7 +83,7 @@ namespace mwetris::game {
 
 		LocalPlayerPtr createPlayer(const tp::Player& player, DevicePtr device) {
 			return LocalPlayerBuilder{}
-				.withDevice(device)
+				//.withDevice(device)
 				.withBoard(toBoard(player))
 				.withMovingBlock(toBlock(player.current()))
 				.withHeight(player.height())

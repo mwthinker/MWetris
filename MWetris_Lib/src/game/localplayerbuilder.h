@@ -36,11 +36,6 @@ namespace mwetris::game {
 			return *this;
 		}
 
-		LocalPlayerBuilder& withDevice(DevicePtr device) {
-			device_ = device;
-			return *this;
-		}
-
 		LocalPlayerBuilder& withPoints(int points) {
 			points_ = points;
 			return *this;
@@ -77,7 +72,6 @@ namespace mwetris::game {
 		}
 
 	private:
-		DevicePtr device_;
 		std::string name_{"PLAYER"};
 		int points_ = 0;
 		int level_ = 1;

@@ -130,13 +130,13 @@ namespace mwetris {
 
 		try {
 			highscoreRecord.level = j.at("level").get<int>();
-		} catch (nlohmann::detail::out_of_range) {
+		} catch (const nlohmann::detail::out_of_range&) {
 			highscoreRecord.level = 0;
 		}
 
 		try {
 			highscoreRecord.rows = j.at("rows").get<int>();
-		} catch (nlohmann::detail::out_of_range) {
+		} catch (const nlohmann::detail::out_of_range&) {
 			highscoreRecord.rows = 0;
 		}
 	}
@@ -291,7 +291,7 @@ namespace mwetris {
 	bool Configuration::isShowDownBlock() const {
 		try {
 			return impl_->jsonObject.at("window").at("tetrisBoard").at("showDownBlock").get<bool>();
-		} catch (nlohmann::detail::out_of_range&) {
+		} catch (const nlohmann::detail::out_of_range&) {
 			return true;
 		}
 	}
@@ -303,7 +303,7 @@ namespace mwetris {
 	sdl::Color Configuration::getDownBlockColor() const {
 		try {
 			return impl_->jsonObject.at("window").at("tetrisBoard").at("downBlockColor").get<sdl::Color>();
-		} catch (nlohmann::detail::out_of_range) {
+		} catch (const nlohmann::detail::out_of_range&) {
 			return sdl::Color{1.f, 1.f, 1.f, 0.15f};
 		}
 	}

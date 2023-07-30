@@ -47,8 +47,6 @@ set(SOURCES_LIB
 	src/ui/scene/highscore.h
 	src/ui/scene/settings.cpp
 	src/ui/scene/settings.h
-	src/ui/scene/network.cpp
-	src/ui/scene/network.h
 	src/ui/scene/newhighscore.cpp
 	src/ui/scene/newhighscore.h
 	src/ui/scene/scene.h

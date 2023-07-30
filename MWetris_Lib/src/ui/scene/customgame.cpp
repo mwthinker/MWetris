@@ -121,16 +121,31 @@ namespace mwetris::ui::scene {
 
 			return boards[item];
 		}
+		
+		std::vector<game::Human> extractHumans(const std::vector<std::string>& names, const std::vector<std::variant<game::DevicePtr, tetris::Ai>>& players) {
+			std::vector<game::Human> humans;
+			for (int i = 0; i < players.size(); ++i) {
+				const auto& player = players[i];
 
-		template <typename T>
-		std::vector<T> extractPlayers(const std::vector<std::variant<game::DevicePtr, tetris::Ai>>& players) {
-			std::vector<T> playersOfTypeT;
-			for (auto& player : players) {
-				if (std::holds_alternative<T>(player)) {
-					playersOfTypeT.push_back(std::get<T>(player));
+				if (std::holds_alternative<game::DevicePtr>(player)) {
+					const auto& device = std::get<game::DevicePtr>(player);
+					humans.push_back(game::Human{.name = names[i], .device = device});
 				}
 			}
-			return playersOfTypeT;
+			return humans;
+		}
+
+		std::vector<game::Ai> extractAis(const std::vector<std::string>& names, const std::vector<std::variant<game::DevicePtr, tetris::Ai>>& players) {
+			std::vector<game::Ai> ais;
+			for (int i = 0; i < players.size(); ++i) {
+				const auto& player = players[i];
+
+				if (std::holds_alternative<tetris::Ai>(player)) {
+					const auto& ai = std::get<tetris::Ai>(player);
+					ais.push_back(game::Ai{.name = names[i], .ai = ai});
+				}
+			}
+			return ais;
 		}
 
 	}
@@ -198,6 +213,7 @@ namespace mwetris::ui::scene {
 				if (ImGui::Button("Remove##")) {
 					playerNames_.pop_back();
 					allAis_.pop_back();
+					players_.pop_back();
 				}
 				ImGui::PopStyleColor();
 			}
@@ -221,16 +237,14 @@ namespace mwetris::ui::scene {
 		
 		ImGui::SetCursorPosY(y);
 		if (ImGui::Button("Play", {width, height})) {
-			tetrisGame_->createGame(boardSize.width, boardSize.height
-				, extractPlayers<game::DevicePtr>(players_)
-				, extractPlayers<tetris::Ai>(players_)
+			tetrisGame_->createGame(boardSize.width, boardSize.height,
+				extractHumans(playerNames_, players_),
+				extractAis(playerNames_, players_)
 			);
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::PopStyleColor();
 	}
-
-
 
 	void CustomGame::switchedTo(const SceneData& sceneData) {
 		playerNames_.clear();

@@ -3,7 +3,6 @@
 
 #include "player.h"
 #include "actionhandler.h"
-#include "device.h"
 
 namespace mwetris::game {
 
@@ -12,14 +11,14 @@ namespace mwetris::game {
 
 	class LocalPlayer : public Player {
 	public:
-		LocalPlayer(const tetris::TetrisBoard& board, DevicePtr device);
+		LocalPlayer(const tetris::TetrisBoard& board, const std::string& name);
 
 		LocalPlayer(const LocalPlayer&) = delete;
 		LocalPlayer& operator=(const LocalPlayer&) = delete;
 		LocalPlayer(LocalPlayer&&) = delete;
 		LocalPlayer& operator=(LocalPlayer&&) = delete;
 
-		void update(double deltaTime);
+		void update(Input input, double deltaTime);
 
 		void addRow(int holes);
 
@@ -37,10 +36,6 @@ namespace mwetris::game {
 
 		void updateGameOver();
 
-		const std::string& getName() const override {
-			return name_;
-		}
-
 		int getLevel() const override {
 			return level_;
 		}
@@ -57,19 +52,13 @@ namespace mwetris::game {
 			return gameOverPosition_;
 		}
 
-		const DevicePtr& getDevice() const override {
-			return device_;
-		}
-
-		virtual float getGravityDownSpeed() const {
+		float getGravityDownSpeed() const {
 			return 1 + level_ * 0.5f;
 		}
 
 	private:
 		void handleBoardEvent(tetris::BoardEvent boardEvent, int value) override;
 
-		DevicePtr device_;
-		std::string name_;
 		int points_ = 0;
 		int level_ = 1;
 		int clearedRows_ = 0;

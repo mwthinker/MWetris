@@ -11,8 +11,8 @@ namespace {
 	constexpr std::string_view Characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 	std::string generateRandomString(int size) {
-		std::mt19937 generator{std::random_device{}()};
-		std::uniform_int_distribution<> distribution{0, static_cast<int>(Characters.size() - 1)};
+		static std::mt19937 generator{std::random_device{}()};
+		static std::uniform_int_distribution<> distribution{0, static_cast<int>(Characters.size() - 1)};
 
 		std::string unique(size, 'X');
 
@@ -28,8 +28,9 @@ namespace {
 
 namespace mwetris::game {
 
-	Player::Player(const tetris::TetrisBoard& tetrisBoard)
+	Player::Player(const tetris::TetrisBoard& tetrisBoard, const std::string& name)
 		: tetrisBoard_{tetrisBoard}
+		, name_{name}
 		, uniqueId_{generateRandomString(UniqueIdSize)} {
 	}
 
