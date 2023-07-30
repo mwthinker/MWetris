@@ -74,7 +74,13 @@ namespace mwetris::game {
 		void applyRules(tetris::BoardEvent gameEvent, int value, const LocalPlayerPtr& player);
 
 		std::vector<PlayerDevice> playerDevices_;
-		std::unordered_map<ComputerPtr, LocalPlayerPtr> computers_;
+
+		struct ComputerPlayer {
+			ComputerPtr computer;
+			LocalPlayerPtr player;
+		};		
+		std::vector<ComputerPlayer> computers_;
+
 		std::vector<PlayerPtr> players_;
 
 		double accumulator_ = 0.0;

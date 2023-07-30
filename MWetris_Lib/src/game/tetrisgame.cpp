@@ -95,7 +95,7 @@ namespace mwetris::game {
 		for (auto& ai : ais) {
 			auto localPlayer = createLocalPlayer(columns, rows, ai.name);
 			players_.push_back(localPlayer);
-			computers_[std::make_shared<Computer>(ai.ai)] = localPlayer;
+			computers_.emplace_back(std::make_shared<Computer>(ai.ai), localPlayer);
 		}
 
 		for (auto& [device, player] : playerDevices_) {
