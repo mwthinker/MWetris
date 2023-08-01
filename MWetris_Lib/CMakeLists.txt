@@ -34,6 +34,8 @@ set(SOURCES_LIB
 	src/game/localplayerbuilder.h
 	src/game/player.cpp
 	src/game/player.h
+	src/game/remoteplayer.cpp
+	src/game/remoteplayer.h
 	src/game/snapshot.h
 	src/game/taskqueue.h
 	src/game/tetrisgame.cpp
@@ -42,11 +44,16 @@ set(SOURCES_LIB
 	src/game/timerhandler.h
 	src/game/serialize.cpp
 	src/game/serialize.h
+
+	src/network/network.cpp
+	src/network/network.h
 	
 	src/ui/scene/customgame.cpp
 	src/ui/scene/customgame.h
 	src/ui/scene/highscore.cpp
 	src/ui/scene/highscore.h
+	src/ui/scene/joingame.cpp
+	src/ui/scene/joingame.h
 	src/ui/scene/settings.cpp
 	src/ui/scene/settings.h
 	src/ui/scene/newhighscore.cpp
@@ -94,7 +101,7 @@ target_compile_definitions(MWetris_Lib
 	PUBLIC
 		GIT_VERSION="${GIT_HASH}"
 		PROJECT_VERSION="${CMAKE_PROJECT_VERSION}"
-		GUID="${GUID}"
+		MWETRIS_GUID="${GUID}"
 )
 
 if (MSVC)
@@ -120,6 +127,7 @@ set(nlohmann-json_IMPLICIT_CONVERSIONS OFF)
 
 target_link_libraries(MWetris_Lib
 	PUBLIC
+		CppProtoNetwork
 		TetrisEngineLib
 		nlohmann_json
 		nlohmann_json::nlohmann_json

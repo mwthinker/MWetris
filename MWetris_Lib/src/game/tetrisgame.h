@@ -30,6 +30,7 @@ namespace mwetris::game {
 	};
 
 	struct Remote {
+		std::string uuid;
 	};
 
 	class TetrisGame {

@@ -7,6 +7,7 @@
 #include "scene/highscore.h"
 #include "scene/newhighscore.h"
 #include "scene/customgame.h"
+#include "scene/joingame.h"
 
 #include "game/keyboard.h"
 #include "game/computer.h"
@@ -96,6 +97,7 @@ namespace mwetris::ui {
 		});
 		sceneStateMachine_.emplace<scene::About>();
 		sceneStateMachine_.emplace<scene::CustomGame>(game_, deviceManager_);
+		sceneStateMachine_.emplace<scene::JoinGame>(game_, deviceManager_);
 		openPopUp<scene::CustomGame>();
 
 		game_->setFixTimestep(1.0 / getCurrentMonitorHz());
@@ -157,12 +159,15 @@ namespace mwetris::ui {
 			ImGui::ImageBackground(background_);
 
 			ImGui::MenuBar([&]() {
-				ImGui::Menu("Main", [&]() {
-					if (ImGui::MenuItem("New Single Game", "F1")) {
+				ImGui::Menu("Game", [&]() {
+					if (ImGui::MenuItem("New Single Player", "F1")) {
 						game_->restartGame();
 					}
-					if (ImGui::MenuItem("Custom Game")) {
+					if (ImGui::MenuItem("Create Game")) {
 						openPopUp<scene::CustomGame>();
+					}
+					if (ImGui::MenuItem("Join Game")) {
+						openPopUp<scene::JoinGame>();
 					}
 					if (ImGui::MenuItem("Highscore")) {
 						game_->pause();

@@ -83,6 +83,7 @@ add_subdirectory(TetrisEngine)
 add_subdirectory(Protocol)
 add_subdirectory(MWetris_Lib)
 add_subdirectory(MWetris_Test)
+add_subdirectory(GameServer)
 
 # Copy data to build folder.
 file(COPY ${MWetrisData_SOURCE_DIR}/package DESTINATION ${CMAKE_CURRENT_BINARY_DIR}) 

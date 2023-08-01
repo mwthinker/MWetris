@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
 	mwetris::logger::init();
 	spdlog::info("[main] MWetris Version:  {}", PROJECT_VERSION);
 	spdlog::info("[main] MWetris git hash:  {}", GIT_VERSION);
-	spdlog::info("[main] MWetris GUI:  {}", GUID);
+	spdlog::info("[main] MWetris GUI:  {}", MWETRIS_GUID);
 
 	const sdl::InitSdl SDL{SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER};
 	mwetris::ui::TetrisWindow tetrisWindow;

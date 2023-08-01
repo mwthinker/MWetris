@@ -65,3 +65,23 @@ message HighScore {
 
 	repeated Result results = 4;
 }
+
+message RemotePlayer {
+
+}
+
+message LocalPlayer {
+	string uuid = 1;
+	string name = 2;
+	int32 level = 3;
+	int32 points = 4;
+	bool ai = 5;
+}
+
+message CreateServerGame {
+	string uuid = 1;
+}
+
+message Wrapper {
+	CreateServerGame create_server_game = 1;
+}

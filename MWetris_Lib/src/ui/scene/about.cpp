@@ -29,7 +29,7 @@ namespace mwetris::ui::scene {
 		ImGui::Text("Version: v%s", PROJECT_VERSION);
 		ImGui::Text("Git Hash: %s", GIT_VERSION);
 		ImGui::NewLine();
-		ImGui::Text("GUID: %s", GUID);
+		ImGui::Text("GUID: %s", MWETRIS_GUID);
 
 		ImGui::PopFont();
 	}
