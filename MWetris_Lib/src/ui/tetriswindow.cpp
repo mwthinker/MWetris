@@ -115,6 +115,16 @@ namespace mwetris::ui {
 		});
 		connections_ += game_->gamePauseEvent.connect([this](const game::GamePause& gamePause) {
 			gameComponent_->gamePause(gamePause);
+
+			if (gamePause.pause) {
+				if (gamePause.countDown > 0) {
+					pauseMenuText_ = "Stop Unpause Countdown";
+				} else {
+					pauseMenuText_ = "Unpause";
+				}
+			} else {
+				pauseMenuText_ = "Pause";
+			}
 		});
 
 		// Keep the update loop in sync with monitor.
@@ -194,7 +204,7 @@ namespace mwetris::ui {
 					}
 				});
 				ImGui::Menu("Current", [&]() {
-					if (ImGui::MenuItem(game_->isPaused() ? "Unpause" : "Pause", "P")) {
+					if (ImGui::MenuItem(pauseMenuText_.c_str(), "P")) {
 						game_->pause();
 					}
 					if (ImGui::MenuItem("Restart", "F5")) {

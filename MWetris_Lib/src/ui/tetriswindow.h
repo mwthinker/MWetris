@@ -75,6 +75,7 @@ namespace mwetris::ui {
 		std::shared_ptr<game::DeviceManager> deviceManager_;
 
 		TimeHandler timeHandler_;
+		std::string pauseMenuText_;
 	};
 
 }
