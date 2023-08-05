@@ -71,7 +71,7 @@ namespace mwetris::ui {
 		} else {
 			spdlog::warn("[TetrisWindow] Could not extract Window Hz: {}", SDL_GetError());
 		}
-		return 1.0 / 60.0;
+		return 60;
 	}
 
 	void TetrisWindow::initPreLoop() {
@@ -117,6 +117,11 @@ namespace mwetris::ui {
 			gameComponent_->gamePause(gamePause);
 		});
 
+		// Keep the update loop in sync with monitor.
+		timeHandler_.scheduleRepeat([this]() {
+			game_->setFixTimestep(1.0 / getCurrentMonitorHz());
+		}, 30.0, std::numeric_limits<int>::max());
+
 		startNewGame();
 	}
 
@@ -128,6 +133,7 @@ namespace mwetris::ui {
 	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
 		auto deltaTimeSeconds = std::chrono::duration<double>(deltaTime).count();
 		game_->update(deltaTimeSeconds);
+		timeHandler_.update(deltaTimeSeconds);
 		
 		ImGui::PushFont(Configuration::getInstance().getImGuiDefaultFont());
 		imGuiMainMenu(deltaTime);

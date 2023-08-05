@@ -1,10 +1,10 @@
-#ifndef MWETRIS_GAME_TIMEHANDLER_H
-#define MWETRIS_GAME_TIMEHANDLER_H
+#ifndef MWETRIS_TIMEHANDLER_H
+#define MWETRIS_TIMEHANDLER_H
 
 #include <functional>
 #include <vector>
 
-namespace mwetris::game {
+namespace mwetris {
 
 	class TimeHandler {
 	public:
@@ -57,7 +57,6 @@ namespace mwetris::game {
 		};
 		std::vector<TimeEvent> scheduledCallbacks_;
 	};
-
 
 }
 

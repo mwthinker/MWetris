@@ -25,7 +25,6 @@ namespace {
 
 }
 
-
 namespace mwetris::game {
 
 	Player::Player(const tetris::TetrisBoard& tetrisBoard, const std::string& name)

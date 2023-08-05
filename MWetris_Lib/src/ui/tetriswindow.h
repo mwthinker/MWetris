@@ -1,6 +1,8 @@
 #ifndef MWETRIS_UI_TETRISWINDOW_H
 #define MWETRIS_UI_TETRISWINDOW_H
 
+#include "timerhandler.h"
+
 #include "scene/scene.h"
 #include "scene/statemachine.h"
 
@@ -68,9 +70,11 @@ namespace mwetris::ui {
 		std::unique_ptr<graphic::GameComponent> gameComponent_;
 		std::shared_ptr<game::TetrisGame> game_;
 		mw::signals::ScopedConnections connections_;
-		
+
 		bool openPopUp_ = false;
 		std::shared_ptr<game::DeviceManager> deviceManager_;
+
+		TimeHandler timeHandler_;
 	};
 
 }
