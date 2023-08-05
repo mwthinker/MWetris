@@ -114,9 +114,13 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::createDefaultGame(const DeviceManager& deviceManager) {
-		createGame(TetrisWidth, TetrisHeight, {
-			Human{.name = "Player", .device = deviceManager.getDefaultDevice1()}
-		});
+		if (isDefaultGame()) {
+			restartGame();
+		} else {
+			createGame(TetrisWidth, TetrisHeight, {
+				Human{.name = "Player", .device = deviceManager.getDefaultDevice1()}
+			});
+		}
 	}
 
 	void TetrisGame::initGame() {
@@ -160,19 +164,32 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::pause() {
-		if (!pause_) {
+		if (timeHandler_.removeCallback(pauseKey_) || !pause_) {
+			if (!pause_) {
+				saveGame(playerDevices_);
+			}
+			gamePauseEvent(GamePause{
+				.countDown = 0,
+				.pause = true
+			});
 			pause_ = true;
-			saveGame(playerDevices_);
-			gamePauseEvent(GamePause{pause_});
 		} else {
-			countDownGameEvent(CountDown{3});
-			timeHandler_.scheduleRepeat([&, nbr = 2]() mutable {
+			gamePauseEvent(GamePause{
+				.countDown = 3,
+				.pause = true
+			});
+			pauseKey_ = timeHandler_.scheduleRepeat([&, nbr = 2]() mutable {
 				if (nbr == 0) {
 					pause_ = false;
-					countDownGameEvent(CountDown{0});
-					gamePauseEvent(GamePause{pause_});
+					gamePauseEvent(GamePause{
+						.countDown = 0,
+						.pause = false
+					});
 				} else {
-					countDownGameEvent(CountDown{nbr--});
+					gamePauseEvent(GamePause{
+						.countDown = nbr--,
+						.pause = true
+				});
 				}
 			}, 1.0, 3);
 		}
@@ -217,6 +234,12 @@ namespace mwetris::game {
 			//player->updateLevel(level_);
 			//player->updatePoints(points_);
 		}
+	}
+
+	bool TetrisGame::isDefaultGame() const { // TODO! Remove magic numbers!
+		return players_.size() == 1 && playerDevices_.size() == 1 &&
+			players_.front()->getTetrisBoard().getRows() == 24 &&
+			players_.front()->getTetrisBoard().getColumns() == 10;
 	}
 
 }

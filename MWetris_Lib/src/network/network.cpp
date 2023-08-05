@@ -24,10 +24,6 @@ namespace mwetris::network {
 		//thread_ = std::jthread(&Network::run, this);
 	}
 
-	void Network::connect() {
-
-	}
-
 	void Network::run() {
 		net::IoContext ioContext;
 

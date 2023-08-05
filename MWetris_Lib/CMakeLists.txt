@@ -41,6 +41,7 @@ set(SOURCES_LIB
 	src/game/tetrisgame.cpp
 	src/game/tetrisgameevent.h
 	src/game/tetrisgame.h
+	src/game/timerhandler.cpp
 	src/game/timerhandler.h
 	src/game/serialize.cpp
 	src/game/serialize.h
@@ -48,8 +49,8 @@ set(SOURCES_LIB
 	src/network/network.cpp
 	src/network/network.h
 	
-	src/ui/scene/customgame.cpp
-	src/ui/scene/customgame.h
+	src/ui/scene/creategame.cpp
+	src/ui/scene/creategame.h
 	src/ui/scene/highscore.cpp
 	src/ui/scene/highscore.h
 	src/ui/scene/joingame.cpp

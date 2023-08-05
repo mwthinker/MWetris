@@ -40,6 +40,8 @@ namespace mwetris::graphic {
 	GameComponent::~GameComponent() {}
 
 	void GameComponent::draw(int windowWidth, int windowHeight, double deltaTime) {
+		const auto cursorPos = ImGui::GetCursorPos();
+
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, Vec2{0.f, 0.f});
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, Vec2{0.f, 0.f});
 
@@ -63,9 +65,9 @@ namespace mwetris::graphic {
 			ImGui::SetCursorPos(pos + Vec2{width / 2.f, height / 2.f});
 			pos.x += width;
 			ImGui::PushFont(Configuration::getInstance().getImGuiHeaderFont());
-			if (paused_) {
-				if (timeLeft_ > 0) {
-					ImGui::TextWithBackgroundColor(timeLeft_, sdl::Color{0.f, 0.f, 0.f, 0.5f}, {5.f, 5.f});
+			if (gamePause_.pause) {
+				if (gamePause_.countDown > 0) {
+					ImGui::TextWithBackgroundColor(gamePause_.countDown, sdl::Color{0.f, 0.f, 0.f, 0.5f}, {5.f, 5.f});
 				} else {
 					ImGui::TextWithBackgroundColor("Pause", sdl::Color{0.f, 0.f, 0.f, 0.5f}, {5.f, 5.f});
 				}
@@ -75,6 +77,9 @@ namespace mwetris::graphic {
 
 		ImGui::PopStyleColor(1);
 		ImGui::PopStyleVar(2);
+
+		ImGui::SetCursorPos(cursorPos);
+		ImGui::Dummy({static_cast<float>(windowWidth), static_cast<float>(windowHeight)});
 	}
 
 	void GameComponent::initGame(const game::InitGameEvent& event) {
@@ -84,12 +89,8 @@ namespace mwetris::graphic {
 		}
 	}
 
-	void GameComponent::gamePause(const game::GamePause& event) {
-		paused_ = event.pause;
-	}
-
-	void GameComponent::countDown(const game::CountDown& countDown) {
-		timeLeft_ = countDown.timeLeft;
+	void GameComponent::gamePause(const game::GamePause& gamePause) {
+		gamePause_ = gamePause;
 	}
 
 }

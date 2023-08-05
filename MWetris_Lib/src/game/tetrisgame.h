@@ -36,7 +36,6 @@ namespace mwetris::game {
 	class TetrisGame {
 	public:
 		mw::PublicSignal<TetrisGame, InitGameEvent> initGameEvent;
-		mw::PublicSignal<TetrisGame, CountDown> countDownGameEvent;
 		mw::PublicSignal<TetrisGame, GameOver> gameOverEvent;
 		mw::PublicSignal<TetrisGame, GamePause> gamePauseEvent;
 
@@ -68,6 +67,8 @@ namespace mwetris::game {
 			fixedTimestep = delta;
 		}
 
+		bool isDefaultGame() const;
+
 	private:
 		void initGame();
 		void updateGame(double deltaTime);
@@ -78,7 +79,7 @@ namespace mwetris::game {
 		struct ComputerPlayer {
 			ComputerPtr computer;
 			LocalPlayerPtr player;
-		};		
+		};
 		std::vector<ComputerPlayer> computers_;
 
 		std::vector<PlayerPtr> players_;
@@ -89,6 +90,7 @@ namespace mwetris::game {
 
 		mw::signals::ScopedConnections connections_;
 		TimeHandler timeHandler_;
+		TimeHandler::Key pauseKey_;
 	};
 
 }

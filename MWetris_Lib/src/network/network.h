@@ -1,9 +1,10 @@
 #ifndef MWETRIS_NETWORK_NETWORK_H
 #define MWETRIS_NETWORK_NETWORK_H
 
+#include "game/remoteplayer.h"
+
 #include <thread>
 #include <memory>
-
 #include <string>
 
 namespace mwetris::network {
@@ -12,10 +13,16 @@ namespace mwetris::network {
 	public:
 		Network();
 
-		void connect();
+		[[nodiscard]] game::RemotePlayerPtr addRemotePlayer() {
+			return nullptr;
+		}
 
-		std::string getServerId() const {
-			return {};
+		void removeRemotePlayer(game::RemotePlayerPtr&& remotePlayer) {
+
+		}
+
+		const std::string& getServerId() const {
+			return {serverId_};
 		}
 
 	private:
@@ -24,6 +31,7 @@ namespace mwetris::network {
 		class Impl;
 		std::unique_ptr<Impl> impl_;
 		std::jthread thread_;
+		std::string serverId_ = "sdfghjklzxcvbnm";
 	};
 
 }

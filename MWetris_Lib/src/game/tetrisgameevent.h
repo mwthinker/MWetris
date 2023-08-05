@@ -44,17 +44,9 @@ namespace mwetris::game {
 		Status status{Status::LOCAL};
 	};
 
-	class CountDown {
-	public:
-		CountDown(int timeLeft)
-			: timeLeft{timeLeft} {
-		}
-
-		int timeLeft;
-	};
-
 	class GamePause {
 	public:
+		int countDown;
 		bool pause;
 	};
 

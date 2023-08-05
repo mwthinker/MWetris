@@ -1,11 +1,11 @@
 #ifndef MWETRIS_GRAPHIC_GAMECOMPONENT_H
 #define MWETRIS_GRAPHIC_GAMECOMPONENT_H
 
-#include "game/player.h"
-
-#include "types.h"
-#include "game/tetrisgameevent.h"
 #include "imguiboard.h"
+#include "types.h"
+
+#include "game/player.h"
+#include "game/tetrisgameevent.h"
 
 #include <sdl/graphic.h>
 
@@ -33,13 +33,11 @@ namespace mwetris::graphic {
 		void initGame(const game::InitGameEvent& event);
 
 		void gamePause(const game::GamePause& event);
-		
-		void countDown(const game::CountDown& countDown);
 
 	private:
 		std::vector<ImGuiBoard> imguiBoards_;
-		bool paused_ = false;
-		int timeLeft_ = -1;
+		
+		game::GamePause gamePause_{};
 	};
 
 }

@@ -1,74 +1,62 @@
-#ifndef MWETRIS_GAME_TIMER_H
-#define MWETRIS_GAME_TIMER_H
+#ifndef MWETRIS_GAME_TIMEHANDLER_H
+#define MWETRIS_GAME_TIMEHANDLER_H
 
 #include <functional>
 #include <vector>
-#include <algorithm>
-
-#include <spdlog/spdlog.h>
 
 namespace mwetris::game {
 
-    class TimeHandler {
-    public:
-        using Callback = std::function<void()>;
+	class TimeHandler {
+	public:
+		using Callback = std::function<void()>;
 
-        TimeHandler() {
-        }
+		class Key {
+		public:
+			friend TimeHandler;
 
-        // Update the internal time and trigger callbacks
-        void update(double duration) {
-            currentTime_ += duration;
+			Key() = default;
 
-            std::erase_if(scheduledCallbacks_, [currentTime = currentTime_](TimeEvent& timeEvent) {
-                spdlog::debug("{} <= {}", timeEvent.eventTime + timeEvent.interval, currentTime);
-                if (timeEvent.eventTime + timeEvent.interval <= currentTime) {
-                    if (timeEvent.maxNbr > 0) {
-                        --timeEvent.maxNbr;
-                        timeEvent.eventTime = currentTime;
-                    }
-                    timeEvent.callback();
-                    return timeEvent.maxNbr <= 0;
-                }
-                return false;
-            });
-        }
+			bool operator==(Key key) const { return key.id_ == id_; };
+			bool operator!=(Key key) const { return key.id_ != id_; };
+		private:
+			explicit Key(int id) : id_{id} {
+			};
 
-        // Schedule a callback function to be triggered after a given duration
-        void schedule(Callback callback, double delay) {
-            scheduleRepeat(callback, delay, 1);
-        }
+			int id_ = 0;
+		};
 
-        // Schedule a callback function to be repeatedly triggered at a specified interval
-        void scheduleRepeat(Callback callback, double interval, int maxNbr) {
-            scheduledCallbacks_.push_back(TimeEvent{
-                .eventTime = currentTime_,
-                .interval = interval,
-                .callback = callback,
-                .maxNbr = maxNbr
-            });
-        }
+		// Update the internal time and trigger callbacks
+		void update(double duration);
 
-        // Get the current time
-        double getCurrentTime() const {
-            return currentTime_;
-        }
+		// Schedule a callback function to be triggered after a given duration
+		Key schedule(Callback callback, double delay);
 
-        void clear() {
-            scheduledCallbacks_.clear();
-        }
+		// Schedule a callback function to be repeatedly triggered at a specified interval
+		Key scheduleRepeat(Callback callback, double interval, int maxNbr);
 
-    private:
-        double currentTime_ = 0.0;
+		/// @brief Remove callback associated with the key and return true if callback is found else false.
+		/// @param key to the callback
+		/// @return true if callback is found else false
+		bool removeCallback(Key connection);
 
-        struct TimeEvent {
-            double eventTime;
-            double interval;
-            Callback callback;
-            int maxNbr;
-        };
-        std::vector<TimeEvent> scheduledCallbacks_;
-    };
+		double getCurrentTime() const;
+
+		void clear();
+
+	private:
+		static int id_;
+
+		double currentTime_ = 0.0;
+
+		struct TimeEvent {
+			int id;
+			double eventTime;
+			double interval;
+			Callback callback;
+			int maxNbr;
+		};
+		std::vector<TimeEvent> scheduledCallbacks_;
+	};
 
 
 }

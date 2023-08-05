@@ -6,7 +6,7 @@
 #include "scene/settings.h"
 #include "scene/highscore.h"
 #include "scene/newhighscore.h"
-#include "scene/customgame.h"
+#include "scene/creategame.h"
 #include "scene/joingame.h"
 
 #include "game/keyboard.h"
@@ -96,15 +96,15 @@ namespace mwetris::ui {
 			openPopUp<scene::HighScore>();
 		});
 		sceneStateMachine_.emplace<scene::About>();
-		sceneStateMachine_.emplace<scene::CustomGame>(game_, deviceManager_);
+		sceneStateMachine_.emplace<scene::CreateGame>(game_, deviceManager_);
 		sceneStateMachine_.emplace<scene::JoinGame>(game_, deviceManager_);
-		openPopUp<scene::CustomGame>();
+		openPopUp<scene::CreateGame>();
 
 		game_->setFixTimestep(1.0 / getCurrentMonitorHz());
 
 		connections_ += game_->initGameEvent.connect(gameComponent_.get(), &mwetris::graphic::GameComponent::initGame);
 		connections_ += game_->gameOverEvent.connect([this](game::GameOver gameOver) {
-			if (game_->getNbrOfPlayers() == 1 && game::isNewHighScore(gameOver.player)) {
+			if (game_->isDefaultGame() && game::isNewHighScore(gameOver.player)) {
 				scene::NewHighScoreData data;
 				data.name = gameOver.player->getName();
 				data.points = gameOver.player->getPoints();
@@ -113,11 +113,8 @@ namespace mwetris::ui {
 				openPopUp<scene::NewHighScore>(data);
 			}
 		});
-		connections_ += game_->gamePauseEvent.connect([this](game::GamePause gamePause) {
+		connections_ += game_->gamePauseEvent.connect([this](const game::GamePause& gamePause) {
 			gameComponent_->gamePause(gamePause);
-		});
-		connections_ += game_->countDownGameEvent.connect([this](game::CountDown countDown) {
-			gameComponent_->countDown(countDown);
 		});
 
 		startNewGame();
@@ -154,6 +151,14 @@ namespace mwetris::ui {
 		ImGui::PopFont();
 	}
 
+	namespace {
+
+		struct GameMode {
+			std::string name;
+		};
+
+	}
+
 	void TetrisWindow::imGuiMainMenu(const sdl::DeltaTime& deltaTime) {
 		ImGui::MainWindow("MainWindow", ImguiNoWindow, [&]() {
 			ImGui::ImageBackground(background_);
@@ -161,34 +166,38 @@ namespace mwetris::ui {
 			ImGui::MenuBar([&]() {
 				ImGui::Menu("Game", [&]() {
 					if (ImGui::MenuItem("New Single Player", "F1")) {
-						game_->restartGame();
+						game_->createDefaultGame(*deviceManager_);
 					}
+					ImGui::Separator();
 					if (ImGui::MenuItem("Create Game")) {
-						openPopUp<scene::CustomGame>();
+						openPopUp<scene::CreateGame>();
 					}
 					if (ImGui::MenuItem("Join Game")) {
 						openPopUp<scene::JoinGame>();
 					}
+					ImGui::Separator();
 					if (ImGui::MenuItem("Highscore")) {
 						game_->pause();
 						openPopUp<mwetris::ui::scene::HighScore>();
+					}
+					if (ImGui::MenuItem("Preferences")) {
+						openPopUp<mwetris::ui::scene::Settings>();
 					}
 					if (ImGui::MenuItem("Quit", "ESQ")) {
 						sdl::Window::quit();
 					}
 				});
-				ImGui::Menu("Settings", [&]() {
-					if (ImGui::MenuItem("Preferences")) {
-						openPopUp<mwetris::ui::scene::Settings>();
-					}
-				});
-				ImGui::Menu("In Game", [&]() {
+				ImGui::Menu("Current", [&]() {
 					if (ImGui::MenuItem(game_->isPaused() ? "Unpause" : "Pause", "P")) {
 						game_->pause();
 					}
 					if (ImGui::MenuItem("Restart", "F5")) {
 						game_->restartGame();
 					}
+					ImGui::Separator();
+					ImGui::Menu("Game Mode", []() {
+
+					});
 				});
 				ImGui::Menu("Help", [&]() {
 					if (ImGui::MenuItem("About")) {
@@ -197,8 +206,21 @@ namespace mwetris::ui {
 				});
 			});
 			auto h = ImGui::GetCursorPosY();
+			bool defaultGame = game_->isDefaultGame();
+
+
+			auto lowerBar = defaultGame ? 0 : 100;
+
 			auto size = ImGui::GetWindowSize();
-			gameComponent_->draw(size.x, size.y - h, std::chrono::duration<double>(deltaTime).count());
+			gameComponent_->draw(size.x, size.y - h - lowerBar, std::chrono::duration<double>(deltaTime).count());
+			if (!defaultGame) {
+				ImGui::Separator();
+				ImGui::Text("Server Id: %s", "asddgasasdf");
+				ImGui::SameLine();
+				ImGui::Button("Add Player");
+				ImGui::SameLine();
+				ImGui::Button("CreateGame");
+			}
 		});
 	}
 
