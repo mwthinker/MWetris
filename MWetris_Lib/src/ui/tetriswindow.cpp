@@ -20,12 +20,22 @@
 
 #include <spdlog/spdlog.h>
 
+#include <chrono>
+
+using namespace std::chrono_literals;
+
 namespace mwetris::ui {
 
 	namespace {
 
+		constexpr auto CheckRefreshRateInterval = 30s;
+
 		int acceptNameInput(ImGuiInputTextCallbackData* data) {
 			return data->BufTextLen < 30;
+		}
+		
+		constexpr double toSeconds(const auto& duration) {
+			return std::chrono::duration<double>(duration).count();
 		}
 
 	}
@@ -130,7 +140,7 @@ namespace mwetris::ui {
 		// Keep the update loop in sync with monitor.
 		timeHandler_.scheduleRepeat([this]() {
 			game_->setFixTimestep(1.0 / getCurrentMonitorHz());
-		}, 30.0, std::numeric_limits<int>::max());
+		}, toSeconds(CheckRefreshRateInterval), std::numeric_limits<int>::max());
 
 		startNewGame();
 	}
@@ -141,7 +151,7 @@ namespace mwetris::ui {
 	}
 
 	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
-		auto deltaTimeSeconds = std::chrono::duration<double>(deltaTime).count();
+		auto deltaTimeSeconds = toSeconds(deltaTime);
 		game_->update(deltaTimeSeconds);
 		timeHandler_.update(deltaTimeSeconds);
 		

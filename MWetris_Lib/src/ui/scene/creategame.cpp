@@ -13,11 +13,6 @@ namespace mwetris::ui::scene {
 
 	namespace {
 
-		template<typename T>
-		concept HasNameMember = requires(T t) {
-			{ t.name };
-		};
-
 		enum class Player {
 			Human,
 			Ai,
@@ -102,27 +97,6 @@ namespace mwetris::ui::scene {
 			}
 			return types;
 		}
-
-		template <typename Type> requires HasNameMember<Type>
-		const Type& comboType(const char* label, const std::vector<Type>& boards, int id = 0) {
-			using Pair = std::pair<const char*, int>;
-			static std::map<Pair, int> indexByLabel;
-			auto& item = indexByLabel[Pair{label, id}];
-
-			ImGui::ComboScoped(label, boards[item].name.c_str(), ImGuiComboFlags_None, [&]() {
-				for (int n = 0; n < boards.size(); ++n) {
-					bool isSelected = (item == n);
-					if (ImGui::Selectable(boards[n].name.c_str(), isSelected)) {
-						item = n;
-					}
-					if (isSelected) {
-						ImGui::SetItemDefaultFocus();
-					}
-				}
-			});
-
-			return boards[item];
-		}
 		
 		std::vector<game::Human> extractHumans(const std::vector<std::string>& names, const std::vector<std::variant<game::DevicePtr, tetris::Ai>>& players) {
 			std::vector<game::Human> humans;
@@ -177,13 +151,13 @@ namespace mwetris::ui::scene {
 		ImGui::SetNextItemWidth(150.f);
 
 		static auto gameModes = getGameModes();
-		comboType<GameMode>("##Game Mode", gameModes);
+		ImGui::ComboUniqueType<GameMode>("##Game Mode", gameModes);
 
 		ImGui::SeparatorText("Board Size");
 		ImGui::SetNextItemWidth(150.f);
 
 		static auto boardSizes = getBoardSizes();
-		const auto& boardSize = comboType<BoardSize>("##Board size", boardSizes);
+		const auto& boardSize = ImGui::ComboUniqueType<BoardSize>("##Board size", boardSizes);
 
 		static auto playerTypes = getPlayerTypes();
 
@@ -193,15 +167,15 @@ namespace mwetris::ui::scene {
 			ImGui::PushID(i);
 
 			ImGui::SetNextItemWidth(150.f);
-			auto playerType = comboType<PlayerType>("##Player Type", playerTypes, i);
+			auto playerType = ImGui::ComboUniqueType<PlayerType>("##Player Type", playerTypes, i);
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(150.f);
 
 			if (playerType.player == Player::Human) {
-				const auto& deviceType = comboType<DeviceType>("##Players", allDevices_, i);
+				const auto& deviceType = ImGui::ComboUniqueType<DeviceType>("##Players", allDevices_, i);
 				players_[i] = deviceType.device;
 			} else if (playerType.player == Player::Ai) {
-				const auto& aiType = comboType<AiType>("##Players", allAis_, i);
+				const auto& aiType = ImGui::ComboUniqueType<AiType>("##Players", allAis_, i);
 				players_[i] = aiType.ai;
 			}
 

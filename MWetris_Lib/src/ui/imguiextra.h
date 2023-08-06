@@ -31,7 +31,7 @@ namespace ImGui {
 	};
 
 	template <typename Type> requires HasNameMember<Type>
-	const Type& comboType(const char* label, const std::vector<Type>& boards, int id = 0) {
+	const Type& ComboUniqueType(const char* label, const std::vector<Type>& boards, int id = 0) {
 		using Pair = std::pair<const char*, int>;
 		static std::map<Pair, int> indexByLabel;
 		auto& item = indexByLabel[Pair{label, id}];
