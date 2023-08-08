@@ -9,18 +9,17 @@
 
 namespace mwetris::game {
 
-	class Player;
-	using PlayerPtr = std::shared_ptr<Player>;
+	class PlayerBoard;
+	using PlayerBoardPtr = std::shared_ptr<PlayerBoard>;
 
 	class GameBoardEvent {
 	public:
-		GameBoardEvent(PlayerPtr player, tetris::BoardEvent type, int nbr)
-			: player{player}
+		GameBoardEvent(PlayerBoardPtr playerBoard, tetris::BoardEvent type, int nbr)
+			: playerBoard{playerBoard}
 			, type{type}
-			, nbr{nbr} {
-		}
+			, nbr{nbr} {}
 
-		PlayerPtr player;
+		PlayerBoardPtr playerBoard;
 		tetris::BoardEvent type;
 		int nbr;
 	};
@@ -38,8 +37,7 @@ namespace mwetris::game {
 		};
 
 		GameStart(Status status)
-			: status{status} {
-		}
+			: status{status} {}
 
 		Status status{Status::LOCAL};
 	};
@@ -52,44 +50,40 @@ namespace mwetris::game {
 
 	class GameOver {
 	public:
-		GameOver(PlayerPtr player)
-			: player{std::move(player)} {
-		}
+		GameOver(PlayerBoardPtr playerBoard)
+			: playerBoard{playerBoard} {}
 
-		PlayerPtr player;
+		PlayerBoardPtr playerBoard;
 	};
 
 	class InitGameEvent {
 	public:
 		InitGameEvent(std::input_iterator auto begin, std::input_iterator auto end)
-			: players(begin, end) {
-		}
+			: playerBoards(begin, end) {}
 
-		std::vector<PlayerPtr> players;
+		std::vector<PlayerBoardPtr> playerBoards;
 	};
 
 	class LevelChange {
 	public:
-		LevelChange(PlayerPtr player, int newLevel, int oldLevel)
-			: player{std::move(player)}
+		LevelChange(PlayerBoardPtr playerBoard, int newLevel, int oldLevel)
+			: playerBoard{playerBoard}
 			, newLevel{newLevel}
-			, oldLevel{oldLevel} {
-		}
+			, oldLevel{oldLevel} {}
 
-		PlayerPtr player;
+		PlayerBoardPtr playerBoard;
 		int newLevel;
 		int oldLevel;
 	};
 
 	class PointsChange {
 	public:
-		PointsChange(PlayerPtr player, int newPoints, int oldPoints)
-			: player{std::move(player)}
+		PointsChange(PlayerBoardPtr playerBoard, int newPoints, int oldPoints)
+			: playerBoard{playerBoard}
 			, newPoints{newPoints}
-			, oldPoints{oldPoints} {
-		}
+			, oldPoints{oldPoints} {}
 
-		PlayerPtr player;
+		PlayerBoardPtr playerBoard;
 		int newPoints;
 		int oldPoints;
 	};

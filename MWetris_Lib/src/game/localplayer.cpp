@@ -9,11 +9,10 @@
 
 namespace mwetris::game {
 
-	LocalPlayer::LocalPlayer(const tetris::TetrisBoard& board, const std::string& name)
-		: Player{board, name} {
-	}
+	LocalPlayerBoard::LocalPlayerBoard(const tetris::TetrisBoard& board, const std::string& name)
+		: PlayerBoard{board, name} {}
 
-	void LocalPlayer::update(Input input, double deltaTime) {
+	void LocalPlayerBoard::update(Input input, double deltaTime) {
 		// The time between each "gravity" move.
 		double downTime = 1.0 / getGravityDownSpeed();
 		gravityMove_.setWaitingTime(downTime);
@@ -49,32 +48,32 @@ namespace mwetris::game {
 		}
 	}
 
-	void LocalPlayer::addRow(int holes) {
+	void LocalPlayerBoard::addRow(int holes) {
 		auto blockTypes = tetris::generateRow(tetrisBoard_.getColumns(), holes);
 		tetrisBoard_.addExternalRows(blockTypes);
 	}
 
-	void LocalPlayer::updateName(const std::string& name) {
+	void LocalPlayerBoard::updateName(const std::string& name) {
 		name_ = name;
 	}
 
-	void LocalPlayer::updatePoints(int points) {
+	void LocalPlayerBoard::updatePoints(int points) {
 		points_ = points;
 	}
 
-	void LocalPlayer::updateLevel(int level) {
+	void LocalPlayerBoard::updateLevel(int level) {
 		level_ = level;
 	}
 
-	void LocalPlayer::updateClearedRows(int clearedRows) {
+	void LocalPlayerBoard::updateClearedRows(int clearedRows) {
 		clearedRows_ = clearedRows;
 	}
 
-	void LocalPlayer::updateGameOverPosition(int gameOverPosition) {
+	void LocalPlayerBoard::updateGameOverPosition(int gameOverPosition) {
 		gameOverPosition_ = gameOverPosition;
 	}
 
-	void LocalPlayer::updateRestart() {
+	void LocalPlayerBoard::updateRestart() {
 		level_ = 1;
 		points_ = 0;
 		gameOverPosition_ = 0;
@@ -82,12 +81,12 @@ namespace mwetris::game {
 		restartTetrisBoard(tetris::randomBlockType(), tetris::randomBlockType());
 	}
 
-	void LocalPlayer::updateGameOver() {
+	void LocalPlayerBoard::updateGameOver() {
 		updateTetrisBoard(tetris::Move::GameOver);
 	}
 
-	void LocalPlayer::handleBoardEvent(tetris::BoardEvent boardEvent, int value) {
-		Player::handleBoardEvent(boardEvent, value);
+	void LocalPlayerBoard::handleBoardEvent(tetris::BoardEvent boardEvent, int value) {
+		PlayerBoard::handleBoardEvent(boardEvent, value);
 		if (boardEvent == tetris::BoardEvent::CurrentBlockUpdated) {
 			setNextTetrisBlock(tetris::randomBlockType());
 

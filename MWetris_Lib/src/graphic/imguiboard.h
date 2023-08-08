@@ -13,11 +13,11 @@ namespace mwetris::graphic {
 
 	class ImGuiBoard {
 	public:
-		explicit ImGuiBoard(game::PlayerPtr playerPtr);
+		explicit ImGuiBoard(game::PlayerBoardPtr playerBoardPtr);
 
 		void draw(float width, float height, double deltaTime);
 
-		const game::Player& getPlayer() const;
+		const game::PlayerBoard& getPlayerBoard() const;
 
 		ImGuiBoard(const ImGuiBoard& imGuiBoard);
 		ImGuiBoard& operator=(const ImGuiBoard& imGuiBoard);
@@ -38,7 +38,7 @@ namespace mwetris::graphic {
 		float squareSize_ = 0.f;
 		float borderSize_ = 2.f;
 		
-		game::PlayerPtr player_;
+		game::PlayerBoardPtr playerBoard_;
 		
 		std::vector<float> rows_;
 		float height_ = 0.f;

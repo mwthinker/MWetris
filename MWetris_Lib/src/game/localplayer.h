@@ -6,17 +6,17 @@
 
 namespace mwetris::game {
 
-	class LocalPlayer;
-	using LocalPlayerPtr = std::shared_ptr<LocalPlayer>;
+	class LocalPlayerBoard;
+	using LocalPlayerBoardPtr = std::shared_ptr<LocalPlayerBoard>;
 
-	class LocalPlayer : public Player {
+	class LocalPlayerBoard : public PlayerBoard {
 	public:
-		LocalPlayer(const tetris::TetrisBoard& board, const std::string& name);
+		LocalPlayerBoard(const tetris::TetrisBoard& board, const std::string& name);
 
-		LocalPlayer(const LocalPlayer&) = delete;
-		LocalPlayer& operator=(const LocalPlayer&) = delete;
-		LocalPlayer(LocalPlayer&&) = delete;
-		LocalPlayer& operator=(LocalPlayer&&) = delete;
+		LocalPlayerBoard(const LocalPlayerBoard&) = delete;
+		LocalPlayerBoard& operator=(const LocalPlayerBoard&) = delete;
+		LocalPlayerBoard(LocalPlayerBoard&&) = delete;
+		LocalPlayerBoard& operator=(LocalPlayerBoard&&) = delete;
 
 		void update(Input input, double deltaTime);
 

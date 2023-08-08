@@ -2,71 +2,71 @@
 #define MWETRIS_GAME_LOCALPLAYERBUILDER_H
 
 #include "localplayer.h"
-#include "tetrisboard.h"
+#include "block.h"
 
 namespace mwetris::game {
 
-	class LocalPlayerBuilder {
+	class LocalPlayerBoardBuilder {
 	public:
-		LocalPlayerPtr build();
+		LocalPlayerBoardPtr build();
 
-		LocalPlayerBuilder withWidth(int width) {
+		LocalPlayerBoardBuilder& withWidth(int width) {
 			width_ = width;
 			return *this;
 		}
 
-		LocalPlayerBuilder& withHeight(int height) {
+		LocalPlayerBoardBuilder& withHeight(int height) {
 			height_ = height;
 			return *this;
 		}
 
-		LocalPlayerBuilder& withMovingBlock(const tetris::Block& block) {
+		LocalPlayerBoardBuilder& withMovingBlock(const tetris::Block& block) {
 			movingBlockType_ = tetris::BlockType::Empty;
 			movingBlock_ = block;
 			return *this;
 		}
 
-		LocalPlayerBuilder& withMovingBlockType(const tetris::BlockType& blockType) {
+		LocalPlayerBoardBuilder& withMovingBlockType(const tetris::BlockType& blockType) {
 			movingBlockType_ = blockType;
 			return *this;
 		}
 
-		LocalPlayerBuilder& withNextBlockType(tetris::BlockType next) {
+		LocalPlayerBoardBuilder& withNextBlockType(tetris::BlockType next) {
 			next_ = next;
 			return *this;
 		}
 
-		LocalPlayerBuilder& withPoints(int points) {
+		LocalPlayerBoardBuilder& withPoints(int points) {
 			points_ = points;
 			return *this;
 		}
 
-		LocalPlayerBuilder& withLevel(int level) {
+		LocalPlayerBoardBuilder& withLevel(int level) {
 			level_ = level;
 			return *this;
 		}
 
-		LocalPlayerBuilder& withLevelUpCounter(int counter) {
+		LocalPlayerBoardBuilder& withLevelUpCounter(int counter) {
 			levelUpCounter_ = counter;
 			return *this;
 		}
 
-		LocalPlayerBuilder& withClearedRows(int rows) {
+		LocalPlayerBoardBuilder& withClearedRows(int rows) {
 			clearedRows_ = rows;
 			return *this;
 		}
 
-		LocalPlayerBuilder& withBoard(const std::vector<tetris::BlockType>& board) {
+		LocalPlayerBoardBuilder& withBoard(const std::vector<tetris::BlockType>& board) {
 			board_ = board;
 			return *this;
 		}
 
-		LocalPlayerBuilder& withGameOverPosition(int gameOverPosition) {
+		LocalPlayerBoardBuilder& withGameOverPosition(int gameOverPosition) {
 			gameOverPosition_ = gameOverPosition;
 			return *this;
 		}
 
-		LocalPlayerBuilder& withName(const std::string& name) {
+		LocalPlayerBoardBuilder& withName(const std::string& name) {
 			name_ = name;
 			return *this;
 		}

@@ -1,21 +1,22 @@
 #include "localplayerbuilder.h"
+#include "tetrisboard.h"
 
 namespace mwetris::game {
 
-	LocalPlayerPtr LocalPlayerBuilder::build() {
-		LocalPlayerPtr player;
+	LocalPlayerBoardPtr LocalPlayerBoardBuilder::build() {
+		LocalPlayerBoardPtr playerBoard;
 		if (board_.size() > 0 || movingBlockType_ == tetris::BlockType::Empty) {
 			tetris::TetrisBoard board(board_, width_, height_, movingBlock_, next_);
-			player = std::make_shared<LocalPlayer>(board, name_);
+			playerBoard = std::make_shared<LocalPlayerBoard>(board, name_);
 		} else {
 			tetris::TetrisBoard board(width_, height_, movingBlockType_, next_);
-			player = std::make_shared<LocalPlayer>(board, name_);
+			playerBoard = std::make_shared<LocalPlayerBoard>(board, name_);
 		}
-		player->updateLevel(level_);
-		player->updateClearedRows(clearedRows_);
-		player->updateGameOverPosition(gameOverPosition_);
-		player->updatePoints(points_);
-		return player;
+		playerBoard->updateLevel(level_);
+		playerBoard->updateClearedRows(clearedRows_);
+		playerBoard->updateGameOverPosition(gameOverPosition_);
+		playerBoard->updatePoints(points_);
+		return playerBoard;
 	}
 
 }

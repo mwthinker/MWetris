@@ -27,35 +27,34 @@ namespace {
 
 namespace mwetris::game {
 
-	Player::Player(const tetris::TetrisBoard& tetrisBoard, const std::string& name)
+	PlayerBoard::PlayerBoard(const tetris::TetrisBoard& tetrisBoard, const std::string& name)
 		: tetrisBoard_{tetrisBoard}
 		, name_{name}
-		, uniqueId_{generateRandomString(UniqueIdSize)} {
-	}
+		, uniqueId_{generateRandomString(UniqueIdSize)} {}
 
-	bool Player::isGameOver() const {
+	bool PlayerBoard::isGameOver() const {
 		return tetrisBoard_.isGameOver();
 	}
 
-	void Player::restartTetrisBoard(tetris::BlockType current, tetris::BlockType next) {
+	void PlayerBoard::restartTetrisBoard(tetris::BlockType current, tetris::BlockType next) {
 		tetrisBoard_.restart(current, next);
 	}
 
-	void Player::setNextTetrisBlock(tetris::BlockType next) {
+	void PlayerBoard::setNextTetrisBlock(tetris::BlockType next) {
 		tetrisBoard_.setNextBlock(next);
 	}
 
-	void Player::updateTetrisBoard(tetris::Move move) {
+	void PlayerBoard::updateTetrisBoard(tetris::Move move) {
 		tetrisBoard_.update(move, [this](tetris::BoardEvent boardEvent, int value) {
 			handleBoardEvent(boardEvent, value);
 		});
 	}
 
-	void Player::handleBoardEvent(tetris::BoardEvent event, int value) {
+	void PlayerBoard::handleBoardEvent(tetris::BoardEvent event, int value) {
 		gameboardEventUpdate.invoke(event, value);
 	}
 
-	const std::string& Player::getUniqueId() const {
+	const std::string& PlayerBoard::getUniqueId() const {
 		return uniqueId_;
 	}
 }

@@ -61,28 +61,28 @@ namespace mwetris::game {
 			return tetris::TetrisBoard{board, player.width(), player.height(), current, next};
 		}
 
-		void setTpPlayer(tp::Player& player, const LocalPlayer& localPlayer) {
-			const auto& blockTypes = localPlayer.getTetrisBoard().getBoardVector();
+		void setTpPlayer(tp::Player& player, const LocalPlayerBoard& localPlayerBoard) {
+			const auto& blockTypes = localPlayerBoard.getTetrisBoard().getBoardVector();
 			for (const auto type : blockTypes) {
 				player.add_board(static_cast<tp::BlockType>(type));
 			}
 			player.set_ai(false);
-			player.set_level(localPlayer.getLevel());
-			player.set_points(localPlayer.getPoints());
-			player.set_name(localPlayer.getName());
-			player.set_next(static_cast<tp::BlockType>(localPlayer.getTetrisBoard().getNextBlockType()));
-			player.set_cleared_rows(localPlayer.getClearedRows());
-			player.set_width(localPlayer.getTetrisBoard().getColumns());
-			player.set_height(localPlayer.getTetrisBoard().getRows());
+			player.set_level(localPlayerBoard.getLevel());
+			player.set_points(localPlayerBoard.getPoints());
+			player.set_name(localPlayerBoard.getName());
+			player.set_next(static_cast<tp::BlockType>(localPlayerBoard.getTetrisBoard().getNextBlockType()));
+			player.set_cleared_rows(localPlayerBoard.getClearedRows());
+			player.set_width(localPlayerBoard.getTetrisBoard().getColumns());
+			player.set_height(localPlayerBoard.getTetrisBoard().getRows());
 
-			player.mutable_current()->set_lowest_start_row(localPlayer.getTetrisBoard().getBlock().getLowestStartRow());
-			player.mutable_current()->set_start_column(localPlayer.getTetrisBoard().getBlock().getStartColumn());
-			player.mutable_current()->set_rotations(localPlayer.getTetrisBoard().getBlock().getCurrentRotation());
-			player.mutable_current()->set_type(static_cast<tp::BlockType>(localPlayer.getTetrisBoard().getBlock().getBlockType()));
+			player.mutable_current()->set_lowest_start_row(localPlayerBoard.getTetrisBoard().getBlock().getLowestStartRow());
+			player.mutable_current()->set_start_column(localPlayerBoard.getTetrisBoard().getBlock().getStartColumn());
+			player.mutable_current()->set_rotations(localPlayerBoard.getTetrisBoard().getBlock().getCurrentRotation());
+			player.mutable_current()->set_type(static_cast<tp::BlockType>(localPlayerBoard.getTetrisBoard().getBlock().getBlockType()));
 		}
 
-		LocalPlayerPtr createPlayer(const tp::Player& player) {
-			return LocalPlayerBuilder{}
+		LocalPlayerBoardPtr createPlayer(const tp::Player& player) {
+			return LocalPlayerBoardBuilder{}
 				.withBoard(toBoard(player))
 				.withMovingBlock(toBlock(player.current()))
 				.withHeight(player.height())
@@ -184,7 +184,7 @@ namespace mwetris::game {
 		for (const auto& playerDevice: players) {
 			auto human = game.add_human();
 			human->set_device_guid(playerDevice.device->getGuid());
-			setTpPlayer(*human->mutable_player(), *playerDevice.player);
+			setTpPlayer(*human->mutable_player(), *playerDevice.playerBoard);
 		}
 		std::ofstream output{SavedGameFile};
 		game.SerializePartialToOstream(&output);
@@ -205,7 +205,7 @@ namespace mwetris::game {
 		for (const auto& pbHuman : game.human()) {
 			players_.push_back(PlayerDevice{
 				.device = deviceManager.findDevice(pbHuman.device_guid()),
-				.player = createPlayer(pbHuman.player())
+				.playerBoard = createPlayer(pbHuman.player())
 			});
 		}
 		return players_;
@@ -220,9 +220,9 @@ namespace mwetris::game {
 		return results;
 	}
 
-	bool isNewHighScore(const PlayerPtr& player) {
+	bool isNewHighScore(const PlayerBoardPtr& playerBoard) {
 		auto results = loadHighScore();
-		return getIndexForNewResult(results, player->getPoints()) < NbrHighScoreResults;
+		return getIndexForNewResult(results, playerBoard->getPoints()) < NbrHighScoreResults;
 	}
 
 	void saveHighScore(const std::string& name, int points, int rows, int level) {

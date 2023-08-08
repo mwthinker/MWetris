@@ -72,17 +72,17 @@ namespace mwetris::game {
 	private:
 		void initGame();
 		void updateGame(double deltaTime);
-		void applyRules(tetris::BoardEvent gameEvent, int value, const LocalPlayerPtr& player);
+		void applyRules(tetris::BoardEvent gameEvent, int value, const LocalPlayerBoardPtr& playerBoard);
 
 		std::vector<PlayerDevice> playerDevices_;
 
 		struct ComputerPlayer {
 			ComputerPtr computer;
-			LocalPlayerPtr player;
+			LocalPlayerBoardPtr playerBoard;
 		};
 		std::vector<ComputerPlayer> computers_;
 
-		std::vector<PlayerPtr> players_;
+		std::vector<LocalPlayerBoardPtr> playerBoards_;
 
 		double accumulator_ = 0.0;
 		bool pause_ = false;

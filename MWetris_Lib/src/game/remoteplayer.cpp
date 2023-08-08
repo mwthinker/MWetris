@@ -7,13 +7,13 @@
 
 namespace mwetris::game {
 
-	RemotePlayer::RemotePlayer(const tetris::TetrisBoard& board, const std::string& name)
-		: Player{board, name} {}
+	RemotePlayerBoard::RemotePlayerBoard(const tetris::TetrisBoard& board, const std::string& name)
+		: PlayerBoard{board, name} {}
 
 
 
-	void RemotePlayer::handleBoardEvent(tetris::BoardEvent boardEvent, int value) {
-		Player::handleBoardEvent(boardEvent, value);
+	void RemotePlayerBoard::handleBoardEvent(tetris::BoardEvent boardEvent, int value) {
+		PlayerBoard::handleBoardEvent(boardEvent, value);
 		if (boardEvent == tetris::BoardEvent::CurrentBlockUpdated) {
 			
 		}

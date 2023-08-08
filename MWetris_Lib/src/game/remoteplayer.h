@@ -8,14 +8,14 @@ namespace mwetris::game {
 	class RemotePlayer;
 	using RemotePlayerPtr = std::shared_ptr<RemotePlayer>;
 
-	class RemotePlayer : public Player {
+	class RemotePlayerBoard : public PlayerBoard {
 	public:
-		RemotePlayer(const tetris::TetrisBoard& board, const std::string& name);
+		RemotePlayerBoard(const tetris::TetrisBoard& board, const std::string& name);
 
-		RemotePlayer(const RemotePlayer&) = delete;
-		RemotePlayer& operator=(const RemotePlayer&) = delete;
-		RemotePlayer(RemotePlayer&&) = delete;
-		RemotePlayer& operator=(RemotePlayer&&) = delete;
+		RemotePlayerBoard(const RemotePlayerBoard&) = delete;
+		RemotePlayerBoard& operator=(const RemotePlayerBoard&) = delete;
+		RemotePlayerBoard(RemotePlayerBoard&&) = delete;
+		RemotePlayerBoard& operator=(RemotePlayerBoard&&) = delete;
 
 		int getLevel() const override {
 			return level_;

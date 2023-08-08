@@ -666,58 +666,5 @@ namespace mwetris {
 			return 7;
 		}
 	}
-	/*
-	void Configuration::setActiveLocalGame(int columns, int rows, const std::vector<PlayerData>& playerDataVector) {
-		impl_->jsonObject["activeGames"]["localGame"]["columns"] = columns;
-		impl_->jsonObject["activeGames"]["localGame"]["rows"] = rows;
-
-		nlohmann::json playerJson = nlohmann::json::array();
-		for (const PlayerData& data : playerDataVector) {
-			nlohmann::json test = nlohmann::json(data.board_);
-
-			playerJson.push_back({
-				{"name", data.name_},
-				{"lastPosition", data.lastPosition_},
-				{"nextBlockType", data.next_},
-				{"levelUpCounter", data.levelUpCounter_},
-				{"ai", data.device_->isAi()},
-				{"level", data.level_},
-				{"points", data.points_},
-				{"clearedRows", data.clearedRows_},
-				{"currentBlock", data.current_},
-				{"board", convertBlockTypesToString(data.board_)},
-				{"device",{
-					{"name", data.device_->getName()},
-					{"ai", data.device_->isAi()},
-				}}
-				});
-		}
-		impl_->jsonObject["activeGames"]["localGame"]["players"] = playerJson;
-	}
-	*/
-
-	/*
-	std::vector<game::PlayerData> Configuration::getActiveLocalGamePlayers() {
-		nlohmann::json players = impl_->jsonObject["activeGames"]["localGame"]["players"];
-
-		std::vector<game::PlayerData> playerDataVector;
-		for (nlohmann::json& player : players) {
-			game::PlayerData playerData;
-			playerData.name_ = player["name"].get<std::string>();
-			playerData.lastPosition_ = player["lastPosition"].get<int>();
-			playerData.next_ = player["nextBlockType"].get<BlockType>();
-			playerData.levelUpCounter_ = player["levelUpCounter"].get<int>();
-			playerData.level_ = player["level"].get<int>();
-			playerData.points_ = player["points"].get<int>();
-			playerData.clearedRows_ = player["clearedRows"].get<int>();
-			playerData.current_ = player["currentBlock"].get<Block>();
-			playerData.board_ = convertStringToBlockTypes(player["board"].get<std::string>());
-			playerData.ai_ = player["ai"].get<bool>();
-			playerData.deviceName_ = player["device"]["name"].get<std::string>();
-			playerDataVector.push_back(playerData);
-		}
-		return playerDataVector;
-	}
-	*/
 
 }

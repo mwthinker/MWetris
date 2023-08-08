@@ -32,8 +32,8 @@ namespace mwetris::graphic {
 
 	}
 
-	ImGuiBoard::ImGuiBoard(game::PlayerPtr playerPtr)
-		: player_{std::move(playerPtr)} {
+	ImGuiBoard::ImGuiBoard(game::PlayerBoardPtr playerBoard)
+		: playerBoard_{playerBoard} {
 
 		spriteZ_ = Configuration::getInstance().getSprite(tetris::BlockType::Z);
 		spriteS_ = Configuration::getInstance().getSprite(tetris::BlockType::S);
@@ -46,13 +46,13 @@ namespace mwetris::graphic {
 		squareSize_ = Configuration::getInstance().getTetrisSquareSize();
 		borderSize_ = Configuration::getInstance().getTetrisBorderSize();
 
-		connections_ += player_->gameboardEventUpdate.connect(this, &ImGuiBoard::gameBoardEvent);
+		connections_ += playerBoard_->gameboardEventUpdate.connect(this, &ImGuiBoard::gameBoardEvent);
 	}
 
 	ImGuiBoard::ImGuiBoard(const ImGuiBoard& imGuiBoard)
 		: squareSize_{imGuiBoard.squareSize_}
 		, borderSize_{imGuiBoard.borderSize_}
-		, player_{imGuiBoard.player_}
+		, playerBoard_{imGuiBoard.playerBoard_}
 		, rows_{imGuiBoard.rows_}
 		, height_{imGuiBoard.height_}
 		, spriteI_{imGuiBoard.spriteI_}
@@ -63,13 +63,13 @@ namespace mwetris::graphic {
 		, spriteT_{imGuiBoard.spriteT_}
 		, spriteZ_{imGuiBoard.spriteZ_} {
 
-		connections_ += player_->gameboardEventUpdate.connect(this, &ImGuiBoard::gameBoardEvent);
+		connections_ += playerBoard_->gameboardEventUpdate.connect(this, &ImGuiBoard::gameBoardEvent);
 	}
 
 	ImGuiBoard& ImGuiBoard::operator=(const ImGuiBoard& imGuiBoard) {
 		squareSize_ = imGuiBoard.squareSize_;
 		borderSize_ = imGuiBoard.borderSize_;
-		player_ = imGuiBoard.player_;
+		playerBoard_ = imGuiBoard.playerBoard_;
 		rows_ = imGuiBoard.rows_;
 		height_ = imGuiBoard.height_;
 		spriteI_ = imGuiBoard.spriteI_;
@@ -80,7 +80,7 @@ namespace mwetris::graphic {
 		spriteT_ = imGuiBoard.spriteT_;
 		spriteZ_ = imGuiBoard.spriteZ_;
 
-		connections_ += player_->gameboardEventUpdate.connect(this, &ImGuiBoard::gameBoardEvent);
+		connections_ += playerBoard_->gameboardEventUpdate.connect(this, &ImGuiBoard::gameBoardEvent);
 		return *this;
 	}
 
@@ -100,14 +100,14 @@ namespace mwetris::graphic {
 			delta = (Vec2{1.f, 3.f} - calculateCenterOfMass(block)) * squareSize_;
 			delta.y = NormalizedPreviewSize * squareSize_ - delta.y;
 		} else {
-			delta = Vec2{0.f, (player_->getTetrisBoard().getRows() - 2) * squareSize_};
+			delta = Vec2{0.f, (playerBoard_->getTetrisBoard().getRows() - 2) * squareSize_};
 		}
 		
 		auto drawList = ImGui::GetWindowDrawList();
 
 		auto texture = getSprite(block.getBlockType());
 		drawList->PushTextureID((ImTextureID)(intptr_t) texture);
-		const auto& tetrisBoard = player_->getTetrisBoard();
+		const auto& tetrisBoard = playerBoard_->getTetrisBoard();
 
 		for (const auto& sq : block) {
 			auto x = pos.x + sq.column * squareSize_ + delta.x;
@@ -147,21 +147,21 @@ namespace mwetris::graphic {
 
 		Vec2 sqSize{squareSize_ * NormalizedPreviewSize , squareSize_ * NormalizedPreviewSize};
 		drawList->AddRectFilled(pos + sqSize * 0.05f, pos + sqSize * 0.95f, color.toImU32());
-		drawBlock(tetris::Block{player_->getTetrisBoard().getNextBlockType(), 0, 0}, pos + squareSize_, true);
+		drawBlock(tetris::Block{playerBoard_->getTetrisBoard().getNextBlockType(), 0, 0}, pos + squareSize_, true);
 
 		ImGui::Dummy(sqSize);
 	}
 
 	void ImGuiBoard::drawBoard(double deltaTime) {
-		const int columns = player_->getTetrisBoard().getColumns();
-		const int rows = player_->getTetrisBoard().getRows();
+		const int columns = playerBoard_->getTetrisBoard().getColumns();
+		const int rows = playerBoard_->getTetrisBoard().getRows();
 		
 		drawGrid(columns, rows - 2);
 		drawBoardSquares(deltaTime);
 		
 		Vec2 cursorPos = ImGui::GetCursorScreenPos();
-		drawBlock(player_->getTetrisBoard().getBlockDown(), cursorPos, false, Color(1.f, 1.f, 1, 0.3f));
-		drawBlock(player_->getTetrisBoard().getBlock(), cursorPos);
+		drawBlock(playerBoard_->getTetrisBoard().getBlockDown(), cursorPos, false, Color(1.f, 1.f, 1, 0.3f));
+		drawBlock(playerBoard_->getTetrisBoard().getBlock(), cursorPos);
 
 		ImGui::Dummy({squareSize_ * columns, squareSize_ * (rows - 2)});
 	}
@@ -188,7 +188,7 @@ namespace mwetris::graphic {
 
 		auto drawList = ImGui::GetWindowDrawList();
 
-		const auto& tetrisBoard = player_->getTetrisBoard();
+		const auto& tetrisBoard = playerBoard_->getTetrisBoard();
 
 		rows_.resize(tetrisBoard.getRows() - 2);
 
@@ -218,7 +218,7 @@ namespace mwetris::graphic {
 
 	void ImGuiBoard::draw(float width, float height, double deltaTime) {
 		ImGui::Group([&]() {
-			const auto& tetrisBoard = player_->getTetrisBoard();
+			const auto& tetrisBoard = playerBoard_->getTetrisBoard();
 
 			const int columns = tetrisBoard.getColumns();
 			const int rows = tetrisBoard.getRows() - 2;
@@ -253,11 +253,11 @@ namespace mwetris::graphic {
 
 				ImGui::Indent(10.f);
 
-				ImGui::Text("%s:", player_->getName().c_str());
-				ImGui::Text("%s: %d", "Level", player_->getLevel());
+				ImGui::Text("%s:", playerBoard_->getName().c_str());
+				ImGui::Text("%s: %d", "Level", playerBoard_->getLevel());
 
-				ImGui::Text("%s: %d", "Points", player_->getPoints());
-				ImGui::Text("%s: %d", "Rows", player_->getClearedRows());
+				ImGui::Text("%s: %d", "Points", playerBoard_->getPoints());
+				ImGui::Text("%s: %d", "Rows", playerBoard_->getClearedRows());
 			});
 
 
@@ -282,8 +282,8 @@ namespace mwetris::graphic {
 		});
 	}
 
-	const game::Player& ImGuiBoard::getPlayer() const {
-		return *player_;
+	const game::PlayerBoard& ImGuiBoard::getPlayerBoard() const {
+		return *playerBoard_;
 	}
 
 	sdl::TextureView ImGuiBoard::getSprite(tetris::BlockType blockType) const {

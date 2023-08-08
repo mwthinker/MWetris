@@ -8,7 +8,7 @@ namespace mwetris::game {
 
 	struct PlayerDevice {
 		DevicePtr device;
-		LocalPlayerPtr player;
+		LocalPlayerBoardPtr playerBoard;
 	};
 
 }

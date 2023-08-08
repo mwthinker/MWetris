@@ -18,8 +18,8 @@ namespace mwetris::game {
 
 		constexpr int LevelUpNbr = 10;
 
-		LocalPlayerPtr createLocalPlayer(int columns, int rows, const std::string& name) {
-			return LocalPlayerBuilder{}
+		LocalPlayerBoardPtr createLocalPlayer(int columns, int rows, const std::string& name) {
+			return LocalPlayerBoardBuilder{}
 				.withClearedRows(0)
 				.withGameOverPosition(0)
 				.withLevel(1)
@@ -58,23 +58,23 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::resumeGame(const DeviceManager& deviceManager) {
-		auto players = loadGame(deviceManager);
-		if (players.empty()) {
+		auto playerBoards = loadGame(deviceManager);
+		if (playerBoards.empty()) {
 			createDefaultGame(deviceManager);
 		} else {
-			playerDevices_ = players;
-			players_.clear();
+			playerDevices_ = playerBoards;
+			playerBoards_.clear();
 			computers_.clear();
-			for (auto& [device, player] : players) {
-				players_.push_back(player);
+			for (auto& [device, playerBoard] : playerBoards) {
+				playerBoards_.push_back(playerBoard);
 			}
 
 			pause();
 			connections_.clear();
 
-			for (auto& [device, player] : playerDevices_) {
-				connections_ += player->gameboardEventUpdate.connect([this, p = player](tetris::BoardEvent gameEvent, int value) {
-					applyRules(gameEvent, value, p);
+			for (auto& [device, playerBoard] : playerDevices_) {
+				connections_ += playerBoard->gameboardEventUpdate.connect([this, playerBoard = playerBoard](tetris::BoardEvent gameEvent, int value) {
+					applyRules(gameEvent, value, playerBoard);
 				});
 			}
 
@@ -84,29 +84,29 @@ namespace mwetris::game {
 
 	void TetrisGame::createGame(int columns, int rows, const std::vector<Human>& humans, const std::vector<Ai>& ais) {
 		connections_.clear();
-		players_.clear();
+		playerBoards_.clear();
 		playerDevices_.clear();
 
 		for (auto& human : humans) {
 			auto localPlayer = createLocalPlayer(columns, rows, human.name);
-			players_.push_back(localPlayer);
+			playerBoards_.push_back(localPlayer);
 			playerDevices_.emplace_back(human.device, localPlayer);
 		}
 		for (auto& ai : ais) {
 			auto localPlayer = createLocalPlayer(columns, rows, ai.name);
-			players_.push_back(localPlayer);
+			playerBoards_.push_back(localPlayer);
 			computers_.emplace_back(std::make_shared<Computer>(ai.ai), localPlayer);
 		}
 
-		for (auto& [device, player] : playerDevices_) {
-			connections_ += player->gameboardEventUpdate.connect([this, p = player](tetris::BoardEvent gameEvent, int value) {
+		for (auto& [device, playerBoard] : playerDevices_) {
+			connections_ += playerBoard->gameboardEventUpdate.connect([this, p = playerBoard](tetris::BoardEvent gameEvent, int value) {
 				applyRules(gameEvent, value, p);
 			});
 		}
-		for (auto& [computer, player] : computers_) {
-			connections_ += player->gameboardEventUpdate.connect([this, computer = computer, player = player](tetris::BoardEvent boardEvent, int value) {
-				computer->onGameboardEvent(player->getTetrisBoard(), boardEvent, value);
-				applyRules(boardEvent, value, player);
+		for (auto& [computer, playerBoard] : computers_) {
+			connections_ += playerBoard->gameboardEventUpdate.connect([this, computer = computer, playerBoard = playerBoard](tetris::BoardEvent boardEvent, int value) {
+				computer->onGameboardEvent(playerBoard->getTetrisBoard(), boardEvent, value);
+				applyRules(boardEvent, value, playerBoard);
 			});
 		}
 
@@ -119,14 +119,14 @@ namespace mwetris::game {
 		} else {
 			createGame(TetrisWidth, TetrisHeight, {
 				Human{.name = "Player", .device = deviceManager.getDefaultDevice1()}
-			});
+				});
 		}
 	}
 
 	void TetrisGame::initGame() {
-		initGameEvent.invoke(InitGameEvent{players_.begin(), players_.end()});
+		initGameEvent.invoke(InitGameEvent{playerBoards_.begin(), playerBoards_.end()});
 
-		for (const auto& player : players_) {
+		for (const auto& player : playerBoards_) {
 			connections_ += player->gameboardEventUpdate.connect([this, player = player](tetris::BoardEvent event, int) {
 				if (event == tetris::BoardEvent::GameOver) {
 					gameOverEvent(GameOver{player});
@@ -138,22 +138,22 @@ namespace mwetris::game {
 	void TetrisGame::restartGame() {
 		accumulator_ = 0.0;
 		connections_.clear();
-		
-		for (auto& [device, player] : playerDevices_) {
+
+		for (auto& [device, playerBoard] : playerDevices_) {
 			/*
 			connections_ += player->gameboardEventUpdate.connect([this, player = player](tetris::BoardEvent gameEvent, int value) {
 				applyRules(gameEvent, value, p);
 			});
 			*/
-			player->updateRestart();
+			playerBoard->updateRestart();
 		}
-		for (auto& [computer, player] : computers_) {
+		for (auto& [computer, playerBoard] : computers_) {
 			/*
 			connections_ += player->gameboardEventUpdate.connect([this, player = player](tetris::BoardEvent gameEvent, int value) {
 				applyRules(gameEvent, value, p);
 			});
 			*/
-			player->updateRestart();
+			playerBoard->updateRestart();
 		}
 
 		initGame();
@@ -171,32 +171,32 @@ namespace mwetris::game {
 			gamePauseEvent(GamePause{
 				.countDown = 0,
 				.pause = true
-			});
+				});
 			pause_ = true;
 		} else {
 			gamePauseEvent(GamePause{
 				.countDown = 3,
 				.pause = true
-			});
+				});
 			pauseKey_ = timeHandler_.scheduleRepeat([&, nbr = 2]() mutable {
 				if (nbr == 0) {
 					pause_ = false;
 					gamePauseEvent(GamePause{
 						.countDown = 0,
 						.pause = false
-					});
+						});
 				} else {
 					gamePauseEvent(GamePause{
 						.countDown = nbr--,
 						.pause = true
-				});
+						});
 				}
 			}, 1.0, 3);
 		}
 	}
 
 	int TetrisGame::getNbrOfPlayers() const {
-		return static_cast<int>(players_.size());
+		return static_cast<int>(playerBoards_.size());
 	}
 
 	void TetrisGame::update(double deltaTime) {
@@ -225,7 +225,7 @@ namespace mwetris::game {
 		}
 	}
 
-	void TetrisGame::applyRules(tetris::BoardEvent gameEvent, int value, const LocalPlayerPtr& player) {
+	void TetrisGame::applyRules(tetris::BoardEvent gameEvent, int value, const LocalPlayerBoardPtr& playerBoard) {
 		if (tetris::BoardEvent::RowsRemoved == gameEvent) {
 			//rows_ += value;
 			//level_ = rows_ / LevelUpNbr + 1;
@@ -237,9 +237,9 @@ namespace mwetris::game {
 	}
 
 	bool TetrisGame::isDefaultGame() const { // TODO! Remove magic numbers!
-		return players_.size() == 1 && playerDevices_.size() == 1 &&
-			players_.front()->getTetrisBoard().getRows() == 24 &&
-			players_.front()->getTetrisBoard().getColumns() == 10;
+		return playerBoards_.size() == 1 && playerDevices_.size() == 1 &&
+			playerBoards_.front()->getTetrisBoard().getRows() == 24 &&
+			playerBoards_.front()->getTetrisBoard().getColumns() == 10;
 	}
 
 }

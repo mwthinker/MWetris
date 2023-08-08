@@ -13,16 +13,16 @@
 
 namespace mwetris::game {
 
-	class Player;
-	using PlayerPtr = std::shared_ptr<Player>;
+	class PlayerBoard;
+	using PlayerBoardPtr = std::shared_ptr<PlayerBoard>;
 
-	class Player : public std::enable_shared_from_this<Player> {
+	class PlayerBoard : public std::enable_shared_from_this<PlayerBoard> {
 	public:
-		mw::PublicSignal<Player, tetris::BoardEvent, int> gameboardEventUpdate;
+		mw::PublicSignal<PlayerBoard, tetris::BoardEvent, int> gameboardEventUpdate;
 
-		Player(const tetris::TetrisBoard& tetrisBoard, const std::string& name);
+		PlayerBoard(const tetris::TetrisBoard& tetrisBoard, const std::string& name);
 
-		virtual ~Player() = default;
+		virtual ~PlayerBoard() = default;
 
 		const std::string& getName() const {
 			return name_;

@@ -156,12 +156,12 @@ namespace mwetris::ui {
 
 		connections_ += game_->initGameEvent.connect(gameComponent_.get(), &mwetris::graphic::GameComponent::initGame);
 		connections_ += game_->gameOverEvent.connect([this](game::GameOver gameOver) {
-			if (game_->isDefaultGame() && game::isNewHighScore(gameOver.player)) {
+			if (game_->isDefaultGame() && game::isNewHighScore(gameOver.playerBoard)) {
 				scene::NewHighScoreData data;
-				data.name = gameOver.player->getName();
-				data.points = gameOver.player->getPoints();
-				data.clearedRows = gameOver.player->getClearedRows();
-				data.level = gameOver.player->getLevel();
+				data.name = gameOver.playerBoard->getName();
+				data.points = gameOver.playerBoard->getPoints();
+				data.clearedRows = gameOver.playerBoard->getClearedRows();
+				data.level = gameOver.playerBoard->getLevel();
 				openPopUp<scene::NewHighScore>(data);
 			}
 		});

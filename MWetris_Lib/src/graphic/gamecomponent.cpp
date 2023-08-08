@@ -84,8 +84,8 @@ namespace mwetris::graphic {
 
 	void GameComponent::initGame(const game::InitGameEvent& event) {
 		imguiBoards_.clear();
-		for (auto& player : event.players) {
-			imguiBoards_.emplace_back(player);
+		for (auto& playerBoard : event.playerBoards) {
+			imguiBoards_.emplace_back(playerBoard);
 		}
 	}
 
