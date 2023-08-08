@@ -4,7 +4,7 @@
 #include "imguiboard.h"
 #include "types.h"
 
-#include "game/player.h"
+#include "game/playerboard.h"
 #include "game/tetrisgameevent.h"
 
 #include <sdl/graphic.h>

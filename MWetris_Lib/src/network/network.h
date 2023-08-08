@@ -1,7 +1,7 @@
 #ifndef MWETRIS_NETWORK_NETWORK_H
 #define MWETRIS_NETWORK_NETWORK_H
 
-#include "game/remoteplayer.h"
+#include "game/remoteplayerboard.h"
 
 #include <thread>
 #include <memory>
@@ -13,11 +13,11 @@ namespace mwetris::network {
 	public:
 		Network();
 
-		[[nodiscard]] game::RemotePlayerPtr addRemotePlayer() {
+		[[nodiscard]] game::RemotePlayerBoardPtr addRemotePlayer() {
 			return nullptr;
 		}
 
-		void removeRemotePlayer(game::RemotePlayerPtr&& remotePlayer) {
+		void removeRemotePlayer(game::RemotePlayerBoardPtr&& remotePlayer) {
 
 		}
 

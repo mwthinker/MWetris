@@ -1,5 +1,7 @@
-#include "localplayerbuilder.h"
+#include "localplayerboardbuilder.h"
 #include "tetrisboard.h"
+
+#include <memory>
 
 namespace mwetris::game {
 

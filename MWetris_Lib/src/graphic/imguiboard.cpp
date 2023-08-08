@@ -1,7 +1,7 @@
 #include "imguiboard.h"
 #include "configuration.h"
 #include "tetrisboard.h"
-#include "game/player.h"
+#include "game/playerboard.h"
 
 #include "configuration.h"
 

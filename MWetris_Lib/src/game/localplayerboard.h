@@ -1,7 +1,7 @@
-#ifndef MWETRIS_GAME_LOCALPLAYER_H
-#define MWETRIS_GAME_LOCALPLAYER_H
+#ifndef MWETRIS_GAME_LOCALPLAYERBOARD_H
+#define MWETRIS_GAME_LOCALPLAYERBOARD_H
 
-#include "player.h"
+#include "playerboard.h"
 #include "actionhandler.h"
 
 namespace mwetris::game {

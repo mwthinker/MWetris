@@ -1,12 +1,12 @@
-#ifndef MWETRIS_GAME_REMOTEPLAYER_H
-#define MWETRIS_GAME_REMOTEPLAYER_H
+#ifndef MWETRIS_GAME_REMOTEPLAYERBOARD_H
+#define MWETRIS_GAME_REMOTEPLAYERBOARD_H
 
-#include "player.h"
+#include "playerboard.h"
 
 namespace mwetris::game {
 
-	class RemotePlayer;
-	using RemotePlayerPtr = std::shared_ptr<RemotePlayer>;
+	class RemotePlayerBoard;
+	using RemotePlayerBoardPtr = std::shared_ptr<RemotePlayerBoard>;
 
 	class RemotePlayerBoard : public PlayerBoard {
 	public:

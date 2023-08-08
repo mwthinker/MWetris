@@ -1,4 +1,4 @@
-#include "remoteplayer.h"
+#include "remoteplayerboard.h"
 #include "actionhandler.h"
 #include "tetrisgameevent.h"
 
@@ -8,9 +8,8 @@
 namespace mwetris::game {
 
 	RemotePlayerBoard::RemotePlayerBoard(const tetris::TetrisBoard& board, const std::string& name)
-		: PlayerBoard{board, name} {}
-
-
+		: PlayerBoard{board, name} {
+	}
 
 	void RemotePlayerBoard::handleBoardEvent(tetris::BoardEvent boardEvent, int value) {
 		PlayerBoard::handleBoardEvent(boardEvent, value);

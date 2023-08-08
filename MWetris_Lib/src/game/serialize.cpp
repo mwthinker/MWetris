@@ -1,6 +1,6 @@
 #include "serialize.h"
 
-#include "localplayerbuilder.h"
+#include "localplayerboardbuilder.h"
 #include "tetrisgame.h"
 
 #include <message.pb.h>

@@ -2,7 +2,7 @@
 #define MWETRIS_GAME_SNAPSHOT_H
 
 #include "device.h"
-#include "localplayer.h"
+#include "localplayerboard.h"
 
 namespace mwetris::game {
 

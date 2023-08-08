@@ -1,8 +1,11 @@
-#ifndef MWETRIS_GAME_LOCALPLAYERBUILDER_H
-#define MWETRIS_GAME_LOCALPLAYERBUILDER_H
+#ifndef MWETRIS_GAME_LOCALPLAYERBOARDBUILDER_H
+#define MWETRIS_GAME_LOCALPLAYERBOARDBUILDER_H
 
-#include "localplayer.h"
+#include "localplayerboard.h"
 #include "block.h"
+
+#include <vector>
+#include <string>
 
 namespace mwetris::game {
 

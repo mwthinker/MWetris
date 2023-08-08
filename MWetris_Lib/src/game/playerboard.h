@@ -1,5 +1,5 @@
-#ifndef MWETRIS_GAME_PLAYER_H
-#define MWETRIS_GAME_PLAYER_H
+#ifndef MWETRIS_GAME_PLAYERBOARD_H
+#define MWETRIS_GAME_PLAYERBOARD_H
 
 #include "device.h"
 #include "tetrisgameevent.h"

@@ -4,7 +4,7 @@
 #include "device.h"
 #include "tetrisparameters.h"
 #include "tetrisgameevent.h"
-#include "localplayer.h"
+#include "localplayerboard.h"
 #include "computer.h"
 #include "devicemanager.h"
 #include "snapshot.h"

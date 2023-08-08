@@ -1,7 +1,7 @@
 #ifndef MWETRIS_GRAPHIC_IMGUIBOARD_H
 #define MWETRIS_GRAPHIC_IMGUIBOARD_H
 
-#include "game/player.h"
+#include "game/playerboard.h"
 #include "tetrisboard.h"
 #include "types.h"
 

@@ -3,9 +3,9 @@
 #include "tetrisboard.h"
 #include "helper.h"
 #include "tetrisgameevent.h"
-#include "localplayer.h"
+#include "localplayerboard.h"
 #include "tetrisparameters.h"
-#include "localplayerbuilder.h"
+#include "localplayerboardbuilder.h"
 #include "serialize.h"
 #include "snapshot.h"
 

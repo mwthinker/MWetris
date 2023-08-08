@@ -1,4 +1,4 @@
-#include "localplayer.h"
+#include "localplayerboard.h"
 #include "actionhandler.h"
 #include "tetrisgameevent.h"
 

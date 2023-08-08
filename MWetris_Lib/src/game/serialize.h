@@ -1,7 +1,7 @@
 #ifndef MWETRIS_GAME_SERIALIZE_H
 #define MWETRIS_GAME_SERIALIZE_H
 
-#include "localplayer.h"
+#include "localplayerboard.h"
 #include "devicemanager.h"
 #include "snapshot.h"
 
