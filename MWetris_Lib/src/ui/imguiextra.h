@@ -51,6 +51,10 @@ namespace ImGui {
 		return boards[item];
 	}
 
+	bool ConfirmationButton(const char* label, const ImVec2& size = {});
+
+	bool AbortButton(const char* label, const ImVec2& size = {});
+
 }
 
 #endif

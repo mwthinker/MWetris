@@ -59,4 +59,18 @@ namespace ImGui {
 		ImGui::SetCursorPos(pos);
 	}
 
+	bool ConfirmationButton(const char* label, const ImVec2& size) {
+		ImGui::PushStyleColor(ImGuiCol_Button, sdl::color::Green);
+		bool result = ImGui::Button(label, size);
+		ImGui::PopStyleColor();
+		return result;
+	}
+
+	bool AbortButton(const char* label, const ImVec2& size) {
+		ImGui::PushStyleColor(ImGuiCol_Button, sdl::color::Red);
+		bool result = ImGui::Button(label, size);
+		ImGui::PopStyleColor();
+		return result;
+	}
+
 }

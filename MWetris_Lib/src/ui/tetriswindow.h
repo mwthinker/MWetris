@@ -5,6 +5,7 @@
 
 #include "scene/scene.h"
 #include "scene/statemachine.h"
+#include "scene/addplayer.h"
 
 #include "game/serialize.h"
 #include "game/devicemanager.h"
@@ -48,6 +49,8 @@ namespace mwetris::ui {
 
 		void imGuiEventUpdate(const SDL_Event& windowEvent) override;
 
+		void imGuiCustomGame(int windowWidth, int windowHeight, double deltaTime);
+
 		template <typename Scene>
 		void openPopUp() {
 			scene::SceneData data;
@@ -60,7 +63,7 @@ namespace mwetris::ui {
 			sceneStateMachine_.switchTo<Scene>(data);
 		}
 
-		void imGuiMainMenu(const sdl::DeltaTime& deltaTime);
+		void imGuiMainWindow(const sdl::DeltaTime& deltaTime);
 
 		void startNewGame();
 
@@ -76,6 +79,9 @@ namespace mwetris::ui {
 
 		TimeHandler timeHandler_;
 		std::string pauseMenuText_;
+
+		bool customGame = true;
+		std::vector<scene::PlayerSlot> playerSlots_;
 	};
 
 }

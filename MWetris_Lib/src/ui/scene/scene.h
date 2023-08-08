@@ -17,7 +17,6 @@ namespace mwetris::ui::scene {
 	class SceneData {
 	public:
 		virtual ~SceneData() = default;
-	
 	};
 
 	class Scene {
