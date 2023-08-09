@@ -28,14 +28,14 @@ set(SOURCES_LIB
 	src/game/gamepad.h
 	src/game/keyboard.cpp
 	src/game/keyboard.h
-	src/game/localplayer.cpp
-	src/game/localplayer.h
-	src/game/localplayerbuilder.cpp
-	src/game/localplayerbuilder.h
-	src/game/player.cpp
-	src/game/player.h
-	src/game/remoteplayer.cpp
-	src/game/remoteplayer.h
+	src/game/localplayerboard.cpp
+	src/game/localplayerboard.h
+	src/game/localplayerboardbuilder.cpp
+	src/game/localplayerboardbuilder.h
+	src/game/playerboard.cpp
+	src/game/playerboard.h
+	src/game/remoteplayerboard.cpp
+	src/game/remoteplayerboard.h
 	src/game/snapshot.h
 	src/game/taskqueue.h
 	src/game/tetrisgame.cpp
