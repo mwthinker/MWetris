@@ -35,10 +35,6 @@ namespace mwetris::game {
 		return input_;
 	}
 
-	const char* Computer::getName() const {
-		return ai_.getName().c_str();
-	}
-
 	void Computer::onGameboardEvent(const tetris::TetrisBoard& board, tetris::BoardEvent event, int value) {
 		if (event == tetris::BoardEvent::CurrentBlockUpdated) {
 			state_ = ai_.calculateBestState(board, 1);

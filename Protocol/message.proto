@@ -26,7 +26,7 @@ message Block {
 	BlockType type = 4;
 }
 
-message Player {	
+message PlayerBoard {
 	string name = 1;
 	int32 level = 2;
 	int32 points = 3;
@@ -40,14 +40,9 @@ message Player {
 	repeated BlockType board = 11;
 }
 
-message Human {
-	string device_guid = 1;
-	Player player = 2;
-}
-
 message Game {
 	int64 last_played_seconds = 1;
-	repeated Human human = 2;
+	PlayerBoard player_board = 2;
 }
 
 message HighScore {

@@ -15,11 +15,9 @@ namespace mwetris::game {
 
 	class Computer {
 	public:
-		Computer(const tetris::Ai& ai);
+		explicit Computer(const tetris::Ai& ai);
 
 		Input getInput() const;
-
-		const char* getName() const;
 
 		void onGameboardEvent(const tetris::TetrisBoard& board, tetris::BoardEvent, int value);
 

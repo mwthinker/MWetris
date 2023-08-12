@@ -80,7 +80,7 @@ namespace mwetris::ui {
 		TimeHandler timeHandler_;
 		std::string pauseMenuText_;
 
-		bool customGame = true;
+		bool customGame = false;
 		std::vector<scene::PlayerSlot> playerSlots_;
 	};
 

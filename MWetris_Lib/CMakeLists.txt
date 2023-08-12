@@ -18,6 +18,7 @@ set(SOURCES_LIB
 	
 	src/game/actionhandler.cpp
 	src/game/actionhandler.h
+	src/game/aiplayer.h
 	src/game/computer.cpp
 	src/game/computer.h
 	src/game/devicemanager.cpp
@@ -26,17 +27,18 @@ set(SOURCES_LIB
 	src/game/input.h
 	src/game/gamepad.cpp
 	src/game/gamepad.h
+	src/game/humanplayer.h
 	src/game/keyboard.cpp
 	src/game/keyboard.h
 	src/game/localplayerboard.cpp
 	src/game/localplayerboard.h
 	src/game/localplayerboardbuilder.cpp
 	src/game/localplayerboardbuilder.h
+	src/game/player.h
 	src/game/playerboard.cpp
 	src/game/playerboard.h
 	src/game/remoteplayerboard.cpp
 	src/game/remoteplayerboard.h
-	src/game/snapshot.h
 	src/game/taskqueue.h
 	src/game/tetrisgame.cpp
 	src/game/tetrisgameevent.h

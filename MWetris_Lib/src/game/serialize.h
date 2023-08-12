@@ -2,14 +2,10 @@
 #define MWETRIS_GAME_SERIALIZE_H
 
 #include "localplayerboard.h"
-#include "devicemanager.h"
-#include "snapshot.h"
 
 #include <chrono>
 
 namespace mwetris::game {
-
-	class DeviceManager;
 
 	struct HighScoreResult {
 		std::string name;
@@ -29,9 +25,9 @@ namespace mwetris::game {
 
 	void clearSavedGame();
 
-	void saveGame(const std::vector<PlayerDevice>& players);
+	void saveGame(const PlayerBoard& playerBoard);
 
-	std::vector<PlayerDevice> loadGame(const DeviceManager& deviceManager);
+	LocalPlayerBoardPtr loadGame();
 
 	void saveHighScore(const std::string& name, int points, int rows, int level);
 

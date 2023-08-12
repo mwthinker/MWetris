@@ -9,8 +9,6 @@
 #include "scene/addplayer.h"
 #include "scene/joingame.h"
 
-#include "game/keyboard.h"
-#include "game/computer.h"
 #include "game/serialize.h"
 #include "game/tetrisgame.h"
 
@@ -99,6 +97,8 @@ namespace mwetris::ui {
 		for (int i = 0; i < 4; ++i) {
 			playerSlots_.push_back(scene::OpenSlot{});
 		}
+
+		pauseMenuText_ = "Pause";
 	}
 
 	TetrisWindow::~TetrisWindow() {
@@ -131,7 +131,7 @@ namespace mwetris::ui {
 		Configuration::getInstance().getImGuiDefaultFont();
 		Configuration::getInstance().getImGuiHeaderFont();
 
-		game_ = std::make_shared<game::TetrisGame>();
+		game_ = std::make_shared<game::TetrisGame>(deviceManager_);
 		gameComponent_ = std::make_unique<graphic::GameComponent>();
 
 		sceneStateMachine_.emplace<scene::EmptyScene>();
@@ -170,7 +170,7 @@ namespace mwetris::ui {
 
 			if (gamePause.pause) {
 				if (gamePause.countDown > 0) {
-					pauseMenuText_ = "Stop Unpause Countdown";
+					pauseMenuText_ = "Stop Countdown";
 				} else {
 					pauseMenuText_ = "Unpause";
 				}
@@ -233,9 +233,9 @@ namespace mwetris::ui {
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 10.f);
 			ImGui::MenuBar([&]() {
 				ImGui::Menu("Game", [&]() {
-					if (ImGui::MenuItem("New Single Player", "F1")) {
+					if (ImGui::MenuItem(game::hasSavedGame() ? "Resume Single Player" : "New Single Player", "F1")) {
 						customGame = false;
-						game_->createDefaultGame(*deviceManager_);
+						game_->createDefaultGame(deviceManager_->getDefaultDevice1());
 					}
 					ImGui::Separator();
 					if (ImGui::MenuItem("Create Game")) {
@@ -374,11 +374,11 @@ namespace mwetris::ui {
 			case SDL_KEYDOWN:
 				switch (windowEvent.key.keysym.sym) {
 					case SDLK_ESCAPE:
-						game_->saveCurrentGame();
+						game_->saveDefaultGame();
 						sdl::Window::quit();
 						break;
 					case SDLK_F1:
-						game_->createDefaultGame(*deviceManager_);
+						game_->createDefaultGame(deviceManager_->getDefaultDevice1());
 						break;
 					case SDLK_F5:
 						game_->restartGame();
@@ -390,17 +390,14 @@ namespace mwetris::ui {
 				}
 				break;
 			case SDL_QUIT:
+				game_->saveDefaultGame();
 				sdl::Window::quit();
 				break;
 		}
 	}
 
 	void TetrisWindow::startNewGame() {
-		if (game::hasSavedGame()) {
-			game_->resumeGame(*deviceManager_);
-		} else {
-			game_->createDefaultGame(*deviceManager_);
-		}
+		game_->createDefaultGame(deviceManager_->getDefaultDevice1());
 	}
 
 }

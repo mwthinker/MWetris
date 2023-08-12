@@ -4,6 +4,7 @@
 #include "tetrisgame.h"
 
 #include <message.pb.h>
+#include <spdlog/spdlog.h>
 
 #include <concepts>
 #include <fstream>
@@ -14,6 +15,9 @@ namespace tp = tetris_protocol;
 namespace mwetris::game {
 
 	namespace {
+
+		static bool gameLoaded = false;
+		static tp::Game cachedGame; // cachedGame.last_played_seconds() == 0 means that no game is currently saved
 
 		constexpr int NbrHighScoreResults = 10;
 		const std::string SavedGameFile{"savedGame.mw"};
@@ -41,7 +45,7 @@ namespace mwetris::game {
 			return tetris::Block{static_cast<tetris::BlockType>(block.type()), block.start_column(), block.lowest_start_row(), block.rotations()};
 		}
 
-		std::vector<tetris::BlockType> toBoard(const tp::Player& player) {
+		std::vector<tetris::BlockType> toBoard(const tp::PlayerBoard& player) {
 			std::vector<tetris::BlockType> board;
 			for (auto type : player.board()) {
 				board.push_back(static_cast<tetris::BlockType>(type));
@@ -49,7 +53,7 @@ namespace mwetris::game {
 			return board;
 		}
 
-		tetris::TetrisBoard toTetrisBoard(const tp::Player& player) {
+		tetris::TetrisBoard toTetrisBoard(const tp::PlayerBoard& player) {
 			std::vector<tetris::BlockType> board;
 			for (auto type : player.board()) {
 				board.push_back(static_cast<tetris::BlockType>(type));
@@ -61,27 +65,28 @@ namespace mwetris::game {
 			return tetris::TetrisBoard{board, player.width(), player.height(), current, next};
 		}
 
-		void setTpPlayer(tp::Player& player, const LocalPlayerBoard& localPlayerBoard) {
-			const auto& blockTypes = localPlayerBoard.getTetrisBoard().getBoardVector();
+		void setTpPlayer(tp::PlayerBoard& tpPlayerBoard, const PlayerBoard& playerBoard) {
+			const auto& blockTypes = playerBoard.getTetrisBoard().getBoardVector();
+			tpPlayerBoard.clear_board();
 			for (const auto type : blockTypes) {
-				player.add_board(static_cast<tp::BlockType>(type));
+				tpPlayerBoard.add_board(static_cast<tp::BlockType>(type));
 			}
-			player.set_ai(false);
-			player.set_level(localPlayerBoard.getLevel());
-			player.set_points(localPlayerBoard.getPoints());
-			player.set_name(localPlayerBoard.getName());
-			player.set_next(static_cast<tp::BlockType>(localPlayerBoard.getTetrisBoard().getNextBlockType()));
-			player.set_cleared_rows(localPlayerBoard.getClearedRows());
-			player.set_width(localPlayerBoard.getTetrisBoard().getColumns());
-			player.set_height(localPlayerBoard.getTetrisBoard().getRows());
+			tpPlayerBoard.set_ai(false);
+			tpPlayerBoard.set_level(playerBoard.getLevel());
+			tpPlayerBoard.set_points(playerBoard.getPoints());
+			tpPlayerBoard.set_name(playerBoard.getName());
+			tpPlayerBoard.set_next(static_cast<tp::BlockType>(playerBoard.getTetrisBoard().getNextBlockType()));
+			tpPlayerBoard.set_cleared_rows(playerBoard.getClearedRows());
+			tpPlayerBoard.set_width(playerBoard.getTetrisBoard().getColumns());
+			tpPlayerBoard.set_height(playerBoard.getTetrisBoard().getRows());
 
-			player.mutable_current()->set_lowest_start_row(localPlayerBoard.getTetrisBoard().getBlock().getLowestStartRow());
-			player.mutable_current()->set_start_column(localPlayerBoard.getTetrisBoard().getBlock().getStartColumn());
-			player.mutable_current()->set_rotations(localPlayerBoard.getTetrisBoard().getBlock().getCurrentRotation());
-			player.mutable_current()->set_type(static_cast<tp::BlockType>(localPlayerBoard.getTetrisBoard().getBlock().getBlockType()));
+			tpPlayerBoard.mutable_current()->set_lowest_start_row(playerBoard.getTetrisBoard().getBlock().getLowestStartRow());
+			tpPlayerBoard.mutable_current()->set_start_column(playerBoard.getTetrisBoard().getBlock().getStartColumn());
+			tpPlayerBoard.mutable_current()->set_rotations(playerBoard.getTetrisBoard().getBlock().getCurrentRotation());
+			tpPlayerBoard.mutable_current()->set_type(static_cast<tp::BlockType>(playerBoard.getTetrisBoard().getBlock().getBlockType()));
 		}
 
-		LocalPlayerBoardPtr createPlayer(const tp::Player& player) {
+		LocalPlayerBoardPtr createPlayer(const tp::PlayerBoard& player) {
 			return LocalPlayerBoardBuilder{}
 				.withBoard(toBoard(player))
 				.withMovingBlock(toBlock(player.current()))
@@ -167,53 +172,51 @@ namespace mwetris::game {
 	}
 
 	bool hasSavedGame() {
-		return std::filesystem::exists(SavedGameFile);
+		return cachedGame.last_played_seconds() != 0;
 	}
 
 	void clearSavedGame() {
+		cachedGame.set_last_played_seconds(0);
 		std::filesystem::path filepath{SavedGameFile};
 		if (std::filesystem::exists(filepath)) {
 			std::filesystem::remove(filepath);
 		}
 	}
 
-	void saveGame(const std::vector<PlayerDevice>& players) {
-		tp::Game game;
-		game.set_last_played_seconds(toTpSeconds(std::chrono::system_clock::now()));
-
-		for (const auto& playerDevice: players) {
-			auto human = game.add_human();
-			human->set_device_guid(playerDevice.device->getGuid());
-			setTpPlayer(*human->mutable_player(), *playerDevice.playerBoard);
-		}
-		std::ofstream output{SavedGameFile};
-		game.SerializePartialToOstream(&output);
+	void saveGame(const PlayerBoard& playerBoard) {
+		cachedGame.set_last_played_seconds(toTpSeconds(std::chrono::system_clock::now()));
+		setTpPlayer(*cachedGame.mutable_player_board(), playerBoard);
+		
+		saveToFile(cachedGame, SavedGameFile);
 	}
 
-	std::vector<PlayerDevice> loadGame(const DeviceManager& deviceManager) {
-		std::ifstream input{SavedGameFile};
-		if (input.fail()) {
-			return {};
-		}
+	LocalPlayerBoardPtr loadGame() {
+		if (!gameLoaded) {
+			gameLoaded = true;
+			
+			if (!std::filesystem::exists(std::filesystem::path{SavedGameFile})) {
+				spdlog::info("[Serialize] Game save file {} does not exist", SavedGameFile);
+				return nullptr;
+			}
 
-		tp::Game game;
-		if (!loadFromFile(game, SavedGameFile)) {
-			return {};
+			if (!loadFromFile(cachedGame, SavedGameFile)) {
+				spdlog::warn("[Serialize] Game failed to be loaded: {}");
+				return nullptr;
+			}
 		}
-
-		std::vector<PlayerDevice> players_;
-		for (const auto& pbHuman : game.human()) {
-			players_.push_back(PlayerDevice{
-				.device = deviceManager.findDevice(pbHuman.device_guid()),
-				.playerBoard = createPlayer(pbHuman.player())
-			});
-		}
-		return players_;
+		return createPlayer(cachedGame.player_board());
 	}
 
 	std::vector<HighScoreResult> loadHighScore() {
 		tp::HighScore highScore;
-		loadFromFile(highScore, SavedHighScoreFile);
+
+		if (std::filesystem::exists(std::filesystem::path{SavedHighScoreFile})) {
+			if (!loadFromFile(highScore, SavedHighScoreFile)) {
+				spdlog::info("[Serialize] Nigscore  loaded: {}");
+			}
+		} else {
+			spdlog::info("[Serialize] Highscore file {} does not exist", SavedHighScoreFile);
+		}
 
 		auto results = toHighScoreResults(highScore.results());
 		results.resize(NbrHighScoreResults);

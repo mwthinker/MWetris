@@ -1,7 +1,7 @@
 #ifndef MWETRIS_LOGGER_H
 #define MWETRIS_LOGGER_H
 
-#include <spdlog/spdlog.h>
+#include <string>
 
 namespace mwetris::logger {
 	

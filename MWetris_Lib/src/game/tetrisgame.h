@@ -7,8 +7,9 @@
 #include "localplayerboard.h"
 #include "computer.h"
 #include "devicemanager.h"
-#include "snapshot.h"
 #include "timerhandler.h"
+#include "aiplayer.h"
+#include "humanplayer.h"
 
 #include <ai.h>
 
@@ -39,19 +40,19 @@ namespace mwetris::game {
 		mw::PublicSignal<TetrisGame, GameOver> gameOverEvent;
 		mw::PublicSignal<TetrisGame, GamePause> gamePauseEvent;
 
-		TetrisGame();
+		TetrisGame(std::shared_ptr<DeviceManager> deviceManager);
 		~TetrisGame();
 
 		// Updates everything. Should be called each frame.
 		void update(double deltaTime);
 
-		void resumeGame(const DeviceManager& deviceManager);
+		void createDefaultGame(DevicePtr device);
 
-		void createDefaultGame(const DeviceManager& deviceManager);
-
-		void createGame(int columns, int rows, const std::vector<Human>& humans, const std::vector<Ai>& ais = {});
+		void createGame(int width, int height, const std::vector<Human>& devices, const std::vector<Ai>& ais);
 
 		bool isPaused() const;
+
+		void setPause(bool pause);
 
 		// Pause/Unpause the game depending on the current state of the game.
 		void pause();
@@ -61,7 +62,7 @@ namespace mwetris::game {
 
 		int getNbrOfPlayers() const;
 
-		void saveCurrentGame();
+		void saveDefaultGame();
 
 		void setFixTimestep(double delta) {
 			fixedTimestep = delta;
@@ -74,15 +75,7 @@ namespace mwetris::game {
 		void updateGame(double deltaTime);
 		void applyRules(tetris::BoardEvent gameEvent, int value, const LocalPlayerBoardPtr& playerBoard);
 
-		std::vector<PlayerDevice> playerDevices_;
-
-		struct ComputerPlayer {
-			ComputerPtr computer;
-			LocalPlayerBoardPtr playerBoard;
-		};
-		std::vector<ComputerPlayer> computers_;
-
-		std::vector<LocalPlayerBoardPtr> playerBoards_;
+		std::vector<PlayerPtr> players_;
 
 		double accumulator_ = 0.0;
 		bool pause_ = false;
@@ -91,6 +84,7 @@ namespace mwetris::game {
 		mw::signals::ScopedConnections connections_;
 		TimeHandler timeHandler_;
 		TimeHandler::Key pauseKey_;
+		std::shared_ptr<DeviceManager> deviceManager_;
 	};
 
 }
