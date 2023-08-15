@@ -7,6 +7,7 @@
 #include "tetrisparameters.h"
 #include "localplayerboardbuilder.h"
 #include "serialize.h"
+#include "defaultgamerules.h"
 
 #include <vector>
 #include <algorithm>
@@ -14,8 +15,6 @@
 namespace mwetris::game {
 
 	namespace {
-
-		constexpr int LevelUpNbr = 10;
 
 		LocalPlayerBoardPtr createLocalPlayerBoard(int width, int height, const std::string& name) {
 			return LocalPlayerBoardBuilder{}
@@ -72,20 +71,20 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::createDefaultGame(DevicePtr device) {
+		remotePlayers_.clear();
 		saveDefaultGame();
 
 		if (isDefaultGame() && players_.size() == 1 && players_.front()->getPlayerBoard()->isGameOver()) {
 			restartGame();
 		} else {
-			PlayerPtr player;
-			if (auto board = loadGame(); board) {
-				player = std::make_shared<HumanPlayer>(device, board);
-			} else {
-				player = std::make_shared<HumanPlayer>(device, createLocalPlayerBoard(TetrisWidth, TetrisHeight, "Player"));
+			LocalPlayerBoardPtr localPlayerBoard = loadGame();
+			if (!localPlayerBoard) {
+				localPlayerBoard = createLocalPlayerBoard(TetrisWidth, TetrisHeight, "Player");
 			}
+			auto player = std::make_shared<HumanPlayer>(device, localPlayerBoard);
 			connections_.clear();
 			players_ = {player};
-			connections_ += player->addEventCallback([player](tetris::BoardEvent gameEvent, int value) {
+			connections_ += player->addEventCallback([](tetris::BoardEvent gameEvent, int value) {
 				game::clearSavedGame();
 			});
 			setPause(true);
@@ -93,8 +92,14 @@ namespace mwetris::game {
 		}
 	}
 
-	void TetrisGame::createGame(int width, int height, const std::vector<Human>& humans, const std::vector<Ai>& ais) {
+	void TetrisGame::createGame(int width, int height,
+		const std::vector<Human>& humans,
+		const std::vector<Ai>& ais,
+		const std::vector<RemotePlayerPtr>& remotePlayers) {
+
 		saveDefaultGame();
+		players_.clear();
+		remotePlayers_.clear();
 
 		for (auto& human : humans) {
 			auto board = createLocalPlayerBoard(width, height, human.name);
@@ -106,20 +111,7 @@ namespace mwetris::game {
 			auto player = std::make_shared<AiPlayer>(ai.ai, createLocalPlayerBoard(TetrisWidth, TetrisHeight, "Player"));
 			players_.push_back(player);
 		}
-
-		/*
-		for (auto& [device, playerBoard] : playerDevices_) {
-			connections_ += playerBoard->gameboardEventUpdate.connect([this, p = playerBoard](tetris::BoardEvent gameEvent, int value) {
-				applyRules(gameEvent, value, p);
-			});
-		}
-		for (auto& [computer, playerBoard] : computers_) {
-			connections_ += playerBoard->gameboardEventUpdate.connect([this, computer = computer, playerBoard = playerBoard](tetris::BoardEvent boardEvent, int value) {
-				computer->onGameboardEvent(playerBoard->getTetrisBoard(), boardEvent, value);
-				applyRules(boardEvent, value, playerBoard);
-			});
-		}
-		*/
+		remotePlayers_ = remotePlayers;
 
 		initGame();
 	}
@@ -129,21 +121,15 @@ namespace mwetris::game {
 		for (auto& player : players_) {
 			playerBoards.push_back(player->getPlayerBoard());
 		}
-		initGameEvent.invoke(InitGameEvent{playerBoards.begin(), playerBoards.end()});
-
-		for (auto& player : playerBoards) {
-			connections_ += player->gameboardEventUpdate.connect([this, player = player](tetris::BoardEvent event, int) {
-				if (event == tetris::BoardEvent::GameOver) {
-					gameOverEvent(GameOver{player});
-				}
-			});
+		for (auto& player : remotePlayers_) {
+			playerBoards.push_back(player->getPlayerBoard());
 		}
+
+		initGameEvent.invoke(InitGameEvent{playerBoards.begin(), playerBoards.end()});
 	}
 
 	void TetrisGame::restartGame() {
 		accumulator_ = 0.0;
-		connections_.clear();
-
 		setPause(false);
 
 		for (auto& player : players_) {
@@ -221,17 +207,6 @@ namespace mwetris::game {
 			for (auto& player : players_) {
 				player->update(fixedTimestep);
 			}
-		}
-	}
-
-	void TetrisGame::applyRules(tetris::BoardEvent gameEvent, int value, const LocalPlayerBoardPtr& playerBoard) {
-		if (tetris::BoardEvent::RowsRemoved == gameEvent) {
-			//rows_ += value;
-			//level_ = rows_ / LevelUpNbr + 1;
-			//points_ += level_ * value * value;
-
-			//player->updateLevel(level_);
-			//player->updatePoints(points_);
 		}
 	}
 

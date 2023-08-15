@@ -15,7 +15,7 @@ namespace mwetris::game {
 		std::chrono::year_month_day lastPlayed;
 	};
 
-	bool isNewHighScore(const PlayerBoardPtr& playerBoard);
+	bool isNewHighScore(const PlayerBoard& playerBoard);
 
 	int getHighScorePlacement(int points);
 

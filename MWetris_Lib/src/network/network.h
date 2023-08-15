@@ -3,33 +3,70 @@
 
 #include "game/remoteplayerboard.h"
 
+#include "game/remoteplayer.h"
+
 #include <thread>
 #include <memory>
 #include <string>
 
+#include <mw/signal.h>
+
 namespace mwetris::network {
+
+	struct Remote {
+		int slotIndex;
+		game::RemotePlayerPtr remotePlayer;
+	};
 
 	class Network {
 	public:
+		mw::PublicSignal<Network, Remote> remotePlayerConnected;
+		mw::PublicSignal<Network, game::RemotePlayerPtr> remotePlayerDisconnected;
+
 		Network();
 
-		[[nodiscard]] game::RemotePlayerBoardPtr addRemotePlayer() {
-			return nullptr;
+		void update() {
+			while (!addRemotePlayers_.empty()) {
+				auto player = addRemotePlayers_.back();
+				addRemotePlayers_.pop_back();
+				remotePlayerConnected(player);
+			}
+			while (!removeRemotePlayers_.empty()) {
+				auto player = removeRemotePlayers_.back();
+				removeRemotePlayers_.pop_back();
+				remotePlayerDisconnected(player);
+			}
 		}
 
-		void removeRemotePlayer(game::RemotePlayerBoardPtr&& remotePlayer) {
+		void addRemotePlayer();
 
-		}
+		void removeRemotePlayer(game::RemotePlayerBoardPtr&& remotePlayer);
 
 		const std::string& getServerId() const {
 			return {serverId_};
 		}
 
+		void debugAddRemotePlayer(int slotIndex) {
+			addRemotePlayers_.push_back(
+				Remote{
+					.slotIndex = slotIndex,
+					.remotePlayer = std::make_shared<game::RemotePlayer>()
+				}
+			);
+		}
+
+		void debugRemoveRemotePlayer(game::RemotePlayerPtr remotePlayer) {
+			removeRemotePlayers_.push_back(remotePlayer);
+		}
+
 	private:
+		std::vector<game::RemotePlayerPtr> removeRemotePlayers_;
+		std::vector<Remote> addRemotePlayers_;
+
 		void run();
 
 		class Impl;
-		std::unique_ptr<Impl> impl_;
+		//std::unique_ptr<Impl> impl_;
 		std::jthread thread_;
 		std::string serverId_ = "sdfghjklzxcvbnm";
 	};

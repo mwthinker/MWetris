@@ -34,7 +34,7 @@ namespace mwetris::game {
 			localPlayerBoard_->updateRestart();
 		}
 		
-		virtual PlayerBoardPtr getPlayerBoard() const override {
+		PlayerBoardPtr getPlayerBoard() const override {
 			return localPlayerBoard_;
 		}
 

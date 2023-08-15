@@ -21,6 +21,7 @@ set(SOURCES_LIB
 	src/game/aiplayer.h
 	src/game/computer.cpp
 	src/game/computer.h
+	src/game/defaultgamerules.h
 	src/game/devicemanager.cpp
 	src/game/devicemanager.h
 	src/game/device.h
@@ -37,6 +38,7 @@ set(SOURCES_LIB
 	src/game/player.h
 	src/game/playerboard.cpp
 	src/game/playerboard.h
+	src/game/remoteplayer.h
 	src/game/remoteplayerboard.cpp
 	src/game/remoteplayerboard.h
 	src/game/taskqueue.h

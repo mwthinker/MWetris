@@ -32,7 +32,7 @@ FetchContent_Declare(Signal
 	GIT_REPOSITORY
 		https://github.com/mwthinker/Signal.git
 	GIT_TAG
-		0daa9f5fd3ef2368be3634751b192f59479d71c7
+		7f3f8c456cfdb90ea014b335f175e6576493d48b
 	OVERRIDE_FIND_PACKAGE
 )
 

@@ -19,9 +19,18 @@ namespace mwetris::network {
 	}
 
 	Network::Network()
-		: impl_{std::make_unique<Network::Impl>()} {
+	//	: impl_{std::make_unique<Network::Impl>()}
+	{
 
 		//thread_ = std::jthread(&Network::run, this);
+	}
+
+	void Network::addRemotePlayer() {
+		
+	}
+
+	void Network::removeRemotePlayer(game::RemotePlayerBoardPtr&& remotePlayer) {
+	
 	}
 
 	void Network::run() {

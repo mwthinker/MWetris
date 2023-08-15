@@ -10,6 +10,7 @@
 
 #include "game/serialize.h"
 #include "game/device.h"
+#include "game/remoteplayer.h"
 
 #include <ai.h>
 
@@ -36,7 +37,7 @@ namespace mwetris::ui::scene {
 	};
 
 	struct InternetPlayer {
-
+		game::RemotePlayerPtr remotePlayer;
 	};
 
 	struct OpenSlot {

@@ -10,6 +10,8 @@
 #include "game/serialize.h"
 #include "game/devicemanager.h"
 
+#include "network/network.h"
+
 #include <sdl/imguiwindow.h>
 
 namespace mwetris {
@@ -82,6 +84,7 @@ namespace mwetris::ui {
 
 		bool customGame = false;
 		std::vector<scene::PlayerSlot> playerSlots_;
+		network::Network network_;
 	};
 
 }

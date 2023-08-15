@@ -10,6 +10,7 @@
 #include "timerhandler.h"
 #include "aiplayer.h"
 #include "humanplayer.h"
+#include "remoteplayer.h"
 
 #include <ai.h>
 
@@ -48,7 +49,10 @@ namespace mwetris::game {
 
 		void createDefaultGame(DevicePtr device);
 
-		void createGame(int width, int height, const std::vector<Human>& devices, const std::vector<Ai>& ais);
+		void createGame(int width, int height,
+			const std::vector<Human>& devices,
+			const std::vector<Ai>& ais,
+			const std::vector<RemotePlayerPtr>& remotePlayers);
 
 		bool isPaused() const;
 
@@ -73,9 +77,9 @@ namespace mwetris::game {
 	private:
 		void initGame();
 		void updateGame(double deltaTime);
-		void applyRules(tetris::BoardEvent gameEvent, int value, const LocalPlayerBoardPtr& playerBoard);
 
 		std::vector<PlayerPtr> players_;
+		std::vector<RemotePlayerPtr> remotePlayers_;
 
 		double accumulator_ = 0.0;
 		bool pause_ = false;

@@ -223,9 +223,9 @@ namespace mwetris::game {
 		return results;
 	}
 
-	bool isNewHighScore(const PlayerBoardPtr& playerBoard) {
+	bool isNewHighScore(const PlayerBoard& playerBoard) {
 		auto results = loadHighScore();
-		return getIndexForNewResult(results, playerBoard->getPoints()) < NbrHighScoreResults;
+		return getIndexForNewResult(results, playerBoard.getPoints()) < NbrHighScoreResults;
 	}
 
 	void saveHighScore(const std::string& name, int points, int rows, int level) {
