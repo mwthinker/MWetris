@@ -2,22 +2,26 @@
 
 #include <tetrisboard.h>
 
-class MWetrisTest : public ::testing::Test {
-protected:
+namespace mwetris {
 
-	MWetrisTest() {}
+	class MWetrisTest : public ::testing::Test {
+	protected:
 
-	~MWetrisTest() override {}
+		MWetrisTest() {}
 
-	void SetUp() override {}
+		~MWetrisTest() override {}
 
-	void TearDown() override {}
-};
+		void SetUp() override {}
 
-TEST_F(MWetrisTest, emptyCastle_hasDoorInOriginTrue) {
-	// Given
+		void TearDown() override {}
+	};
 
-	// When
+	TEST_F(MWetrisTest, emptyCastle_hasDoorInOriginTrue) {
+		// Given
 
-	// Then.
+		// When
+
+		// Then.
+	}
+
 }

@@ -8,10 +8,22 @@ project(MWetris_Test
 find_package(GTest CONFIG REQUIRED)
 enable_testing()
 
-add_executable(MWetris_Test
+set(SOURCES_TEST
+	src/game/devicemanagertest.cpp
 	src/mwetristest.cpp
 
 	CMakeLists.txt
+)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS On)
+source_group(TREE
+	${CMAKE_CURRENT_SOURCE_DIR}
+	FILES
+		${SOURCES_TEST}
+)
+
+add_executable(MWetris_Test
+	${SOURCES_TEST}
 )
 
 target_link_libraries(MWetris_Test
