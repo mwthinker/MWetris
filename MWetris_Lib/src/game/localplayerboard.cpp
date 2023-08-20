@@ -50,7 +50,7 @@ namespace mwetris::game {
 
 	void LocalPlayerBoard::addRow(int holes) {
 		auto blockTypes = tetris::generateRow(tetrisBoard_.getColumns(), holes);
-		tetrisBoard_.addExternalRows(blockTypes);
+		externalRows_.insert(externalRows_.end(), blockTypes.begin(), blockTypes.end());
 	}
 
 	void LocalPlayerBoard::updateName(const std::string& name) {
@@ -74,6 +74,7 @@ namespace mwetris::game {
 	}
 
 	void LocalPlayerBoard::updateRestart() {
+		externalRows_.clear();
 		level_ = 1;
 		points_ = 0;
 		gameOverPosition_ = 0;
@@ -96,6 +97,10 @@ namespace mwetris::game {
 		}
 		if (boardEvent == tetris::BoardEvent::RowsRemoved) {
 			clearedRows_ += value;
+		}
+		if (boardEvent == tetris::BoardEvent::BlockCollision) {
+			tetrisBoard_.addExternalRows(externalRows_);
+			externalRows_.clear();
 		}
 	}
 
