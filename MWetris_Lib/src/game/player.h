@@ -6,6 +6,7 @@
 #include <mw/signal.h>
 
 #include <memory>
+#include <variant>
 
 namespace mwetris::game {
 
@@ -21,6 +22,12 @@ namespace mwetris::game {
 		virtual void updateRestart() = 0;
 
 		virtual PlayerBoardPtr getPlayerBoard() const = 0;
+
+		virtual void addRowWithHoles(int nbr) = 0;
+
+		virtual void updatePlayerData(const PlayerData& playerData) = 0;
+
+		virtual const PlayerData& getPlayerData() const = 0;
 
 		[[nodiscard]]
 		virtual mw::signals::Connection addEventCallback(std::function<void(tetris::BoardEvent, int)>&& callback) = 0;

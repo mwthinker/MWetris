@@ -33,12 +33,10 @@ namespace mwetris::game {
 
 	}
 
-	TetrisGame::TetrisGame(std::shared_ptr<DeviceManager> deviceManager)
-		: deviceManager_{deviceManager} {
+	TetrisGame::TetrisGame() {
 	}
 
 	TetrisGame::~TetrisGame() {
-		game::loadGame();
 	}
 
 	bool TetrisGame::isDefaultGame() const {
@@ -71,6 +69,7 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::createDefaultGame(DevicePtr device) {
+		rules_ = std::make_unique<DefaultGameRules>();
 		remotePlayers_.clear();
 		saveDefaultGame();
 
@@ -92,10 +91,12 @@ namespace mwetris::game {
 		}
 	}
 
-	void TetrisGame::createGame(int width, int height,
+	void TetrisGame::createGame(std::unique_ptr<GameRules> gameRules, int width, int height,
 		const std::vector<Human>& humans,
 		const std::vector<Ai>& ais,
 		const std::vector<RemotePlayerPtr>& remotePlayers) {
+		
+		rules_ = std::move(gameRules);
 
 		saveDefaultGame();
 		players_.clear();
@@ -112,6 +113,8 @@ namespace mwetris::game {
 			players_.push_back(player);
 		}
 		remotePlayers_ = remotePlayers;
+
+		rules_->createGame(players_);
 
 		initGame();
 	}
@@ -136,6 +139,7 @@ namespace mwetris::game {
 			player->updateRestart();
 		}
 		initGame();
+		rules_->restart();
 	}
 
 	bool TetrisGame::isPaused() const {
@@ -188,6 +192,7 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::update(double deltaTime) {
+		rules_->update(deltaTime);
 		timeHandler_.update(deltaTime);
 
 		if (!pause_) {

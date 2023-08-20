@@ -36,12 +36,10 @@ namespace mwetris::game {
 
 		void updateGameOver();
 
-		int getLevel() const override {
-			return level_;
-		}
+		void updatePlayerData(const PlayerData& playerData);
 
-		int getPoints() const override {
-			return points_;
+		const PlayerData& getPlayerData() const override {
+			return playerData_;
 		}
 
 		int getClearedRows() const override {
@@ -70,6 +68,9 @@ namespace mwetris::game {
 		ActionHandler downGroundHandler_{0.0, true};
 		ActionHandler gravityMove_{1, false};  // Value doesn't matter! Changes every frame.
 		ActionHandler downHandler_{0.04, false};
+
+		PlayerData playerData_;
+		std::vector<tetris::BlockType> externalRows_;
 	};
 
 }

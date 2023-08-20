@@ -86,6 +86,10 @@ namespace mwetris::game {
 		updateTetrisBoard(tetris::Move::GameOver);
 	}
 
+	void LocalPlayerBoard::updatePlayerData(const PlayerData& playerData) {
+		playerData_ = playerData;
+	}
+
 	void LocalPlayerBoard::handleBoardEvent(tetris::BoardEvent boardEvent, int value) {
 		PlayerBoard::handleBoardEvent(boardEvent, value);
 		if (boardEvent == tetris::BoardEvent::CurrentBlockUpdated) {

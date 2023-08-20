@@ -17,20 +17,16 @@ namespace mwetris::game {
 		RemotePlayerBoard(RemotePlayerBoard&&) = delete;
 		RemotePlayerBoard& operator=(RemotePlayerBoard&&) = delete;
 
-		int getLevel() const override {
-			return level_;
-		}
-
-		int getPoints() const override {
-			return points_;
-		}
-
 		int getClearedRows() const override {
 			return clearedRows_;
 		}
 
 		int getGameOverPosition() const override {
 			return gameOverPosition_;
+		}
+
+		const PlayerData& getPlayerData() const override {
+			return playerData_;
 		}
 
 	private:
@@ -40,6 +36,7 @@ namespace mwetris::game {
 		int level_ = 1;
 		int clearedRows_ = 0;
 		int gameOverPosition_ = 0;
+		PlayerData playerData_{};
 	};
 
 }

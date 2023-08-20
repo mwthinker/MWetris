@@ -6,12 +6,24 @@
 
 #include <tetrisboard.h>
 
-#include <string>
-#include <memory>
-
 #include <mw/signal.h>
 
+#include <string>
+#include <memory>
+#include <variant>
+
 namespace mwetris::game {
+
+	struct DefaultPlayerData {
+		int level;
+		int points;
+	};
+
+	struct SurvivalPlayerData {
+		int opponentRows;
+	};
+
+	using PlayerData = std::variant<DefaultPlayerData, SurvivalPlayerData>;
 
 	class PlayerBoard;
 	using PlayerBoardPtr = std::shared_ptr<PlayerBoard>;
@@ -28,15 +40,13 @@ namespace mwetris::game {
 			return name_;
 		}
 
-		virtual int getLevel() const = 0;
-
-		virtual int getPoints() const = 0;
-
 		virtual int getClearedRows() const = 0;
 
 		bool isGameOver() const;
 
 		virtual int getGameOverPosition() const = 0;
+
+		virtual const PlayerData& getPlayerData() const = 0;
 
 		const tetris::TetrisBoard& getTetrisBoard() const {
 			return tetrisBoard_;

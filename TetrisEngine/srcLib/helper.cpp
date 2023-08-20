@@ -45,11 +45,11 @@ namespace tetris {
 
 	std::vector<BlockType> generateRow(int width, int holes) {
 		std::vector<BlockType> row(width);
-		for (auto type : row) {
+		for (auto& type : row) {
 			type = randomBlockType();;
 		}
 
-		Random random;
+		static Random random;
 		for (int i = 0; i < holes; ++i) {
 			int index = random.generateInt(0, width - 1);
 			if (row[index] == BlockType::Empty) {

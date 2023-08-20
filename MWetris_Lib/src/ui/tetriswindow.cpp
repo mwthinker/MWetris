@@ -228,7 +228,7 @@ namespace mwetris::ui {
 		Configuration::getInstance().getImGuiDefaultFont();
 		Configuration::getInstance().getImGuiHeaderFont();
 
-		game_ = std::make_shared<game::TetrisGame>(deviceManager_);
+		game_ = std::make_shared<game::TetrisGame>();
 		gameComponent_ = std::make_unique<graphic::GameComponent>();
 
 		sceneStateMachine_.emplace<scene::EmptyScene>();
@@ -253,12 +253,17 @@ namespace mwetris::ui {
 
 		connections_ += game_->initGameEvent.connect(gameComponent_.get(), &mwetris::graphic::GameComponent::initGame);
 		connections_ += game_->gameOverEvent.connect([this](game::GameOver gameOver) {
-			if (const auto& playerBoard = *gameOver.playerBoard;  game_->isDefaultGame() && game::isNewHighScore(playerBoard)) {
+			game::DefaultPlayerData data{};
+			if (const auto playerData{std::get_if<game::DefaultPlayerData>(&gameOver.playerBoard->getPlayerData())}; playerData) {
+				data = *playerData;
+			}
+
+			if (const auto& playerBoard = *gameOver.playerBoard;  game_->isDefaultGame() && game::isNewHighScore(data.points)) {
 				scene::NewHighScoreData data;
 				data.name = playerBoard.getName();
-				data.points = playerBoard.getPoints();
+				data.points = data.points;
 				data.clearedRows = playerBoard.getClearedRows();
-				data.level = playerBoard.getLevel();
+				data.level = data.level;
 				openPopUp<scene::NewHighScore>(data);
 			}
 		});
@@ -415,7 +420,9 @@ namespace mwetris::ui {
 				ImGui::SetCursorPosY(y);
 
 				if (ImGui::ConfirmationButton("Create Game", {width, height})) {
-					game_->createGame(TetrisWidth, TetrisHeight,
+					game_->createGame(
+						std::make_unique<game::SurvivalGameRules>(),
+						TetrisWidth, TetrisHeight,
 						extractHumans(playerSlots_),
 						extractAis(playerSlots_),
 						extractRemotePlayers(playerSlots_));

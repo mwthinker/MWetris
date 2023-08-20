@@ -30,14 +30,27 @@ namespace mwetris::game {
 			localPlayerBoard_->updateRestart();
 		}
 
+		void updatePlayerData(const PlayerData& playerData) override {
+			localPlayerBoard_->updatePlayerData(playerData);
+		}
+
+		const PlayerData& getPlayerData() const override {
+			return localPlayerBoard_->getPlayerData();
+		}
+
 		[[nodiscard]]
 		mw::signals::Connection addEventCallback(std::function<void(tetris::BoardEvent, int)>&& callback) override {
 			return localPlayerBoard_->gameboardEventUpdate.connect(callback);
 		}
 
-		virtual PlayerBoardPtr getPlayerBoard() const override {
+		PlayerBoardPtr getPlayerBoard() const override {
 			return localPlayerBoard_;
 		}
+
+		void addRowWithHoles(int nbr) override {
+			localPlayerBoard_->addRow(nbr);
+		}
+
 	private:
 		DevicePtr device_;
 		LocalPlayerBoardPtr localPlayerBoard_;

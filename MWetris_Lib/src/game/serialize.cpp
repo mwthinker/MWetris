@@ -72,11 +72,11 @@ namespace mwetris::game {
 				tpPlayerBoard.add_board(static_cast<tp::BlockType>(type));
 			}
 			tpPlayerBoard.set_ai(false);
-			tpPlayerBoard.set_level(playerBoard.getLevel());
-			tpPlayerBoard.set_points(playerBoard.getPoints());
+			//tpPlayerBoard.set_level(playerBoard.getLevel());
+			//tpPlayerBoard.set_points(playerBoard.getPoints());
 			tpPlayerBoard.set_name(playerBoard.getName());
 			tpPlayerBoard.set_next(static_cast<tp::BlockType>(playerBoard.getTetrisBoard().getNextBlockType()));
-			tpPlayerBoard.set_cleared_rows(playerBoard.getClearedRows());
+			//tpPlayerBoard.set_cleared_rows(playerBoard.getClearedRows());
 			tpPlayerBoard.set_width(playerBoard.getTetrisBoard().getColumns());
 			tpPlayerBoard.set_height(playerBoard.getTetrisBoard().getRows());
 
@@ -223,9 +223,9 @@ namespace mwetris::game {
 		return results;
 	}
 
-	bool isNewHighScore(const PlayerBoard& playerBoard) {
+	bool isNewHighScore(int points) {
 		auto results = loadHighScore();
-		return getIndexForNewResult(results, playerBoard.getPoints()) < NbrHighScoreResults;
+		return getIndexForNewResult(results, points) < NbrHighScoreResults;
 	}
 
 	void saveHighScore(const std::string& name, int points, int rows, int level) {

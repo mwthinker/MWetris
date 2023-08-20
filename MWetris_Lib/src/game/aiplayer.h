@@ -38,6 +38,18 @@ namespace mwetris::game {
 			return localPlayerBoard_;
 		}
 
+		void addRowWithHoles(int nbr) override {
+			localPlayerBoard_->addRow(nbr);
+		}
+
+		void updatePlayerData(const PlayerData& playerData) override {
+			localPlayerBoard_->updatePlayerData(playerData);
+		}
+
+		const PlayerData& getPlayerData() const override {
+			return localPlayerBoard_->getPlayerData();
+		}
+
 	private:
 		mw::signals::ScopedConnections connections_;
 

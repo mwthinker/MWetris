@@ -9,6 +9,9 @@
 
 #include <spdlog/spdlog.h>
 
+#include <variant>
+#include <concepts>
+
 namespace mwetris::graphic {
 
 	namespace {
@@ -29,6 +32,9 @@ namespace mwetris::graphic {
 		}
 
 		constexpr float NormalizedPreviewSize = 5.f;
+
+		template<class>
+		inline constexpr bool always_false_v = false;
 
 	}
 
@@ -254,9 +260,18 @@ namespace mwetris::graphic {
 				ImGui::Indent(10.f);
 
 				ImGui::Text("%s:", playerBoard_->getName().c_str());
-				ImGui::Text("%s: %d", "Level", playerBoard_->getLevel());
-
-				ImGui::Text("%s: %d", "Points", playerBoard_->getPoints());
+				
+				std::visit([&](auto&& playerData) mutable {
+					using T = std::decay_t<decltype(playerData)>;
+					if constexpr (std::is_same_v<T, game::DefaultPlayerData>) {
+						ImGui::Text("%s: %d", "Level", playerData.level);
+						ImGui::Text("%s: %d", "Points", playerData.points);
+					} else if constexpr (std::is_same_v<T, game::SurvivalPlayerData>) {
+						ImGui::Text("%s: %d", "OpponentRows", playerData.opponentRows);
+					} else {
+						static_assert(always_false_v<T>, "non-exhaustive visitor!");
+					}
+				}, playerBoard_->getPlayerData());
 				ImGui::Text("%s: %d", "Rows", playerBoard_->getClearedRows());
 			});
 

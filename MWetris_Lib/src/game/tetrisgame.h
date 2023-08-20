@@ -6,11 +6,11 @@
 #include "tetrisgameevent.h"
 #include "localplayerboard.h"
 #include "computer.h"
-#include "devicemanager.h"
 #include "timerhandler.h"
 #include "aiplayer.h"
 #include "humanplayer.h"
 #include "remoteplayer.h"
+#include "defaultgamerules.h"
 
 #include <ai.h>
 
@@ -41,7 +41,7 @@ namespace mwetris::game {
 		mw::PublicSignal<TetrisGame, GameOver> gameOverEvent;
 		mw::PublicSignal<TetrisGame, GamePause> gamePauseEvent;
 
-		TetrisGame(std::shared_ptr<DeviceManager> deviceManager);
+		TetrisGame();
 		~TetrisGame();
 
 		// Updates everything. Should be called each frame.
@@ -49,7 +49,7 @@ namespace mwetris::game {
 
 		void createDefaultGame(DevicePtr device);
 
-		void createGame(int width, int height,
+		void createGame(std::unique_ptr<GameRules> gameRules, int width, int height,
 			const std::vector<Human>& devices,
 			const std::vector<Ai>& ais,
 			const std::vector<RemotePlayerPtr>& remotePlayers);
@@ -88,7 +88,7 @@ namespace mwetris::game {
 		mw::signals::ScopedConnections connections_;
 		TimeHandler timeHandler_;
 		TimeHandler::Key pauseKey_;
-		std::shared_ptr<DeviceManager> deviceManager_;
+		std::unique_ptr<GameRules> rules_;
 	};
 
 }
