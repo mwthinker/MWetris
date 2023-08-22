@@ -66,24 +66,25 @@ namespace mwetris::game {
 		}
 
 		void setTpPlayer(tp::PlayerBoard& tpPlayerBoard, const PlayerBoard& playerBoard) {
-			const auto& blockTypes = playerBoard.getTetrisBoard().getBoardVector();
+			const auto& blockTypes = playerBoard.getBoardVector();
 			tpPlayerBoard.clear_board();
 			for (const auto type : blockTypes) {
 				tpPlayerBoard.add_board(static_cast<tp::BlockType>(type));
 			}
 			tpPlayerBoard.set_ai(false);
-			//tpPlayerBoard.set_level(playerBoard.getLevel());
-			//tpPlayerBoard.set_points(playerBoard.getPoints());
+			auto playerData = std::get<DefaultPlayerData>(playerBoard.getPlayerData());
+			tpPlayerBoard.set_level(playerData.level);
+			tpPlayerBoard.set_points(playerData.points);
 			tpPlayerBoard.set_name(playerBoard.getName());
-			tpPlayerBoard.set_next(static_cast<tp::BlockType>(playerBoard.getTetrisBoard().getNextBlockType()));
-			//tpPlayerBoard.set_cleared_rows(playerBoard.getClearedRows());
-			tpPlayerBoard.set_width(playerBoard.getTetrisBoard().getColumns());
-			tpPlayerBoard.set_height(playerBoard.getTetrisBoard().getRows());
+			tpPlayerBoard.set_next(static_cast<tp::BlockType>(playerBoard.getNextBlockType()));
+			tpPlayerBoard.set_cleared_rows(playerBoard.getClearedRows());
+			tpPlayerBoard.set_width(playerBoard.getColumns());
+			tpPlayerBoard.set_height(playerBoard.getRows());
 
-			tpPlayerBoard.mutable_current()->set_lowest_start_row(playerBoard.getTetrisBoard().getBlock().getLowestStartRow());
-			tpPlayerBoard.mutable_current()->set_start_column(playerBoard.getTetrisBoard().getBlock().getStartColumn());
-			tpPlayerBoard.mutable_current()->set_rotations(playerBoard.getTetrisBoard().getBlock().getCurrentRotation());
-			tpPlayerBoard.mutable_current()->set_type(static_cast<tp::BlockType>(playerBoard.getTetrisBoard().getBlock().getBlockType()));
+			tpPlayerBoard.mutable_current()->set_lowest_start_row(playerBoard.getBlock().getLowestStartRow());
+			tpPlayerBoard.mutable_current()->set_start_column(playerBoard.getBlock().getStartColumn());
+			tpPlayerBoard.mutable_current()->set_rotations(playerBoard.getBlock().getCurrentRotation());
+			tpPlayerBoard.mutable_current()->set_type(static_cast<tp::BlockType>(playerBoard.getBlock().getBlockType()));
 		}
 
 		LocalPlayerBoardPtr createPlayer(const tp::PlayerBoard& player) {
@@ -92,8 +93,10 @@ namespace mwetris::game {
 				.withMovingBlock(toBlock(player.current()))
 				.withHeight(player.height())
 				.withWidth(player.width())
-				.withLevel(player.level())
-				.withPoints(player.points())
+				.withPlayerData(DefaultPlayerData{
+					.level = player.level(),
+					.points = player.points()
+				})
 				.withName(player.name())
 				.withNextBlockType(static_cast<tetris::BlockType>(player.next()))
 				.withClearedRows(player.cleared_rows())

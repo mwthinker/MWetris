@@ -14,10 +14,8 @@ namespace mwetris::game {
 			tetris::TetrisBoard board(width_, height_, movingBlockType_, next_);
 			playerBoard = std::make_shared<LocalPlayerBoard>(board, name_);
 		}
-		playerBoard->updateLevel(level_);
 		playerBoard->updateClearedRows(clearedRows_);
-		playerBoard->updateGameOverPosition(gameOverPosition_);
-		playerBoard->updatePoints(points_);
+		playerBoard->updatePlayerData(playerData_);
 		return playerBoard;
 	}
 

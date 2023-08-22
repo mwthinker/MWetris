@@ -50,6 +50,10 @@ namespace mwetris::game {
 			return localPlayerBoard_->getPlayerData();
 		}
 
+		void updateGravity(float speed) override {
+			localPlayerBoard_->updateGravity(speed);
+		}
+
 	private:
 		mw::signals::ScopedConnections connections_;
 

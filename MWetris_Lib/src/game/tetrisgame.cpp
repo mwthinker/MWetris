@@ -20,17 +20,83 @@ namespace mwetris::game {
 			return LocalPlayerBoardBuilder{}
 				.withClearedRows(0)
 				.withGameOverPosition(0)
-				.withLevel(1)
-				.withLevelUpCounter(0)
+				.withPlayerData(DefaultPlayerData{
+					.level = 1,
+					.points = 0
+				})
 				.withName(name)
 				.withMovingBlockType(tetris::randomBlockType())
 				.withNextBlockType(tetris::randomBlockType())
-				.withPoints(0)
 				.withWidth(width)
 				.withHeight(height)
 				.build();
 		}
 
+	}
+
+	PlayerFactory::PlayerFactory() {}
+
+	class LocalNetworkPlayer : public Player {
+	public:
+		LocalNetworkPlayer() {
+		}
+
+		LocalNetworkPlayer(HumanPlayerPtr human) {
+			player_ = human;
+		}
+
+		~LocalNetworkPlayer() = default;
+
+		void update(double timeStep) override {
+			
+		}
+
+		void updateRestart() override {
+		}
+
+		PlayerBoardPtr getPlayerBoard() const override {
+			return nullptr;
+		}
+
+		void addRowWithHoles(int nbr) override {
+
+		}
+
+		void updatePlayerData(const PlayerData& playerData) override {
+			// Send player data.
+		}
+
+		const PlayerData& getPlayerData() const override {
+			static PlayerData playerData;
+			return playerData;
+		}
+
+		[[nodiscard]]
+		virtual mw::signals::Connection addEventCallback(std::function<void(tetris::BoardEvent, int)>&& callback) override {
+			return {};
+		}
+	private:
+		PlayerPtr player_;
+	};
+
+	std::vector<PlayerPtr> PlayerFactory::createPlayers(int width, int height,
+		const std::vector<game::Human>& humans,
+		const std::vector<game::Ai>& ais) {
+
+		std::vector<game::PlayerPtr> players;
+
+		for (auto& human : humans) {
+			auto board = createLocalPlayerBoard(width, height, human.name);
+			auto player = std::make_shared<HumanPlayer>(human.device, createLocalPlayerBoard(TetrisWidth, TetrisHeight, "Player"));
+			players.push_back(player);
+		}
+		for (auto& ai : ais) {
+			auto localPlayer = createLocalPlayerBoard(width, height, ai.name);
+			auto player = std::make_shared<AiPlayer>(ai.ai, createLocalPlayerBoard(TetrisWidth, TetrisHeight, "Player"));
+			players.push_back(player);
+		}
+
+		return players;
 	}
 
 	TetrisGame::TetrisGame() {
@@ -46,11 +112,11 @@ namespace mwetris::game {
 
 		const auto& player = *players_.front();
 
-		if (player.getPlayerBoard()->getTetrisBoard().getRows() != TetrisHeight) {
+		if (player.getPlayerBoard()->getRows() != TetrisHeight) {
 			return false;
 		}
 
-		if (player.getPlayerBoard()->getTetrisBoard().getColumns() != TetrisWidth) {
+		if (player.getPlayerBoard()->getColumns() != TetrisWidth) {
 			return false;
 		}
 
@@ -92,26 +158,15 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::createGame(std::unique_ptr<GameRules> gameRules, int width, int height,
-		const std::vector<Human>& humans,
-		const std::vector<Ai>& ais,
+		const std::vector<PlayerPtr>& players,
 		const std::vector<RemotePlayerPtr>& remotePlayers) {
 		
 		rules_ = std::move(gameRules);
 
 		saveDefaultGame();
-		players_.clear();
 		remotePlayers_.clear();
 
-		for (auto& human : humans) {
-			auto board = createLocalPlayerBoard(width, height, human.name);
-			auto player = std::make_shared<HumanPlayer>(human.device, createLocalPlayerBoard(TetrisWidth, TetrisHeight, "Player"));
-			players_.push_back(player);
-		}
-		for (auto& ai : ais) {
-			auto localPlayer = createLocalPlayerBoard(width, height, ai.name);
-			auto player = std::make_shared<AiPlayer>(ai.ai, createLocalPlayerBoard(TetrisWidth, TetrisHeight, "Player"));
-			players_.push_back(player);
-		}
+		players_ = players;
 		remotePlayers_ = remotePlayers;
 
 		rules_->createGame(players_);
@@ -156,7 +211,7 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::pause() {
-		if (isDefaultGame() && players_.size() == 1 && !players_.front()->getPlayerBoard()->getTetrisBoard().isGameOver()) {
+		if (isDefaultGame() && players_.size() == 1 && !players_.front()->getPlayerBoard()->isGameOver()) {
 			saveGame(*players_.front()->getPlayerBoard());
 		}
 		if (timeHandler_.removeCallback(pauseKey_) || !pause_) {

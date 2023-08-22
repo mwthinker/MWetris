@@ -106,20 +106,19 @@ namespace mwetris::graphic {
 			delta = (Vec2{1.f, 3.f} - calculateCenterOfMass(block)) * squareSize_;
 			delta.y = NormalizedPreviewSize * squareSize_ - delta.y;
 		} else {
-			delta = Vec2{0.f, (playerBoard_->getTetrisBoard().getRows() - 2) * squareSize_};
+			delta = Vec2{0.f, (playerBoard_->getRows() - 2) * squareSize_};
 		}
 		
 		auto drawList = ImGui::GetWindowDrawList();
 
 		auto texture = getSprite(block.getBlockType());
 		drawList->PushTextureID((ImTextureID)(intptr_t) texture);
-		const auto& tetrisBoard = playerBoard_->getTetrisBoard();
 
 		for (const auto& sq : block) {
 			auto x = pos.x + sq.column * squareSize_ + delta.x;
 			auto y = pos.y - (sq.row + 1) * squareSize_ + delta.y;
 			
-			if (sq.row < tetrisBoard.getRows() - 2) {
+			if (sq.row < playerBoard_->getRows() - 2) {
 				drawList->PrimReserve(6, 4);
 				ImGui::Helper::AddImageQuad(texture, {x, y}, Vec2{squareSize_, squareSize_}, color);
 			}
@@ -153,21 +152,21 @@ namespace mwetris::graphic {
 
 		Vec2 sqSize{squareSize_ * NormalizedPreviewSize , squareSize_ * NormalizedPreviewSize};
 		drawList->AddRectFilled(pos + sqSize * 0.05f, pos + sqSize * 0.95f, color.toImU32());
-		drawBlock(tetris::Block{playerBoard_->getTetrisBoard().getNextBlockType(), 0, 0}, pos + squareSize_, true);
+		drawBlock(tetris::Block{playerBoard_->getNextBlockType(), 0, 0}, pos + squareSize_, true);
 
 		ImGui::Dummy(sqSize);
 	}
 
 	void ImGuiBoard::drawBoard(double deltaTime) {
-		const int columns = playerBoard_->getTetrisBoard().getColumns();
-		const int rows = playerBoard_->getTetrisBoard().getRows();
+		const int columns = playerBoard_->getColumns();
+		const int rows = playerBoard_->getRows();
 		
 		drawGrid(columns, rows - 2);
 		drawBoardSquares(deltaTime);
 		
 		Vec2 cursorPos = ImGui::GetCursorScreenPos();
-		drawBlock(playerBoard_->getTetrisBoard().getBlockDown(), cursorPos, false, Color(1.f, 1.f, 1, 0.3f));
-		drawBlock(playerBoard_->getTetrisBoard().getBlock(), cursorPos);
+		drawBlock(playerBoard_->getBlockDown(), cursorPos, false, Color(1.f, 1.f, 1, 0.3f));
+		drawBlock(playerBoard_->getBlock(), cursorPos);
 
 		ImGui::Dummy({squareSize_ * columns, squareSize_ * (rows - 2)});
 	}
@@ -194,20 +193,18 @@ namespace mwetris::graphic {
 
 		auto drawList = ImGui::GetWindowDrawList();
 
-		const auto& tetrisBoard = playerBoard_->getTetrisBoard();
+		rows_.resize(playerBoard_->getRows() - 2);
 
-		rows_.resize(tetrisBoard.getRows() - 2);
-
-		for (int i = 0; i < tetrisBoard.getRows() - 2; ++i) {
+		for (int i = 0; i < playerBoard_->getRows() - 2; ++i) {
 			rows_[i] -= 5.0 * deltaTime;
 			if (rows_[i] < 0) {
 				rows_[i] = 0.0;
 			}
-			for (int j = 0; j < tetrisBoard.getColumns(); ++j) {
+			for (int j = 0; j < playerBoard_->getColumns(); ++j) {
 				float x = squareSize_ * j + cursorPos.x;
 				float y = height_ - squareSize_ * (i + 1) + cursorPos.y - rows_[i] * squareSize_;
 
-				auto blockType = tetrisBoard.getBlockType(j, i);
+				auto blockType = playerBoard_->getBlockType(j, i);
 				if (blockType != tetris::BlockType::Empty
 					&& blockType != tetris::BlockType::Wall) {
 
@@ -224,10 +221,8 @@ namespace mwetris::graphic {
 
 	void ImGuiBoard::draw(float width, float height, double deltaTime) {
 		ImGui::Group([&]() {
-			const auto& tetrisBoard = playerBoard_->getTetrisBoard();
-
-			const int columns = tetrisBoard.getColumns();
-			const int rows = tetrisBoard.getRows() - 2;
+			const int columns = playerBoard_->getColumns();
+			const int rows = playerBoard_->getRows() - 2;
 
 			float normalizedWidth = columns + NormalizedPreviewSize;
 			float normalizedHeight = rows;
@@ -255,7 +250,7 @@ namespace mwetris::graphic {
 			ImGui::SameLine();
 
 			ImGui::Group([&]() {
-				drawPreviewBlock(tetrisBoard.getNextBlockType(), Color(1.f, 1.f, 1, 0.3f));
+				drawPreviewBlock(playerBoard_->getNextBlockType(), Color(1.f, 1.f, 1, 0.3f));
 
 				ImGui::Indent(10.f);
 
@@ -283,7 +278,7 @@ namespace mwetris::graphic {
 				ImGui::Dummy({(width - normalizedWidth * squareSize_) * 0.5f, height});
 			}
 
-			if (tetrisBoard.isGameOver()) {
+			if (playerBoard_->isGameOver()) {
 				auto pos = ImGui::GetCursorPos();
 
 				const char* text = "Game Over";

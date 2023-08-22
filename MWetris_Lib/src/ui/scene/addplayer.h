@@ -41,11 +41,6 @@ namespace mwetris::ui::scene {
 	};
 
 	struct OpenSlot {
-
-	};
-
-	struct ClosedSlot {
-
 	};
 
 	using PlayerSlot = std::variant<DeviceType, AiType, InternetPlayer, OpenSlot>;

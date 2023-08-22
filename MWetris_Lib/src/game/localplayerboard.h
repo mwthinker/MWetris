@@ -9,6 +9,9 @@ namespace mwetris::game {
 	class LocalPlayerBoard;
 	using LocalPlayerBoardPtr = std::shared_ptr<LocalPlayerBoard>;
 
+
+
+
 	class LocalPlayerBoard : public PlayerBoard {
 	public:
 		LocalPlayerBoard(const tetris::TetrisBoard& board, const std::string& name);
@@ -22,15 +25,9 @@ namespace mwetris::game {
 
 		void addRow(int holes);
 
-		void updatePoints(int points);
-
 		void updateName(const std::string& name);
 
-		void updateLevel(int level);
-
 		void updateClearedRows(int clearedRows);
-
-		void updateGameOverPosition(int gameOverPosition);
 
 		void updateRestart();
 
@@ -46,21 +43,14 @@ namespace mwetris::game {
 			return clearedRows_;
 		}
 
-		int getGameOverPosition() const override {
-			return gameOverPosition_;
-		}
-
-		float getGravityDownSpeed() const {
-			return 1 + level_ * 0.5f;
+		void updateGravity(float speed) {
+			speed_ = speed;
 		}
 
 	private:
 		void handleBoardEvent(tetris::BoardEvent boardEvent, int value) override;
 
-		int points_ = 0;
-		int level_ = 1;
 		int clearedRows_ = 0;
-		int gameOverPosition_ = 0;
 
 		ActionHandler leftHandler_{0.09, false};
 		ActionHandler rightHandler_{0.09, false};
@@ -69,6 +59,7 @@ namespace mwetris::game {
 		ActionHandler gravityMove_{1, false};  // Value doesn't matter! Changes every frame.
 		ActionHandler downHandler_{0.04, false};
 
+		float speed_ = 1.f;
 		PlayerData playerData_;
 		std::vector<tetris::BlockType> externalRows_;
 	};

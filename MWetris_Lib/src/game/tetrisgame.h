@@ -35,6 +35,16 @@ namespace mwetris::game {
 		std::string uuid;
 	};
 
+	class PlayerFactory {
+	public:
+		PlayerFactory();
+
+		std::vector<PlayerPtr> createPlayers(int width, int height,
+			const std::vector<game::Human>& humans,
+			const std::vector<game::Ai>& ais
+		);
+	};
+
 	class TetrisGame {
 	public:
 		mw::PublicSignal<TetrisGame, InitGameEvent> initGameEvent;
@@ -50,8 +60,7 @@ namespace mwetris::game {
 		void createDefaultGame(DevicePtr device);
 
 		void createGame(std::unique_ptr<GameRules> gameRules, int width, int height,
-			const std::vector<Human>& devices,
-			const std::vector<Ai>& ais,
+			const std::vector<PlayerPtr>& players,
 			const std::vector<RemotePlayerPtr>& remotePlayers);
 
 		bool isPaused() const;

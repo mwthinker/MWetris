@@ -43,7 +43,7 @@ namespace mwetris::network {
 		void removeRemotePlayer(game::RemotePlayerBoardPtr&& remotePlayer);
 
 		const std::string& getServerId() const {
-			return {serverId_};
+			return serverId_;
 		}
 
 		void debugAddRemotePlayer(int slotIndex) {

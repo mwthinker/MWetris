@@ -14,7 +14,7 @@ namespace mwetris::game {
 
 	void LocalPlayerBoard::update(Input input, double deltaTime) {
 		// The time between each "gravity" move.
-		double downTime = 1.0 / getGravityDownSpeed();
+		double downTime = 1.0 / speed_;
 		gravityMove_.setWaitingTime(downTime);
 
 		gravityMove_.update(deltaTime, true);
@@ -57,27 +57,12 @@ namespace mwetris::game {
 		name_ = name;
 	}
 
-	void LocalPlayerBoard::updatePoints(int points) {
-		points_ = points;
-	}
-
-	void LocalPlayerBoard::updateLevel(int level) {
-		level_ = level;
-	}
-
 	void LocalPlayerBoard::updateClearedRows(int clearedRows) {
 		clearedRows_ = clearedRows;
 	}
 
-	void LocalPlayerBoard::updateGameOverPosition(int gameOverPosition) {
-		gameOverPosition_ = gameOverPosition;
-	}
-
 	void LocalPlayerBoard::updateRestart() {
 		externalRows_.clear();
-		level_ = 1;
-		points_ = 0;
-		gameOverPosition_ = 0;
 		clearedRows_ = 0;
 		restartTetrisBoard(tetris::randomBlockType(), tetris::randomBlockType());
 	}

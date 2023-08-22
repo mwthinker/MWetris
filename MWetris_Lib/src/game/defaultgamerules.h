@@ -24,8 +24,6 @@ namespace mwetris::game {
 		virtual void createGame(std::span<PlayerPtr> players) = 0;
 	};
 
-
-
 	class DefaultGameRules : public GameRules {
 	public:
 		DefaultGameRules() {
@@ -35,23 +33,19 @@ namespace mwetris::game {
 		void update(double deltaTime) override {
 
 		}
-
-		void startNewGame() {
-
-		}
-
+		
 		void createGame(std::span<PlayerPtr> players) override {
 			connections_.clear();
 			localPlayers_.clear();
 			for (auto& player : players) {
 				auto& info = localPlayers_.emplace_back(player, DefaultPlayerData{});
 				info.player->updatePlayerData(info.data);
+				info.player->updateGravity(1 + info.data.level * 0.5f);
 				connections_ += player->addEventCallback([&info, this](tetris::BoardEvent gameEvent, int value) {
 					updateGameBoardEvent(gameEvent, value, info);
 				});
 			}
 		}
-
 
 		void restart() override {
 			localPlayers_.clear();
@@ -69,6 +63,7 @@ namespace mwetris::game {
 				info.data.points += info.data.level * value * value;
 
 				info.player->updatePlayerData(info.data);
+				info.player->updateGravity(1 + info.data.level * 0.5f);
 			}
 		}
 

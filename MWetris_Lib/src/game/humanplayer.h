@@ -12,6 +12,9 @@
 
 namespace mwetris::game {
 
+	class HumanPlayer;
+	using HumanPlayerPtr = std::shared_ptr<HumanPlayer>;
+
 	class HumanPlayer : public Player {
 	public:
 		HumanPlayer(DevicePtr device, LocalPlayerBoardPtr localPlayerBoard)
@@ -49,6 +52,10 @@ namespace mwetris::game {
 
 		void addRowWithHoles(int nbr) override {
 			localPlayerBoard_->addRow(nbr);
+		}
+
+		void updateGravity(float speed) override {
+			localPlayerBoard_->updateGravity(speed);
 		}
 
 	private:

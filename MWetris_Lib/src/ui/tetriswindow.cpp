@@ -11,6 +11,7 @@
 
 #include "game/serialize.h"
 #include "game/tetrisgame.h"
+#include "game/localplayerboardbuilder.h"
 
 #include "graphic/gamecomponent.h"
 
@@ -163,6 +164,8 @@ namespace mwetris::ui {
 			}
 			return false;
 		}
+
+
 
 	}
 
@@ -423,8 +426,7 @@ namespace mwetris::ui {
 					game_->createGame(
 						std::make_unique<game::SurvivalGameRules>(),
 						TetrisWidth, TetrisHeight,
-						extractHumans(playerSlots_),
-						extractAis(playerSlots_),
+						game::PlayerFactory{}.createPlayers(TetrisWidth, TetrisHeight, extractHumans(playerSlots_), extractAis(playerSlots_)),
 						extractRemotePlayers(playerSlots_));
 					customGame = false;
 				}

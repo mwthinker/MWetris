@@ -44,16 +44,47 @@ namespace mwetris::game {
 
 		bool isGameOver() const;
 
-		virtual int getGameOverPosition() const = 0;
-
 		virtual const PlayerData& getPlayerData() const = 0;
 
-		const tetris::TetrisBoard& getTetrisBoard() const {
-			return tetrisBoard_;
+		int getColumns() const {
+			return tetrisBoard_.getColumns();
+		}
+
+		int getRows() const {
+			return tetrisBoard_.getRows();
+		}
+
+		const std::vector<tetris::BlockType>& getBoardVector() const {
+			return tetrisBoard_.getBoardVector();
+		}
+
+		tetris::BlockType getBlockType(int column, int row) const {
+			return tetrisBoard_.getBlockType(column, row);
+		}
+
+		tetris::Block getBlockDown() const {
+			return tetrisBoard_.getBlock();
+		}
+
+		tetris::Block getBlock() const {
+			return tetrisBoard_.getBlock();
+		}
+
+		// Return the type of the moving block.
+		tetris::BlockType getCurrentBlockType() const {
+			return tetrisBoard_.getCurrentBlockType();
+		}
+
+		// Return the type of the next block.
+		tetris::BlockType getNextBlockType() const {
+			return tetrisBoard_.getNextBlockType();
 		}
 
 		const std::string& getUniqueId() const;
 
+		const tetris::TetrisBoard& getTetrisBoard() const {
+			return tetrisBoard_;
+		}
 	protected:
 		void updateTetrisBoard(tetris::Move move);
 

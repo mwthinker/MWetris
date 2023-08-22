@@ -39,18 +39,8 @@ namespace mwetris::game {
 			return *this;
 		}
 
-		LocalPlayerBoardBuilder& withPoints(int points) {
-			points_ = points;
-			return *this;
-		}
-
-		LocalPlayerBoardBuilder& withLevel(int level) {
-			level_ = level;
-			return *this;
-		}
-
-		LocalPlayerBoardBuilder& withLevelUpCounter(int counter) {
-			levelUpCounter_ = counter;
+		LocalPlayerBoardBuilder& withPlayerData(const PlayerData& playerData) {
+			playerData_ = playerData;
 			return *this;
 		}
 
@@ -76,9 +66,6 @@ namespace mwetris::game {
 
 	private:
 		std::string name_{"PLAYER"};
-		int points_ = 0;
-		int level_ = 1;
-		int levelUpCounter_ = 0;
 		int clearedRows_ = 0;
 		int width_ = 10;
 		int height_ = 24;
@@ -87,6 +74,7 @@ namespace mwetris::game {
 		tetris::BlockType next_ = tetris::BlockType::Empty;
 		std::vector<tetris::BlockType> board_;
 		int gameOverPosition_ = 0;
+		PlayerData playerData_{};
 	};
 
 }
