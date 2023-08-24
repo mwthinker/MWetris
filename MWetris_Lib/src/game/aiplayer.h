@@ -26,6 +26,11 @@ namespace mwetris::game {
 		}
 
 		[[nodiscard]]
+		mw::signals::Connection addPlayerBoardUpdateCallback(std::function<void(game::PlayerBoardEvent)>&& callback) override {
+			return localPlayerBoard_->playerBoardUpdate.connect(callback);
+		}
+
+		[[nodiscard]]
 		mw::signals::Connection addEventCallback(std::function<void(tetris::BoardEvent, int)>&& callback) override {
 			return localPlayerBoard_->gameboardEventUpdate.connect(callback);
 		}

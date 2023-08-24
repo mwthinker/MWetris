@@ -16,6 +16,9 @@ namespace mwetris::network {
 		constexpr std::string_view ServerIp = "127.0.0.1";
 		constexpr int Port = 59412;
 
+		template<class>
+		inline constexpr bool always_false_v = false;
+
 	}
 
 	Network::Network()
@@ -25,8 +28,27 @@ namespace mwetris::network {
 		//thread_ = std::jthread(&Network::run, this);
 	}
 
-	void Network::addRemotePlayer() {
-		
+	void Network::addPlayers(std::vector<game::PlayerPtr>& players, const std::vector<game::RemotePlayerPtr>& remotePlayers) {
+		localPlayerse_ = players;
+		for (auto& player : localPlayerse_) {
+			connections_ += player->addPlayerBoardUpdateCallback([this, &player](game::PlayerBoardEvent playerBoardEvent) {
+				std::visit([&](auto&& event) {
+					handlePlayerBoardUpdate(*player, event);
+				}, playerBoardEvent);
+			});
+		}
+	}
+
+	void Network::handlePlayerBoardUpdate(const game::Player& player, const game::UpdateRestart& updateRestart) {
+
+	}
+
+	void Network::handlePlayerBoardUpdate(const game::Player& player, const game::UpdatePlayerData& updatePlayerData) {
+
+	}
+
+	void Network::handlePlayerBoardUpdate(const game::Player& player, const game::ExternalRows& externalRows) {
+
 	}
 
 	void Network::removeRemotePlayer(game::RemotePlayerBoardPtr&& remotePlayer) {

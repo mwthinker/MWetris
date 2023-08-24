@@ -190,7 +190,7 @@ namespace mwetris::ui {
 		setShowDemoWindow(true);
 
 		deviceManager_ = std::make_shared<game::DeviceManager>();
-		auto connection = deviceManager_->deviceConnected.connect([](game::DevicePtr device) {
+		connections_ += deviceManager_->deviceConnected.connect([](game::DevicePtr device) {
 			spdlog::info("Device found: {}", device->getName());
 		});
 
@@ -288,6 +288,7 @@ namespace mwetris::ui {
 			if (remote.slotIndex >= 0 && remote.slotIndex < playerSlots_.size()) {
 				if (const auto internetPlayer{std::get_if<scene::InternetPlayer>(&playerSlots_[remote.slotIndex])}; internetPlayer && !internetPlayer->remotePlayer) {
 					internetPlayer->remotePlayer = remote.remotePlayer;
+
 				} else {
 					spdlog::warn("[TetrisWindow] Fail to attach RemotePlayer to slot", remote.slotIndex);
 				}

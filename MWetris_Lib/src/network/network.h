@@ -4,6 +4,7 @@
 #include "game/remoteplayerboard.h"
 
 #include "game/remoteplayer.h"
+#include "game/player.h"
 
 #include <thread>
 #include <memory>
@@ -38,7 +39,7 @@ namespace mwetris::network {
 			}
 		}
 
-		void addRemotePlayer();
+		void addPlayers(std::vector<game::PlayerPtr>& players, const std::vector<game::RemotePlayerPtr>& remotePlayers);
 
 		void removeRemotePlayer(game::RemotePlayerBoardPtr&& remotePlayer);
 
@@ -60,6 +61,13 @@ namespace mwetris::network {
 		}
 
 	private:
+		mw::signals::ScopedConnections connections_;
+
+		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdateRestart& updateRestart);
+		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdatePlayerData& updatePlayerData);
+		void handlePlayerBoardUpdate(const game::Player& player, const game::ExternalRows& externalRows);
+
+		std::vector<game::PlayerPtr> localPlayerse_;
 		std::vector<game::RemotePlayerPtr> removeRemotePlayers_;
 		std::vector<Remote> addRemotePlayers_;
 

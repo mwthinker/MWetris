@@ -14,6 +14,8 @@ namespace mwetris::game {
 
 	class LocalPlayerBoard : public PlayerBoard {
 	public:
+		mw::PublicSignal<LocalPlayerBoard, PlayerBoardEvent> playerBoardUpdate;
+
 		LocalPlayerBoard(const tetris::TetrisBoard& board, const std::string& name);
 
 		LocalPlayerBoard(const LocalPlayerBoard&) = delete;

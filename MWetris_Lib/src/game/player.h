@@ -32,6 +32,9 @@ namespace mwetris::game {
 		virtual void updateGravity(float speed) = 0;
 
 		[[nodiscard]]
+		virtual mw::signals::Connection addPlayerBoardUpdateCallback(std::function<void(game::PlayerBoardEvent)>&& callback) = 0;
+
+		[[nodiscard]]
 		virtual mw::signals::Connection addEventCallback(std::function<void(tetris::BoardEvent, int)>&& callback) = 0;
 	};
 
