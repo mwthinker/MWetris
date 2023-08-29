@@ -1,6 +1,8 @@
 #ifndef MWETRIS_GAME_INPUT_H
 #define MWETRIS_GAME_INPUT_H
 
+#include <compare>
+
 namespace mwetris::game {
 
 	struct Input {
@@ -9,19 +11,9 @@ namespace mwetris::game {
 		bool downGround : 1;
 		bool left : 1;
 		bool right : 1;
+
+		friend constexpr auto operator<=>(const Input&, const Input&) = default;
 	};
-
-	inline constexpr bool operator==(Input left, Input right) {
-		return left.rotate == right.rotate
-			&& left.down == right.down
-			&& left.downGround == right.downGround
-			&& left.left == right.left
-			&& left.right == right.right;
-	}
-
-	inline constexpr bool operator!=(Input left, Input right) {
-		return !(left == right);
-	}
 
 }
 

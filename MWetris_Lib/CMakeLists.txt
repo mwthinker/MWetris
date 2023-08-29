@@ -28,6 +28,7 @@ set(SOURCES_LIB
 	src/game/input.h
 	src/game/gamepad.cpp
 	src/game/gamepad.h
+	src/game/humanai.h
 	src/game/humanplayer.h
 	src/game/keyboard.cpp
 	src/game/keyboard.h
@@ -48,6 +49,13 @@ set(SOURCES_LIB
 	src/game/serialize.cpp
 	src/game/serialize.h
 
+	src/network/client.h
+	src/network/debugclient.cpp
+	src/network/debugclient.h
+	src/network/protobufmessage.cpp
+	src/network/protobufmessage.h
+	src/network/protobufmessagequeue.cpp
+	src/network/protobufmessagequeue.h
 	src/network/network.cpp
 	src/network/network.h
 	
@@ -70,6 +78,7 @@ set(SOURCES_LIB
 
 	src/ui/imguiextra.cpp
 	src/ui/imguiextra.h
+	src/ui/networkdebugwindow.h
 	src/ui/tetriswindow.cpp
 	src/ui/tetriswindow.h
 	
