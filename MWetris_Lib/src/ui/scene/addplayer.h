@@ -11,6 +11,7 @@
 #include "game/serialize.h"
 #include "game/device.h"
 #include "game/remoteplayer.h"
+#include "game/humanai.h"
 
 #include <ai.h>
 
@@ -26,37 +27,17 @@ namespace mwetris::game {
 
 namespace mwetris::ui::scene {
 
-	struct DeviceType {
-		std::string name;
-		game::DevicePtr device;
-	};
-
-	struct AiType {
-		std::string name;
-		tetris::Ai ai;
-	};
-
-	struct InternetPlayer {
-		game::RemotePlayerPtr remotePlayer;
-	};
-
-	struct OpenSlot {
-	};
-
-	using PlayerSlot = std::variant<DeviceType, AiType, InternetPlayer, OpenSlot>;
-
 	struct AddPlayerData : public scene::SceneData {
 		int index;
 	};
 
 	class AddPlayer : public Scene {
 	public:
-
 		AddPlayer(std::function<void(AddPlayer&)> addCallback, std::shared_ptr<game::DeviceManager> deviceManager);
 
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
 
-		const PlayerSlot& getPlayer() const {
+		const game::PlayerSlot& getPlayer() const {
 			return player_;
 		}
 
@@ -73,12 +54,12 @@ namespace mwetris::ui::scene {
 		std::function<void(AddPlayer&)> addCallback_;
 		std::shared_ptr<game::DeviceManager> deviceManager_;
 
-		std::vector<DeviceType> allDevices_;
-		std::vector<AiType> allAis_;
+		std::vector<game::Human> allDevices_;
+		std::vector<game::Ai> allAis_;
 
 		std::string playerName_;
 		tetris::Ai ais_;
-		PlayerSlot player_;
+		game::PlayerSlot player_;
 		AddPlayerData data_{};
 
 		mw::signals::ScopedConnections connections_;

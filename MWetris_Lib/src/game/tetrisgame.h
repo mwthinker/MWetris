@@ -11,6 +11,7 @@
 #include "humanplayer.h"
 #include "remoteplayer.h"
 #include "defaultgamerules.h"
+#include "humanai.h"
 
 #include <ai.h>
 
@@ -20,20 +21,6 @@
 namespace mwetris::game {
 
 	constexpr double CountDownSeconds = 3.0;
-
-	struct Human {
-		std::string name;
-		DevicePtr device;
-	};
-
-	struct Ai {
-		std::string name;
-		tetris::Ai ai;
-	};
-
-	struct Remote {
-		std::string uuid;
-	};
 
 	class PlayerFactory {
 	public:

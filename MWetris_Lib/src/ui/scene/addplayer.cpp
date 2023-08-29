@@ -13,10 +13,9 @@ namespace mwetris::ui::scene {
 
 	namespace {
 
-		enum class Player {
+		enum class Player{
 			Human,
-			Ai,
-			InternetPlayer
+			Ai
 		};
 
 		struct PlayerType {
@@ -33,10 +32,6 @@ namespace mwetris::ui::scene {
 				PlayerType{
 					.player = Player::Ai,
 					.name = "AI"
-				},
-				PlayerType{
-					.player = Player::InternetPlayer,
-					.name = "Internet player"
 				}
 			};
 		}
@@ -56,8 +51,8 @@ namespace mwetris::ui::scene {
 			};
 		}
 
-		std::vector<DeviceType> getDeviceTypes(const std::vector<game::DevicePtr>& devices) {
-			std::vector<DeviceType> types;
+		std::vector<game::Human> getDeviceTypes(const std::vector<game::DevicePtr>& devices) {
+			std::vector<game::Human> types;
 
 			for (const auto& device : devices) {
 				types.emplace_back(device->getName(), device);
@@ -121,24 +116,20 @@ namespace mwetris::ui::scene {
 		if (playerType.player == Player::Human) {
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(150.f);
-			auto result = ImGui::ComboUniqueType<DeviceType>("##Players", allDevices_);
+			auto result = ImGui::ComboUniqueType<game::Human>("##Players", allDevices_);
 			result.name = playerName_;
 			player_ = result;
 		} else if (playerType.player == Player::Ai) {
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(150.f);
-			auto result = ImGui::ComboUniqueType<AiType>("##Players", allAis_);
+			auto result = ImGui::ComboUniqueType<game::Ai>("##Players", allAis_);
 			result.name = playerName_;
 			player_ = result;
-		} else if (playerType.player == Player::InternetPlayer) {
-			player_ = InternetPlayer{};
 		}
 
-		if (playerType.player != Player::InternetPlayer) {
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(100.f);
-			ImGui::InputText("##PlayerName", &playerName_);
-		}
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(100.f);
+		ImGui::InputText("##PlayerName", &playerName_);
 
 		float width = ImGui::GetWindowWidth() - 2 * ImGui::GetCursorPosX();
 		float height = 100.f;
@@ -159,7 +150,7 @@ namespace mwetris::ui::scene {
 			spdlog::error("Bug, should be type NewHighScoreData: {}", exp.what());
 		}
 		playerName_ = "Player 1";
-		player_ = DeviceType{
+		player_ = game::Human{
 			.name = playerName_,
 			.device = deviceManager_->getDefaultDevice1()
 		};

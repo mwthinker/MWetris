@@ -1,5 +1,8 @@
 #include "network.h"
 
+#include "game/tetrisgame.h"
+#include "protobufmessagequeue.h"
+
 #include <message.pb.h>
 
 #include <net/client.h>
@@ -19,82 +22,248 @@ namespace mwetris::network {
 		template<class>
 		inline constexpr bool always_false_v = false;
 
-	}
-
-	Network::Network()
-	//	: impl_{std::make_unique<Network::Impl>()}
-	{
-
-		//thread_ = std::jthread(&Network::run, this);
-	}
-
-	void Network::addPlayers(std::vector<game::PlayerPtr>& players, const std::vector<game::RemotePlayerPtr>& remotePlayers) {
-		localPlayerse_ = players;
-		for (auto& player : localPlayerse_) {
-			connections_ += player->addPlayerBoardUpdateCallback([this, &player](game::PlayerBoardEvent playerBoardEvent) {
-				std::visit([&](auto&& event) {
-					handlePlayerBoardUpdate(*player, event);
-				}, playerBoardEvent);
-			});
+		std::vector<game::Human> extractHumans(const std::vector<game::PlayerSlot>& playerSlots) {
+			std::vector<game::Human> humans;
+			for (const auto& playerSlot : playerSlots) {
+				std::visit([&](auto&& slot) mutable {
+					using T = std::decay_t<decltype(slot)>;
+					if constexpr (std::is_same_v<T, game::Human>) {
+						humans.push_back(game::Human{.name = slot.name, .device = slot.device});
+					} else if constexpr (std::is_same_v<T, game::Ai>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::Remote>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
+						// Skip.
+					} else {
+						static_assert(always_false_v<T>, "non-exhaustive visitor!");
+					}
+				}, playerSlot);
+			}
+			return humans;
 		}
-	}
 
-	void Network::handlePlayerBoardUpdate(const game::Player& player, const game::UpdateRestart& updateRestart) {
-
-	}
-
-	void Network::handlePlayerBoardUpdate(const game::Player& player, const game::UpdatePlayerData& updatePlayerData) {
-
-	}
-
-	void Network::handlePlayerBoardUpdate(const game::Player& player, const game::ExternalRows& externalRows) {
-
-	}
-
-	void Network::removeRemotePlayer(game::RemotePlayerBoardPtr&& remotePlayer) {
-	
-	}
-
-	void Network::run() {
-		net::IoContext ioContext;
-
-		auto client = net::Client::create(ioContext);
-		bool connected = false;
-		client->setReceiveHandler<tp::Wrapper>([](const tp::Wrapper& wrapper, const std::error_code& ec) {
-			if (ec) {
-				fmt::print("{}\n", ec.message());
+		std::vector<game::Ai> extractAis(const std::vector<game::PlayerSlot>& playerSlots) {
+			std::vector<game::Ai> ais;
+			for (const auto& playerSlot : playerSlots) {
+				std::visit([&](auto&& slot) mutable {
+					using T = std::decay_t<decltype(slot)>;
+					if constexpr (std::is_same_v<T, game::Human>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::Ai>) {
+						ais.push_back(game::Ai{.name = slot.name, .ai = slot.ai});
+					} else if constexpr (std::is_same_v<T, game::Remote>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
+						// Skip.
+					} else {
+						static_assert(always_false_v<T>, "non-exhaustive visitor!");
+					}
+				}, playerSlot);
 			}
-			wrapper.create_server_game();
-			//fmt::print("Received: {}\n", message.text());
-		});
-		client->setDisconnectHandler([&](std::error_code ec) {
-			connected = false;
-			fmt::print("Disconnected: {}\n", ec.message());
-		});
-		client->setConnectHandler([&](std::error_code ec) {
-			if (ec) {
-				fmt::print("{}\n", ec.message());
-				connected = false;
-			} else {
-				fmt::print("Connected\n");
-				connected = true;
+			return ais;
+		}
+
+		std::vector<game::RemotePlayerPtr> extractRemotePlayers(const std::vector<game::PlayerSlot>& playerSlots) {
+			std::vector<game::RemotePlayerPtr> remotePlayers;
+			for (const auto& playerSlot : playerSlots) {
+				std::visit([&](auto&& slot) mutable {
+					using T = std::decay_t<decltype(slot)>;
+					if constexpr (std::is_same_v<T, game::Human>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::Ai>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::Remote>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
+						// Skip.
+					} else {
+						static_assert(always_false_v<T>, "non-exhaustive visitor!");
+					}
+				}, playerSlot);
 			}
-		});
+			return remotePlayers;
+		}
+
+		tp::SlotType playerSlotToTpSlotType(const game::PlayerSlot& playerSlot) {
+			tp::SlotType slotType = tp::SlotType::UNSPECIFIED_SLOT_TYPE;
+			std::visit([&](auto&& slot) mutable {
+				using T = std::decay_t<decltype(slot)>;
+				if constexpr (std::is_same_v<T, game::Human>) {
+					slotType = tp::SlotType::HUMAN;
+				} else if constexpr (std::is_same_v<T, game::Ai>) {
+					slotType = tp::SlotType::AI;
+				} else if constexpr (std::is_same_v<T, game::Remote>) {
+					slotType = tp::SlotType::REMOTE;
+				} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
+					slotType = tp::SlotType::OPEN_SLOT;
+				} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
+					slotType = tp::SlotType::CLOSED_SLOT;
+				} else {
+					static_assert(always_false_v<T>, "non-exhaustive visitor!");
+				}
+			}, playerSlot);
+			return slotType;
+		}
+
+		void toTpSlot(const game::PlayerSlot& playerSlot, tp::Slot& tpSlot) {
+			tpSlot.set_slot_type(tp::SlotType::UNSPECIFIED_SLOT_TYPE);
+			
+			std::visit([&](auto&& slot) mutable {
+				using T = std::decay_t<decltype(slot)>;
+				if constexpr (std::is_same_v<T, game::Human>) {
+					tpSlot.set_slot_type(tp::SlotType::HUMAN);
+					tpSlot.set_name(slot.name);
+				} else if constexpr (std::is_same_v<T, game::Ai>) {
+					tpSlot.set_slot_type(tp::SlotType::AI);
+					tpSlot.set_name(slot.name);
+				} else if constexpr (std::is_same_v<T, game::Remote>) {
+					tpSlot.set_slot_type(tp::SlotType::REMOTE);
+				} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
+					tpSlot.set_slot_type(tp::SlotType::OPEN_SLOT);
+				} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
+					tpSlot.set_slot_type(tp::SlotType::CLOSED_SLOT);
+				} else {
+					static_assert(always_false_v<T>, "non-exhaustive visitor!");
+				}
+			}, playerSlot);
+		}
 
 	}
 
 	class Network::Impl {
 	public:
-		Impl() {
+		Impl(std::shared_ptr<Client> client)
+			: client_{client} {
 			
+			for (int i = 0; i < 4; ++i) {
+				playerSlots_.push_back(game::OpenSlot{});
+			}
 
+			//thread_ = std::jthread(&Impl::run, this);
+		}
+
+		~Impl() {
+		}
+
+		void send(const tp::Wrapper& wrapper) {
+			ProtobufMessage message;
+			client_->acquire(message);
+			message.setBuffer(wrapper_);
+			client_->send(std::move(message));
+		}
+
+		void update() {
+			ProtobufMessage message;
+			while (client_->receive(message)) {
+				wrapper_.Clear();
+				bool valid = wrapper_.ParseFromArray(message.getBodyData(), message.getBodySize());
+				client_->release(std::move(message));
+				if (wrapper_.has_connections()) {
+					for (const auto& uuid : wrapper_.connections().uuids()) {
+						spdlog::info("[Network] Connected uuid: {}", uuid);
+					}
+				}
+				
+			}
+		}
+
+		void setPlayerSlot(const game::PlayerSlot& playerSlot, int index) {
+			wrapper_.Clear();
+			auto tpGameLooby = wrapper_.mutable_game_looby();
+
+			if (index >= 0 && index < playerSlots_.size()) {
+				playerSlots_[index] = playerSlot;
+				playerSlotUpdate(playerSlot, index);
+				
+				for (const auto& slot : playerSlots_) {
+					auto tpSlot = tpGameLooby->add_slots();
+					toTpSlot(slot, *tpSlot);
+				}
+				send(wrapper_);
+			}
+		}
+
+		bool createGame(std::unique_ptr<game::GameRules> gameRules, int w, int h, game::TetrisGame& tetrisGame) {
+			localPlayers_ = game::PlayerFactory{}.createPlayers(w, h, extractHumans(playerSlots_), extractAis(playerSlots_));
+			for (auto& player : localPlayers_) {
+				connections_ += player->addPlayerBoardUpdateCallback([this, &player](game::PlayerBoardEvent playerBoardEvent) {
+					std::visit([&](auto&& event) {
+						handlePlayerBoardUpdate(*player, event);
+					}, playerBoardEvent);
+				});
+			}
+
+			tetrisGame.createGame(std::move(gameRules), w, h, localPlayers_, {});
+
+			wrapper_.Clear();
+			for (auto& player : localPlayers_) {
+				auto tpPlayer = wrapper_.mutable_create_server_game()->add_local_players();
+				tpPlayer->set_ai(false);
+				tpPlayer->set_level(1);
+				tpPlayer->set_points(1);
+				tpPlayer->set_name("name");
+				tpPlayer->set_uuid("ASDASD");
+			}
+			send(wrapper_);
+			return true;
+		}
+
+		const std::string& getServerId() const {
+			return serverId_;
+		}
+
+		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdateRestart& updateRestart) {
+		}
+
+		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdatePlayerData& updatePlayerData) {
 
 		}
 
+		void handlePlayerBoardUpdate(const game::Player& player, const game::ExternalRows& externalRows) {
+
+		}
 
 	private:
+		mw::Signal<game::PlayerSlot, int> playerSlotUpdate;
 		
+		std::vector<game::PlayerSlot> playerSlots_;
+		mw::signals::ScopedConnections connections_;
+
+		std::string serverId_ = "sdfghjklzxcvbnm";
+		std::vector<game::PlayerPtr> localPlayers_;
+		
+		tp::Wrapper wrapper_;
+		std::shared_ptr<Client> client_;
 	};
 
+	Network::Network(std::shared_ptr<Client> client)
+		: impl_{std::make_unique<Network::Impl>(std::move(client))} {
+	}
+
+	const std::string& Network::getServerId() const {
+		return impl_->getServerId();
+	}
+
+	Network::~Network() {
+	}
+
+	void Network::update() {
+		impl_->update();
+	}
+
+	void Network::setPlayerSlot(const game::PlayerSlot& playerSlot, int slot) {
+		impl_->setPlayerSlot(playerSlot, slot);
+	}
+
+	bool Network::createGame(std::unique_ptr<game::GameRules> gameRules, int w, int h, game::TetrisGame& tetrisGame) {
+		return impl_->createGame(std::move(gameRules), w, h, tetrisGame);
+	}
 
 }

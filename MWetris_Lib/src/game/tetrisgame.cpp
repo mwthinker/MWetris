@@ -120,6 +120,10 @@ namespace mwetris::game {
 			return false;
 		}
 
+		if (!dynamic_cast<DefaultGameRules*>(rules_.get())) {
+			return false;
+		}
+
 		return dynamic_cast<const HumanPlayer*>(&player);
 	}
 

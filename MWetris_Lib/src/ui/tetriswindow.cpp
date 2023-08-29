@@ -15,6 +15,8 @@
 
 #include "graphic/gamecomponent.h"
 
+#include "network/client.h"
+
 #include <sdl/imguiauxiliary.h>
 
 #include <spdlog/spdlog.h>
@@ -42,24 +44,50 @@ namespace mwetris::ui {
 			return std::chrono::duration<double>(duration).count();
 		}
 
-		void reset(std::vector<scene::PlayerSlot>& slots) {
+		void reset(std::vector<game::PlayerSlot>& slots) {
 			for (auto& slot : slots) {
-				slot = scene::OpenSlot{};
+				slot = game::OpenSlot{};
 			}
 		}
-
-		int playersInSlots(const std::vector<scene::PlayerSlot>& playerSlots) {
+		
+		int playersInSlots(const std::vector<game::PlayerSlot>& playerSlots) {
 			int nbr = 0;
 			for (const auto& playerSlot : playerSlots) {
 				std::visit([&](auto&& slot) mutable {
 					using T = std::decay_t<decltype(slot)>;
-					if constexpr (std::is_same_v<T, scene::DeviceType>) {
+					if constexpr (std::is_same_v<T, game::Human>) {
 						++nbr;
-					} else if constexpr (std::is_same_v<T, scene::AiType>) {
+					} else if constexpr (std::is_same_v<T, game::Ai>) {
 						++nbr;
-					} else if constexpr (std::is_same_v<T, scene::InternetPlayer>) {
+					} else if constexpr (std::is_same_v<T, game::Remote>) {
 						++nbr;
-					} else if constexpr (std::is_same_v<T, scene::OpenSlot>) {
+					} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
+						// Skip.
+					} else {
+						static_assert(always_false_v<T>, "non-exhaustive visitor!");
+					}
+				}, playerSlot);
+			}
+			return nbr;
+		}
+		
+
+		int internetPlayersInSlots(const std::vector<game::PlayerSlot>& playerSlots) {
+			int nbr = 0;
+			for (const auto& playerSlot : playerSlots) {
+				std::visit([&](auto&& slot) mutable {
+					using T = std::decay_t<decltype(slot)>;
+					if constexpr (std::is_same_v<T, game::Human>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::Ai>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::Remote>) {
+						++nbr;
+					} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
 						// Skip.
 					} else {
 						static_assert(always_false_v<T>, "non-exhaustive visitor!");
@@ -69,39 +97,20 @@ namespace mwetris::ui {
 			return nbr;
 		}
 
-		int internetPlayersInSlots(const std::vector<scene::PlayerSlot>& playerSlots) {
-			int nbr = 0;
-			for (const auto& playerSlot : playerSlots) {
-				std::visit([&](auto&& slot) mutable {
-					using T = std::decay_t<decltype(slot)>;
-					if constexpr (std::is_same_v<T, scene::DeviceType>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, scene::AiType>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, scene::InternetPlayer>) {
-						++nbr;
-					} else if constexpr (std::is_same_v<T, scene::OpenSlot>) {
-						// Skip.
-					} else {
-						static_assert(always_false_v<T>, "non-exhaustive visitor!");
-					}
-				}, playerSlot);
-			}
-			return nbr;
-		}
-
-		std::vector<game::Human> extractHumans(const std::vector<scene::PlayerSlot>& playerSlots) {
+		std::vector<game::Human> extractHumans(const std::vector<game::PlayerSlot>& playerSlots) {
 			std::vector<game::Human> humans;
 			for (const auto& playerSlot : playerSlots) {
 				std::visit([&](auto&& slot) mutable {
 					using T = std::decay_t<decltype(slot)>;
-					if constexpr (std::is_same_v<T, scene::DeviceType>) {
+					if constexpr (std::is_same_v<T, game::Human>) {
 						humans.push_back(game::Human{.name = slot.name, .device = slot.device});
-					} else if constexpr (std::is_same_v<T, scene::AiType>) {
-						// Skip
-					} else if constexpr (std::is_same_v<T, scene::InternetPlayer>) {
-						// Skip
-					} else if constexpr (std::is_same_v<T, scene::OpenSlot>) {
+					} else if constexpr (std::is_same_v<T, game::Ai>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::Remote>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
 						// Skip.
 					} else {
 						static_assert(always_false_v<T>, "non-exhaustive visitor!");
@@ -111,18 +120,20 @@ namespace mwetris::ui {
 			return humans;
 		}
 
-		std::vector<game::Ai> extractAis(const std::vector<scene::PlayerSlot>& playerSlots) {
+		std::vector<game::Ai> extractAis(const std::vector<game::PlayerSlot>& playerSlots) {
 			std::vector<game::Ai> ais;
 			for (const auto& playerSlot : playerSlots) {
 				std::visit([&](auto&& slot) mutable {
 					using T = std::decay_t<decltype(slot)>;
-					if constexpr (std::is_same_v<T, scene::DeviceType>) {
-						// Skip
-					} else if constexpr (std::is_same_v<T, scene::AiType>) {
+					if constexpr (std::is_same_v<T, game::Human>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::Ai>) {
 						ais.push_back(game::Ai{.name = slot.name, .ai = slot.ai});
-					} else if constexpr (std::is_same_v<T, scene::InternetPlayer>) {
-						// Skip
-					} else if constexpr (std::is_same_v<T, scene::OpenSlot>) {
+					} else if constexpr (std::is_same_v<T, game::Remote>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
 						// Skip.
 					} else {
 						static_assert(always_false_v<T>, "non-exhaustive visitor!");
@@ -132,20 +143,20 @@ namespace mwetris::ui {
 			return ais;
 		}
 
-		std::vector<game::RemotePlayerPtr> extractRemotePlayers(const std::vector<scene::PlayerSlot>& playerSlots) {
+		std::vector<game::RemotePlayerPtr> extractRemotePlayers(const std::vector<game::PlayerSlot>& playerSlots) {
 			std::vector<game::RemotePlayerPtr> remotePlayers;
 			for (const auto& playerSlot : playerSlots) {
 				std::visit([&](auto&& slot) mutable {
 					using T = std::decay_t<decltype(slot)>;
-					if constexpr (std::is_same_v<T, scene::DeviceType>) {
-						// Skip
-					} else if constexpr (std::is_same_v<T, scene::AiType>) {
-						// Skip
-					} else if constexpr (std::is_same_v<T, scene::InternetPlayer>) {
-						if (slot.remotePlayer) {
-							remotePlayers.push_back(slot.remotePlayer);
-						}
-					} else if constexpr (std::is_same_v<T, scene::OpenSlot>) {
+					if constexpr (std::is_same_v<T, game::Human>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::Ai>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::Remote>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
+						// Skip.
+					} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
 						// Skip.
 					} else {
 						static_assert(always_false_v<T>, "non-exhaustive visitor!");
@@ -155,17 +166,17 @@ namespace mwetris::ui {
 			return remotePlayers;
 		}
 
-		bool removeRemotePlayer(std::vector<scene::PlayerSlot>& playerSlots, const game::RemotePlayerPtr& remotePlayer) {
+		bool removeRemotePlayer(std::vector<game::PlayerSlot>& playerSlots, const game::RemotePlayerPtr& remotePlayer) {
 			for (auto& slot : playerSlots) {
-				if (auto internetPlayer{std::get_if<scene::InternetPlayer>(&slot)}; internetPlayer && internetPlayer->remotePlayer == remotePlayer) {
+				/*
+				if (auto internetPlayer{std::get_if<game::Remote>(&slot)}; internetPlayer && internetPlayer->remotePlayer == remotePlayer) {
 					internetPlayer->remotePlayer = nullptr;
 					return true;
 				}
+				*/
 			}
 			return false;
 		}
-
-
 
 	}
 
@@ -180,7 +191,11 @@ namespace mwetris::ui {
 		| ImGuiWindowFlags_NoScrollWithMouse
 		| ImGuiWindowFlags_MenuBar;
 
-	TetrisWindow::TetrisWindow() {
+	TetrisWindow::TetrisWindow()
+		: debugClient_{std::make_shared<network::DebugClient>()}
+		, networkDebugWindow_{debugClient_}
+		, network_{std::make_shared<network::Network>(debugClient_)} {
+
 		setPosition(Configuration::getInstance().getWindowPositionX(), Configuration::getInstance().getWindowPositionY());
 		setSize(Configuration::getInstance().getWindowWidth(), Configuration::getInstance().getWindowHeight());
 		setResizeable(true);
@@ -195,7 +210,7 @@ namespace mwetris::ui {
 		});
 
 		for (int i = 0; i < 4; ++i) {
-			playerSlots_.push_back(scene::OpenSlot{});
+			playerSlots_.push_back(game::OpenSlot{});
 		}
 
 		pauseMenuText_ = "Pause";
@@ -245,12 +260,17 @@ namespace mwetris::ui {
 			int index = createGame.getSlotIndex();
 
 			if (index < playerSlots_.size()) {
-				playerSlots_[index] = createGame.getPlayer();
+				playerSlots_[index] = createGame.getPlayer(); // TODO! Sets it twice, one here and one through network?
+				network_->setPlayerSlot(createGame.getPlayer(), index);
 			} else {
 				spdlog::warn("[TetrisWindow] Player slot index {} out of range (size = {})", index, playerSlots_.size());
 			}
 		}, deviceManager_);
 		sceneStateMachine_.emplace<scene::JoinGame>(game_, deviceManager_);
+
+		connections_ += network_->playerSlotUpdate.connect([this](game::PlayerSlot playerSlot, int slot) {
+			playerSlots_[slot] = playerSlot;
+		});
 
 		game_->setFixTimestep(1.0 / getCurrentMonitorHz());
 
@@ -284,26 +304,6 @@ namespace mwetris::ui {
 			}
 		});
 
-		connections_ += network_.remotePlayerConnected.connect([&](network::Remote remote) {
-			if (remote.slotIndex >= 0 && remote.slotIndex < playerSlots_.size()) {
-				if (const auto internetPlayer{std::get_if<scene::InternetPlayer>(&playerSlots_[remote.slotIndex])}; internetPlayer && !internetPlayer->remotePlayer) {
-					internetPlayer->remotePlayer = remote.remotePlayer;
-
-				} else {
-					spdlog::warn("[TetrisWindow] Fail to attach RemotePlayer to slot", remote.slotIndex);
-				}
-			} else {
-				spdlog::warn("[TetrisWindow] Remote Player slot index {} out of range (size = {})", remote.slotIndex, playerSlots_.size());
-			}
-		});
-		connections_ += network_.remotePlayerDisconnected.connect([&](game::RemotePlayerPtr remotePlayer) {
-			if (removeRemotePlayer(playerSlots_, remotePlayer)) {
-				spdlog::info("[TetrisWindow] Remote Player removed");
-			} else {
-				spdlog::warn("[TetrisWindow] Remote Player fail to be removed, not found");
-			}
-		});
-
 		// Keep the update loop in sync with monitor.
 		timeHandler_.scheduleRepeat([this]() {
 			game_->setFixTimestep(1.0 / getCurrentMonitorHz());
@@ -318,7 +318,7 @@ namespace mwetris::ui {
 	}
 
 	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
-		network_.update();
+		network_->update();
 		auto deltaTimeSeconds = toSeconds(deltaTime);
 		game_->update(deltaTimeSeconds);
 		timeHandler_.update(deltaTimeSeconds);
@@ -353,6 +353,8 @@ namespace mwetris::ui {
 
 	void TetrisWindow::imGuiMainWindow(const sdl::DeltaTime& deltaTime) {
 		ImGui::MainWindow("MainWindow", ImguiNoWindow, [&]() {
+			networkDebugWindow_.imGuiUpdate(deltaTime);
+
 			ImGui::ImageBackground(background_);
 
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {10.0, 10.0});
@@ -409,12 +411,22 @@ namespace mwetris::ui {
 				gameComponent_->draw(size.x, size.y - h - lowerBar, toSeconds(deltaTime));
 			}
 			if (customGame) {
-				ImGui::SetCursorPosY(200);
-				ImGui::Separator();
-				static std::string serverId = "asddgasasdf";
-				ImGui::Text("Server Id: ");
-				ImGui::SameLine();
-				ImGui::InputText("##ServerId", &serverId, ImGuiInputTextFlags_ReadOnly);
+				static bool internet = true;
+				if (ImGui::Checkbox("Network", &internet)) {
+					if (internet) {
+						spdlog::debug("Network on");
+					} else {
+						spdlog::debug("Network off");
+					}
+				}
+				if (internet) {
+					ImGui::SetCursorPosY(200);
+					ImGui::Separator();
+					ImGui::Text("Server Id: ");
+					ImGui::SameLine();
+					static std::string serverId = "asddgasasdf";
+					ImGui::InputText("##ServerId", &serverId, ImGuiInputTextFlags_ReadOnly);
+				}
 
 				float width = ImGui::GetWindowWidth() - 2 * ImGui::GetCursorPosX();
 				float height = 100.f;
@@ -424,11 +436,15 @@ namespace mwetris::ui {
 				ImGui::SetCursorPosY(y);
 
 				if (ImGui::ConfirmationButton("Create Game", {width, height})) {
-					game_->createGame(
-						std::make_unique<game::SurvivalGameRules>(),
-						TetrisWidth, TetrisHeight,
-						game::PlayerFactory{}.createPlayers(TetrisWidth, TetrisHeight, extractHumans(playerSlots_), extractAis(playerSlots_)),
-						extractRemotePlayers(playerSlots_));
+					if (internet) {
+						network_->createGame(std::make_unique<game::SurvivalGameRules>(), TetrisWidth, TetrisHeight, *game_);
+					} else {
+						game_->createGame(
+							std::make_unique<game::SurvivalGameRules>(),
+							TetrisWidth, TetrisHeight,
+							game::PlayerFactory{}.createPlayers(TetrisWidth, TetrisHeight, extractHumans(playerSlots_), extractAis(playerSlots_)),
+							extractRemotePlayers(playerSlots_));
+					}
 					customGame = false;
 				}
 				ImGui::EndDisabled();
@@ -456,29 +472,29 @@ namespace mwetris::ui {
 			ImGui::BeginGroup();
 			std::visit([&](auto&& slot) mutable {
 				using T = std::decay_t<decltype(slot)>;
-				if constexpr (std::is_same_v<T, scene::DeviceType>) {
-					ImGui::Text("scene::DeviceType");
+				if constexpr (std::is_same_v<T, game::Human>) {
+					ImGui::Text("game::Human");
 					ImGui::Text("Player name: %s", slot.name.c_str());
 					if (ImGui::AbortButton("Remove")) {
-						playerSlot = scene::OpenSlot{};
+						playerSlot = game::OpenSlot{};
+						network_->setPlayerSlot(playerSlot, i);
 					}
-				} else if constexpr (std::is_same_v<T, scene::AiType>) {
-					ImGui::Text("scene::AiType");
+				} else if constexpr (std::is_same_v<T, game::Ai>) {
+					ImGui::Text("game::Ai");
 					ImGui::Text("Player name: %s", slot.name.c_str());
 					if (ImGui::AbortButton("Remove")) {
-						playerSlot = scene::OpenSlot{};
+						playerSlot = game::OpenSlot{};
+						network_->setPlayerSlot(playerSlot, i);
 					}
-				} else if constexpr (std::is_same_v<T, scene::InternetPlayer>) {
-					ImGui::Text("scene::InternetPlayer");
-					if (slot.remotePlayer) {
-						ImGui::Text("Connected");
-					} else {
-						ImGui::Text("Open");
-					}
+				} else if constexpr (std::is_same_v<T, game::Remote>) {
+					ImGui::Text("game::Remote");
 					if (ImGui::AbortButton("Remove")) {
-						playerSlot = scene::OpenSlot{};
+						playerSlot = game::OpenSlot{};
+						network_->setPlayerSlot(playerSlot, i);
 					}
-				} else if constexpr (std::is_same_v<T, scene::OpenSlot>) {
+				} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
+					// Skip.
+				} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
 					if (ImGui::Button("Open Slot", {100, 100})) {
 						scene::AddPlayerData data{};
 						data.index = i;
@@ -510,22 +526,15 @@ namespace mwetris::ui {
 				break;
 			case SDL_KEYDOWN:
 				switch (windowEvent.key.keysym.sym) {
-					case SDLK_0:
-						network_.debugAddRemotePlayer(0);
-						break;
-					case SDLK_1:
-						network_.debugAddRemotePlayer(1);
-						break;
-					case SDLK_2:
-						network_.debugAddRemotePlayer(2);
-						break;
-					case SDLK_3:
-						network_.debugAddRemotePlayer(3);
+					case SDLK_g:
+						networkDebugWindow_.setVisible(!networkDebugWindow_.isVisible());
 						break;
 					case SDLK_4:
+						/*
 						if (auto remotePlayers = extractRemotePlayers(playerSlots_); !remotePlayers.empty()) {
-							network_.debugRemoveRemotePlayer(remotePlayers.back());
+							network_->debugRemoveRemotePlayer(remotePlayers.back());
 						}
+						*/
 						break;
 					case SDLK_ESCAPE:
 						game_->saveDefaultGame();

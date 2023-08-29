@@ -5,6 +5,10 @@
 
 #include "game/remoteplayer.h"
 #include "game/player.h"
+#include "game/humanai.h"
+#include "game/defaultgamerules.h"
+#include "protobufmessage.h"
+#include "client.h"
 
 #include <thread>
 #include <memory>
@@ -12,71 +16,34 @@
 
 #include <mw/signal.h>
 
-namespace mwetris::network {
+namespace mwetris::game {
 
-	struct Remote {
-		int slotIndex;
-		game::RemotePlayerPtr remotePlayer;
-	};
+	class TetrisGame;
+
+}
+
+namespace mwetris::network {
 
 	class Network {
 	public:
-		mw::PublicSignal<Network, Remote> remotePlayerConnected;
-		mw::PublicSignal<Network, game::RemotePlayerPtr> remotePlayerDisconnected;
+		mw::PublicSignal<Network, game::PlayerSlot, int> playerSlotUpdate;
 
-		Network();
+		Network(std::shared_ptr<Client> client);
 
-		void update() {
-			while (!addRemotePlayers_.empty()) {
-				auto player = addRemotePlayers_.back();
-				addRemotePlayers_.pop_back();
-				remotePlayerConnected(player);
-			}
-			while (!removeRemotePlayers_.empty()) {
-				auto player = removeRemotePlayers_.back();
-				removeRemotePlayers_.pop_back();
-				remotePlayerDisconnected(player);
-			}
-		}
+		~Network();
 
-		void addPlayers(std::vector<game::PlayerPtr>& players, const std::vector<game::RemotePlayerPtr>& remotePlayers);
+		void update();
 
-		void removeRemotePlayer(game::RemotePlayerBoardPtr&& remotePlayer);
+		void setPlayerSlot(const game::PlayerSlot& playerSlot, int slot);
 
-		const std::string& getServerId() const {
-			return serverId_;
-		}
+		const std::string& getServerId() const;
 
-		void debugAddRemotePlayer(int slotIndex) {
-			addRemotePlayers_.push_back(
-				Remote{
-					.slotIndex = slotIndex,
-					.remotePlayer = std::make_shared<game::RemotePlayer>()
-				}
-			);
-		}
-
-		void debugRemoveRemotePlayer(game::RemotePlayerPtr remotePlayer) {
-			removeRemotePlayers_.push_back(remotePlayer);
-		}
+		// Return true if ready.
+		bool createGame(std::unique_ptr<game::GameRules> gameRules, int w, int h, game::TetrisGame& tetrisGame);
 
 	private:
-		mw::signals::ScopedConnections connections_;
-
-		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdateRestart& updateRestart);
-		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdatePlayerData& updatePlayerData);
-		void handlePlayerBoardUpdate(const game::Player& player, const game::ExternalRows& externalRows);
-
-		std::vector<game::PlayerPtr> localPlayerse_;
-		std::vector<game::RemotePlayerPtr> removeRemotePlayers_;
-		std::vector<Remote> addRemotePlayers_;
-
-		void run();
-
 		class Impl;
-		//std::unique_ptr<Impl> impl_;
-		std::jthread thread_;
-		std::string serverId_ = "sdfghjklzxcvbnm";
+		std::unique_ptr<Impl> impl_;
 	};
 
 }

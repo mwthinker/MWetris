@@ -3,7 +3,7 @@ syntax = "proto3";
 package tetris_protocol;
 
 enum BlockType {
-	UNSPECIFIED = 0;
+	UNSPECIFIED_BLOCK_TYPE = 0;
 	I = 73;
 	J = 74;
 	L = 76;
@@ -73,10 +73,35 @@ message LocalPlayer {
 	bool ai = 5;
 }
 
+enum SlotType {
+	UNSPECIFIED_SLOT_TYPE = 0;
+	HUMAN = 1;
+	AI = 2;
+	REMOTE = 3;
+	OPEN_SLOT = 4;
+	CLOSED_SLOT = 5;
+}
+
+message Connections {
+	repeated string uuids = 1;
+}
+
+message Slot {
+	SlotType slot_type = 1;
+	string name = 2;
+}
+
+message GameLooby {
+	repeated Slot slots = 1;
+}
+
 message CreateServerGame {
 	string uuid = 1;
+	repeated LocalPlayer local_players = 2;
 }
 
 message Wrapper {
-	CreateServerGame create_server_game = 1;
+	GameLooby game_looby = 1;
+	CreateServerGame create_server_game = 2;
+	Connections connections = 3;
 }

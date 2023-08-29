@@ -3,6 +3,8 @@
 
 #include "timerhandler.h"
 
+#include "networkdebugwindow.h"
+
 #include "scene/scene.h"
 #include "scene/statemachine.h"
 #include "scene/addplayer.h"
@@ -11,6 +13,7 @@
 #include "game/devicemanager.h"
 
 #include "network/network.h"
+#include "network/client.h"
 
 #include <sdl/imguiwindow.h>
 
@@ -69,6 +72,7 @@ namespace mwetris::ui {
 
 		void startNewGame();
 
+		std::shared_ptr<network::DebugClient> debugClient_;
 		sdl::TextureView background_;
 		scene::StateMachine sceneStateMachine_;
 		
@@ -83,8 +87,9 @@ namespace mwetris::ui {
 		std::string pauseMenuText_;
 
 		bool customGame = false;
-		std::vector<scene::PlayerSlot> playerSlots_;
-		network::Network network_;
+		std::vector<game::PlayerSlot> playerSlots_;
+		std::shared_ptr<network::Network> network_;
+		NetworkDebugWindow networkDebugWindow_;
 	};
 
 }
