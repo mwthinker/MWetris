@@ -11,7 +11,7 @@
 #include "humanplayer.h"
 #include "remoteplayer.h"
 #include "defaultgamerules.h"
-#include "humanai.h"
+#include "playerslot.h"
 
 #include <ai.h>
 

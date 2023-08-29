@@ -28,7 +28,6 @@ set(SOURCES_LIB
 	src/game/input.h
 	src/game/gamepad.cpp
 	src/game/gamepad.h
-	src/game/humanai.h
 	src/game/humanplayer.h
 	src/game/keyboard.cpp
 	src/game/keyboard.h
@@ -42,6 +41,7 @@ set(SOURCES_LIB
 	src/game/remoteplayer.h
 	src/game/remoteplayerboard.cpp
 	src/game/remoteplayerboard.h
+	src/game/playerslot.h
 	src/game/taskqueue.h
 	src/game/tetrisgame.cpp
 	src/game/tetrisgameevent.h

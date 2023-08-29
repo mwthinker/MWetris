@@ -3,7 +3,7 @@
 
 #include "protobufmessage.h"
 #include "client.h"
-#include "game/humanai.h"
+#include "game/playerslot.h"
 
 #include <string>
 #include <memory>

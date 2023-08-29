@@ -5,7 +5,7 @@
 
 #include "game/remoteplayer.h"
 #include "game/player.h"
-#include "game/humanai.h"
+#include "game/playerslot.h"
 #include "game/defaultgamerules.h"
 #include "protobufmessage.h"
 #include "client.h"
