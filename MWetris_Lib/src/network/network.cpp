@@ -2,6 +2,7 @@
 
 #include "game/tetrisgame.h"
 #include "protobufmessagequeue.h"
+#include "util.h"
 
 #include <message.pb.h>
 
@@ -18,9 +19,6 @@ namespace mwetris::network {
 
 		constexpr std::string_view ServerIp = "127.0.0.1";
 		constexpr int Port = 59412;
-
-		template<class>
-		inline constexpr bool always_false_v = false;
 
 		std::vector<game::Human> extractHumans(const std::vector<game::PlayerSlot>& playerSlots) {
 			std::vector<game::Human> humans;
@@ -139,8 +137,9 @@ namespace mwetris::network {
 
 	class Network::Impl {
 	public:
-		Impl(std::shared_ptr<Client> client)
-			: client_{client} {
+		Impl(std::shared_ptr<Client> client, std::shared_ptr<game::TetrisGame> tetrisGame)
+			: client_{client}
+			, tetrisGame_{tetrisGame} {
 			
 			for (int i = 0; i < 4; ++i) {
 				playerSlots_.push_back(game::OpenSlot{});
@@ -165,12 +164,30 @@ namespace mwetris::network {
 				wrapper_.Clear();
 				bool valid = wrapper_.ParseFromArray(message.getBodyData(), message.getBodySize());
 				client_->release(std::move(message));
-				if (wrapper_.has_connections()) {
-					for (const auto& uuid : wrapper_.connections().uuids()) {
-						spdlog::info("[Network] Connected uuid: {}", uuid);
-					}
+				if (wrapper_.has_game_looby()) {
+					handleGameLooby(wrapper_.game_looby());
 				}
-				
+				if (wrapper_.has_game_command()) {
+					handleGameCommand(wrapper_.game_command());
+				}
+				if (wrapper_.has_connections()) {
+					handleConnections(wrapper_.connections());
+				}
+			}
+		}
+
+		void handleGameCommand(const tp::GameCommand& gameCommand) {
+			spdlog::info("[Network] Paused: {}", gameCommand.pause() ? "true" : "false");
+			tetrisGame_->pause();
+		}
+
+		void handleGameLooby(const tp::GameLooby& gameLooby) {
+
+		}
+
+		void handleConnections(const tp::Connections& connections) {
+			for (const auto& uuid : connections.uuids()) {
+				spdlog::info("[Network] Connected uuid: {}", uuid);
 			}
 		}
 
@@ -190,7 +207,7 @@ namespace mwetris::network {
 			}
 		}
 
-		bool createGame(std::unique_ptr<game::GameRules> gameRules, int w, int h, game::TetrisGame& tetrisGame) {
+		bool createGame(std::unique_ptr<game::GameRules> gameRules, int w, int h) {
 			localPlayers_ = game::PlayerFactory{}.createPlayers(w, h, extractHumans(playerSlots_), extractAis(playerSlots_));
 			for (auto& player : localPlayers_) {
 				connections_ += player->addPlayerBoardUpdateCallback([this, &player](game::PlayerBoardEvent playerBoardEvent) {
@@ -200,7 +217,7 @@ namespace mwetris::network {
 				});
 			}
 
-			tetrisGame.createGame(std::move(gameRules), w, h, localPlayers_, {});
+			tetrisGame_->createGame(std::move(gameRules), w, h, localPlayers_, {});
 
 			wrapper_.Clear();
 			for (auto& player : localPlayers_) {
@@ -230,6 +247,12 @@ namespace mwetris::network {
 
 		}
 
+		void sendPause(bool pause) {
+			wrapper_.Clear();
+			wrapper_.mutable_game_command()->set_pause(pause);
+			send(wrapper_);
+		}
+
 	private:
 		mw::Signal<game::PlayerSlot, int> playerSlotUpdate;
 		
@@ -241,10 +264,11 @@ namespace mwetris::network {
 		
 		tp::Wrapper wrapper_;
 		std::shared_ptr<Client> client_;
+		std::shared_ptr<game::TetrisGame> tetrisGame_;
 	};
 
-	Network::Network(std::shared_ptr<Client> client)
-		: impl_{std::make_unique<Network::Impl>(std::move(client))} {
+	Network::Network(std::shared_ptr<Client> client, std::shared_ptr<game::TetrisGame> tetrisGame)
+		: impl_{std::make_unique<Network::Impl>(std::move(client), std::move(tetrisGame))} {
 	}
 
 	const std::string& Network::getServerId() const {
@@ -252,6 +276,10 @@ namespace mwetris::network {
 	}
 
 	Network::~Network() {
+	}
+
+	void Network::sendPause(bool pause) {
+		impl_->sendPause(pause);
 	}
 
 	void Network::update() {
@@ -262,8 +290,8 @@ namespace mwetris::network {
 		impl_->setPlayerSlot(playerSlot, slot);
 	}
 
-	bool Network::createGame(std::unique_ptr<game::GameRules> gameRules, int w, int h, game::TetrisGame& tetrisGame) {
-		return impl_->createGame(std::move(gameRules), w, h, tetrisGame);
+	bool Network::createGame(std::unique_ptr<game::GameRules> gameRules, int w, int h) {
+		return impl_->createGame(std::move(gameRules), w, h);
 	}
 
 }

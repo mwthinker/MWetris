@@ -87,6 +87,7 @@ set(SOURCES_LIB
 	src/timerhandler.cpp
 	src/timerhandler.h
 	src/types.h
+	src/util.h
 )
 
 find_package(Threads REQUIRED)

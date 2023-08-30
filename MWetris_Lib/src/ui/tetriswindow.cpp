@@ -16,6 +16,7 @@
 #include "graphic/gamecomponent.h"
 
 #include "network/client.h"
+#include "util.h"
 
 #include <sdl/imguiauxiliary.h>
 
@@ -28,9 +29,6 @@ using namespace std::chrono_literals;
 namespace mwetris::ui {
 
 	namespace {
-
-		template<class>
-		inline constexpr bool always_false_v = false;
 
 		constexpr auto DefaultRefreshRate = 30;
 
@@ -193,8 +191,7 @@ namespace mwetris::ui {
 
 	TetrisWindow::TetrisWindow()
 		: debugClient_{std::make_shared<network::DebugClient>()}
-		, networkDebugWindow_{debugClient_}
-		, network_{std::make_shared<network::Network>(debugClient_)} {
+		, networkDebugWindow_{debugClient_} {
 
 		setPosition(Configuration::getInstance().getWindowPositionX(), Configuration::getInstance().getWindowPositionY());
 		setSize(Configuration::getInstance().getWindowWidth(), Configuration::getInstance().getWindowHeight());
@@ -248,6 +245,7 @@ namespace mwetris::ui {
 
 		game_ = std::make_shared<game::TetrisGame>();
 		gameComponent_ = std::make_unique<graphic::GameComponent>();
+		network_ = std::make_shared<network::Network>(debugClient_, game_);
 
 		sceneStateMachine_.emplace<scene::EmptyScene>();
 		sceneStateMachine_.emplace<scene::Settings>();
@@ -291,6 +289,7 @@ namespace mwetris::ui {
 			}
 		});
 		connections_ += game_->gamePauseEvent.connect([this](const game::GamePause& gamePause) {
+			network_->sendPause(gamePause.pause);
 			gameComponent_->gamePause(gamePause);
 
 			if (gamePause.pause) {
@@ -437,7 +436,7 @@ namespace mwetris::ui {
 
 				if (ImGui::ConfirmationButton("Create Game", {width, height})) {
 					if (internet) {
-						network_->createGame(std::make_unique<game::SurvivalGameRules>(), TetrisWidth, TetrisHeight, *game_);
+						network_->createGame(std::make_unique<game::SurvivalGameRules>(), TetrisWidth, TetrisHeight);
 					} else {
 						game_->createGame(
 							std::make_unique<game::SurvivalGameRules>(),

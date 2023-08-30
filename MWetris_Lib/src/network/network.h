@@ -28,7 +28,7 @@ namespace mwetris::network {
 	public:
 		mw::PublicSignal<Network, game::PlayerSlot, int> playerSlotUpdate;
 
-		Network(std::shared_ptr<Client> client);
+		Network(std::shared_ptr<Client> client, std::shared_ptr<game::TetrisGame> tetrisGame);
 
 		~Network();
 
@@ -38,8 +38,10 @@ namespace mwetris::network {
 
 		const std::string& getServerId() const;
 
+		void sendPause(bool pause);
+
 		// Return true if ready.
-		bool createGame(std::unique_ptr<game::GameRules> gameRules, int w, int h, game::TetrisGame& tetrisGame);
+		bool createGame(std::unique_ptr<game::GameRules> gameRules, int w, int h);
 
 	private:
 		class Impl;

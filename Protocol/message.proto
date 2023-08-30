@@ -100,8 +100,14 @@ message CreateServerGame {
 	repeated LocalPlayer local_players = 2;
 }
 
+message GameCommand {
+	bool pause = 1;
+	bool restart = 2;
+}
+
 message Wrapper {
 	GameLooby game_looby = 1;
 	CreateServerGame create_server_game = 2;
 	Connections connections = 3;
+	GameCommand game_command = 4;
 }

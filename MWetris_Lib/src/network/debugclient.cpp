@@ -1,5 +1,6 @@
 #include "debugclient.h"
 #include "protobufmessagequeue.h"
+#include "util.h"
 
 #include <message.pb.h>
 
@@ -10,13 +11,6 @@
 namespace tp = tetris_protocol;
 
 namespace mwetris::network {
-
-	namespace {
-
-		template<class>
-		inline constexpr bool always_false_v = false;
-
-	}
 
 	class DebugClient::Impl {
 	public:
@@ -41,38 +35,49 @@ namespace mwetris::network {
 			messageQueue_.release(std::move(message));
 			if (valid) {
 				if (wrapper_.has_game_looby()) {
-					const auto& slots = wrapper_.game_looby().slots();
-					playerSlots_.clear();
-
-					for (const auto& slot : slots) {
-						switch (slot.slot_type()) {
-							case tp::HUMAN:
-								playerSlots_.push_back(game::Remote{
-									.name = slot.name(),
-									.ai = false
-									});
-								break;
-							case tp::AI:
-								playerSlots_.push_back(game::Remote{
-									.name = slot.name(),
-									.ai = true
-									});
-								break;
-							case tp::REMOTE:
-								playerSlots_.push_back(game::Remote{});
-								break;
-							case tp::OPEN_SLOT:
-								playerSlots_.push_back(game::OpenSlot{});
-								break;
-							default:
-								playerSlots_.push_back(game::ClosedSlot{});
-								break;
-						};
-					}
+					handleGameLooby(wrapper_.game_looby());
+				}
+				if (wrapper_.has_game_command()) {
+					handleGameCommand(wrapper_.game_command());
 				}
 				playerSlotsUpdated(playerSlots_);
 			} else {
 				spdlog::error("Protocol error");
+			}
+		}
+
+		void handleGameCommand(const tp::GameCommand& gameCommand) {
+			paused_ = gameCommand.pause();
+		}
+
+		void handleGameLooby(const tp::GameLooby& gameLooby) {
+			const auto& slots = wrapper_.game_looby().slots();
+			playerSlots_.clear();
+
+			for (const auto& slot : slots) {
+				switch (slot.slot_type()) {
+					case tp::HUMAN:
+						playerSlots_.push_back(game::Remote{
+							.name = slot.name(),
+							.ai = false
+						});
+						break;
+					case tp::AI:
+						playerSlots_.push_back(game::Remote{
+							.name = slot.name(),
+							.ai = true
+						});
+						break;
+					case tp::REMOTE:
+						playerSlots_.push_back(game::Remote{});
+						break;
+					case tp::OPEN_SLOT:
+						playerSlots_.push_back(game::OpenSlot{});
+						break;
+					default:
+						playerSlots_.push_back(game::ClosedSlot{});
+						break;
+				};
 			}
 		}
 
@@ -113,6 +118,17 @@ namespace mwetris::network {
 			messageQueue_.acquire(message);
 		}
 
+		void sendPause(bool pause) {
+			paused_ = pause;
+			wrapper_.Clear();
+			wrapper_.mutable_game_command()->set_pause(paused_);
+			sendToClient(wrapper_);
+		}
+
+		bool isPaused() const {
+			return paused_;
+		}
+
 	private:
 		void sendToClient(const tp::Wrapper& wrapper) {
 			ProtobufMessage message;
@@ -123,6 +139,7 @@ namespace mwetris::network {
 
 		std::vector<game::PlayerSlot> playerSlots_;
 		std::vector<std::string> connectedUuids_;
+		bool paused_ = false;
 
 		tp::Wrapper wrapper_;
 
@@ -165,5 +182,12 @@ namespace mwetris::network {
 		impl_->release(std::move(message));
 	}
 
-}
+	void DebugClient::sendPause(bool pause) {
+		impl_->sendPause(pause);
+	}
 
+	bool DebugClient::isPaused() const {
+		return impl_->isPaused();
+	}
+
+}

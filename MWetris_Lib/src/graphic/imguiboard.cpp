@@ -4,6 +4,7 @@
 #include "game/playerboard.h"
 
 #include "configuration.h"
+#include "util.h"
 
 #include <sdl/imguiauxiliary.h>
 
@@ -32,9 +33,6 @@ namespace mwetris::graphic {
 		}
 
 		constexpr float NormalizedPreviewSize = 5.f;
-
-		template<class>
-		inline constexpr bool always_false_v = false;
 
 	}
 

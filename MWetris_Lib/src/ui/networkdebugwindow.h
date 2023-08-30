@@ -11,17 +11,11 @@
 #include "game/devicemanager.h"
 
 #include "network/debugclient.h"
+#include "util.h"
 
 #include <sdl/imguiwindow.h>
 
 namespace mwetris::ui {
-	
-	namespace {
-	
-		template<class>
-		inline constexpr bool always_false_vv = false;
-
-	}
 
 	class NetworkDebugWindow {
 	public:
@@ -68,6 +62,10 @@ namespace mwetris::ui {
 					debugClient_->disconnect(uuid);
 				}
 			}
+			bool pause = debugClient_->isPaused();
+			if (ImGui::Checkbox("Paused", &pause)) {
+				debugClient_->sendPause(!pause);
+			}
 
 			for (int i = 0; i < playerSlots_.size(); ++i) {
 				auto& playerSlot = playerSlots_[i];
@@ -94,7 +92,7 @@ namespace mwetris::ui {
 							
 						}
 					} else {
-						static_assert(always_false_vv<T>, "non-exhaustive visitor!");
+						static_assert(always_false_v<T>, "non-exhaustive visitor!");
 					}
 				}, playerSlot);
 				ImGui::EndGroup();
