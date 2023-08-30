@@ -33,6 +33,8 @@ namespace mwetris::network {
 		void sendPause(bool pause);
 		bool isPaused() const;
 
+		void restartGame();
+
 		mw::signals::Connection addPlayerSlotsCallback(const std::function<void(const std::vector<game::PlayerSlot>&)>& playerSlots);
 
 	private:

@@ -66,6 +66,10 @@ namespace mwetris::ui {
 			if (ImGui::Checkbox("Paused", &pause)) {
 				debugClient_->sendPause(!pause);
 			}
+			
+			if (ImGui::Button("Restart Game")) {
+				debugClient_->restartGame();
+			}
 
 			for (int i = 0; i < playerSlots_.size(); ++i) {
 				auto& playerSlot = playerSlots_[i];

@@ -125,6 +125,12 @@ namespace mwetris::network {
 			sendToClient(wrapper_);
 		}
 
+		void restartGame() {
+			wrapper_.Clear();
+			wrapper_.mutable_game_command()->set_restart(true);
+			sendToClient(wrapper_);
+		}
+
 		bool isPaused() const {
 			return paused_;
 		}
@@ -188,6 +194,10 @@ namespace mwetris::network {
 
 	bool DebugClient::isPaused() const {
 		return impl_->isPaused();
+	}
+
+	void DebugClient::restartGame() {
+		impl_->restartGame();
 	}
 
 }

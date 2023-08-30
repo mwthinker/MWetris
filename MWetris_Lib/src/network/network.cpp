@@ -179,10 +179,13 @@ namespace mwetris::network {
 		void handleGameCommand(const tp::GameCommand& gameCommand) {
 			spdlog::info("[Network] Paused: {}", gameCommand.pause() ? "true" : "false");
 			tetrisGame_->pause();
+			if (gameCommand.restart()) {
+				tetrisGame_->restartGame();
+			}
 		}
 
 		void handleGameLooby(const tp::GameLooby& gameLooby) {
-
+			
 		}
 
 		void handleConnections(const tp::Connections& connections) {
