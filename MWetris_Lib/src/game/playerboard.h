@@ -28,11 +28,23 @@ namespace mwetris::game {
 	class PlayerBoard;
 	using PlayerBoardPtr = std::shared_ptr<PlayerBoard>;
 
-	struct UpdateRestart {};
-	struct UpdatePlayerData {};
+	struct UpdateNextBlock {
+		tetris::BlockType next;
+	};
+
+	struct UpdateRestart {
+		tetris::BlockType current;
+		tetris::BlockType next;
+	};
+	struct UpdatePlayerData {
+		PlayerData playerData;
+	};
+	struct UpdateMove {
+		tetris::Move move;
+	};
 	struct ExternalRows {};
 
-	using PlayerBoardEvent = std::variant<UpdateRestart, UpdatePlayerData, ExternalRows>;
+	using PlayerBoardEvent = std::variant<UpdateRestart, UpdatePlayerData, ExternalRows, UpdateMove, UpdateNextBlock>;
 
 	class PlayerBoard : public std::enable_shared_from_this<PlayerBoard> {
 	public:

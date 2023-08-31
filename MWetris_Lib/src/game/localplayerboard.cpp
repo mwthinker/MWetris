@@ -19,32 +19,32 @@ namespace mwetris::game {
 
 		gravityMove_.update(deltaTime, true);
 		if (gravityMove_.doAction()) {
-			updateTetrisBoard(tetris::Move::DownGravity);
+			update(tetris::Move::DownGravity);
 		}
 
 		leftHandler_.update(deltaTime, input.left && !input.right);
 		if (leftHandler_.doAction()) {
-			updateTetrisBoard(tetris::Move::Left);
+			update(tetris::Move::Left);
 		}
 
 		rightHandler_.update(deltaTime, input.right && !input.left);
 		if (rightHandler_.doAction()) {
-			updateTetrisBoard(tetris::Move::Right);
+			update(tetris::Move::Right);
 		}
 
 		downHandler_.update(deltaTime, input.down);
 		if (downHandler_.doAction()) {
-			updateTetrisBoard(tetris::Move::Down);
+			update(tetris::Move::Down);
 		}
 
 		rotateHandler_.update(deltaTime, input.rotate);
 		if (rotateHandler_.doAction()) {
-			updateTetrisBoard(tetris::Move::RotateLeft);
+			update(tetris::Move::RotateLeft);
 		}
 
 		downGroundHandler_.update(deltaTime, input.downGround);
 		if (downGroundHandler_.doAction()) {
-			updateTetrisBoard(tetris::Move::DownGround);
+			update(tetris::Move::DownGround);
 		}
 	}
 
@@ -64,21 +64,37 @@ namespace mwetris::game {
 	void LocalPlayerBoard::updateRestart() {
 		externalRows_.clear();
 		clearedRows_ = 0;
-		restartTetrisBoard(tetris::randomBlockType(), tetris::randomBlockType());
+
+		UpdateRestart updateRestart{
+			.current = tetris::randomBlockType(),
+			.next = tetris::randomBlockType()
+		};
+		playerBoardUpdate(updateRestart);
+		restartTetrisBoard(updateRestart.current, updateRestart.next);
 	}
 
 	void LocalPlayerBoard::updateGameOver() {
-		updateTetrisBoard(tetris::Move::GameOver);
+		update(tetris::Move::GameOver);
 	}
 
 	void LocalPlayerBoard::updatePlayerData(const PlayerData& playerData) {
+		playerBoardUpdate(UpdatePlayerData{playerData});
 		playerData_ = playerData;
+	}
+
+	void LocalPlayerBoard::update(tetris::Move move) {
+		playerBoardUpdate(UpdateMove{move});
+		updateTetrisBoard(move);
 	}
 
 	void LocalPlayerBoard::handleBoardEvent(tetris::BoardEvent boardEvent, int value) {
 		PlayerBoard::handleBoardEvent(boardEvent, value);
 		if (boardEvent == tetris::BoardEvent::CurrentBlockUpdated) {
-			setNextTetrisBlock(tetris::randomBlockType());
+			UpdateNextBlock nextBlock{
+				.next = tetris::randomBlockType()
+			};
+			playerBoardUpdate(nextBlock);
+			setNextTetrisBlock(nextBlock.next);
 
 			leftHandler_.reset();
 			rightHandler_.reset();

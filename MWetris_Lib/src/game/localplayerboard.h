@@ -9,9 +9,6 @@ namespace mwetris::game {
 	class LocalPlayerBoard;
 	using LocalPlayerBoardPtr = std::shared_ptr<LocalPlayerBoard>;
 
-
-
-
 	class LocalPlayerBoard : public PlayerBoard {
 	public:
 		mw::PublicSignal<LocalPlayerBoard, PlayerBoardEvent> playerBoardUpdate;
@@ -50,6 +47,8 @@ namespace mwetris::game {
 		}
 
 	private:
+		void update(tetris::Move move);
+
 		void handleBoardEvent(tetris::BoardEvent boardEvent, int value) override;
 
 		int clearedRows_ = 0;

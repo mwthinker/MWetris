@@ -23,22 +23,12 @@ namespace mwetris::network {
 		std::vector<game::Human> extractHumans(const std::vector<game::PlayerSlot>& playerSlots) {
 			std::vector<game::Human> humans;
 			for (const auto& playerSlot : playerSlots) {
-				std::visit([&](auto&& slot) mutable {
-					using T = std::decay_t<decltype(slot)>;
-					if constexpr (std::is_same_v<T, game::Human>) {
-						humans.push_back(game::Human{.name = slot.name, .device = slot.device});
-					} else if constexpr (std::is_same_v<T, game::Ai>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::Remote>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
-						// Skip.
-					} else {
-						static_assert(always_false_v<T>, "non-exhaustive visitor!");
-					}
-				}, playerSlot);
+				if (auto human = std::get_if<game::Human>(&playerSlot); human) {
+					humans.push_back(game::Human{
+						.name = human->name,
+						.device = human->device
+					});
+				}
 			}
 			return humans;
 		}
@@ -46,22 +36,12 @@ namespace mwetris::network {
 		std::vector<game::Ai> extractAis(const std::vector<game::PlayerSlot>& playerSlots) {
 			std::vector<game::Ai> ais;
 			for (const auto& playerSlot : playerSlots) {
-				std::visit([&](auto&& slot) mutable {
-					using T = std::decay_t<decltype(slot)>;
-					if constexpr (std::is_same_v<T, game::Human>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::Ai>) {
-						ais.push_back(game::Ai{.name = slot.name, .ai = slot.ai});
-					} else if constexpr (std::is_same_v<T, game::Remote>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
-						// Skip.
-					} else {
-						static_assert(always_false_v<T>, "non-exhaustive visitor!");
-					}
-				}, playerSlot);
+				if (auto ai = std::get_if<game::Ai>(&playerSlot); ai) {
+					ais.push_back(game::Ai{
+						.name = ai->name,
+						.ai = ai->ai}
+					);
+				}
 			}
 			return ais;
 		}
@@ -195,6 +175,9 @@ namespace mwetris::network {
 						handlePlayerBoardUpdate(*player, event);
 					}, playerBoardEvent);
 				});
+				connections_ += player->addEventCallback([this, &player](tetris::BoardEvent boardEvent, int nbr) {
+					handleBoardEvent(*player, boardEvent, nbr);
+				});
 			}
 
 			tetrisGame_->createGame(std::move(gameRules), w, h, localPlayers_, {});
@@ -217,14 +200,27 @@ namespace mwetris::network {
 		}
 
 		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdateRestart& updateRestart) {
+			spdlog::info("[Network] handle UpdateRestart: current={}, next={}", static_cast<char>(updateRestart.current), static_cast<char>(updateRestart.next));
 		}
 
 		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdatePlayerData& updatePlayerData) {
-
+			spdlog::info("[Network] handle UpdatePlayerData");
 		}
 
 		void handlePlayerBoardUpdate(const game::Player& player, const game::ExternalRows& externalRows) {
+			spdlog::info("[Network] handle ExternalRows");
+		}
 
+		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdateMove& updateMove) {
+			spdlog::info("[Network] handle UpdateMove: {}", static_cast<int>(updateMove.move));
+		}
+
+		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdateNextBlock& updateNextBlock) {
+			spdlog::info("[Network] handle UpdateNextBlock: {}", static_cast<char>(updateNextBlock.next));
+		}
+
+		void handleBoardEvent(const game::Player& player, tetris::BoardEvent boardEvent, int nbr) {
+			spdlog::info("[Network] handle UpdateMove: {}, {}", static_cast<char>(boardEvent), nbr);
 		}
 
 		void sendPause(bool pause) {
