@@ -16,6 +16,7 @@
 #include "graphic/gamecomponent.h"
 
 #include "network/client.h"
+#include "network/debugclient.h"
 #include "util.h"
 
 #include <sdl/imguiauxiliary.h>
