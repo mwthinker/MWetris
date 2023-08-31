@@ -6,6 +6,7 @@
 #include <ai.h>
 
 #include <variant>
+#include <vector>
 
 namespace mwetris::game {
 
@@ -31,6 +32,38 @@ namespace mwetris::game {
 	};
 
 	using PlayerSlot = std::variant<Human, Ai, Remote, OpenSlot, ClosedSlot>;
+
+	inline void reset(std::vector<game::PlayerSlot>& slots) {
+		for (auto& slot : slots) {
+			slot = game::OpenSlot{};
+		}
+	}
+
+	template <typename Type>
+	int count(const std::vector<game::PlayerSlot>& playerSlots) {
+		int nbr = 0;
+		for (const auto& playerSlot : playerSlots) {
+			if (auto type = std::get_if<Type>(&playerSlot); type) {
+				++nbr;
+			}
+		}
+		return nbr;
+	}
+
+	inline int playersInSlots(const std::vector<game::PlayerSlot>& playerSlots) {
+		return count<game::Human>(playerSlots) + count<game::Ai>(playerSlots) + count<game::Remote>(playerSlots);
+	}
+
+	template <typename Type>
+	std::vector<Type> extract(const std::vector<game::PlayerSlot>& playerSlots) {
+		std::vector<Type> types;
+		for (const auto& playerSlot : playerSlots) {
+			if (auto type = std::get_if<Type>(&playerSlot); type) {
+				types.push_back(*type);
+			}
+		}
+		return types;
+	}
 }
 
 #endif

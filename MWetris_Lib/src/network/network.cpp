@@ -66,29 +66,6 @@ namespace mwetris::network {
 			return ais;
 		}
 
-		std::vector<game::RemotePlayerPtr> extractRemotePlayers(const std::vector<game::PlayerSlot>& playerSlots) {
-			std::vector<game::RemotePlayerPtr> remotePlayers;
-			for (const auto& playerSlot : playerSlots) {
-				std::visit([&](auto&& slot) mutable {
-					using T = std::decay_t<decltype(slot)>;
-					if constexpr (std::is_same_v<T, game::Human>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::Ai>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::Remote>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
-						// Skip.
-					} else {
-						static_assert(always_false_v<T>, "non-exhaustive visitor!");
-					}
-				}, playerSlot);
-			}
-			return remotePlayers;
-		}
-
 		tp::SlotType playerSlotToTpSlotType(const game::PlayerSlot& playerSlot) {
 			tp::SlotType slotType = tp::SlotType::UNSPECIFIED_SLOT_TYPE;
 			std::visit([&](auto&& slot) mutable {

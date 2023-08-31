@@ -43,140 +43,6 @@ namespace mwetris::ui {
 			return std::chrono::duration<double>(duration).count();
 		}
 
-		void reset(std::vector<game::PlayerSlot>& slots) {
-			for (auto& slot : slots) {
-				slot = game::OpenSlot{};
-			}
-		}
-		
-		int playersInSlots(const std::vector<game::PlayerSlot>& playerSlots) {
-			int nbr = 0;
-			for (const auto& playerSlot : playerSlots) {
-				std::visit([&](auto&& slot) mutable {
-					using T = std::decay_t<decltype(slot)>;
-					if constexpr (std::is_same_v<T, game::Human>) {
-						++nbr;
-					} else if constexpr (std::is_same_v<T, game::Ai>) {
-						++nbr;
-					} else if constexpr (std::is_same_v<T, game::Remote>) {
-						++nbr;
-					} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
-						// Skip.
-					} else {
-						static_assert(always_false_v<T>, "non-exhaustive visitor!");
-					}
-				}, playerSlot);
-			}
-			return nbr;
-		}
-		
-
-		int internetPlayersInSlots(const std::vector<game::PlayerSlot>& playerSlots) {
-			int nbr = 0;
-			for (const auto& playerSlot : playerSlots) {
-				std::visit([&](auto&& slot) mutable {
-					using T = std::decay_t<decltype(slot)>;
-					if constexpr (std::is_same_v<T, game::Human>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::Ai>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::Remote>) {
-						++nbr;
-					} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
-						// Skip.
-					} else {
-						static_assert(always_false_v<T>, "non-exhaustive visitor!");
-					}
-				}, playerSlot);
-			}
-			return nbr;
-		}
-
-		std::vector<game::Human> extractHumans(const std::vector<game::PlayerSlot>& playerSlots) {
-			std::vector<game::Human> humans;
-			for (const auto& playerSlot : playerSlots) {
-				std::visit([&](auto&& slot) mutable {
-					using T = std::decay_t<decltype(slot)>;
-					if constexpr (std::is_same_v<T, game::Human>) {
-						humans.push_back(game::Human{.name = slot.name, .device = slot.device});
-					} else if constexpr (std::is_same_v<T, game::Ai>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::Remote>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
-						// Skip.
-					} else {
-						static_assert(always_false_v<T>, "non-exhaustive visitor!");
-					}
-				}, playerSlot);
-			}
-			return humans;
-		}
-
-		std::vector<game::Ai> extractAis(const std::vector<game::PlayerSlot>& playerSlots) {
-			std::vector<game::Ai> ais;
-			for (const auto& playerSlot : playerSlots) {
-				std::visit([&](auto&& slot) mutable {
-					using T = std::decay_t<decltype(slot)>;
-					if constexpr (std::is_same_v<T, game::Human>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::Ai>) {
-						ais.push_back(game::Ai{.name = slot.name, .ai = slot.ai});
-					} else if constexpr (std::is_same_v<T, game::Remote>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
-						// Skip.
-					} else {
-						static_assert(always_false_v<T>, "non-exhaustive visitor!");
-					}
-				}, playerSlot);
-			}
-			return ais;
-		}
-
-		std::vector<game::RemotePlayerPtr> extractRemotePlayers(const std::vector<game::PlayerSlot>& playerSlots) {
-			std::vector<game::RemotePlayerPtr> remotePlayers;
-			for (const auto& playerSlot : playerSlots) {
-				std::visit([&](auto&& slot) mutable {
-					using T = std::decay_t<decltype(slot)>;
-					if constexpr (std::is_same_v<T, game::Human>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::Ai>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::Remote>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
-						// Skip.
-					} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
-						// Skip.
-					} else {
-						static_assert(always_false_v<T>, "non-exhaustive visitor!");
-					}
-				}, playerSlot);
-			}
-			return remotePlayers;
-		}
-
-		bool removeRemotePlayer(std::vector<game::PlayerSlot>& playerSlots, const game::RemotePlayerPtr& remotePlayer) {
-			for (auto& slot : playerSlots) {
-				/*
-				if (auto internetPlayer{std::get_if<game::Remote>(&slot)}; internetPlayer && internetPlayer->remotePlayer == remotePlayer) {
-					internetPlayer->remotePlayer = nullptr;
-					return true;
-				}
-				*/
-			}
-			return false;
-		}
-
 	}
 
 	constexpr ImGuiWindowFlags ImguiNoWindow
@@ -442,8 +308,8 @@ namespace mwetris::ui {
 						game_->createGame(
 							std::make_unique<game::SurvivalGameRules>(),
 							TetrisWidth, TetrisHeight,
-							game::PlayerFactory{}.createPlayers(TetrisWidth, TetrisHeight, extractHumans(playerSlots_), extractAis(playerSlots_)),
-							extractRemotePlayers(playerSlots_));
+							game::PlayerFactory{}.createPlayers(TetrisWidth, TetrisHeight, extract<game::Human>(playerSlots_), extract<game::Ai>(playerSlots_)),
+							{});
 					}
 					customGame = false;
 				}
