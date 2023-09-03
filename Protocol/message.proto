@@ -98,11 +98,39 @@ message GameLooby {
 message CreateServerGame {
 	string uuid = 1;
 	repeated LocalPlayer local_players = 2;
+	BlockType current = 3;
+	BlockType next = 4;
 }
 
 message GameCommand {
 	bool pause = 1;
 	bool restart = 2;
+}
+enum Move {
+	UNSPECIFIED_MOVE = 0;
+	ROTATELEFT = 1;
+	ROTATERIGHT = 2;
+	DOWNGRAVITY = 3;
+	DOWN = 4;
+	DOWNGROUND = 5;
+	LEFT = 6;
+	RIGHT = 7;
+	GAMEOVER = 8;
+}
+
+message BoardMove {
+	string uuid = 1;
+	Move move = 2;
+}
+
+message BoardExternalSquares {
+	string uuid = 1;
+	repeated BlockType block_types = 2;
+}
+
+message BoardNextBlock {
+	string uuid = 1;
+	BlockType next = 2;
 }
 
 message Wrapper {
@@ -110,4 +138,7 @@ message Wrapper {
 	CreateServerGame create_server_game = 2;
 	Connections connections = 3;
 	GameCommand game_command = 4;
+	BoardMove board_move = 5;
+	BoardExternalSquares board_external_squares = 6;
+	BoardNextBlock next_block = 7;
 }

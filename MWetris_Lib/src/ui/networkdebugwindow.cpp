@@ -3,13 +3,28 @@
 
 #include "network/debugclient.h"
 
+#include "graphic/gamecomponent.h"
+
 namespace mwetris::ui {
 
+	namespace {
+
+		constexpr double toSeconds(const auto& duration) {
+			return std::chrono::duration<double>(duration).count();
+		}
+
+	}
+
 	NetworkDebugWindow::NetworkDebugWindow(std::shared_ptr<network::DebugClient> client)
-		: debugClient_{client} {
+		: debugClient_{client}
+		, gameComponent_{std::make_unique<graphic::GameComponent>()} {
 
 		debugClient_->addPlayerSlotsCallback([this](const std::vector<game::PlayerSlot>& playerSlots) {
 			playerSlots_ = playerSlots;
+		});
+
+		debugClient_->addInitGameCallback([this](const game::InitGameEvent& initGameEvent) {
+			gameComponent_->initGame(initGameEvent);
 		});
 	}
 
@@ -30,6 +45,11 @@ namespace mwetris::ui {
 
 			ImGui::Window("Debug Network Window", [&]() {
 				update();
+			});
+
+			ImGui::SetNextWindowSize({400, 400});
+			ImGui::Window("Hej", [&]() {
+				gameComponent_->draw(ImGui::GetWindowWidth(), ImGui::GetWindowHeight(), toSeconds(deltaTime));
 			});
 
 			ImGui::PopStyleVar(2);

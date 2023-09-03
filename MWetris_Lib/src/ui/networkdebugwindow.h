@@ -12,6 +12,12 @@ namespace mwetris::network {
 
 }
 
+namespace mwetris::graphic {
+
+	class GameComponent;
+
+}
+
 namespace mwetris::ui {
 
 	class NetworkDebugWindow {
@@ -30,6 +36,7 @@ namespace mwetris::ui {
 		bool visible_ = false;
 		std::shared_ptr<network::DebugClient> debugClient_;
 		std::vector<game::PlayerSlot> playerSlots_;
+		std::unique_ptr<graphic::GameComponent> gameComponent_;
 	};
 
 }

@@ -28,7 +28,7 @@ namespace mwetris::game {
 
 		void updateClearedRows(int clearedRows);
 
-		void updateRestart();
+		void updateRestart(tetris::BlockType current, tetris::BlockType next);
 
 		void updateGameOver();
 

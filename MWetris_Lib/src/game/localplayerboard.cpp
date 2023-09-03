@@ -61,13 +61,13 @@ namespace mwetris::game {
 		clearedRows_ = clearedRows;
 	}
 
-	void LocalPlayerBoard::updateRestart() {
+	void LocalPlayerBoard::updateRestart(tetris::BlockType current, tetris::BlockType next) {
 		externalRows_.clear();
 		clearedRows_ = 0;
 
 		UpdateRestart updateRestart{
-			.current = tetris::randomBlockType(),
-			.next = tetris::randomBlockType()
+			.current = current,
+			.next = next
 		};
 		playerBoardUpdate(updateRestart);
 		restartTetrisBoard(updateRestart.current, updateRestart.next);

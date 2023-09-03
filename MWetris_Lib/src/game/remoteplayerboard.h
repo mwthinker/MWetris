@@ -25,6 +25,22 @@ namespace mwetris::game {
 			return playerData_;
 		}
 
+		void updateRestart(tetris::BlockType current, tetris::BlockType next) {
+			restartTetrisBoard(current, next);
+		}
+
+		void updateNextBlock(tetris::BlockType next) {
+			tetrisBoard_.setNextBlock(next);
+		}
+
+		void updateMove(tetris::Move move) {
+			updateTetrisBoard(move);
+		}
+
+		void updateAddExternalRows(const std::vector<tetris::BlockType>& blockTypes) {
+			tetrisBoard_.addExternalRows(blockTypes);
+		}
+
 	private:
 		void handleBoardEvent(tetris::BoardEvent boardEvent, int value) override;
 

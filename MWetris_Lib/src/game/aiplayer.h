@@ -35,8 +35,8 @@ namespace mwetris::game {
 			return localPlayerBoard_->gameboardEventUpdate.connect(callback);
 		}
 
-		void updateRestart() override {
-			localPlayerBoard_->updateRestart();
+		void updateRestart(tetris::BlockType current, tetris::BlockType next) override {
+			localPlayerBoard_->updateRestart(current, next);
 		}
 		
 		PlayerBoardPtr getPlayerBoard() const override {
@@ -56,7 +56,19 @@ namespace mwetris::game {
 		}
 
 		void updateGravity(float speed) override {
-			localPlayerBoard_->updateGravity(speed);
+			return localPlayerBoard_->updateGravity(speed);
+		}
+
+		const std::string& getName() const override {
+			return localPlayerBoard_->getName();
+		}
+
+		const std::string& getUuid() const override {
+			return localPlayerBoard_->getUniqueId();
+		}
+
+		bool isAi() const override {
+			return true;
 		}
 
 	private:

@@ -5,10 +5,12 @@
 #include "client.h"
 #include "game/playerslot.h"
 
-#include <string>
-#include <memory>
+#include "game/tetrisgame.h"
 
 #include <mw/signal.h>
+
+#include <memory>
+#include <string>
 
 namespace mwetris::network {
 
@@ -36,6 +38,8 @@ namespace mwetris::network {
 		void restartGame();
 
 		mw::signals::Connection addPlayerSlotsCallback(const std::function<void(const std::vector<game::PlayerSlot>&)>& playerSlots);
+
+		mw::signals::Connection addInitGameCallback(const std::function<void(const game::InitGameEvent&)>& callback);
 
 	private:
 		class Impl;

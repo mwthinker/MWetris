@@ -3,6 +3,7 @@
 
 #include "remoteplayerboard.h"
 #include "tetrisparameters.h"
+#include "game/player.h"
 
 #include <tetrisboard.h>
 
@@ -15,30 +16,79 @@ namespace mwetris::game {
 	class RemotePlayer;
 	using RemotePlayerPtr = std::shared_ptr<RemotePlayer>;
 
-	class RemotePlayer {
+	class RemotePlayer : public Player {
 	public:
-		RemotePlayer() {
-			tetris::TetrisBoard tetrisBoard{TetrisWidth, TetrisHeight, tetris::BlockType::I, tetris::BlockType::I};
+		RemotePlayer(tetris::BlockType current, tetris::BlockType next, const std::string& uuid) {
+			uuid_ = uuid;
+			tetris::TetrisBoard tetrisBoard{TetrisWidth, TetrisHeight, current, next};
 			remotePlayerBoard_ = std::make_shared<RemotePlayerBoard>(tetrisBoard, "RemotePlayer");
 		}
 
-		void update(double timeStep) {
-			//remotePlayerBoard_->update(Input{}, deltaTime);
+		void update(double timeStep) override {
+			
 		}
 
-		void updateRestart() {}
+		void updateMove(tetris::Move move) {
+			remotePlayerBoard_->updateMove(move);
+		}
 
-		RemotePlayerBoardPtr getPlayerBoard() const {
-			return remotePlayerBoard_;
+		void updateRestart(tetris::BlockType current, tetris::BlockType next) override {
+			remotePlayerBoard_->updateRestart(current, next);
+		}
+
+		void updateNextBlock(tetris::BlockType next) {
+			remotePlayerBoard_->updateNextBlock(next);
+		}
+
+		void updateAddExternalRows(const std::vector<tetris::BlockType>& blockTypes) {
+			remotePlayerBoard_->updateAddExternalRows(blockTypes);
 		}
 
 		[[nodiscard]]
-		mw::signals::Connection addEventCallback(std::function<void(tetris::BoardEvent, int)>&& callback) {
-			return {};
+		mw::signals::Connection addPlayerBoardUpdateCallback(std::function<void(game::PlayerBoardEvent)>&& callback) override {
+			return {};// remotePlayerBoard_->playerBoardUpdate.connect(callback);
+		}
+
+		[[nodiscard]]
+		mw::signals::Connection addEventCallback(std::function<void(tetris::BoardEvent, int)>&& callback) override {
+			return remotePlayerBoard_->gameboardEventUpdate.connect(callback);
+		}
+
+		PlayerBoardPtr getPlayerBoard() const override {
+			return remotePlayerBoard_;
+		}
+
+		void addRowWithHoles(int nbr) override {
+			//remotePlayerBoard_->addRow(nbr);
+		}
+
+		void updatePlayerData(const PlayerData& playerData) override {
+			// remotePlayerBoard_->updatePlayerData(playerData);
+		}
+
+		const PlayerData& getPlayerData() const override {
+			return remotePlayerBoard_->getPlayerData();
+		}
+
+		void updateGravity(float speed) override {
+			//remotePlayerBoard_->updateGravity(speed);
+		}
+
+		const std::string& getName() const override {
+			return remotePlayerBoard_->getName();
+		}
+
+		const std::string& getUuid() const override {
+			return uuid_;
+		}
+
+		bool isAi() const override {
+			return false;
 		}
 
 	private:
 		RemotePlayerBoardPtr remotePlayerBoard_;
+		std::string uuid_;
 
 	};
 

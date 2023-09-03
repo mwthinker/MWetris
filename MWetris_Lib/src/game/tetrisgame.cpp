@@ -36,49 +36,6 @@ namespace mwetris::game {
 
 	PlayerFactory::PlayerFactory() {}
 
-	class LocalNetworkPlayer : public Player {
-	public:
-		LocalNetworkPlayer() {
-		}
-
-		LocalNetworkPlayer(HumanPlayerPtr human) {
-			player_ = human;
-		}
-
-		~LocalNetworkPlayer() = default;
-
-		void update(double timeStep) override {
-			
-		}
-
-		void updateRestart() override {
-		}
-
-		PlayerBoardPtr getPlayerBoard() const override {
-			return nullptr;
-		}
-
-		void addRowWithHoles(int nbr) override {
-
-		}
-
-		void updatePlayerData(const PlayerData& playerData) override {
-			// Send player data.
-		}
-
-		const PlayerData& getPlayerData() const override {
-			static PlayerData playerData;
-			return playerData;
-		}
-
-		[[nodiscard]]
-		virtual mw::signals::Connection addEventCallback(std::function<void(tetris::BoardEvent, int)>&& callback) override {
-			return {};
-		}
-	private:
-		PlayerPtr player_;
-	};
-
 	std::vector<PlayerPtr> PlayerFactory::createPlayers(int width, int height,
 		const std::vector<game::Human>& humans,
 		const std::vector<game::Ai>& ais) {
@@ -193,9 +150,12 @@ namespace mwetris::game {
 	void TetrisGame::restartGame() {
 		accumulator_ = 0.0;
 		setPause(false);
+		
+		auto current = tetris::randomBlockType();
+		auto next = tetris::randomBlockType();
 
 		for (auto& player : players_) {
-			player->updateRestart();
+			player->updateRestart(current, next);
 		}
 		initGame();
 		rules_->restart();

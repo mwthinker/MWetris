@@ -11,6 +11,8 @@
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
 
+#include <helper.h>
+
 namespace tp = tetris_protocol;
 
 namespace mwetris::network {
@@ -169,7 +171,12 @@ namespace mwetris::network {
 
 		bool createGame(std::unique_ptr<game::GameRules> gameRules, int w, int h) {
 			localPlayers_ = game::PlayerFactory{}.createPlayers(w, h, extractHumans(playerSlots_), extractAis(playerSlots_));
+			
+			auto current = tetris::randomBlockType();
+			auto next = tetris::randomBlockType();
+
 			for (auto& player : localPlayers_) {
+				player->updateRestart(current, next); // Update before attaching the event handles, to avoid multiple calls.
 				connections_ += player->addPlayerBoardUpdateCallback([this, &player](game::PlayerBoardEvent playerBoardEvent) {
 					std::visit([&](auto&& event) {
 						handlePlayerBoardUpdate(*player, event);
@@ -181,18 +188,25 @@ namespace mwetris::network {
 			}
 
 			tetrisGame_->createGame(std::move(gameRules), w, h, localPlayers_, {});
+			
+			sendCreateServerGame(current, next);
+			return true;
+		}
 
+		void sendCreateServerGame(tetris::BlockType current, tetris::BlockType next) {
 			wrapper_.Clear();
+			auto createServerGame = wrapper_.mutable_create_server_game();
+			createServerGame->set_current(static_cast<tp::BlockType>(current));
+			createServerGame->set_next(static_cast<tp::BlockType>(current));
 			for (auto& player : localPlayers_) {
-				auto tpPlayer = wrapper_.mutable_create_server_game()->add_local_players();
-				tpPlayer->set_ai(false);
+				auto tpPlayer = createServerGame->add_local_players();
+				tpPlayer->set_ai(player->isAi());
 				tpPlayer->set_level(1);
 				tpPlayer->set_points(1);
-				tpPlayer->set_name("name");
-				tpPlayer->set_uuid("ASDASD");
+				tpPlayer->set_name(player->getName());
+				tpPlayer->set_uuid(player->getUuid());
 			}
 			send(wrapper_);
-			return true;
 		}
 
 		const std::string& getServerId() const {
@@ -212,11 +226,21 @@ namespace mwetris::network {
 		}
 
 		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdateMove& updateMove) {
-			spdlog::info("[Network] handle UpdateMove: {}", static_cast<int>(updateMove.move));
+			//spdlog::info("[Network] handle UpdateMove: {}", static_cast<int>(updateMove.move));
+			wrapper_.Clear();
+			auto boardMove = wrapper_.mutable_board_move();
+			boardMove->set_uuid(player.getUuid());
+			boardMove->set_move(static_cast<tp::Move>(updateMove.move));
+			send(wrapper_);
 		}
 
 		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdateNextBlock& updateNextBlock) {
-			spdlog::info("[Network] handle UpdateNextBlock: {}", static_cast<char>(updateNextBlock.next));
+			//spdlog::info("[Network] handle UpdateNextBlock: {}", static_cast<char>(updateNextBlock.next));
+			wrapper_.Clear();
+			auto nextBlock = wrapper_.mutable_next_block();
+			nextBlock->set_uuid(player.getUuid());
+			nextBlock->set_next(static_cast<tp::BlockType>(updateNextBlock.next));
+			send(wrapper_);
 		}
 
 		void handleBoardEvent(const game::Player& player, tetris::BoardEvent boardEvent, int nbr) {

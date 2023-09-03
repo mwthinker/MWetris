@@ -1,6 +1,8 @@
 #include "debugclient.h"
 #include "protobufmessagequeue.h"
 #include "util.h"
+#include "game/player.h"
+#include "game/remoteplayer.h"
 
 #include <message.pb.h>
 
@@ -15,6 +17,8 @@ namespace mwetris::network {
 	class DebugClient::Impl {
 	public:
 		mw::PublicSignal<DebugClient::Impl, const std::vector<game::PlayerSlot>&> playerSlotsUpdated;
+		mw::PublicSignal<DebugClient::Impl, const std::vector<game::RemotePlayerPtr>&> gameCreated;
+		mw::PublicSignal<DebugClient::Impl, const game::InitGameEvent&> initGameEvent;
 
 		Impl() {}
 
@@ -40,10 +44,57 @@ namespace mwetris::network {
 				if (wrapper_.has_game_command()) {
 					handleGameCommand(wrapper_.game_command());
 				}
+				if (wrapper_.has_create_server_game()) {
+					handleCreateGameServer(wrapper_.create_server_game());
+				}
+				if (wrapper_.has_board_move()) {
+					handleBoardMove(wrapper_.board_move());
+				}
+				if (wrapper_.has_next_block()) {
+					handleBoardNextBlock(wrapper_.next_block());
+				}
+				if (wrapper_.has_board_external_squares()) {
+					handleBoardExternalSquares(wrapper_.board_external_squares());
+				}
 				playerSlotsUpdated(playerSlots_);
 			} else {
 				spdlog::error("Protocol error");
 			}
+		}
+		void handleBoardMove(const tp::BoardMove& boardMove) {
+			auto move = static_cast<tetris::Move>(boardMove.move());
+			remotePlayers_[boardMove.uuid()]->updateMove(move);
+		}
+
+		void handleBoardNextBlock(const tp::BoardNextBlock& boardNextBlock) {
+			auto blockType = static_cast<tetris::BlockType>(boardNextBlock.next());
+			remotePlayers_[boardNextBlock.uuid()]->updateNextBlock(blockType);
+		}
+
+		void handleBoardExternalSquares(const tp::BoardExternalSquares& boardExternalSquares) {
+			auto& remotePlayer = remotePlayers_[boardExternalSquares.uuid()];
+			static std::vector<tetris::BlockType> blockTypes;
+			blockTypes.clear();
+			for (const auto& tpBlockType : boardExternalSquares.block_types()) {
+				blockTypes.push_back(static_cast<tetris::BlockType>(tpBlockType));
+			}
+			remotePlayer->updateAddExternalRows(blockTypes);
+		}
+
+		void handleCreateGameServer(const tp::CreateServerGame& createServerGame) {
+			remotePlayers_.clear();
+			
+			auto current = static_cast<tetris::BlockType>(createServerGame.current());
+			auto next = static_cast<tetris::BlockType>(createServerGame.next());
+
+			std::vector<game::PlayerBoardPtr> playerBoards;
+			for (const auto& tpLocalPlayer : createServerGame.local_players()) {
+				auto remotePlayer = std::make_shared<game::RemotePlayer>(current, next, tpLocalPlayer.uuid());
+				remotePlayers_[remotePlayer->getUuid()] = remotePlayer;
+				playerBoards.push_back(remotePlayer->getPlayerBoard());
+			}
+
+			initGameEvent(game::InitGameEvent{playerBoards.begin(), playerBoards.end()});
 		}
 
 		void handleGameCommand(const tp::GameCommand& gameCommand) {
@@ -142,7 +193,8 @@ namespace mwetris::network {
 			message.setBuffer(wrapper_);
 			toClient.push(std::move(message));
 		}
-
+		
+		std::map<std::string, game::RemotePlayerPtr> remotePlayers_;
 		std::vector<game::PlayerSlot> playerSlots_;
 		std::vector<std::string> connectedUuids_;
 		bool paused_ = false;
@@ -178,6 +230,10 @@ namespace mwetris::network {
 
 	mw::signals::Connection DebugClient::addPlayerSlotsCallback(const std::function<void(const std::vector<game::PlayerSlot>&)>& callback) {
 		return impl_->playerSlotsUpdated.connect(callback);
+	}
+
+	mw::signals::Connection DebugClient::addInitGameCallback(const std::function<void(const game::InitGameEvent&)>& callback) {
+		return impl_->initGameEvent.connect(callback);
 	}
 
 	void DebugClient::acquire(ProtobufMessage& message) {
