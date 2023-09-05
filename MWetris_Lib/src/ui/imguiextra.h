@@ -55,6 +55,8 @@ namespace ImGui {
 
 	bool AbortButton(const char* label, const ImVec2& size = {});
 
+	void DebugDrawForeground();
+
 }
 
 #endif

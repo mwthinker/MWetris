@@ -148,11 +148,16 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::restartGame() {
+		restartGame(tetris::randomBlockType(), tetris::randomBlockType());
+	}
+
+	void TetrisGame::restartGame(tetris::BlockType current, tetris::BlockType next) {
+		gameRestartEvent(game::GameRestart{
+			.current = current,
+			.next = next
+		});
 		accumulator_ = 0.0;
 		setPause(false);
-		
-		auto current = tetris::randomBlockType();
-		auto next = tetris::randomBlockType();
 
 		for (auto& player : players_) {
 			player->updateRestart(current, next);

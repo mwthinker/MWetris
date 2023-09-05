@@ -37,6 +37,7 @@ namespace mwetris::game {
 		mw::PublicSignal<TetrisGame, InitGameEvent> initGameEvent;
 		mw::PublicSignal<TetrisGame, GameOver> gameOverEvent;
 		mw::PublicSignal<TetrisGame, GamePause> gamePauseEvent;
+		mw::PublicSignal<TetrisGame, GameRestart> gameRestartEvent;
 
 		TetrisGame();
 		~TetrisGame();
@@ -59,6 +60,9 @@ namespace mwetris::game {
 
 		// Restart the active game.
 		void restartGame();
+
+		// Restart the active game.
+		void restartGame(tetris::BlockType current, tetris::BlockType next);
 
 		int getNbrOfPlayers() const;
 

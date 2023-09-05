@@ -4,6 +4,8 @@
 #include "game/player.h"
 #include "game/remoteplayer.h"
 
+#include <helper.h>
+
 #include <message.pb.h>
 
 #include <spdlog/spdlog.h>
@@ -56,11 +58,23 @@ namespace mwetris::network {
 				if (wrapper_.has_board_external_squares()) {
 					handleBoardExternalSquares(wrapper_.board_external_squares());
 				}
+				if (wrapper_.has_game_restart()) {
+					handleGameRestart(wrapper_.game_restart());
+				}
 				playerSlotsUpdated(playerSlots_);
 			} else {
 				spdlog::error("Protocol error");
 			}
 		}
+
+		void handleGameRestart(const tp::GameRestart& gameRestart) {
+			auto current = static_cast<tetris::BlockType>(gameRestart.current());
+			auto next = static_cast<tetris::BlockType>(gameRestart.next());
+			for (auto& [_, player] : remotePlayers_) {
+				player->updateRestart(current, next);
+			}
+		}
+
 		void handleBoardMove(const tp::BoardMove& boardMove) {
 			auto move = static_cast<tetris::Move>(boardMove.move());
 			remotePlayers_[boardMove.uuid()]->updateMove(move);
@@ -128,7 +142,7 @@ namespace mwetris::network {
 					default:
 						playerSlots_.push_back(game::ClosedSlot{});
 						break;
-				};
+				}
 			}
 		}
 
@@ -178,7 +192,9 @@ namespace mwetris::network {
 
 		void restartGame() {
 			wrapper_.Clear();
-			wrapper_.mutable_game_command()->set_restart(true);
+			auto gameRestart = wrapper_.mutable_game_restart();
+			gameRestart->set_current(static_cast<tp::BlockType>(tetris::randomBlockType()));
+			gameRestart->set_next(static_cast<tp::BlockType>(tetris::randomBlockType()));
 			sendToClient(wrapper_);
 		}
 

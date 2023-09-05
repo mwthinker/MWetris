@@ -132,15 +132,21 @@ namespace mwetris::network {
 				if (wrapper_.has_connections()) {
 					handleConnections(wrapper_.connections());
 				}
+				if (wrapper_.has_game_restart()) {
+					handleGameRestart(wrapper_.game_restart());
+				}
 			}
+		}
+
+		void handleGameRestart(const tp::GameRestart& gameRestart) {
+			auto current = static_cast<tetris::BlockType>(gameRestart.current());
+			auto next = static_cast<tetris::BlockType>(gameRestart.next());
+			tetrisGame_->restartGame(current, next);
 		}
 
 		void handleGameCommand(const tp::GameCommand& gameCommand) {
 			spdlog::info("[Network] Paused: {}", gameCommand.pause() ? "true" : "false");
 			tetrisGame_->pause();
-			if (gameCommand.restart()) {
-				tetrisGame_->restartGame();
-			}
 		}
 
 		void handleGameLooby(const tp::GameLooby& gameLooby) {
@@ -170,6 +176,7 @@ namespace mwetris::network {
 		}
 
 		bool createGame(std::unique_ptr<game::GameRules> gameRules, int w, int h) {
+			connections_.clear();
 			localPlayers_ = game::PlayerFactory{}.createPlayers(w, h, extractHumans(playerSlots_), extractAis(playerSlots_));
 			
 			auto current = tetris::randomBlockType();
@@ -188,6 +195,9 @@ namespace mwetris::network {
 			}
 
 			tetrisGame_->createGame(std::move(gameRules), w, h, localPlayers_, {});
+			connections_ += tetrisGame_->gameRestartEvent.connect([this](game::GameRestart gameRestart) {
+				handleGameRestart(gameRestart);
+			});
 			
 			sendCreateServerGame(current, next);
 			return true;
@@ -197,7 +207,7 @@ namespace mwetris::network {
 			wrapper_.Clear();
 			auto createServerGame = wrapper_.mutable_create_server_game();
 			createServerGame->set_current(static_cast<tp::BlockType>(current));
-			createServerGame->set_next(static_cast<tp::BlockType>(current));
+			createServerGame->set_next(static_cast<tp::BlockType>(next));
 			for (auto& player : localPlayers_) {
 				auto tpPlayer = createServerGame->add_local_players();
 				tpPlayer->set_ai(player->isAi());
@@ -211,6 +221,14 @@ namespace mwetris::network {
 
 		const std::string& getServerId() const {
 			return serverId_;
+		}
+
+		void handleGameRestart(game::GameRestart gameRestart) {
+			wrapper_.Clear();
+			auto tpGameRestart = wrapper_.mutable_game_restart();
+			tpGameRestart->set_current(static_cast<tp::BlockType>(gameRestart.current));
+			tpGameRestart->set_next(static_cast<tp::BlockType>(gameRestart.next));
+			send(wrapper_);
 		}
 
 		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdateRestart& updateRestart) {
@@ -244,7 +262,7 @@ namespace mwetris::network {
 		}
 
 		void handleBoardEvent(const game::Player& player, tetris::BoardEvent boardEvent, int nbr) {
-			spdlog::info("[Network] handle UpdateMove: {}, {}", static_cast<char>(boardEvent), nbr);
+			spdlog::info("[Network] handle UpdateMove: {}, {}", static_cast<int>(boardEvent), nbr);
 		}
 
 		void sendPause(bool pause) {

@@ -48,6 +48,12 @@ namespace mwetris::game {
 		bool pause;
 	};
 
+	class GameRestart {
+	public:
+		tetris::BlockType current;
+		tetris::BlockType next;
+	};
+
 	class GameOver {
 	public:
 		GameOver(PlayerBoardPtr playerBoard)

@@ -39,7 +39,7 @@ namespace mwetris::ui {
 	void NetworkDebugWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
 		if (visible_) {
 			ImGui::SetNextWindowSize({650, 650});
-			ImGui::PushStyleColor(ImGuiCol_WindowBg, {0, 0, 0, 1});
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, sdl::color::html::Black);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {10, 10});
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 10.f);
 
@@ -47,9 +47,10 @@ namespace mwetris::ui {
 				update();
 			});
 
-			ImGui::SetNextWindowSize({400, 400});
-			ImGui::Window("Hej", [&]() {
-				gameComponent_->draw(ImGui::GetWindowWidth(), ImGui::GetWindowHeight(), toSeconds(deltaTime));
+			ImGui::SetNextWindowSize({400, 600});
+			ImGui::Window("Server", [&]() {
+				auto size = ImGui::GetContentRegionAvail();
+				gameComponent_->draw(size.x, size.y, toSeconds(deltaTime));
 			});
 
 			ImGui::PopStyleVar(2);

@@ -66,15 +66,16 @@ namespace mwetris::game {
 		}
 
 		void setTpPlayer(tp::PlayerBoard& tpPlayerBoard, const PlayerBoard& playerBoard) {
+			auto playerData = std::get<DefaultPlayerData>(playerBoard.getPlayerData()); // Do first in case throwing bad_variant
 			const auto& blockTypes = playerBoard.getBoardVector();
 			tpPlayerBoard.clear_board();
 			for (const auto type : blockTypes) {
 				tpPlayerBoard.add_board(static_cast<tp::BlockType>(type));
 			}
 			tpPlayerBoard.set_ai(false);
-			auto playerData = std::get<DefaultPlayerData>(playerBoard.getPlayerData());
 			tpPlayerBoard.set_level(playerData.level);
 			tpPlayerBoard.set_points(playerData.points);
+
 			tpPlayerBoard.set_name(playerBoard.getName());
 			tpPlayerBoard.set_next(static_cast<tp::BlockType>(playerBoard.getNextBlockType()));
 			tpPlayerBoard.set_cleared_rows(playerBoard.getClearedRows());
@@ -85,6 +86,7 @@ namespace mwetris::game {
 			tpPlayerBoard.mutable_current()->set_start_column(playerBoard.getBlock().getStartColumn());
 			tpPlayerBoard.mutable_current()->set_rotations(playerBoard.getBlock().getCurrentRotation());
 			tpPlayerBoard.mutable_current()->set_type(static_cast<tp::BlockType>(playerBoard.getBlock().getBlockType()));
+			
 		}
 
 		LocalPlayerBoardPtr createPlayer(const tp::PlayerBoard& player) {
@@ -187,10 +189,13 @@ namespace mwetris::game {
 	}
 
 	void saveGame(const PlayerBoard& playerBoard) {
-		cachedGame.set_last_played_seconds(toTpSeconds(std::chrono::system_clock::now()));
-		setTpPlayer(*cachedGame.mutable_player_board(), playerBoard);
-		
-		saveToFile(cachedGame, SavedGameFile);
+		try {
+			setTpPlayer(*cachedGame.mutable_player_board(), playerBoard);
+			cachedGame.set_last_played_seconds(toTpSeconds(std::chrono::system_clock::now()));
+			saveToFile(cachedGame, SavedGameFile);
+		} catch (const std::bad_variant_access& e) {
+			spdlog::error("[Serilize] Fail to save, not DefaultPlayerData: {}", e.what());
+		}
 	}
 
 	LocalPlayerBoardPtr loadGame() {

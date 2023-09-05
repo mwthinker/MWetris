@@ -104,8 +104,8 @@ message CreateServerGame {
 
 message GameCommand {
 	bool pause = 1;
-	bool restart = 2;
 }
+
 enum Move {
 	UNSPECIFIED_MOVE = 0;
 	ROTATELEFT = 1;
@@ -133,6 +133,11 @@ message BoardNextBlock {
 	BlockType next = 2;
 }
 
+message GameRestart {
+	BlockType current = 1;
+	BlockType next = 2;
+}
+
 message Wrapper {
 	GameLooby game_looby = 1;
 	CreateServerGame create_server_game = 2;
@@ -141,4 +146,5 @@ message Wrapper {
 	BoardMove board_move = 5;
 	BoardExternalSquares board_external_squares = 6;
 	BoardNextBlock next_block = 7;
+	GameRestart game_restart = 8;
 }
