@@ -86,7 +86,7 @@ namespace mwetris::ui {
 		TimeHandler timeHandler_;
 		std::string pauseMenuText_;
 
-		bool customGame = false;
+		bool customGame_ = false;
 		std::vector<game::PlayerSlot> playerSlots_;
 		std::shared_ptr<network::Network> network_;
 		NetworkDebugWindow networkDebugWindow_;

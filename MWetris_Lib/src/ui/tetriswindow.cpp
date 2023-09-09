@@ -228,12 +228,12 @@ namespace mwetris::ui {
 			ImGui::MenuBar([&]() {
 				ImGui::Menu("Game", [&]() {
 					if (ImGui::MenuItem(game::hasSavedGame() ? "Resume Single Player" : "New Single Player", "F1")) {
-						customGame = false;
+						customGame_ = false;
 						game_->createDefaultGame(deviceManager_->getDefaultDevice1());
 					}
 					ImGui::Separator();
 					if (ImGui::MenuItem("Create Game")) {
-						customGame = true;
+						customGame_ = true;
 						reset(playerSlots_);
 					}
 					if (ImGui::MenuItem("Join Game")) {
@@ -268,15 +268,15 @@ namespace mwetris::ui {
 			ImGui::PopStyleVar(2);
 
 			auto h = ImGui::GetCursorPosY();
-			auto lowerBar = customGame ? 100 : 0;
+			auto lowerBar = customGame_ ? 100 : 0;
 			auto size = ImGui::GetWindowSize();
 
-			if (customGame) {
+			if (customGame_) {
 				imGuiCustomGame(size.x, size.y - h - lowerBar, toSeconds(deltaTime));
 			} else {
 				gameComponent_->draw(size.x, size.y - h - lowerBar, toSeconds(deltaTime));
 			}
-			if (customGame) {
+			if (customGame_) {
 				static bool internet = true;
 				if (ImGui::Checkbox("Network", &internet)) {
 					if (internet) {
@@ -311,7 +311,7 @@ namespace mwetris::ui {
 							game::PlayerFactory{}.createPlayers(TetrisWidth, TetrisHeight, extract<game::Human>(playerSlots_), extract<game::Ai>(playerSlots_)),
 							{});
 					}
-					customGame = false;
+					customGame_ = false;
 				}
 				ImGui::EndDisabled();
 			}

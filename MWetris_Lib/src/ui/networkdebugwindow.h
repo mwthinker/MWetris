@@ -22,7 +22,7 @@ namespace mwetris::ui {
 
 	class NetworkDebugWindow {
 	public:
-		NetworkDebugWindow(std::shared_ptr<network::DebugClient> client);
+		explicit NetworkDebugWindow(std::shared_ptr<network::DebugClient> client);
 
 		void setVisible(bool visible);
 
