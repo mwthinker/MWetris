@@ -46,12 +46,6 @@ namespace mwetris::network {
 		std::unique_ptr<Impl> impl_;
 	};
 
-	class DebugServer {
-	public:
-		std::shared_ptr<DebugClient> createDebugClient();
-
-	};
-
 }
 
 #endif

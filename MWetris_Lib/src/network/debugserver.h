@@ -20,7 +20,7 @@ namespace mwetris::network {
 		DebugServer();
 		~DebugServer();
 
-		std::shared_ptr<Client> createDebugClient();
+		std::shared_ptr<Client> createClient();
 
 	};
 

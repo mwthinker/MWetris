@@ -1,3 +1,4 @@
+#include "debugserver.h"
 #include "protobufmessage.h"
 #include "debugclient.h"
 #include "protobufmessagequeue.h"
@@ -23,7 +24,7 @@ namespace mwetris::network {
 
 	}
 
-	std::shared_ptr<Client> DebugServer::createDebugClient() {
+	std::shared_ptr<Client> DebugServer::createClient() {
 		return nullptr;
 	}
 
