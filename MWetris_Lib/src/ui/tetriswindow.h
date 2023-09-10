@@ -37,22 +37,22 @@ namespace mwetris::game {
 
 namespace mwetris::ui {
 
-	class TetrisWindow : public sdl::ImGuiWindow {
+	class TetrisWindow {
 	public:
-		TetrisWindow();
+		TetrisWindow(sdl::Window& window,
+			std::shared_ptr<game::DeviceManager> deviceManager,
+			std::shared_ptr<network::Client> client
+		);
 
 		~TetrisWindow();
+		
+		void initPreLoop();
+		void eventUpdate(const SDL_Event& windowEvent);
+		void imGuiUpdate(const sdl::DeltaTime& deltaTime);
+		void imGuiEventUpdate(const SDL_Event& windowEvent);
 	
 	private:
 		int getCurrentMonitorHz() const;
-
-		void initPreLoop() override;
-
-		void eventUpdate(const SDL_Event& windowEvent) override;
-
-		void imGuiUpdate(const sdl::DeltaTime& deltaTime) override;
-
-		void imGuiEventUpdate(const SDL_Event& windowEvent) override;
 
 		void imGuiCustomGame(int windowWidth, int windowHeight, double deltaTime);
 
@@ -72,7 +72,10 @@ namespace mwetris::ui {
 
 		void startNewGame();
 
-		std::shared_ptr<network::DebugClient> debugClient_;
+		sdl::Window& window_;
+		std::shared_ptr<game::DeviceManager> deviceManager_;
+		std::shared_ptr<network::Network> network_;
+		std::shared_ptr<network::Client> client_;
 		sdl::TextureView background_;
 		scene::StateMachine sceneStateMachine_;
 		
@@ -81,15 +84,13 @@ namespace mwetris::ui {
 		mw::signals::ScopedConnections connections_;
 
 		bool openPopUp_ = false;
-		std::shared_ptr<game::DeviceManager> deviceManager_;
 
 		TimeHandler timeHandler_;
 		std::string pauseMenuText_;
 
 		bool customGame_ = false;
 		std::vector<game::PlayerSlot> playerSlots_;
-		std::shared_ptr<network::Network> network_;
-		NetworkDebugWindow networkDebugWindow_;
+		//NetworkDebugWindow networkDebugWindow_;
 	};
 
 }

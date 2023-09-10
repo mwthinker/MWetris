@@ -12,6 +12,8 @@ set(SOURCES
 	src/logger.cpp
 	src/logger.h
 	src/main.cpp
+	src/mainwindow.cpp
+	src/mainwindow.h
 
 	ExternalFetchContent.cmake
 	CPack.cmake

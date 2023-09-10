@@ -56,19 +56,17 @@ namespace mwetris::ui {
 		| ImGuiWindowFlags_NoScrollWithMouse
 		| ImGuiWindowFlags_MenuBar;
 
-	TetrisWindow::TetrisWindow()
-		: debugClient_{std::make_shared<network::DebugClient>()}
-		, networkDebugWindow_{debugClient_} {
+	TetrisWindow::TetrisWindow(sdl::Window& window,
+		std::shared_ptr<game::DeviceManager> deviceManager,
+		std::shared_ptr<network::Client> client
+	)
+		: window_{window}
+		, deviceManager_{deviceManager}
+		, client_{client}
+	{
+		game_ = std::make_shared<game::TetrisGame>();
+		network_ = std::make_shared<network::Network>(client_, game_);
 
-		setPosition(Configuration::getInstance().getWindowPositionX(), Configuration::getInstance().getWindowPositionY());
-		setSize(Configuration::getInstance().getWindowWidth(), Configuration::getInstance().getWindowHeight());
-		setResizeable(true);
-		setTitle("MWetris");
-		setIcon(Configuration::getInstance().getWindowIcon());
-		setBordered(Configuration::getInstance().isWindowBordered());
-		setShowDemoWindow(true);
-
-		deviceManager_ = std::make_shared<game::DeviceManager>();
 		connections_ += deviceManager_->deviceConnected.connect([](game::DevicePtr device) {
 			spdlog::info("Device found: {}", device->getName());
 		});
@@ -85,7 +83,7 @@ namespace mwetris::ui {
 	}
 
 	int TetrisWindow::getCurrentMonitorHz() const {
-		if (SDL_DisplayMode displayMode; SDL_GetCurrentDisplayMode(SDL_GetWindowDisplayIndex(getSdlWindow()), &displayMode) == 0) {
+		if (SDL_DisplayMode displayMode; SDL_GetCurrentDisplayMode(SDL_GetWindowDisplayIndex(window_.getSdlWindow()), &displayMode) == 0) {
 			if (displayMode.refresh_rate > 0) {
 				spdlog::info("[TetrisWindow] Window {}Hz", displayMode.refresh_rate);
 				return displayMode.refresh_rate;
@@ -99,20 +97,10 @@ namespace mwetris::ui {
 	}
 
 	void TetrisWindow::initPreLoop() {
-		sdl::ImGuiWindow::initPreLoop();
-		auto& io{ImGui::GetIO()};
-
 		Configuration::getInstance().bindTextureFromAtlas();
 		background_ = Configuration::getInstance().getBackgroundSprite();
-
-		io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 12); // Used by demo window.
-		Configuration::getInstance().getImGuiButtonFont();
-		Configuration::getInstance().getImGuiDefaultFont();
-		Configuration::getInstance().getImGuiHeaderFont();
-
-		game_ = std::make_shared<game::TetrisGame>();
+		
 		gameComponent_ = std::make_unique<graphic::GameComponent>();
-		network_ = std::make_shared<network::Network>(debugClient_, game_);
 
 		sceneStateMachine_.emplace<scene::EmptyScene>();
 		sceneStateMachine_.emplace<scene::Settings>();
@@ -179,7 +167,6 @@ namespace mwetris::ui {
 	}
 
 	void TetrisWindow::eventUpdate(const SDL_Event& windowEvent) {
-		sdl::ImGuiWindow::eventUpdate(windowEvent);
 		deviceManager_->eventUpdate(windowEvent);
 	}
 
@@ -219,7 +206,7 @@ namespace mwetris::ui {
 
 	void TetrisWindow::imGuiMainWindow(const sdl::DeltaTime& deltaTime) {
 		ImGui::MainWindow("MainWindow", ImguiNoWindow, [&]() {
-			networkDebugWindow_.imGuiUpdate(deltaTime);
+			//networkDebugWindow_.imGuiUpdate(deltaTime);
 
 			ImGui::ImageBackground(background_);
 
@@ -248,7 +235,7 @@ namespace mwetris::ui {
 						openPopUp<mwetris::ui::scene::Settings>();
 					}
 					if (ImGui::MenuItem("Quit", "ESQ")) {
-						sdl::Window::quit();
+						window_.quit();
 					}
 				});
 				ImGui::Menu("Current", [&]() {
@@ -386,14 +373,14 @@ namespace mwetris::ui {
 					case SDL_WINDOWEVENT_LEAVE:
 						break;
 					case SDL_WINDOWEVENT_CLOSE:
-						sdl::Window::quit();
+						window_.quit();
 						break;
 				}
 				break;
 			case SDL_KEYDOWN:
 				switch (windowEvent.key.keysym.sym) {
 					case SDLK_g:
-						networkDebugWindow_.setVisible(!networkDebugWindow_.isVisible());
+						//networkDebugWindow_.setVisible(!networkDebugWindow_.isVisible());
 						break;
 					case SDLK_4:
 						/*
@@ -404,7 +391,7 @@ namespace mwetris::ui {
 						break;
 					case SDLK_ESCAPE:
 						game_->saveDefaultGame();
-						sdl::Window::quit();
+						window_.quit();
 						break;
 					case SDLK_F1:
 						game_->createDefaultGame(deviceManager_->getDefaultDevice1());
@@ -420,7 +407,7 @@ namespace mwetris::ui {
 				break;
 			case SDL_QUIT:
 				game_->saveDefaultGame();
-				sdl::Window::quit();
+				window_.quit();
 				break;
 		}
 	}

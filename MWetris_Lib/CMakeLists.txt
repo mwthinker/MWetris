@@ -52,6 +52,8 @@ set(SOURCES_LIB
 	src/network/client.h
 	src/network/debugclient.cpp
 	src/network/debugclient.h
+	src/network/debugserver.cpp
+	src/network/debugserver.h
 	src/network/protobufmessage.cpp
 	src/network/protobufmessage.h
 	src/network/protobufmessagequeue.cpp

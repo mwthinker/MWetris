@@ -27,35 +27,25 @@ namespace mwetris::ui {
 			gameComponent_->initGame(initGameEvent);
 		});
 	}
-
-	void NetworkDebugWindow::setVisible(bool visible) {
-		visible_ = visible;
-	}
-
-	bool NetworkDebugWindow::isVisible() const {
-		return visible_;
-	}
 		
 	void NetworkDebugWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
-		if (visible_) {
-			ImGui::SetNextWindowSize({650, 650});
-			ImGui::PushStyleColor(ImGuiCol_WindowBg, sdl::color::html::Black);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {10, 10});
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 10.f);
+		ImGui::SetNextWindowSize({650, 650});
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, sdl::color::html::Black);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {10, 10});
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 10.f);
 
-			ImGui::Window("Debug Network Window", [&]() {
-				update();
-			});
+		ImGui::Window("Debug Network Window", [&]() {
+			update();
+		});
 
-			ImGui::SetNextWindowSize({400, 600});
-			ImGui::Window("Server", [&]() {
-				auto size = ImGui::GetContentRegionAvail();
-				gameComponent_->draw(size.x, size.y, toSeconds(deltaTime));
-			});
+		ImGui::SetNextWindowSize({400, 600});
+		ImGui::Window("Server", [&]() {
+			auto size = ImGui::GetContentRegionAvail();
+			gameComponent_->draw(size.x, size.y, toSeconds(deltaTime));
+		});
 
-			ImGui::PopStyleVar(2);
-			ImGui::PopStyleColor();
-		}
+		ImGui::PopStyleVar(2);
+		ImGui::PopStyleColor();
 	}
 
 	void NetworkDebugWindow::update() {

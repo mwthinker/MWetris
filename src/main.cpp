@@ -2,6 +2,8 @@
 #include "logger.h"
 #include "configuration.h"
 
+#include "mainwindow.h"
+
 #include <sdl/initsdl.h>
 #include <sdl/gamecontroller.h>
 
@@ -12,7 +14,8 @@ int main(int argc, char** argv) {
 	spdlog::info("[main] MWetris GUI:  {}", MWETRIS_GUID);
 
 	const sdl::InitSdl SDL{SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER};
-	mwetris::ui::TetrisWindow tetrisWindow;
+	//mwetris::ui::TetrisWindow tetrisWindow;
+	MainWindow mainWindow;
 
 	sdl::GameController::loadGameControllerMappings("gamecontrollerdb.txt");
 
@@ -23,6 +26,6 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	tetrisWindow.startLoop();
+	mainWindow.startLoop();
 	return 0;
 }

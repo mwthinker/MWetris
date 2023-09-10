@@ -20,20 +20,22 @@ namespace mwetris::graphic {
 
 namespace mwetris::ui {
 
-	class NetworkDebugWindow {
+	class SubWindow {
+	public:
+		virtual ~SubWindow() = default;
+
+		virtual void imGuiUpdate(const sdl::DeltaTime& deltaTime) = 0;
+	};
+
+	class NetworkDebugWindow : public SubWindow {
 	public:
 		explicit NetworkDebugWindow(std::shared_ptr<network::DebugClient> client);
-
-		void setVisible(bool visible);
-
-		bool isVisible() const;
 		
-		void imGuiUpdate(const sdl::DeltaTime& deltaTime);
+		void imGuiUpdate(const sdl::DeltaTime& deltaTime) override;
 
 	private:
 		void update();
 
-		bool visible_ = false;
 		std::shared_ptr<network::DebugClient> debugClient_;
 		std::vector<game::PlayerSlot> playerSlots_;
 		std::unique_ptr<graphic::GameComponent> gameComponent_;
