@@ -31,8 +31,28 @@ namespace mwetris::ui {
 
 	namespace {
 
-		constexpr auto DefaultRefreshRate = 30;
+		constexpr ImGuiWindowFlags ImguiMainWindow
+			= ImGuiWindowFlags_NoTitleBar
+			| ImGuiWindowFlags_NoResize
+			| ImGuiWindowFlags_NoBringToFrontOnFocus
+			| ImGuiWindowFlags_NoMove
+			| ImGuiWindowFlags_NoDocking
+			| ImGuiWindowFlags_NoScrollbar
+			| ImGuiWindowFlags_NoBackground
+			| ImGuiWindowFlags_NoScrollWithMouse
+			| ImGuiWindowFlags_MenuBar;
 
+		constexpr ImGuiWindowFlags ImguiSecondaryWindow
+			= ImGuiWindowFlags_NoTitleBar
+			| ImGuiWindowFlags_NoBringToFrontOnFocus
+			| ImGuiWindowFlags_NoDocking
+			| ImGuiWindowFlags_NoScrollbar
+			| ImGuiWindowFlags_NoBackground
+			| ImGuiWindowFlags_NoScrollWithMouse
+			| ImGuiWindowFlags_MenuBar;
+		
+		constexpr auto DefaultRefreshRate = 30;
+		
 		constexpr auto CheckRefreshRateInterval = 30s;
 
 		int acceptNameInput(ImGuiInputTextCallbackData* data) {
@@ -43,26 +63,26 @@ namespace mwetris::ui {
 			return std::chrono::duration<double>(duration).count();
 		}
 
+		void MainWindow(TetrisWindow::Type type, std::invocable auto&& t) {
+			if (type == TetrisWindow::Type::MainWindow) {
+				ImGui::MainWindow("MainWindow", ImguiMainWindow, t);
+			} else {
+				ImGui::SetNextWindowSize({400, 600});
+				ImGui::Window("MainWindow2", nullptr, ImguiSecondaryWindow, t);
+			}
+		}
+
 	}
 
-	constexpr ImGuiWindowFlags ImguiNoWindow
-		= ImGuiWindowFlags_NoTitleBar
-		| ImGuiWindowFlags_NoResize
-		| ImGuiWindowFlags_NoBringToFrontOnFocus
-		| ImGuiWindowFlags_NoMove
-		| ImGuiWindowFlags_NoDocking
-		| ImGuiWindowFlags_NoScrollbar
-		| ImGuiWindowFlags_NoBackground
-		| ImGuiWindowFlags_NoScrollWithMouse
-		| ImGuiWindowFlags_MenuBar;
 
-	TetrisWindow::TetrisWindow(sdl::Window& window,
+	TetrisWindow::TetrisWindow(Type type, sdl::Window& window,
 		std::shared_ptr<game::DeviceManager> deviceManager,
 		std::shared_ptr<network::Client> client
 	)
 		: window_{window}
 		, deviceManager_{deviceManager}
 		, client_{client}
+		, type_{type}
 	{
 		game_ = std::make_shared<game::TetrisGame>();
 		network_ = std::make_shared<network::Network>(client_, game_);
@@ -76,10 +96,16 @@ namespace mwetris::ui {
 		}
 
 		pauseMenuText_ = "Pause";
+
+		initPreLoop();
 	}
 
 	TetrisWindow::~TetrisWindow() {
 		Configuration::getInstance().quit();
+
+		if (type_ == Type::MainWindow) {
+			game_->saveDefaultGame();
+		}
 	}
 
 	int TetrisWindow::getCurrentMonitorHz() const {
@@ -166,10 +192,6 @@ namespace mwetris::ui {
 		startNewGame();
 	}
 
-	void TetrisWindow::eventUpdate(const SDL_Event& windowEvent) {
-		deviceManager_->eventUpdate(windowEvent);
-	}
-
 	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
 		network_->update();
 		auto deltaTimeSeconds = toSeconds(deltaTime);
@@ -205,7 +227,7 @@ namespace mwetris::ui {
 	}
 
 	void TetrisWindow::imGuiMainWindow(const sdl::DeltaTime& deltaTime) {
-		ImGui::MainWindow("MainWindow", ImguiNoWindow, [&]() {
+		MainWindow(type_, [&]() {
 			//networkDebugWindow_.imGuiUpdate(deltaTime);
 
 			ImGui::ImageBackground(background_);
@@ -364,35 +386,13 @@ namespace mwetris::ui {
 	}
 
 	void TetrisWindow::imGuiEventUpdate(const SDL_Event& windowEvent) {
+		if (type_ == Type::SecondaryWindow) {
+			return;
+		}
+
 		switch (windowEvent.type) {
-			case SDL_WINDOWEVENT:
-				switch (windowEvent.window.event) {
-					case SDL_WINDOWEVENT_RESIZED:
-						gl::glViewport(0, 0, windowEvent.window.data1, windowEvent.window.data2);
-						break;
-					case SDL_WINDOWEVENT_LEAVE:
-						break;
-					case SDL_WINDOWEVENT_CLOSE:
-						window_.quit();
-						break;
-				}
-				break;
 			case SDL_KEYDOWN:
 				switch (windowEvent.key.keysym.sym) {
-					case SDLK_g:
-						//networkDebugWindow_.setVisible(!networkDebugWindow_.isVisible());
-						break;
-					case SDLK_4:
-						/*
-						if (auto remotePlayers = extractRemotePlayers(playerSlots_); !remotePlayers.empty()) {
-							network_->debugRemoveRemotePlayer(remotePlayers.back());
-						}
-						*/
-						break;
-					case SDLK_ESCAPE:
-						game_->saveDefaultGame();
-						window_.quit();
-						break;
 					case SDLK_F1:
 						game_->createDefaultGame(deviceManager_->getDefaultDevice1());
 						break;
@@ -404,10 +404,6 @@ namespace mwetris::ui {
 						game_->pause();
 						break;
 				}
-				break;
-			case SDL_QUIT:
-				game_->saveDefaultGame();
-				window_.quit();
 				break;
 		}
 	}

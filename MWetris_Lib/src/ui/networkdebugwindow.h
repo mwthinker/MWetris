@@ -6,6 +6,10 @@
 
 #include <sdl/imguiwindow.h>
 
+#include <network/debugserver.h>
+
+#include "subwindow.h"
+
 namespace mwetris::network {
 
 	class DebugClient;
@@ -20,23 +24,16 @@ namespace mwetris::graphic {
 
 namespace mwetris::ui {
 
-	class SubWindow {
-	public:
-		virtual ~SubWindow() = default;
-
-		virtual void imGuiUpdate(const sdl::DeltaTime& deltaTime) = 0;
-	};
-
 	class NetworkDebugWindow : public SubWindow {
 	public:
-		explicit NetworkDebugWindow(std::shared_ptr<network::DebugClient> client);
+		explicit NetworkDebugWindow(std::shared_ptr<network::DebugServer> server);
 		
 		void imGuiUpdate(const sdl::DeltaTime& deltaTime) override;
 
 	private:
 		void update();
 
-		std::shared_ptr<network::DebugClient> debugClient_;
+		std::shared_ptr<network::DebugServer> debugServer_;
 		std::vector<game::PlayerSlot> playerSlots_;
 		std::unique_ptr<graphic::GameComponent> gameComponent_;
 	};

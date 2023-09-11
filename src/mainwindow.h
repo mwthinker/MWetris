@@ -3,8 +3,10 @@
 
 #include <sdl/imguiwindow.h>
 
-#include <ui/tetriswindow.h>
-#include <ui/networkdebugwindow.h>
+#include <ui/subwindow.h>
+#include <game/devicemanager.h>
+
+#include <network/debugserver.h>
 
 class MainWindow : public sdl::ImGuiWindow {
 public:
@@ -21,8 +23,9 @@ private:
 
 	void imGuiEventUpdate(const SDL_Event& windowEvent) override;
 
-	std::unique_ptr<mwetris::ui::TetrisWindow> tetrisWindow_;
 	std::vector<std::unique_ptr<mwetris::ui::SubWindow>> subWindows_;
+	std::shared_ptr<mwetris::game::DeviceManager> deviceManager_;
+	std::shared_ptr<mwetris::network::DebugServer> debugServer_;
 };
 
 #endif

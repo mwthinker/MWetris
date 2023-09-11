@@ -15,15 +15,15 @@ namespace mwetris::ui {
 
 	}
 
-	NetworkDebugWindow::NetworkDebugWindow(std::shared_ptr<network::DebugClient> client)
-		: debugClient_{client}
+	NetworkDebugWindow::NetworkDebugWindow(std::shared_ptr<network::DebugServer> server)
+		: debugServer_{server}
 		, gameComponent_{std::make_unique<graphic::GameComponent>()} {
 
-		debugClient_->addPlayerSlotsCallback([this](const std::vector<game::PlayerSlot>& playerSlots) {
+		debugServer_->addPlayerSlotsCallback([this](const std::vector<game::PlayerSlot>& playerSlots) {
 			playerSlots_ = playerSlots;
 		});
 
-		debugClient_->addInitGameCallback([this](const game::InitGameEvent& initGameEvent) {
+		debugServer_->addInitGameCallback([this](const game::InitGameEvent& initGameEvent) {
 			gameComponent_->initGame(initGameEvent);
 		});
 	}
@@ -53,18 +53,18 @@ namespace mwetris::ui {
 		if (ImGui::Checkbox("Connected", &connect)) {
 			static const std::string& uuid = "REMOTE_UUID";
 			if (connect) {
-				debugClient_->connect(uuid);
+				debugServer_->connect(uuid);
 			} else {
-				debugClient_->disconnect(uuid);
+				debugServer_->disconnect(uuid);
 			}
 		}
-		bool pause = debugClient_->isPaused();
+		bool pause = debugServer_->isPaused();
 		if (ImGui::Checkbox("Paused", &pause)) {
-			debugClient_->sendPause(!pause);
+			debugServer_->sendPause(!pause);
 		}
 			
 		if (ImGui::Button("Restart Game")) {
-			debugClient_->restartGame();
+			debugServer_->restartGame();
 		}
 
 		for (int i = 0; i < playerSlots_.size(); ++i) {
@@ -99,26 +99,6 @@ namespace mwetris::ui {
 
 			ImGui::PopID();
 		}
-		/*
-
-		if (ImGui::Button("Remote player Slot 0")) {
-				
-			//network_.setPlayerSlot(game::Remote{}, 0);
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("Remote player Slot 1")) {
-			//network_.setPlayerSlot(game::Remote{}, 1);
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("Remote player Slot 2")) {
-			//network_.setPlayerSlot(game::Remote{}, 2);
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("Remote player Slot 3")) {
-			//network_.setPlayerSlot(game::Remote{}, 3);
-		}
-		ImGui::SameLine();
-		*/
 	}
 
 }

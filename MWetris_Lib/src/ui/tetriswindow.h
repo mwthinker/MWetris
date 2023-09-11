@@ -37,21 +37,26 @@ namespace mwetris::game {
 
 namespace mwetris::ui {
 
-	class TetrisWindow {
+	class TetrisWindow : public SubWindow {
 	public:
-		TetrisWindow(sdl::Window& window,
+		enum class Type {
+			MainWindow,
+			SecondaryWindow
+		};
+
+		TetrisWindow(Type type, sdl::Window& window,
 			std::shared_ptr<game::DeviceManager> deviceManager,
 			std::shared_ptr<network::Client> client
 		);
 
 		~TetrisWindow();
+	
+		void imGuiUpdate(const sdl::DeltaTime& deltaTime) override;
 		
-		void initPreLoop();
-		void eventUpdate(const SDL_Event& windowEvent);
-		void imGuiUpdate(const sdl::DeltaTime& deltaTime);
-		void imGuiEventUpdate(const SDL_Event& windowEvent);
+		void imGuiEventUpdate(const SDL_Event& windowEvent) override;
 	
 	private:
+		void initPreLoop();
 		int getCurrentMonitorHz() const;
 
 		void imGuiCustomGame(int windowWidth, int windowHeight, double deltaTime);
@@ -90,6 +95,7 @@ namespace mwetris::ui {
 
 		bool customGame_ = false;
 		std::vector<game::PlayerSlot> playerSlots_;
+		Type type_ = Type::MainWindow;
 		//NetworkDebugWindow networkDebugWindow_;
 	};
 

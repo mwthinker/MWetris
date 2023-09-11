@@ -2,6 +2,7 @@
 #define MWETRIS_NETWORK_DEBUGCLIENT_H
 
 #include "protobufmessage.h"
+#include "protobufmessagequeue.h"
 #include "client.h"
 #include "game/playerslot.h"
 
@@ -11,12 +12,15 @@
 
 #include <memory>
 #include <string>
+#include <queue>
 
 namespace mwetris::network {
 
 	class DebugClient : public Client {
 	public:
-		DebugClient();
+		friend class DebugServer;
+
+		DebugClient(std::shared_ptr<DebugServer> debugServer);
 
 		~DebugClient() override;
 
@@ -28,22 +32,17 @@ namespace mwetris::network {
 
 		void release(ProtobufMessage&& message) override;
 
-		void connect(const std::string& uuid);
+		// To be called by simulated server
+		bool pollSentMessage(ProtobufMessage& message);
 
-		void disconnect(const std::string& uuid);
-
-		void sendPause(bool pause);
-		bool isPaused() const;
-
-		void restartGame();
-
-		mw::signals::Connection addPlayerSlotsCallback(const std::function<void(const std::vector<game::PlayerSlot>&)>& playerSlots);
-
-		mw::signals::Connection addInitGameCallback(const std::function<void(const game::InitGameEvent&)>& callback);
-
+		// To be called by simulated server
+		void pushReceivedMessage(ProtobufMessage&& message);
+		
 	private:
-		class Impl;
-		std::unique_ptr<Impl> impl_;
+		std::queue<ProtobufMessage> receivedMessages_;
+		std::queue<ProtobufMessage> sentMessages_;
+
+		std::shared_ptr<DebugServer> debugServer_;
 	};
 
 }

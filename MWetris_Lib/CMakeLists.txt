@@ -82,6 +82,7 @@ set(SOURCES_LIB
 	src/ui/imguiextra.h
 	src/ui/networkdebugwindow.cpp
 	src/ui/networkdebugwindow.h
+	src/ui/subwindow.h
 	src/ui/tetriswindow.cpp
 	src/ui/tetriswindow.h
 	
