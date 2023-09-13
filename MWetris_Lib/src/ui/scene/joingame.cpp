@@ -2,7 +2,7 @@
 #include "../imguiextra.h"
 
 #include "game/tetrisgame.h"
-#include "game/devicemanager.h"
+#include "network/network.h"
 
 #include <array>
 #include <string>
@@ -19,20 +19,13 @@ namespace mwetris::ui::scene {
 
 	}
 
-	JoinGame::JoinGame(std::shared_ptr<game::TetrisGame> tetrisGame, std::shared_ptr<game::DeviceManager> deviceManager)
-		: tetrisGame_{tetrisGame}
-		, deviceManager_{deviceManager} {
+	JoinGame::JoinGame(std::shared_ptr<game::TetrisGame> game, std::shared_ptr<network::Network> network)
+		: game_{game}
+		, network_{network} {
 
-		connections_ += deviceManager->deviceConnected.connect(this, &JoinGame::deviceConnected);
-
-		auto ais = Configuration::getInstance().getAiVector();
-		for (auto& ai : ais) {
-			//allAis_.emplace_back(ai.getName(), ai);
-		}
-	}
-
-	void JoinGame::deviceConnected(game::DevicePtr device) {
-		//allDevices_.emplace_back(device->getName(), device);
+		connections_ += network_->addPlayerSlotListener([this](game::PlayerSlot, int) {
+			connected_ = true;
+		});
 	}
 
 	void JoinGame::imGuiUpdate(const DeltaTime& deltaTime) {
@@ -51,10 +44,14 @@ namespace mwetris::ui::scene {
 				ImGui::CloseCurrentPopup();
 			}
 		});
+
+		if (ImGui::ConfirmationButton("Connect")) {
+			network_->connectToGame(serverId_);
+		}
 	}
 
 	void JoinGame::switchedTo(const SceneData& sceneData) {
-		
+		connected_ = false;
 	}
 
 	void JoinGame::switchedFrom() {

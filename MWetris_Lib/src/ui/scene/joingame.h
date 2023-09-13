@@ -18,7 +18,13 @@
 namespace mwetris::game {
 
 	class TetrisGame;
-	class DeviceManager;
+	class Network;
+
+}
+
+namespace mwetris::network {
+
+	class Network;
 
 }
 
@@ -26,20 +32,19 @@ namespace mwetris::ui::scene {
 
 	class JoinGame : public Scene {
 	public:
-		JoinGame(std::shared_ptr<game::TetrisGame> tetrisGame, std::shared_ptr<game::DeviceManager> deviceManager);
+		JoinGame(std::shared_ptr<game::TetrisGame> game, std::shared_ptr<network::Network> network);
 
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
 
 	private:
-		void deviceConnected(game::DevicePtr device);
-
 		void switchedTo(const SceneData& sceneData) override;
 		void switchedFrom() override;
 
-		std::shared_ptr<game::TetrisGame> tetrisGame_;
-		std::shared_ptr<game::DeviceManager> deviceManager_;
+		std::shared_ptr<network::Network> network_;
+		std::shared_ptr<game::TetrisGame> game_;
 		std::string serverId_ = "";
 		mw::signals::ScopedConnections connections_;
+		bool connected_ = true;
 	};
 
 }

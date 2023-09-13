@@ -24,6 +24,8 @@ namespace mwetris::network {
 
 		~DebugClient() override;
 
+		const std::string& getUuid() const override;
+
 		bool receive(ProtobufMessage& message) override;
 
 		void send(ProtobufMessage&& message) override;
@@ -43,6 +45,7 @@ namespace mwetris::network {
 		std::queue<ProtobufMessage> sentMessages_;
 
 		std::shared_ptr<DebugServer> debugServer_;
+		std::string uuid_;
 	};
 
 }

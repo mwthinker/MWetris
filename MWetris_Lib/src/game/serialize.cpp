@@ -212,7 +212,10 @@ namespace mwetris::game {
 				return nullptr;
 			}
 		}
-		return createPlayer(cachedGame.player_board());
+		if (cachedGame.has_player_board()) {
+			return createPlayer(cachedGame.player_board());
+		}
+		return nullptr;
 	}
 
 	std::vector<HighScoreResult> loadHighScore() {

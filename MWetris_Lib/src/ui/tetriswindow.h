@@ -96,7 +96,7 @@ namespace mwetris::ui {
 		bool customGame_ = false;
 		std::vector<game::PlayerSlot> playerSlots_;
 		Type type_ = Type::MainWindow;
-		//NetworkDebugWindow networkDebugWindow_;
+		std::string serverId_;
 	};
 
 }

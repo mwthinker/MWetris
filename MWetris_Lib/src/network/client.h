@@ -9,6 +9,8 @@ namespace mwetris::network {
 	public:
 		virtual ~Client() = default;
 
+		virtual const std::string& getUuid() const = 0;
+
 		virtual bool receive(ProtobufMessage& message) = 0;
 
 		virtual void send(ProtobufMessage&& message) = 0;

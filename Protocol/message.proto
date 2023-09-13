@@ -102,6 +102,11 @@ message CreateServerGame {
 	BlockType next = 4;
 }
 
+message ConnectToGame {
+	string uuid = 1;
+	string server_uuid = 2;
+}
+
 message GameCommand {
 	bool pause = 1;
 }
@@ -138,6 +143,12 @@ message GameRestart {
 	BlockType next = 2;
 }
 
+message Connected {
+}
+
+message FailedToConnect {
+}
+
 message Wrapper {
 	GameLooby game_looby = 1;
 	CreateServerGame create_server_game = 2;
@@ -147,4 +158,7 @@ message Wrapper {
 	BoardExternalSquares board_external_squares = 6;
 	BoardNextBlock next_block = 7;
 	GameRestart game_restart = 8;
+	ConnectToGame connect_to_game = 9;
+	FailedToConnect failed_to_connect = 10;
+	Connected connected = 11;
 }

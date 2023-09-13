@@ -4,6 +4,8 @@
 #include "protobufmessagequeue.h"
 #include "util.h"
 
+#include "random.h"
+
 #include <message.pb.h>
 
 #include <net/client.h>
@@ -96,6 +98,9 @@ namespace mwetris::network {
 
 	class Network::Impl {
 	public:
+		mw::PublicSignal<Network::Impl, game::PlayerSlot, int> playerSlotUpdate;
+		mw::PublicSignal<Network::Impl, bool> connected;
+
 		Impl(std::shared_ptr<Client> client, std::shared_ptr<game::TetrisGame> tetrisGame)
 			: client_{client}
 			, tetrisGame_{tetrisGame} {
@@ -103,8 +108,6 @@ namespace mwetris::network {
 			for (int i = 0; i < 4; ++i) {
 				playerSlots_.push_back(game::OpenSlot{});
 			}
-
-			//thread_ = std::jthread(&Impl::run, this);
 		}
 
 		~Impl() {
@@ -123,17 +126,24 @@ namespace mwetris::network {
 				wrapper_.Clear();
 				bool valid = wrapper_.ParseFromArray(message.getBodyData(), message.getBodySize());
 				client_->release(std::move(message));
+				if (wrapper_.has_failed_to_connect()) {
+					connected_ = false;
+					connected(connected_);
+				}
 				if (wrapper_.has_game_looby()) {
 					handleGameLooby(wrapper_.game_looby());
+					connected_ = true;
 				}
-				if (wrapper_.has_game_command()) {
-					handleGameCommand(wrapper_.game_command());
-				}
-				if (wrapper_.has_connections()) {
-					handleConnections(wrapper_.connections());
-				}
-				if (wrapper_.has_game_restart()) {
-					handleGameRestart(wrapper_.game_restart());
+				if (connected_) {
+					if (wrapper_.has_game_command()) {
+						handleGameCommand(wrapper_.game_command());
+					}
+					if (wrapper_.has_connections()) {
+						handleConnections(wrapper_.connections());
+					}
+					if (wrapper_.has_game_restart()) {
+						handleGameRestart(wrapper_.game_restart());
+					}
 				}
 			}
 		}
@@ -150,7 +160,7 @@ namespace mwetris::network {
 		}
 
 		void handleGameLooby(const tp::GameLooby& gameLooby) {
-			
+			connected_ = true;
 		}
 
 		void handleConnections(const tp::Connections& connections) {
@@ -173,6 +183,24 @@ namespace mwetris::network {
 				}
 				send(wrapper_);
 			}
+		}
+
+		void startLooby(const std::string& uuid) {
+			connections_.clear();
+		}
+
+		void connectToGame(const std::string& uuid) {
+			connections_.clear();
+			
+			wrapper_.Clear();
+			auto connectToGame = wrapper_.mutable_connect_to_game();
+			connectToGame->set_server_uuid(uuid);
+			connectToGame->set_uuid(client_->getUuid());
+			send(wrapper_);
+		}
+
+		void abort() {
+			
 		}
 
 		bool createGame(std::unique_ptr<game::GameRules> gameRules, int w, int h) {
@@ -220,7 +248,7 @@ namespace mwetris::network {
 		}
 
 		const std::string& getServerId() const {
-			return serverId_;
+			return client_->getUuid();
 		}
 
 		void handleGameRestart(game::GameRestart gameRestart) {
@@ -272,12 +300,10 @@ namespace mwetris::network {
 		}
 
 	private:
-		mw::Signal<game::PlayerSlot, int> playerSlotUpdate;
-		
+		bool connected_ = false;
 		std::vector<game::PlayerSlot> playerSlots_;
 		mw::signals::ScopedConnections connections_;
 
-		std::string serverId_ = "sdfghjklzxcvbnm";
 		std::vector<game::PlayerPtr> localPlayers_;
 		
 		tp::Wrapper wrapper_;
@@ -308,8 +334,20 @@ namespace mwetris::network {
 		impl_->setPlayerSlot(playerSlot, slot);
 	}
 
+	void Network::connectToGame(const std::string& serverId) {
+		impl_->connectToGame(serverId);
+	}
+
 	bool Network::createGame(std::unique_ptr<game::GameRules> gameRules, int w, int h) {
 		return impl_->createGame(std::move(gameRules), w, h);
+	}
+
+	mw::signals::Connection Network::addPlayerSlotListener(std::function<void(game::PlayerSlot, int)> listener) {
+		return impl_->playerSlotUpdate.connect(listener);
+	}
+
+	mw::signals::Connection Network::addConnectionListener(std::function<void(bool)> listener) {
+		return impl_->connected.connect(listener);
 	}
 
 }

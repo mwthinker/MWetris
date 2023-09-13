@@ -36,6 +36,7 @@ namespace mwetris::ui {
 		std::shared_ptr<network::DebugServer> debugServer_;
 		std::vector<game::PlayerSlot> playerSlots_;
 		std::unique_ptr<graphic::GameComponent> gameComponent_;
+		std::vector<network::ConnectedClient> connectedClients_;
 	};
 
 }

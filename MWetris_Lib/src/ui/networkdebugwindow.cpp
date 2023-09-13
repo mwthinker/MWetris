@@ -26,6 +26,16 @@ namespace mwetris::ui {
 		debugServer_->addInitGameCallback([this](const game::InitGameEvent& initGameEvent) {
 			gameComponent_->initGame(initGameEvent);
 		});
+
+		connectedClients_ = debugServer_->getConnectedClients();
+		debugServer_->addClientListener([this](const network::ConnectedClient& client) {
+			for (auto& c : connectedClients_) {
+				if (c.uuid == client.uuid) {
+					c = client;
+					break;
+				}
+			}
+		});
 	}
 		
 	void NetworkDebugWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
@@ -50,10 +60,23 @@ namespace mwetris::ui {
 
 	void NetworkDebugWindow::update() {
 		static bool connect = false;
+		
+		int id = 0;
+		for (auto& connectedClient : connectedClients_) {
+			ImGui::PushID(++id);
+			ImGui::Text(connectedClient.uuid.c_str());
+			bool allow = connectedClient.allowToConnect;
+			ImGui::SameLine();
+			if (ImGui::Checkbox("Allow Connection", &allow)) {
+				debugServer_->allowClientToConnect(connectedClient.uuid, allow);
+			}
+			ImGui::PopID();
+		}
+
 		if (ImGui::Checkbox("Connected", &connect)) {
 			static const std::string& uuid = "REMOTE_UUID";
 			if (connect) {
-				debugServer_->connect(uuid);
+				//debugServer_->connect(uuid);
 			} else {
 				debugServer_->disconnect(uuid);
 			}

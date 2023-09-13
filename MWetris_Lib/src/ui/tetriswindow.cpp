@@ -96,6 +96,7 @@ namespace mwetris::ui {
 		}
 
 		pauseMenuText_ = "Pause";
+		serverId_ = network_->getServerId();
 
 		initPreLoop();
 	}
@@ -145,9 +146,9 @@ namespace mwetris::ui {
 				spdlog::warn("[TetrisWindow] Player slot index {} out of range (size = {})", index, playerSlots_.size());
 			}
 		}, deviceManager_);
-		sceneStateMachine_.emplace<scene::JoinGame>(game_, deviceManager_);
+		sceneStateMachine_.emplace<scene::JoinGame>(game_, network_);
 
-		connections_ += network_->playerSlotUpdate.connect([this](game::PlayerSlot playerSlot, int slot) {
+		connections_ += network_->addPlayerSlotListener([this](game::PlayerSlot playerSlot, int slot) {
 			playerSlots_[slot] = playerSlot;
 		});
 
@@ -299,8 +300,7 @@ namespace mwetris::ui {
 					ImGui::Separator();
 					ImGui::Text("Server Id: ");
 					ImGui::SameLine();
-					static std::string serverId = "asddgasasdf";
-					ImGui::InputText("##ServerId", &serverId, ImGuiInputTextFlags_ReadOnly);
+					ImGui::InputText("##ServerId", &serverId_, ImGuiInputTextFlags_ReadOnly);
 				}
 
 				float width = ImGui::GetWindowWidth() - 2 * ImGui::GetCursorPosX();

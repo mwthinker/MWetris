@@ -16,6 +16,12 @@
 
 namespace mwetris::network {
 
+	struct ConnectedClient {
+		std::string uuid;
+		bool connected;
+		bool allowToConnect;
+	};
+
 	class DebugServer : public std::enable_shared_from_this<DebugServer> {
 	public:
 		DebugServer();
@@ -30,10 +36,6 @@ namespace mwetris::network {
 
 		void release(ProtobufMessage&& message);
 
-		void connect(const std::string& uuid);
-
-		void disconnect(const std::string& uuid);
-
 		void sendPause(bool pause);
 		
 		bool isPaused() const;
@@ -43,6 +45,13 @@ namespace mwetris::network {
 		mw::signals::Connection addPlayerSlotsCallback(const std::function<void(const std::vector<game::PlayerSlot>&)>& playerSlots);
 
 		mw::signals::Connection addInitGameCallback(const std::function<void(const game::InitGameEvent&)>& callback);
+
+		mw::signals::Connection addClientListener(const std::function<void(const ConnectedClient&)>& callback);
+
+		std::vector<ConnectedClient> getConnectedClients() const;
+
+		void allowClientToConnect(const std::string& uuid, bool allowed);
+		void disconnect(const std::string& uuid);
 	
 	private:
 		class Impl;
