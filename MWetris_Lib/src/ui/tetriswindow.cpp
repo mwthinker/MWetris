@@ -171,7 +171,7 @@ namespace mwetris::ui {
 			}
 		});
 		connections_ += game_->gamePauseEvent.connect([this](const game::GamePause& gamePause) {
-			network_->sendPause(gamePause.pause);
+			//network_->sendPause(gamePause.pause);
 			gameComponent_->gamePause(gamePause);
 
 			if (gamePause.pause) {
@@ -290,6 +290,7 @@ namespace mwetris::ui {
 				static bool internet = true;
 				if (ImGui::Checkbox("Network", &internet)) {
 					if (internet) {
+						
 						spdlog::debug("Network on");
 					} else {
 						spdlog::debug("Network off");

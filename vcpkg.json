@@ -21,6 +21,6 @@
 		"asio",
 		"magic-enum",
 		"freetype",
-		"lunasvg"
+		"concurrencpp"
 	]
 }

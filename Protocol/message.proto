@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package tetris_protocol;
 
+// Block types are the corresponding ascii values
 enum BlockType {
 	UNSPECIFIED_BLOCK_TYPE = 0;
 	I = 73;
@@ -91,6 +92,10 @@ message Slot {
 	string name = 2;
 }
 
+message CreateGameLooby {
+	string uuid = 1;
+}
+
 message GameLooby {
 	repeated Slot slots = 1;
 }
@@ -147,6 +152,10 @@ message Connected {
 }
 
 message FailedToConnect {
+}
+
+message FromServer {
+
 }
 
 message Wrapper {

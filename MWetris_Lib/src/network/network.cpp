@@ -15,7 +15,11 @@
 
 #include <helper.h>
 
+#include <concurrencpp/concurrencpp.h>
+
 namespace tp = tetris_protocol;
+
+namespace conc = concurrencpp;
 
 namespace mwetris::network {
 
@@ -85,6 +89,11 @@ namespace mwetris::network {
 			for (int i = 0; i < 4; ++i) {
 				playerSlots_.push_back(game::OpenSlot{});
 			}
+
+			manualExecutor_ = runtime_.make_executor<conc::manual_executor>();
+			manualExecutor_->post([this]() {
+				stepOnce();
+			});
 		}
 
 		~Impl() {
@@ -98,31 +107,66 @@ namespace mwetris::network {
 		}
 
 		void update() {
-			ProtobufMessage message;
-			while (client_->receive(message)) {
-				wrapper_.Clear();
-				bool valid = wrapper_.ParseFromArray(message.getBodyData(), message.getBodySize());
-				client_->release(std::move(message));
-				if (wrapper_.has_failed_to_connect()) {
-					connected_ = false;
-					connected(connected_);
-				}
+			manualExecutor_->loop_once();
+			cv_.notify_all();
+		}
+
+		conc::result<void> stepOnce() {
+			co_await nextMessage();
+			if (wrapper_.has_failed_to_connect()) {
+				connected_ = false;
+				connected(connected_);
+				co_return;
+			} else if (wrapper_.has_game_looby()) {
+				handleGameLooby(wrapper_.game_looby());
+				connected_ = true;
+				connected(connected_);
+			} else {
+				co_return;
+			}
+
+			while (true) {
+				co_await nextMessage();
 				if (wrapper_.has_game_looby()) {
-					handleGameLooby(wrapper_.game_looby());
-					connected_ = true;
+					handleGameCommand(wrapper_.game_command());
 				}
-				if (connected_) {
-					if (wrapper_.has_game_command()) {
-						handleGameCommand(wrapper_.game_command());
-					}
-					if (wrapper_.has_connections()) {
-						handleConnections(wrapper_.connections());
-					}
-					if (wrapper_.has_game_restart()) {
-						handleGameRestart(wrapper_.game_restart());
-					}
+				if (wrapper_.has_connections()) {
+					handleConnections(wrapper_.connections());
+				}
+				if (wrapper_.has_create_server_game()) {
+					handleConnections(wrapper_.connections());
+					break;
 				}
 			}
+			
+			while (true) {
+				co_await nextMessage();
+				if (wrapper_.has_game_command()) {
+					handleGameCommand(wrapper_.game_command());
+				}
+				if (wrapper_.has_game_restart()) {
+					handleGameRestart(wrapper_.game_restart());
+				}
+			}
+			co_return;
+		}
+
+		void handleConnection() {
+		}
+
+		conc::result<void> nextMessage() {
+			auto guard = co_await lock_.lock(manualExecutor_);
+			co_await cv_.await(manualExecutor_, guard, [this]() {
+				ProtobufMessage message;
+				bool valid = client_->receive(message);
+				if (valid) {
+					wrapper_.Clear();
+					bool valid = wrapper_.ParseFromArray(message.getBodyData(), message.getBodySize());
+					client_->release(std::move(message));
+				}
+				return valid;
+			});
+			co_return;
 		}
 
 		void handleGameRestart(const tp::GameRestart& gameRestart) {
@@ -162,8 +206,14 @@ namespace mwetris::network {
 			}
 		}
 
-		void startLooby(const std::string& uuid) {
+		void createGameLooby(const std::string& uuid) {
 			connections_.clear();
+
+			wrapper_.Clear();
+			auto gameLooby = wrapper_.mutable_game_looby();
+			//connectToGame->set_server_uuid(uuid);
+			//connectToGame->set_uuid(client_->getUuid());
+			send(wrapper_);
 		}
 
 		void connectToGame(const std::string& uuid) {
@@ -176,7 +226,7 @@ namespace mwetris::network {
 			send(wrapper_);
 		}
 
-		void abort() {
+		void disconnect() {
 			
 		}
 
@@ -277,6 +327,11 @@ namespace mwetris::network {
 		}
 
 	private:
+		conc::runtime runtime_;
+		std::shared_ptr<conc::manual_executor> manualExecutor_;
+		conc::async_lock lock_;
+		conc::async_condition_variable cv_;
+
 		bool connected_ = false;
 		std::vector<game::PlayerSlot> playerSlots_;
 		mw::signals::ScopedConnections connections_;
@@ -311,8 +366,16 @@ namespace mwetris::network {
 		impl_->setPlayerSlot(playerSlot, slot);
 	}
 
+	void Network::createGameLooby(const std::string& serverId) {
+		impl_->createGameLooby(serverId);
+	}
+
 	void Network::connectToGame(const std::string& serverId) {
 		impl_->connectToGame(serverId);
+	}
+
+	void Network::disconnect() {
+		impl_->disconnect();
 	}
 
 	bool Network::createGame(std::unique_ptr<game::GameRules> gameRules, int w, int h) {

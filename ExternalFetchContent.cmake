@@ -4,15 +4,15 @@ FetchContent_Declare(CppSdl2
 	GIT_REPOSITORY
 		https://github.com/mwthinker/CppSdl2.git
 	GIT_TAG
-		40a45935e9dd32c550a9a10b78aee30291d23b21
+		d08472db03ddcb718407d288657a1878e53c7d45
 	OVERRIDE_FIND_PACKAGE
 )
 
-fetchcontent_declare(SDL_GameControllerDB
+FetchContent_Declare(SDL_GameControllerDB
 	GIT_REPOSITORY
 		https://github.com/gabomdq/SDL_GameControllerDB.git
 	GIT_TAG
-		da332bb484c2434269b9264f7dce3e6114227755
+		721b575d3053b21d6d30419bf74afb5b1d0fa7a4
 )
 FetchContent_MakeAvailable(SDL_GameControllerDB)
 FetchContent_GetProperties(SDL_GameControllerDB
@@ -36,7 +36,7 @@ FetchContent_Declare(Signal
 	OVERRIDE_FIND_PACKAGE
 )
 
-fetchcontent_declare(Calculator
+FetchContent_Declare(Calculator
 	GIT_REPOSITORY
 		https://github.com/mwthinker/Calculator.git
 	GIT_TAG
@@ -44,7 +44,7 @@ fetchcontent_declare(Calculator
 	OVERRIDE_FIND_PACKAGE
 )
 
-fetchcontent_declare(CmakeAuxiliary
+FetchContent_Declare(CmakeAuxiliary
 	GIT_REPOSITORY
 		https://gist.github.com/mwthinker/e0539b200e3f0ac6da545af4843a6ff6
 	GIT_TAG

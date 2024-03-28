@@ -38,7 +38,11 @@ namespace mwetris::network {
 
 		void sendPause(bool pause);
 
+		void createGameLooby(const std::string& serverId);
+
 		void connectToGame(const std::string& serverId);
+
+		void disconnect();
 
 		// Return true if ready.
 		bool createGame(std::unique_ptr<game::GameRules> gameRules, int w, int h);

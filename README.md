@@ -1,4 +1,4 @@
-tetris::MWetris [![CI build](https://github.com/mwthinker/mwetris/actions/workflows/ci.yml/badge.svg)](https://github.com/mwthinker/mwetris/actions/workflows/ci.yml)
+tetris::MWetris [![CI build](https://github.com/mwthinker/mwetris/actions/workflows/ci.yml/badge.svg)](https://github.com/mwthinker/mwetris/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ======
 - [About](#about)
 - [Requirements](#requirements)
