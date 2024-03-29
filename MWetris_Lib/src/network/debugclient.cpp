@@ -7,14 +7,10 @@
 
 #include <helper.h>
 
-#include <message.pb.h>
-
 #include <spdlog/spdlog.h>
 
 #include <queue>
 #include <random>
-
-namespace tp = tetris_protocol;
 
 namespace mwetris::network {
 

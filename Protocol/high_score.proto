@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package tp;
+
+message HighScore {
+	message Result {
+		string name = 1;
+		int32 points = 2;
+		int32 rows = 3;
+		int32 level = 4;
+		int64 last_played_seconds = 5;
+	}
+
+	int32 columns = 1;
+	int32 rows = 2;
+	int32 level = 3;
+
+	repeated Result results = 4;
+}

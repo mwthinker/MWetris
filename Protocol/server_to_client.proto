@@ -1,66 +1,8 @@
 syntax = "proto3";
 
-package tetris_protocol;
+package tp_s2c;
 
-// Block types are the corresponding ascii values
-enum BlockType {
-	UNSPECIFIED_BLOCK_TYPE = 0;
-	I = 73;
-	J = 74;
-	L = 76;
-	O = 79;
-	S = 83;
-	T = 84;
-	Z = 90;
-	EMPTY = 69;
-	WALL = 87;
-}
-
-message PlayerName {
-	string name = 1;
-}
-
-message Block {
-	int32 start_column = 1;
-	int32 lowest_start_row = 2;
-	int32 rotations = 3;
-	BlockType type = 4;
-}
-
-message PlayerBoard {
-	string name = 1;
-	int32 level = 2;
-	int32 points = 3;
-	bool ai = 4;
-	Block current = 5;
-	BlockType next = 6;
-	int32 id = 7;
-	int32 width = 8;
-	int32 height = 9;
-	int32 cleared_rows = 10;
-	repeated BlockType board = 11;
-}
-
-message Game {
-	int64 last_played_seconds = 1;
-	PlayerBoard player_board = 2;
-}
-
-message HighScore {
-	message Result {
-		string name = 1;
-		int32 points = 2;
-		int32 rows = 3;
-		int32 level = 4;
-		int64 last_played_seconds = 5;
-	}
-
-	int32 columns = 1;
-	int32 rows = 2;
-	int32 level = 3;
-
-	repeated Result results = 4;
-}
+import "shared.proto";
 
 message RemotePlayer {
 
@@ -103,8 +45,8 @@ message GameLooby {
 message CreateServerGame {
 	string uuid = 1;
 	repeated LocalPlayer local_players = 2;
-	BlockType current = 3;
-	BlockType next = 4;
+	tp.BlockType current = 3;
+	tp.BlockType next = 4;
 }
 
 message ConnectToGame {
@@ -116,36 +58,24 @@ message GameCommand {
 	bool pause = 1;
 }
 
-enum Move {
-	UNSPECIFIED_MOVE = 0;
-	ROTATELEFT = 1;
-	ROTATERIGHT = 2;
-	DOWNGRAVITY = 3;
-	DOWN = 4;
-	DOWNGROUND = 5;
-	LEFT = 6;
-	RIGHT = 7;
-	GAMEOVER = 8;
-}
-
 message BoardMove {
 	string uuid = 1;
-	Move move = 2;
+	tp.Move move = 2;
 }
 
 message BoardExternalSquares {
 	string uuid = 1;
-	repeated BlockType block_types = 2;
+	repeated tp.BlockType block_types = 2;
 }
 
 message BoardNextBlock {
 	string uuid = 1;
-	BlockType next = 2;
+	tp.BlockType next = 2;
 }
 
 message GameRestart {
-	BlockType current = 1;
-	BlockType next = 2;
+	tp.BlockType current = 1;
+	tp.BlockType next = 2;
 }
 
 message Connected {

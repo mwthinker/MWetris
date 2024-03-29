@@ -3,7 +3,10 @@ project(Protocol)
 find_package(Protobuf CONFIG REQUIRED)
 
 set(PROTO_FILES
-	"message.proto"
+	"client_to_server.proto"
+	"high_score.proto"
+	"server_to_client.proto"
+	"shared.proto"
 )
 
 protobuf_generate_cpp(PROTO_SRC PROTO_HDRS ${PROTO_FILES})
@@ -39,7 +42,7 @@ endif ()
 
 set_target_properties(Protocol
 	PROPERTIES
-		CXX_STANDARD 17
+		CXX_STANDARD 20
 		CXX_STANDARD_REQUIRED YES
 		CXX_EXTENSIONS NO
 )

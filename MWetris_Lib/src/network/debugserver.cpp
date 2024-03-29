@@ -8,13 +8,12 @@
 
 #include <helper.h>
 
-#include <message.pb.h>
+#include <server_to_client.pb.h>
+#include <client_to_server.pb.h>
 
 #include <spdlog/spdlog.h>
 
 #include <queue>
-
-namespace tp = tetris_protocol;
 
 namespace mwetris::network {
 
@@ -38,10 +37,10 @@ namespace mwetris::network {
 		void receivedFromClient(DebugClient& client) {
 			ProtobufMessage message;
 			while (client.pollSentMessage(message)) {
-				wrapper_.Clear();
-				bool valid = wrapper_.ParseFromArray(message.getBodyData(), message.getBodySize());
+				wrapperFromClient_.Clear();
+				bool valid = wrapperFromClient_.ParseFromArray(message.getBodyData(), message.getBodySize());
 				if (valid) {
-					receivedFromClient(client, wrapper_);
+					receivedFromClient(client, wrapperFromClient_);
 				} else {
 					spdlog::error("Protocol error");
 				}
@@ -50,7 +49,7 @@ namespace mwetris::network {
 			}
 		}
 
-		void receivedFromClient(Client& client, const tp::Wrapper& wrapper) {
+		void receivedFromClient(Client& client, const tp_c2s::Wrapper& wrapper) {
 			for (auto& remote : remotes_) {
 				if (remote.client.get() == &client) {
 					if (!remote.allowToConnect) {
@@ -60,31 +59,31 @@ namespace mwetris::network {
 				}
 			}
 
-			if (wrapper_.has_game_looby()) {
-				handleGameLooby(wrapper_.game_looby());
+			if (wrapperFromClient_.has_game_looby()) {
+				handleGameLooby(wrapperFromClient_.game_looby());
 			}
-			if (wrapper_.has_game_command()) {
-				handleGameCommand(wrapper_.game_command());
+			if (wrapperFromClient_.has_game_command()) {
+				handleGameCommand(wrapperFromClient_.game_command());
 			}
-			if (wrapper_.has_create_server_game()) {
-				handleCreateGameServer(wrapper_.create_server_game());
+			if (wrapperFromClient_.has_create_server_game()) {
+				handleCreateGameServer(wrapperFromClient_.create_server_game());
 			}
-			if (wrapper_.has_board_move()) {
-				handleBoardMove(wrapper_.board_move());
+			if (wrapperFromClient_.has_board_move()) {
+				handleBoardMove(wrapperFromClient_.board_move());
 			}
-			if (wrapper_.has_next_block()) {
-				handleBoardNextBlock(wrapper_.next_block());
+			if (wrapperFromClient_.has_next_block()) {
+				handleBoardNextBlock(wrapperFromClient_.next_block());
 			}
-			if (wrapper_.has_board_external_squares()) {
-				handleBoardExternalSquares(wrapper_.board_external_squares());
+			if (wrapperFromClient_.has_board_external_squares()) {
+				handleBoardExternalSquares(wrapperFromClient_.board_external_squares());
 			}
-			if (wrapper_.has_game_restart()) {
-				handleGameRestart(wrapper_.game_restart());
+			if (wrapperFromClient_.has_game_restart()) {
+				handleGameRestart(wrapperFromClient_.game_restart());
 			}
 			playerSlotsUpdated(playerSlots_);
 		}
 
-		void handleGameRestart(const tp::GameRestart& gameRestart) {
+		void handleGameRestart(const tp_c2s::GameRestart& gameRestart) {
 			auto current = static_cast<tetris::BlockType>(gameRestart.current());
 			auto next = static_cast<tetris::BlockType>(gameRestart.next());
 			for (auto& [_, player] : remotePlayers_) {
@@ -92,17 +91,17 @@ namespace mwetris::network {
 			}
 		}
 
-		void handleBoardMove(const tp::BoardMove& boardMove) {
+		void handleBoardMove(const tp_c2s::BoardMove& boardMove) {
 			auto move = static_cast<tetris::Move>(boardMove.move());
 			remotePlayers_[boardMove.uuid()]->updateMove(move);
 		}
 
-		void handleBoardNextBlock(const tp::BoardNextBlock& boardNextBlock) {
+		void handleBoardNextBlock(const tp_c2s::BoardNextBlock& boardNextBlock) {
 			auto blockType = static_cast<tetris::BlockType>(boardNextBlock.next());
 			remotePlayers_[boardNextBlock.uuid()]->updateNextBlock(blockType);
 		}
 
-		void handleBoardExternalSquares(const tp::BoardExternalSquares& boardExternalSquares) {
+		void handleBoardExternalSquares(const tp_c2s::BoardExternalSquares& boardExternalSquares) {
 			auto& remotePlayer = remotePlayers_[boardExternalSquares.uuid()];
 			static std::vector<tetris::BlockType> blockTypes;
 			blockTypes.clear();
@@ -112,7 +111,7 @@ namespace mwetris::network {
 			remotePlayer->updateAddExternalRows(blockTypes);
 		}
 
-		void handleCreateGameServer(const tp::CreateServerGame& createServerGame) {
+		void handleCreateGameServer(const tp_c2s::CreateServerGame& createServerGame) {
 			remotePlayers_.clear();
 
 			auto current = static_cast<tetris::BlockType>(createServerGame.current());
@@ -128,12 +127,12 @@ namespace mwetris::network {
 			initGameEvent(game::InitGameEvent{playerBoards.begin(), playerBoards.end()});
 		}
 
-		void handleGameCommand(const tp::GameCommand& gameCommand) {
+		void handleGameCommand(const tp_c2s::GameCommand& gameCommand) {
 			paused_ = gameCommand.pause();
 		}
 
-		void handleGameLooby(const tp::GameLooby& gameLooby) {
-			const auto& slots = wrapper_.game_looby().slots();
+		void handleGameLooby(const tp_c2s::GameLooby& gameLooby) {
+			const auto& slots = wrapperFromClient_.game_looby().slots();
 			playerSlots_.clear();
 
 			for (const auto& slot : slots) {
@@ -162,14 +161,14 @@ namespace mwetris::network {
 				}
 			}
 			
-			wrapper_.Clear();
-			auto tpGameLooby = wrapper_.mutable_game_looby();
+			wrapperToClient_.Clear();
+			auto tpGameLooby = wrapperToClient_.mutable_game_looby();
 
 			for (const auto& slot : playerSlots_) {
 				auto tpSlot = tpGameLooby->add_slots();
-				toTpSlot(slot, *tpSlot);
+				//toTpSlot(slot, *tpSlot);
 			}
-			sendToClients(wrapper_);
+			sendToClients(wrapperToClient_);
 		}
 
 		void release(ProtobufMessage&& message) {
@@ -177,27 +176,27 @@ namespace mwetris::network {
 		}
 
 		void connect(const std::string& uuid) {
-			wrapper_.Clear();
+			wrapperToClient_.Clear();
 			connectedUuids_.push_back(uuid);
 			for (const auto& connected : connectedUuids_) {
-				auto uuidTp = wrapper_.mutable_connections()->add_uuids();
+				auto uuidTp = wrapperToClient_.mutable_connections()->add_uuids();
 				uuidTp->assign(uuid);
 			}
-			sendToClients(wrapper_);
+			sendToClients(wrapperToClient_);
 		}
 
 		void disconnect(const std::string& uuid) {
-			wrapper_.Clear();
+			wrapperToClient_.Clear();
 			connectedUuids_.push_back(uuid);
 
 			if (std::erase_if(connectedUuids_, [&uuid](const std::string& value) {
 				return value == uuid;
 			})) {
 				for (const auto& connected : connectedUuids_) {
-					auto uuidTp = wrapper_.mutable_connections()->add_uuids();
+					auto uuidTp = wrapperToClient_.mutable_connections()->add_uuids();
 					uuidTp->assign(uuid);
 				}
-				sendToClients(wrapper_);
+				sendToClients(wrapperToClient_);
 			} else {
 				spdlog::warn("[DebugServer] Failed to disconnect uuid {} (does not match existing)", uuid);
 			}
@@ -210,24 +209,24 @@ namespace mwetris::network {
 		}
 
 		void sendFailedToConnect(DebugClient& client) {
-			wrapper_.Clear();
-			wrapper_.mutable_failed_to_connect();
-			sendToClient(client, wrapper_);
+			wrapperToClient_.Clear();
+			wrapperToClient_.mutable_failed_to_connect();
+			sendToClient(client, wrapperToClient_);
 		}
 
 		void sendPause(bool pause) {
 			paused_ = pause;
-			wrapper_.Clear();
-			wrapper_.mutable_game_command()->set_pause(paused_);
-			sendToClients(wrapper_);
+			wrapperToClient_.Clear();
+			wrapperToClient_.mutable_game_command()->set_pause(paused_);
+			sendToClients(wrapperToClient_);
 		}
 
 		void restartGame() {
-			wrapper_.Clear();
-			auto gameRestart = wrapper_.mutable_game_restart();
+			wrapperToClient_.Clear();
+			auto gameRestart = wrapperToClient_.mutable_game_restart();
 			gameRestart->set_current(static_cast<tp::BlockType>(tetris::randomBlockType()));
 			gameRestart->set_next(static_cast<tp::BlockType>(tetris::randomBlockType()));
-			sendToClients(wrapper_);
+			sendToClients(wrapperToClient_);
 		}
 
 		bool isPaused() const {
@@ -282,13 +281,13 @@ namespace mwetris::network {
 			connectedClientListener(convertToConnectedClient(remote));
 		}
 
-		void sendToClients(const tp::Wrapper& wrapper) {
+		void sendToClients(const tp_s2c::Wrapper& wrapper) {
 			for (auto& remote : remotes_) {
 				sendToClient(*remote.client, wrapper);
 			}
 		}
 
-		void sendToClient(DebugClient& client, const tp::Wrapper& wrapper) {
+		void sendToClient(DebugClient& client, const tp_s2c::Wrapper& wrapper) {
 			ProtobufMessage message;
 			messageQueue_.acquire(message);
 			message.setBuffer(wrapper);
@@ -300,7 +299,8 @@ namespace mwetris::network {
 		std::vector<std::string> connectedUuids_;
 		bool paused_ = false;
 
-		tp::Wrapper wrapper_;
+		tp_c2s::Wrapper wrapperFromClient_;
+		tp_s2c::Wrapper wrapperToClient_;
 		ProtobufMessageQueue messageQueue_;
 		std::vector<Remote> remotes_;
 	};

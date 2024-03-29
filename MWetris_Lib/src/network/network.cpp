@@ -6,7 +6,9 @@
 #include "protocol.h"
 #include "random.h"
 
-#include <message.pb.h>
+#include <shared.pb.h>
+#include <client_to_server.pb.h>
+#include <server_to_client.pb.h>
 
 #include <net/client.h>
 
@@ -16,8 +18,6 @@
 #include <helper.h>
 
 #include <concurrencpp/concurrencpp.h>
-
-namespace tp = tetris_protocol;
 
 namespace conc = concurrencpp;
 
@@ -99,10 +99,10 @@ namespace mwetris::network {
 		~Impl() {
 		}
 
-		void send(const tp::Wrapper& wrapper) {
+		void send(const tp_c2s::Wrapper& wrapper) {
 			ProtobufMessage message;
 			client_->acquire(message);
-			message.setBuffer(wrapper_);
+			message.setBuffer(wrapper);
 			client_->send(std::move(message));
 		}
 
@@ -112,40 +112,43 @@ namespace mwetris::network {
 		}
 
 		conc::result<void> stepOnce() {
+			// Connect to server
 			co_await nextMessage();
-			if (wrapper_.has_failed_to_connect()) {
+			if (wrapperFromServer_.has_failed_to_connect()) {
 				connected_ = false;
 				connected(connected_);
 				co_return;
-			} else if (wrapper_.has_game_looby()) {
-				handleGameLooby(wrapper_.game_looby());
+			} else if (wrapperFromServer_.has_game_looby()) {
+				handleGameLooby(wrapperFromServer_.game_looby());
 				connected_ = true;
 				connected(connected_);
 			} else {
 				co_return;
 			}
 
+			// Wait for game to start
 			while (true) {
 				co_await nextMessage();
-				if (wrapper_.has_game_looby()) {
-					handleGameCommand(wrapper_.game_command());
+				if (wrapperFromServer_.has_game_looby()) {
+					handleGameCommand(wrapperFromServer_.game_command());
 				}
-				if (wrapper_.has_connections()) {
-					handleConnections(wrapper_.connections());
+				if (wrapperFromServer_.has_connections()) {
+					handleConnections(wrapperFromServer_.connections());
 				}
-				if (wrapper_.has_create_server_game()) {
-					handleConnections(wrapper_.connections());
+				if (wrapperFromServer_.has_create_server_game()) {
+					handleConnections(wrapperFromServer_.connections());
 					break;
 				}
 			}
-			
+
+			// Game loop
 			while (true) {
 				co_await nextMessage();
-				if (wrapper_.has_game_command()) {
-					handleGameCommand(wrapper_.game_command());
+				if (wrapperFromServer_.has_game_command()) {
+					handleGameCommand(wrapperFromServer_.game_command());
 				}
-				if (wrapper_.has_game_restart()) {
-					handleGameRestart(wrapper_.game_restart());
+				if (wrapperFromServer_.has_game_restart()) {
+					handleGameRestart(wrapperFromServer_.game_restart());
 				}
 			}
 			co_return;
@@ -160,8 +163,8 @@ namespace mwetris::network {
 				ProtobufMessage message;
 				bool valid = client_->receive(message);
 				if (valid) {
-					wrapper_.Clear();
-					bool valid = wrapper_.ParseFromArray(message.getBodyData(), message.getBodySize());
+					wrapperFromServer_.Clear();
+					bool valid = wrapperFromServer_.ParseFromArray(message.getBodyData(), message.getBodySize());
 					client_->release(std::move(message));
 				}
 				return valid;
@@ -169,61 +172,61 @@ namespace mwetris::network {
 			co_return;
 		}
 
-		void handleGameRestart(const tp::GameRestart& gameRestart) {
+		void handleGameRestart(const tp_s2c::GameRestart& gameRestart) {
 			auto current = static_cast<tetris::BlockType>(gameRestart.current());
 			auto next = static_cast<tetris::BlockType>(gameRestart.next());
 			tetrisGame_->restartGame(current, next);
 		}
 
-		void handleGameCommand(const tp::GameCommand& gameCommand) {
+		void handleGameCommand(const tp_s2c::GameCommand& gameCommand) {
 			spdlog::info("[Network] Paused: {}", gameCommand.pause() ? "true" : "false");
 			tetrisGame_->pause();
 		}
 
-		void handleGameLooby(const tp::GameLooby& gameLooby) {
+		void handleGameLooby(const tp_s2c::GameLooby& gameLooby) {
 			connected_ = true;
 		}
 
-		void handleConnections(const tp::Connections& connections) {
+		void handleConnections(const tp_s2c::Connections& connections) {
 			for (const auto& uuid : connections.uuids()) {
 				spdlog::info("[Network] Connected uuid: {}", uuid);
 			}
 		}
 
 		void setPlayerSlot(const game::PlayerSlot& playerSlot, int index) {
-			wrapper_.Clear();
-			auto tpGameLooby = wrapper_.mutable_game_looby();
+			wrapperToServer_.Clear();
+			auto tpGameLooby = wrapperToServer_.mutable_game_looby();
 
 			if (index >= 0 && index < playerSlots_.size()) {
 				playerSlots_[index] = playerSlot;
 				playerSlotUpdate(playerSlot, index);
-				
+
 				for (const auto& slot : playerSlots_) {
 					auto tpSlot = tpGameLooby->add_slots();
 					toTpSlot(slot, *tpSlot);
 				}
-				send(wrapper_);
+				send(wrapperToServer_);
 			}
 		}
 
 		void createGameLooby(const std::string& uuid) {
 			connections_.clear();
 
-			wrapper_.Clear();
-			auto gameLooby = wrapper_.mutable_game_looby();
+			wrapperToServer_.Clear();
+			auto gameLooby = wrapperToServer_.mutable_game_looby();
 			//connectToGame->set_server_uuid(uuid);
 			//connectToGame->set_uuid(client_->getUuid());
-			send(wrapper_);
+			send(wrapperToServer_);
 		}
 
 		void connectToGame(const std::string& uuid) {
 			connections_.clear();
 			
-			wrapper_.Clear();
-			auto connectToGame = wrapper_.mutable_connect_to_game();
+			wrapperToServer_.Clear();
+			auto connectToGame = wrapperToServer_.mutable_connect_to_game();
 			connectToGame->set_server_uuid(uuid);
 			connectToGame->set_uuid(client_->getUuid());
-			send(wrapper_);
+			send(wrapperToServer_);
 		}
 
 		void disconnect() {
@@ -259,8 +262,8 @@ namespace mwetris::network {
 		}
 
 		void sendCreateServerGame(tetris::BlockType current, tetris::BlockType next) {
-			wrapper_.Clear();
-			auto createServerGame = wrapper_.mutable_create_server_game();
+			wrapperToServer_.Clear();
+			auto createServerGame = wrapperToServer_.mutable_create_server_game();
 			createServerGame->set_current(static_cast<tp::BlockType>(current));
 			createServerGame->set_next(static_cast<tp::BlockType>(next));
 			for (auto& player : localPlayers_) {
@@ -271,7 +274,7 @@ namespace mwetris::network {
 				tpPlayer->set_name(player->getName());
 				tpPlayer->set_uuid(player->getUuid());
 			}
-			send(wrapper_);
+			send(wrapperToServer_);
 		}
 
 		const std::string& getServerId() const {
@@ -279,11 +282,11 @@ namespace mwetris::network {
 		}
 
 		void handleGameRestart(game::GameRestart gameRestart) {
-			wrapper_.Clear();
-			auto tpGameRestart = wrapper_.mutable_game_restart();
+			wrapperToServer_.Clear();
+			auto tpGameRestart = wrapperToServer_.mutable_game_restart();
 			tpGameRestart->set_current(static_cast<tp::BlockType>(gameRestart.current));
 			tpGameRestart->set_next(static_cast<tp::BlockType>(gameRestart.next));
-			send(wrapper_);
+			send(wrapperToServer_);
 		}
 
 		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdateRestart& updateRestart) {
@@ -300,20 +303,20 @@ namespace mwetris::network {
 
 		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdateMove& updateMove) {
 			//spdlog::info("[Network] handle UpdateMove: {}", static_cast<int>(updateMove.move));
-			wrapper_.Clear();
-			auto boardMove = wrapper_.mutable_board_move();
+			wrapperToServer_.Clear();
+			auto boardMove = wrapperToServer_.mutable_board_move();
 			boardMove->set_uuid(player.getUuid());
 			boardMove->set_move(static_cast<tp::Move>(updateMove.move));
-			send(wrapper_);
+			send(wrapperToServer_);
 		}
 
 		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdateNextBlock& updateNextBlock) {
 			//spdlog::info("[Network] handle UpdateNextBlock: {}", static_cast<char>(updateNextBlock.next));
-			wrapper_.Clear();
-			auto nextBlock = wrapper_.mutable_next_block();
+			wrapperToServer_.Clear();
+			auto nextBlock = wrapperToServer_.mutable_next_block();
 			nextBlock->set_uuid(player.getUuid());
 			nextBlock->set_next(static_cast<tp::BlockType>(updateNextBlock.next));
-			send(wrapper_);
+			send(wrapperToServer_);
 		}
 
 		void handleBoardEvent(const game::Player& player, tetris::BoardEvent boardEvent, int nbr) {
@@ -321,9 +324,9 @@ namespace mwetris::network {
 		}
 
 		void sendPause(bool pause) {
-			wrapper_.Clear();
-			wrapper_.mutable_game_command()->set_pause(pause);
-			send(wrapper_);
+			wrapperToServer_.Clear();
+			wrapperToServer_.mutable_game_command()->set_pause(pause);
+			send(wrapperToServer_);
 		}
 
 	private:
@@ -338,7 +341,8 @@ namespace mwetris::network {
 
 		std::vector<game::PlayerPtr> localPlayers_;
 		
-		tp::Wrapper wrapper_;
+		tp_c2s::Wrapper wrapperToServer_;
+		tp_s2c::Wrapper wrapperFromServer_;
 		std::shared_ptr<Client> client_;
 		std::shared_ptr<game::TetrisGame> tetrisGame_;
 	};

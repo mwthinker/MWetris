@@ -5,11 +5,11 @@
 
 #include "game/playerslot.h"
 
-#include <message.pb.h>
+#include <client_to_server.pb.h>
 
 namespace mwetris::network {
 
-	void toTpSlot(const game::PlayerSlot& playerSlot, tetris_protocol::Slot& tpSlot);
+	void toTpSlot(const game::PlayerSlot& playerSlot, tp_c2s::Slot& tpSlot);
 
 }
 

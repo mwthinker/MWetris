@@ -3,14 +3,13 @@
 #include "localplayerboardbuilder.h"
 #include "tetrisgame.h"
 
-#include <message.pb.h>
+#include <high_score.pb.h>
+#include <shared.pb.h>
 #include <spdlog/spdlog.h>
 
 #include <concepts>
 #include <fstream>
 #include <filesystem>
-
-namespace tp = tetris_protocol;
 
 namespace mwetris::game {
 

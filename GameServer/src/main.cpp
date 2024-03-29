@@ -4,7 +4,7 @@
 #include <net/lanudpsender.h>
 #include <net/lanudpreceiver.h>
 
-#include <message.pb.h>
+#include <server_to_client.pb.h>
 
 #include <functional>
 #include <string>
@@ -39,7 +39,7 @@ void runServer() {
 	server->setConnectHandler([&](const net::RemoteClientPtr& remoteClientPtr) {
 		fmt::print("New Connection\n");
 
-		remoteClientPtr->setReceiveHandler<tetris_protocol::Game>([](const tetris_protocol::Game& wrapper, const std::error_code& ec) {
+		remoteClientPtr->setReceiveHandler<tp::Game>([](const tp::Game& wrapper, const std::error_code& ec) {
 			if (ec) {
 				fmt::print("{}\n", ec.message());
 			}
@@ -78,7 +78,7 @@ void runClient() {
 
 	auto client = net::Client::create(ioContext);
 	bool connected = false;
-	client->setReceiveHandler<tetris_protocol::Game>([](const tetris_protocol::Game& message, const std::error_code& ec) {
+	client->setReceiveHandler<tp::Game>([](const tp::Game& message, const std::error_code& ec) {
 		if (ec) {
 			fmt::print("{}\n", ec.message());
 		}
@@ -147,7 +147,7 @@ void runClientLan() {
 	net::IoContext ioContext;
 	net::LanUdpReceiver lanUdpReceiver{ioContext};
 
-	lanUdpReceiver.setReceiveHandler<tetris_protocol::Game>([](const net::Meta& meta, const tetris_protocol::Game& wrapper, std::error_code ec) {
+	lanUdpReceiver.setReceiveHandler<tp::Game>([](const net::Meta& meta, const tp::Game& wrapper, std::error_code ec) {
 		if (ec) {
 			fmt::print("{}\n", ec.message());
 		}

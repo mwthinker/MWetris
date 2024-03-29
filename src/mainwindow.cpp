@@ -34,7 +34,7 @@ void MainWindow::initPreLoop() {
 	deviceManager_ = std::make_shared<mwetris::game::DeviceManager>();
 	debugServer_ = std::make_shared<mwetris::network::DebugServer>();
 
-	for (int i = 0; i < 2; ++i) {
+	for (int i = 0; i < 1; ++i) {
 		auto debugClient = debugServer_->createClient();
 		auto type = (i == 0) ? mwetris::ui::TetrisWindow::Type::MainWindow : mwetris::ui::TetrisWindow::Type::SecondaryWindow;
 		subWindows_.push_back(std::make_unique<mwetris::ui::TetrisWindow>(type , *this,

@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package tp;
+
+// Block types are the corresponding ascii values
+enum BlockType {
+	UNSPECIFIED_BLOCK_TYPE = 0;
+	I = 73;
+	J = 74;
+	L = 76;
+	O = 79;
+	S = 83;
+	T = 84;
+	Z = 90;
+	EMPTY = 69;
+	WALL = 87;
+}
+
+message Block {
+	int32 start_column = 1;
+	int32 lowest_start_row = 2;
+	int32 rotations = 3;
+	BlockType type = 4;
+}
+
+message PlayerBoard {
+	string name = 1;
+	int32 level = 2;
+	int32 points = 3;
+	bool ai = 4;
+	Block current = 5;
+	BlockType next = 6;
+	int32 id = 7;
+	int32 width = 8;
+	int32 height = 9;
+	int32 cleared_rows = 10;
+	repeated BlockType board = 11;
+}
+
+message Game {
+	int64 last_played_seconds = 1;
+	PlayerBoard player_board = 2;
+}
+
+message RemotePlayer {
+
+}
+
+message LocalPlayer {
+	string uuid = 1;
+	string name = 2;
+	int32 level = 3;
+	int32 points = 4;
+	bool ai = 5;
+}
+
+enum SlotType {
+	UNSPECIFIED_SLOT_TYPE = 0;
+	HUMAN = 1;
+	AI = 2;
+	REMOTE = 3;
+	OPEN_SLOT = 4;
+	CLOSED_SLOT = 5;
+}
+
+message Slot {
+	SlotType slot_type = 1;
+	string name = 2;
+}
+
+enum Move {
+	UNSPECIFIED_MOVE = 0;
+	ROTATELEFT = 1;
+	ROTATERIGHT = 2;
+	DOWNGRAVITY = 3;
+	DOWN = 4;
+	DOWNGROUND = 5;
+	LEFT = 6;
+	RIGHT = 7;
+	GAMEOVER = 8;
+}
