@@ -23,6 +23,7 @@ namespace mwetris::game {
 	struct Remote {
 		std::string name;
 		bool ai = false;
+		std::string uuid;
 	};
 
 	struct OpenSlot {

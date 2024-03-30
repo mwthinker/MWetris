@@ -54,20 +54,6 @@ message LocalPlayer {
 	bool ai = 5;
 }
 
-enum SlotType {
-	UNSPECIFIED_SLOT_TYPE = 0;
-	HUMAN = 1;
-	AI = 2;
-	REMOTE = 3;
-	OPEN_SLOT = 4;
-	CLOSED_SLOT = 5;
-}
-
-message Slot {
-	SlotType slot_type = 1;
-	string name = 2;
-}
-
 enum Move {
 	UNSPECIFIED_MOVE = 0;
 	ROTATELEFT = 1;

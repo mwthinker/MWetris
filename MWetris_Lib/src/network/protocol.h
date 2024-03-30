@@ -2,14 +2,17 @@
 #define MWETRIS_NETWORK_PROTOCOL_H
 
 #include "protobufmessage.h"
-
 #include "game/playerslot.h"
 
-#include <client_to_server.pb.h>
+#include <shared.pb.h>
+
+#include <string>
 
 namespace mwetris::network {
 
-	void toTpSlot(const game::PlayerSlot& playerSlot, tp_c2s::Slot& tpSlot);
+	//void toTpSlot(const game::PlayerSlot& playerSlot, tp::Slot& tpSlot);
+
+	//void fromTpSlot(const std::string& uuid, const tp::Slot& tpSlot, game::PlayerSlot& playerSlot);
 
 }
 

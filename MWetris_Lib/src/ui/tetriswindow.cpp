@@ -140,7 +140,6 @@ namespace mwetris::ui {
 			int index = createGame.getSlotIndex();
 
 			if (index < playerSlots_.size()) {
-				playerSlots_[index] = createGame.getPlayer(); // TODO! Sets it twice, one here and one through network?
 				network_->setPlayerSlot(createGame.getPlayer(), index);
 			} else {
 				spdlog::warn("[TetrisWindow] Player slot index {} out of range (size = {})", index, playerSlots_.size());

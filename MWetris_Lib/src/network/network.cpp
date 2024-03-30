@@ -54,27 +54,6 @@ namespace mwetris::network {
 			return ais;
 		}
 
-		tp::SlotType playerSlotToTpSlotType(const game::PlayerSlot& playerSlot) {
-			tp::SlotType slotType = tp::SlotType::UNSPECIFIED_SLOT_TYPE;
-			std::visit([&](auto&& slot) mutable {
-				using T = std::decay_t<decltype(slot)>;
-				if constexpr (std::is_same_v<T, game::Human>) {
-					slotType = tp::SlotType::HUMAN;
-				} else if constexpr (std::is_same_v<T, game::Ai>) {
-					slotType = tp::SlotType::AI;
-				} else if constexpr (std::is_same_v<T, game::Remote>) {
-					slotType = tp::SlotType::REMOTE;
-				} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
-					slotType = tp::SlotType::OPEN_SLOT;
-				} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
-					slotType = tp::SlotType::CLOSED_SLOT;
-				} else {
-					static_assert(always_false_v<T>, "non-exhaustive visitor!");
-				}
-			}, playerSlot);
-			return slotType;
-		}
-
 	}
 
 	class Network::Impl {
@@ -130,7 +109,7 @@ namespace mwetris::network {
 			while (true) {
 				co_await nextMessage();
 				if (wrapperFromServer_.has_game_looby()) {
-					handleGameCommand(wrapperFromServer_.game_command());
+					handleGameLooby(wrapperFromServer_.game_looby());
 				}
 				if (wrapperFromServer_.has_connections()) {
 					handleConnections(wrapperFromServer_.connections());
@@ -185,6 +164,33 @@ namespace mwetris::network {
 
 		void handleGameLooby(const tp_s2c::GameLooby& gameLooby) {
 			connected_ = true;
+
+			playerSlots_.clear();
+			for (const auto& tpSlot : gameLooby.slots()) {
+				switch (tpSlot.slot_type()) {
+					case tp_s2c::GameLooby_SlotType_REMOTE:
+						if (tpSlot.slot_type() == tp_s2c::GameLooby_SlotType_REMOTE && tpSlot.uuid() == client_->getUuid()) {
+							if (tpSlot.ai()) {
+								playerSlots_.push_back(game::Ai{.name = tpSlot.name()});
+							} else {
+								playerSlots_.push_back(game::Human{.name = tpSlot.name()});
+							}
+						} else {
+							playerSlots_.push_back(game::Remote{.name = tpSlot.name(), .uuid = tpSlot.uuid()});
+						}
+						break;
+					case tp_s2c::GameLooby_SlotType_OPEN_SLOT:
+						playerSlots_.push_back(game::OpenSlot{});
+						break;
+					case tp_s2c::GameLooby_SlotType_CLOSED_SLOT:
+						playerSlots_.push_back(game::ClosedSlot{});
+						break;
+					default:
+						continue;
+				}
+				int index = static_cast<int>(playerSlots_.size() - 1);
+				playerSlotUpdate(playerSlots_[index], index);
+			}
 		}
 
 		void handleConnections(const tp_s2c::Connections& connections) {
@@ -196,15 +202,20 @@ namespace mwetris::network {
 		void setPlayerSlot(const game::PlayerSlot& playerSlot, int index) {
 			wrapperToServer_.Clear();
 			auto tpGameLooby = wrapperToServer_.mutable_game_looby();
-
-			if (index >= 0 && index < playerSlots_.size()) {
-				playerSlots_[index] = playerSlot;
-				playerSlotUpdate(playerSlot, index);
-
-				for (const auto& slot : playerSlots_) {
-					auto tpSlot = tpGameLooby->add_slots();
-					toTpSlot(slot, *tpSlot);
-				}
+			tpGameLooby->set_index(index);
+			if (auto human = std::get_if<game::Human>(&playerSlot); human) {
+				tpGameLooby->set_slot_type(tp_c2s::GameLooby_SlotType_HUMAN);
+				tpGameLooby->set_name(human->name);
+				send(wrapperToServer_);
+			} else if (auto ai = std::get_if<game::Ai>(&playerSlot); ai) {
+				tpGameLooby->set_slot_type(tp_c2s::GameLooby_SlotType_AI);
+				tpGameLooby->set_name(ai->name);
+				send(wrapperToServer_);
+			} else if (std::get_if<game::OpenSlot>(&playerSlot)) {
+				tpGameLooby->set_slot_type(tp_c2s::GameLooby_SlotType_OPEN_SLOT);
+				send(wrapperToServer_);
+			} else if (std::get_if<game::ClosedSlot>(&playerSlot)) {
+				tpGameLooby->set_slot_type(tp_c2s::GameLooby_SlotType_CLOSED_SLOT);
 				send(wrapperToServer_);
 			}
 		}

@@ -16,22 +16,8 @@ message LocalPlayer {
 	bool ai = 5;
 }
 
-enum SlotType {
-	UNSPECIFIED_SLOT_TYPE = 0;
-	HUMAN = 1;
-	AI = 2;
-	REMOTE = 3;
-	OPEN_SLOT = 4;
-	CLOSED_SLOT = 5;
-}
-
 message Connections {
 	repeated string uuids = 1;
-}
-
-message Slot {
-	SlotType slot_type = 1;
-	string name = 2;
 }
 
 message CreateGameLooby {
@@ -39,7 +25,17 @@ message CreateGameLooby {
 }
 
 message GameLooby {
-	repeated Slot slots = 1;
+	enum SlotType {
+		UNSPECIFIED_SLOT_TYPE = 0;
+		HUMAN = 1;
+		AI = 2;
+		OPEN_SLOT = 4;
+		CLOSED_SLOT = 5;
+	}
+
+	SlotType slot_type = 1;
+	string name = 2;
+	int32 index = 3;
 }
 
 message CreateServerGame {

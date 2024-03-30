@@ -24,7 +24,9 @@ namespace mwetris::network {
 		mw::PublicSignal<DebugServer::Impl, const game::InitGameEvent&> initGameEvent;
 		mw::PublicSignal<DebugServer::Impl, const ConnectedClient&> connectedClientListener;
 
-		Impl() {}
+		Impl() {
+			playerSlots_.resize(4, game::OpenSlot{});
+		}
 
 		~Impl() {}
 
@@ -60,7 +62,7 @@ namespace mwetris::network {
 			}
 
 			if (wrapperFromClient_.has_game_looby()) {
-				handleGameLooby(wrapperFromClient_.game_looby());
+				handleGameLooby(client, wrapperFromClient_.game_looby());
 			}
 			if (wrapperFromClient_.has_game_command()) {
 				handleGameCommand(wrapperFromClient_.game_command());
@@ -131,42 +133,57 @@ namespace mwetris::network {
 			paused_ = gameCommand.pause();
 		}
 
-		void handleGameLooby(const tp_c2s::GameLooby& gameLooby) {
-			const auto& slots = wrapperFromClient_.game_looby().slots();
-			playerSlots_.clear();
+		bool slotBelongsToClient(const Client& client, int slotIndex) {
+			const auto& slot = playerSlots_[slotIndex];
+			if (auto remote = std::get_if<game::Remote>(&slot); remote && remote->uuid == client.getUuid()) {
+				return true;
+			}
+			return std::holds_alternative<game::OpenSlot>(slot);
+		}
 
-			for (const auto& slot : slots) {
-				switch (slot.slot_type()) {
-					case tp::HUMAN:
-						playerSlots_.push_back(game::Remote{
-							.name = slot.name(),
-							.ai = false
-						});
-						break;
-					case tp::AI:
-						playerSlots_.push_back(game::Remote{
-							.name = slot.name(),
-							.ai = true
-						});
-						break;
-					case tp::REMOTE:
-						playerSlots_.push_back(game::Remote{});
-						break;
-					case tp::OPEN_SLOT:
-						playerSlots_.push_back(game::OpenSlot{});
-						break;
-					default:
-						playerSlots_.push_back(game::ClosedSlot{});
-						break;
+		void handleGameLooby(Client& client, const tp_c2s::GameLooby& gameLooby) {
+			int index = wrapperFromClient_.game_looby().index();
+			const auto& slot = wrapperFromClient_.game_looby();
+			
+			if (index < 0 || index >= playerSlots_.size()) {
+				spdlog::error("Invalid index {}", index);
+				return;
+			}
+
+			if (slotBelongsToClient(client, index)) {
+				if (slot.slot_type() == tp_c2s::GameLooby_SlotType_OPEN_SLOT) {
+					playerSlots_[index] = game::OpenSlot{};
+				} else {
+					playerSlots_[index] = game::Remote{
+						.name = slot.name(),
+						.ai = slot.slot_type() == tp_c2s::GameLooby_SlotType_AI,
+						.uuid = client.getUuid()
+					};
 				}
 			}
 			
 			wrapperToClient_.Clear();
 			auto tpGameLooby = wrapperToClient_.mutable_game_looby();
 
-			for (const auto& slot : playerSlots_) {
-				auto tpSlot = tpGameLooby->add_slots();
-				//toTpSlot(slot, *tpSlot);
+			for (const auto& playerSlot : playerSlots_) {
+				auto& tpSlot = *tpGameLooby->add_slots();
+				tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_UNSPECIFIED_SLOT_TYPE);
+
+				std::visit([&](auto&& slot) mutable {
+					using T = std::decay_t<decltype(slot)>;
+					if constexpr (std::is_same_v<T, game::Remote>) {
+						tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_REMOTE);
+						tpSlot.set_ai(slot.ai);
+						tpSlot.set_name(slot.name);
+						tpSlot.set_uuid(slot.uuid);
+					} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
+						tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_OPEN_SLOT);
+					} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
+						tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_CLOSED_SLOT);
+					} else {
+						spdlog::error("[DebugServer.cpp] Invalid slot type");
+					}
+				}, playerSlot);
 			}
 			sendToClients(wrapperToClient_);
 		}
