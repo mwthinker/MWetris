@@ -27,23 +27,24 @@ namespace mwetris::network {
 
 		void reserveBodySize();
 
+		// At most 65535 bytes (2^16 - 1)
 		void reserveBodySize(int size);
 
 		int getBodySize() const;
 
-		const char* getData() const {
+		const unsigned char* getData() const {
 			return buffer_.data();
 		}
 
-		char* getData() {
+		unsigned char* getData() {
 			return buffer_.data();
 		}
 
-		const char* getBodyData() const {
+		const unsigned char* getBodyData() const {
 			return buffer_.data() + getHeaderSize();
 		}
 
-		char* getBodyData() {
+		unsigned char* getBodyData() {
 			return buffer_.data() + getHeaderSize();
 		}
 
@@ -52,7 +53,7 @@ namespace mwetris::network {
 
 		void defineBodySize();
 
-		std::vector<char> buffer_;
+		std::vector<unsigned char> buffer_;
 	};
 
 }

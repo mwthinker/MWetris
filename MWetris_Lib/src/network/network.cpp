@@ -143,8 +143,12 @@ namespace mwetris::network {
 				bool valid = client_->receive(message);
 				if (valid) {
 					wrapperFromServer_.Clear();
+					int size = message.getSize();
+					int bodySize = message.getBodySize();
 					bool valid = wrapperFromServer_.ParseFromArray(message.getBodyData(), message.getBodySize());
 					client_->release(std::move(message));
+				} else if (message.getSize() != 0) {
+					spdlog::info("[Network] Invalid data");
 				}
 				return valid;
 			});
@@ -166,6 +170,7 @@ namespace mwetris::network {
 			connected_ = true;
 
 			playerSlots_.clear();
+			int index = 0;
 			for (const auto& tpSlot : gameLooby.slots()) {
 				switch (tpSlot.slot_type()) {
 					case tp_s2c::GameLooby_SlotType_REMOTE:
@@ -188,8 +193,8 @@ namespace mwetris::network {
 					default:
 						continue;
 				}
-				int index = static_cast<int>(playerSlots_.size() - 1);
 				playerSlotUpdate(playerSlots_[index], index);
+				++index;
 			}
 		}
 

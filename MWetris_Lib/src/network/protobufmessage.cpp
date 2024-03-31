@@ -2,14 +2,6 @@
 
 namespace mwetris::network {
 
-	namespace {
-		
-		constexpr int decodeMessageSize(char byte1, char byte2) {
-			return byte1 * 256 + byte2;
-		}
-
-	}
-
 	ProtobufMessage::ProtobufMessage() {
 	}
 
@@ -25,9 +17,10 @@ namespace mwetris::network {
 	}
 
 	void ProtobufMessage::setBuffer(const google::protobuf::MessageLite& message) {
-		int size = static_cast<int>(message.ByteSizeLong());
+		auto size = message.ByteSizeLong();
 		buffer_.resize(getHeaderSize() + size);
-		message.SerializeToArray(buffer_.data() + getHeaderSize(), size);
+		// Assume that the message size fits in an int.
+		message.SerializeToArray(buffer_.data() + getHeaderSize(), static_cast<int>(size));
 		defineBodySize();
 	}
 
@@ -44,8 +37,7 @@ namespace mwetris::network {
 		if (buffer_.empty()) {
 			return 0;
 		}
-		int size = decodeMessageSize(buffer_[0], buffer_[1]);
-		return decodeMessageSize(buffer_[0], buffer_[1]);
+		return 255 * buffer_[0] + buffer_[1];
 	}
 
 	void ProtobufMessage::reserveHeaderSize() {
@@ -53,7 +45,8 @@ namespace mwetris::network {
 	}
 
 	void ProtobufMessage::defineBodySize() {
-		int bodySize = static_cast<int>(buffer_.size()) - getHeaderSize();
+		// Buffer size is at least header size.
+		auto bodySize = buffer_.size() - getHeaderSize();
 		buffer_[0] = ((bodySize >> 8) & 0xFF);
 		buffer_[1] = (bodySize & 0xFF);
 	}
