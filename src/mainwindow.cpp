@@ -8,14 +8,16 @@
 
 #include <ui/tetriswindow.h>
 
-MainWindow::MainWindow() {
+MainWindow::MainWindow(const Config& config) 
+	: config_{config} {
+
 	setPosition(mwetris::Configuration::getInstance().getWindowPositionX(), mwetris::Configuration::getInstance().getWindowPositionY());
 	setSize(mwetris::Configuration::getInstance().getWindowWidth(), mwetris::Configuration::getInstance().getWindowHeight());
 	setResizeable(true);
 	setTitle("MWetris");
 	setIcon(mwetris::Configuration::getInstance().getWindowIcon());
 	setBordered(mwetris::Configuration::getInstance().isWindowBordered());
-	setShowDemoWindow(true);
+	setShowDemoWindow(config.showDemoWindow);
 }
 
 MainWindow::~MainWindow() {
@@ -34,7 +36,7 @@ void MainWindow::initPreLoop() {
 	deviceManager_ = std::make_shared<mwetris::game::DeviceManager>();
 	debugServer_ = std::make_shared<mwetris::network::DebugServer>();
 
-	for (int i = 0; i < 1; ++i) {
+	for (int i = 0; i < config_.windows; ++i) {
 		auto debugClient = debugServer_->createClient();
 		auto type = (i == 0) ? mwetris::ui::TetrisWindow::Type::MainWindow : mwetris::ui::TetrisWindow::Type::SecondaryWindow;
 		subWindows_.push_back(std::make_unique<mwetris::ui::TetrisWindow>(type , *this,
@@ -43,7 +45,9 @@ void MainWindow::initPreLoop() {
 		));
 	}
 
-	subWindows_.push_back(std::make_unique<mwetris::ui::NetworkDebugWindow>(debugServer_));
+	if (config_.showDebugWindow) {
+		subWindows_.push_back(std::make_unique<mwetris::ui::NetworkDebugWindow>(debugServer_));
+	}
 }
 
 void MainWindow::eventUpdate(const SDL_Event& windowEvent) {

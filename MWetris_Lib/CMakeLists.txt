@@ -157,6 +157,7 @@ target_link_libraries(MWetris_Lib
 		TetrisEngineLib
 		nlohmann_json
 		nlohmann_json::nlohmann_json
+		fmt::fmt
 		Protocol
 		Signal
 		concurrencpp::concurrencpp

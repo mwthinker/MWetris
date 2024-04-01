@@ -35,6 +35,7 @@ source_group(TREE
 
 include(ExternalFetchContent.cmake)
 
+find_package(argparse CONFIG REQUIRED)
 find_package(Threads REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
@@ -133,6 +134,8 @@ endif ()
 
 target_link_libraries(MWetris
 	PRIVATE
+		argparse::argparse
+		fmt::fmt
 		MWetris_Lib
 )
 

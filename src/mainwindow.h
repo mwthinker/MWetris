@@ -10,7 +10,13 @@
 
 class MainWindow : public sdl::ImGuiWindow {
 public:
-	MainWindow();
+	struct Config {
+		int windows = 1;
+		bool showDebugWindow = false;
+		bool showDemoWindow = false;
+	};
+
+	MainWindow(const Config& config);
 
 	~MainWindow();
 	
@@ -26,6 +32,7 @@ private:
 	std::vector<std::unique_ptr<mwetris::ui::SubWindow>> subWindows_;
 	std::shared_ptr<mwetris::game::DeviceManager> deviceManager_;
 	std::shared_ptr<mwetris::network::DebugServer> debugServer_;
+	Config config_;
 };
 
 #endif
