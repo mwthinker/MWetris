@@ -2,14 +2,15 @@
 
 #include "localplayerboardbuilder.h"
 #include "tetrisgame.h"
+#include "util/protofile.h"
 
-#include <high_score.pb.h>
 #include <shared.pb.h>
 #include <spdlog/spdlog.h>
 
 #include <concepts>
 #include <fstream>
 #include <filesystem>
+#include <google/protobuf/util/time_util.h>
 
 namespace mwetris::game {
 
@@ -120,59 +121,6 @@ namespace mwetris::game {
 			return date;
 		}
 
-		template <typename Type>
-		bool loadFromFile(Type& type, const std::string& file) {
-			std::ifstream input{file};
-			if (input.fail()) {
-				return false;
-			}
-			return type.ParseFromIstream(&input);
-		}
-
-		template <typename Type>
-		void saveToFile(const Type& type, const std::string& file) {
-			std::ofstream output{file};
-			type.SerializePartialToOstream(&output);
-		}
-
-		std::vector<HighScoreResult> toHighScoreResults(const google::protobuf::RepeatedPtrField<tp::HighScore_Result>& repeatedField) {
-			std::vector<HighScoreResult> results;
-			for (const auto& result : repeatedField) {
-				auto time = tpSecondsToDate(result.last_played_seconds());
-				auto ymd = std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(time)};
-				results.emplace_back(result.name(), result.points(), result.rows(), result.level(), ymd);
-			}
-			std::sort(results.begin(), results.end(), [](const HighScoreResult& a, const HighScoreResult& b) {
-				return a.points > b.points || a.points == b.points && a.lastPlayed < b.lastPlayed;
-			});
-			return results;
-		}
-
-		void setTpHighScoreResults(tp::HighScore& highScore, const std::vector<HighScoreResult>& results) {
-			highScore.clear_results();
-			for (const auto& result : results) {
-				auto tpResult = highScore.add_results();
-				tpResult->set_last_played_seconds(toTpSeconds(result.lastPlayed));
-
-			}
-		}
-
-		int getIndexForNewResult(const std::vector<HighScoreResult>& results, int points) {
-			int index = 0;
-			for (const auto& result : results) {
-				if (points > result.points) {
-					return index;
-				}
-				++index;
-			}
-			return index;
-		}
-
-	}
-
-	int getHighScorePlacement(int points) {
-		auto results = loadHighScore();
-		return getIndexForNewResult(results, points) + 1;
 	}
 
 	bool hasSavedGame() {
@@ -215,43 +163,6 @@ namespace mwetris::game {
 			return createPlayer(cachedGame.player_board());
 		}
 		return nullptr;
-	}
-
-	std::vector<HighScoreResult> loadHighScore() {
-		tp::HighScore highScore;
-
-		if (std::filesystem::exists(std::filesystem::path{SavedHighScoreFile})) {
-			if (!loadFromFile(highScore, SavedHighScoreFile)) {
-				spdlog::info("[Serialize] Nigscore  loaded: {}");
-			}
-		} else {
-			spdlog::info("[Serialize] Highscore file {} does not exist", SavedHighScoreFile);
-		}
-
-		auto results = toHighScoreResults(highScore.results());
-		results.resize(NbrHighScoreResults);
-		return results;
-	}
-
-	bool isNewHighScore(int points) {
-		auto results = loadHighScore();
-		return getIndexForNewResult(results, points) < NbrHighScoreResults;
-	}
-
-	void saveHighScore(const std::string& name, int points, int rows, int level) {
-		tp::HighScore highScore;
-		loadFromFile(highScore, SavedHighScoreFile);
-
-		auto result = highScore.add_results();
-		result->set_name(name);
-		result->set_points(points);
-		result->set_rows(rows);
-		result->set_level(level);
-		result->set_last_played_seconds(toTpSeconds(std::chrono::system_clock::now()));
-
-		auto highScoreResults = toHighScoreResults(highScore.results());
-		highScoreResults.resize(NbrHighScoreResults);
-		saveToFile(highScore, SavedHighScoreFile);
 	}
 
 }

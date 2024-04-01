@@ -1,5 +1,6 @@
 #include "newhighscore.h"
 #include "../imguiextra.h"
+#include "game/serializehighscore.h"
 
 #include <spdlog/spdlog.h>
 

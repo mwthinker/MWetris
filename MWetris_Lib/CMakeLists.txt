@@ -48,6 +48,8 @@ set(SOURCES_LIB
 	src/game/tetrisgame.h
 	src/game/serialize.cpp
 	src/game/serialize.h
+	src/game/serializehighscore.cpp
+	src/game/serializehighscore.h
 
 	src/network/client.h
 	src/network/debugclient.cpp
@@ -87,6 +89,8 @@ set(SOURCES_LIB
 	src/ui/subwindow.h
 	src/ui/tetriswindow.cpp
 	src/ui/tetriswindow.h
+
+	src/util/protofile.h
 	
 	src/configuration.cpp
 	src/configuration.h

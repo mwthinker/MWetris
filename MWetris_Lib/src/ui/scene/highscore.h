@@ -7,6 +7,7 @@
 #include "configuration.h"
 #include "ui/imguiextra.h"
 #include "game/serialize.h"
+#include "game/serializehighscore.h"
 
 namespace mwetris::ui::scene {
 

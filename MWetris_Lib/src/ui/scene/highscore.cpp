@@ -27,9 +27,15 @@ namespace mwetris::ui::scene {
 				ImGui::TableNextColumn(); ImGui::Text("%i", rankNbr++);
 				ImGui::TableNextColumn(); ImGui::Text("%i", highscore.points);
 				ImGui::TableNextColumn(); ImGui::TextUnformatted(highscore.name.c_str());
-				ImGui::TableNextColumn(); ImGui::Text("%i", highscore.rows);
-				ImGui::TableNextColumn(); ImGui::Text("%i", highscore.level);
-				ImGui::TableNextColumn(); ImGui::Text(highscore.lastPlayed);
+				if (highscore.points > 0) {
+					ImGui::TableNextColumn(); ImGui::Text("%i", highscore.rows);
+					ImGui::TableNextColumn(); ImGui::Text("%i", highscore.level);
+					ImGui::TableNextColumn(); ImGui::Text(highscore.lastPlayed);
+				} else {
+					ImGui::TableNextColumn(); ImGui::Text("");
+					ImGui::TableNextColumn(); ImGui::Text("");
+					ImGui::TableNextColumn(); ImGui::Text("");
+				}
 			}
 		});
 

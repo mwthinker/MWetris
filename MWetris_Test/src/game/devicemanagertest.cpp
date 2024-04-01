@@ -4,12 +4,12 @@
 
 namespace mwetris::game {
 
-	class DeviceManagerTestTest : public ::testing::Test {
+	class DeviceManagerTest : public ::testing::Test {
 	protected:
 
-		DeviceManagerTestTest() {}
+		DeviceManagerTest() {}
 
-		~DeviceManagerTestTest() override {}
+		~DeviceManagerTest() override {}
 
 		void SetUp() override {
 			deviceManager = std::make_shared<game::DeviceManager>();
@@ -20,7 +20,7 @@ namespace mwetris::game {
 		std::shared_ptr<DeviceManager> deviceManager;
 	};
 
-	TEST_F(DeviceManagerTestTest, defaultDevicesIsSetupCorrectly) {
+	TEST_F(DeviceManagerTest, test) {
 		// Given
 		auto device1 = deviceManager->getDefaultDevice1();
 		auto device2 = deviceManager->getDefaultDevice2();
