@@ -17,7 +17,7 @@ namespace mwetris::game {
 	namespace {
 
 		static bool gameLoaded = false;
-		static tp::Game cachedGame; // cachedGame.last_played_seconds() == 0 means that no game is currently saved
+		static tp::Game cachedGame; // cachedGame.last_played().seconds() == 0 means that no game is currently saved
 
 		constexpr int NbrHighScoreResults = 10;
 		const std::string SavedGameFile{"savedGame.mw"};
@@ -86,7 +86,6 @@ namespace mwetris::game {
 			tpPlayerBoard.mutable_current()->set_start_column(playerBoard.getBlock().getStartColumn());
 			tpPlayerBoard.mutable_current()->set_rotations(playerBoard.getBlock().getCurrentRotation());
 			tpPlayerBoard.mutable_current()->set_type(static_cast<tp::BlockType>(playerBoard.getBlock().getBlockType()));
-			
 		}
 
 		LocalPlayerBoardPtr createPlayer(const tp::PlayerBoard& player) {
@@ -105,30 +104,14 @@ namespace mwetris::game {
 				.build();
 		}
 
-		int64_t toTpSeconds(std::chrono::time_point<std::chrono::system_clock> timePoint) {
-			auto seconds = std::chrono::duration_cast<std::chrono::seconds>(timePoint.time_since_epoch()).count();
-			return static_cast<int64_t>(seconds);
-		}
-
-		int64_t toTpSeconds(std::chrono::year_month_day ymd) {
-			std::chrono::system_clock::time_point tp = std::chrono::sys_days{ymd};
-			auto seconds = std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch()).count();
-			return static_cast<int64_t>(seconds);
-		}
-
-		std::chrono::time_point<std::chrono::system_clock> tpSecondsToDate(int64_t seconds) {
-			std::chrono::time_point<std::chrono::system_clock> date{std::chrono::seconds{seconds}};
-			return date;
-		}
-
 	}
 
 	bool hasSavedGame() {
-		return cachedGame.last_played_seconds() != 0;
+		return cachedGame.last_played().seconds() != 0;
 	}
 
 	void clearSavedGame() {
-		cachedGame.set_last_played_seconds(0);
+		cachedGame.mutable_last_played()->set_seconds(0);
 		std::filesystem::path filepath{SavedGameFile};
 		if (std::filesystem::exists(filepath)) {
 			std::filesystem::remove(filepath);
@@ -138,7 +121,7 @@ namespace mwetris::game {
 	void saveGame(const PlayerBoard& playerBoard) {
 		try {
 			setTpPlayer(*cachedGame.mutable_player_board(), playerBoard);
-			cachedGame.set_last_played_seconds(toTpSeconds(std::chrono::system_clock::now()));
+			cachedGame.mutable_last_played()->CopyFrom(google::protobuf::util::TimeUtil::GetCurrentTime());
 			saveToFile(cachedGame, SavedGameFile);
 		} catch (const std::bad_variant_access& e) {
 			spdlog::error("[Serilize] Fail to save, not DefaultPlayerData: {}", e.what());

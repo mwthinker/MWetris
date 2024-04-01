@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package tp;
 
+import "google/protobuf/timestamp.proto";
+
 // Block types are the corresponding ascii values
 enum BlockType {
 	UNSPECIFIED_BLOCK_TYPE = 0;
@@ -38,12 +40,8 @@ message PlayerBoard {
 }
 
 message Game {
-	int64 last_played_seconds = 1;
+	google.protobuf.Timestamp last_played = 1;
 	PlayerBoard player_board = 2;
-}
-
-message RemotePlayer {
-
 }
 
 message LocalPlayer {
