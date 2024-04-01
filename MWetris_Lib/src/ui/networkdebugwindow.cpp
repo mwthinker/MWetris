@@ -37,7 +37,7 @@ namespace mwetris::ui {
 			}
 		});
 	}
-		
+
 	void NetworkDebugWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
 		ImGui::SetNextWindowSize({650, 650});
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, sdl::color::html::Black);

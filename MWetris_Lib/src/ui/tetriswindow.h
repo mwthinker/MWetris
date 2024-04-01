@@ -39,12 +39,7 @@ namespace mwetris::ui {
 
 	class TetrisWindow : public SubWindow {
 	public:
-		enum class Type {
-			MainWindow,
-			SecondaryWindow
-		};
-
-		TetrisWindow(Type type, sdl::Window& window,
+		TetrisWindow(const std::string& windowName, Type type, sdl::Window& window,
 			std::shared_ptr<game::DeviceManager> deviceManager,
 			std::shared_ptr<network::Client> client
 		);
@@ -54,6 +49,10 @@ namespace mwetris::ui {
 		void imGuiUpdate(const sdl::DeltaTime& deltaTime) override;
 		
 		void imGuiEventUpdate(const SDL_Event& windowEvent) override;
+
+		const std::string& getName() const override;
+
+		SubWindow::Type getType() const override;
 	
 	private:
 		void initPreLoop();
@@ -97,6 +96,7 @@ namespace mwetris::ui {
 		std::vector<game::PlayerSlot> playerSlots_;
 		Type type_ = Type::MainWindow;
 		std::string serverId_;
+		std::string windowName_;
 	};
 
 }

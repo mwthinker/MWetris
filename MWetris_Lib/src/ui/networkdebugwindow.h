@@ -30,6 +30,14 @@ namespace mwetris::ui {
 		
 		void imGuiUpdate(const sdl::DeltaTime& deltaTime) override;
 
+		const std::string& getName() const override {
+			return name_;
+		}
+
+		SubWindow::Type getType() const override {
+			return type_;
+		}
+
 	private:
 		void update();
 
@@ -37,6 +45,8 @@ namespace mwetris::ui {
 		std::vector<game::PlayerSlot> playerSlots_;
 		std::unique_ptr<graphic::GameComponent> gameComponent_;
 		std::vector<network::ConnectedClient> connectedClients_;
+		std::string name_ = "NetworkDebugWindow";
+		SubWindow::Type type_ = SubWindow::Type::SecondaryWindow;
 	};
 
 }

@@ -63,19 +63,19 @@ namespace mwetris::ui {
 			return std::chrono::duration<double>(duration).count();
 		}
 
-		void MainWindow(TetrisWindow::Type type, std::invocable auto&& t) {
-			if (type == TetrisWindow::Type::MainWindow) {
-				ImGui::MainWindow("MainWindow", ImguiMainWindow, t);
+		void MainWindow(const SubWindow& subWindow, std::invocable auto&& t) {
+			if (subWindow.getType() == TetrisWindow::Type::MainWindow) {
+				ImGui::MainWindow(subWindow.getName().c_str(), ImguiMainWindow, t);
 			} else {
 				ImGui::SetNextWindowSize({400, 600});
-				ImGui::Window("MainWindow2", nullptr, ImguiSecondaryWindow, t);
+				ImGui::Window(subWindow.getName().c_str(), nullptr, ImguiSecondaryWindow, t);
 			}
 		}
 
 	}
 
 
-	TetrisWindow::TetrisWindow(Type type, sdl::Window& window,
+	TetrisWindow::TetrisWindow(const std::string& windowName, Type type, sdl::Window& window,
 		std::shared_ptr<game::DeviceManager> deviceManager,
 		std::shared_ptr<network::Client> client
 	)
@@ -83,6 +83,7 @@ namespace mwetris::ui {
 		, deviceManager_{deviceManager}
 		, client_{client}
 		, type_{type}
+		, windowName_{windowName}
 	{
 		game_ = std::make_shared<game::TetrisGame>();
 		network_ = std::make_shared<network::Network>(client_, game_);
@@ -227,7 +228,7 @@ namespace mwetris::ui {
 	}
 
 	void TetrisWindow::imGuiMainWindow(const sdl::DeltaTime& deltaTime) {
-		MainWindow(type_, [&]() {
+		MainWindow(*this, [&]() {
 			//networkDebugWindow_.imGuiUpdate(deltaTime);
 
 			ImGui::ImageBackground(background_);
@@ -406,6 +407,14 @@ namespace mwetris::ui {
 				}
 				break;
 		}
+	}
+
+	const std::string& TetrisWindow::getName() const {
+		return windowName_;
+	}
+
+	SubWindow::Type TetrisWindow::getType() const {
+		return type_;
 	}
 
 	void TetrisWindow::startNewGame() {
