@@ -8,14 +8,6 @@ message RemotePlayer {
 
 }
 
-message LocalPlayer {
-	string uuid = 1;
-	string name = 2;
-	int32 level = 3;
-	int32 points = 4;
-	bool ai = 5;
-}
-
 message Connections {
 	repeated string uuids = 1;
 }
@@ -42,11 +34,20 @@ message GameLooby {
 	repeated Slot slots = 1;
 }
 
-message CreateServerGame {
-	string uuid = 1;
-	repeated LocalPlayer local_players = 2;
-	tp.BlockType current = 3;
-	tp.BlockType next = 4;
+message CreateGame {
+	message Player {
+		string uuid = 1;
+		string name = 2;
+		int32 level = 3;
+		int32 points = 4;
+		bool ai = 5;
+		tp.BlockType current = 6;
+		tp.BlockType next = 7;
+	}
+
+	repeated Player players = 1;
+	int32 width = 2;
+	int32 height = 3;
 }
 
 message ConnectToGame {
@@ -79,6 +80,7 @@ message GameRestart {
 }
 
 message Connected {
+	string uuid = 1;
 }
 
 message FailedToConnect {
@@ -90,7 +92,7 @@ message FromServer {
 
 message Wrapper {
 	GameLooby game_looby = 1;
-	CreateServerGame create_server_game = 2;
+	CreateGame create_game = 2;
 	Connections connections = 3;
 	GameCommand game_command = 4;
 	BoardMove board_move = 5;

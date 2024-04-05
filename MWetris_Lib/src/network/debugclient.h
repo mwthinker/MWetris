@@ -39,6 +39,10 @@ namespace mwetris::network {
 
 		// To be called by simulated server
 		void pushReceivedMessage(ProtobufMessage&& message);
+
+		void setUuid(const std::string& uuid) {
+			uuid_ = uuid;
+		}
 		
 	private:
 		std::queue<ProtobufMessage> receivedMessages_;

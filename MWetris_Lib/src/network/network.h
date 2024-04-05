@@ -42,13 +42,17 @@ namespace mwetris::network {
 
 		void connectToGame(const std::string& serverId);
 
+		void connect();
+
+		bool isConnected() const;
+
 		void disconnect();
 
 		// Return true if ready.
-		bool createGame(std::unique_ptr<game::GameRules> gameRules, int w, int h);
+		bool startGame(std::unique_ptr<game::GameRules> gameRules, int w, int h);
 
 		mw::signals::Connection addPlayerSlotListener(std::function<void(game::PlayerSlot, int)> listener);
-
+		
 		mw::signals::Connection addConnectionListener(std::function<void(bool)> listener);
 
 	private:

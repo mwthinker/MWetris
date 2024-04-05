@@ -14,8 +14,29 @@
 #include <spdlog/spdlog.h>
 
 #include <queue>
+#include <random>
 
 namespace mwetris::network {
+
+	namespace {
+
+		constexpr std::string_view Characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+		std::string generateUuid() {
+			static std::mt19937 generator{std::random_device{}()};
+			static std::uniform_int_distribution<> distribution{0, static_cast<int>(Characters.size() - 1)};
+
+			constexpr int UniqueIdSize = 16;
+			std::string unique(UniqueIdSize, 'X');
+
+			for (auto& key : unique) {
+				key = Characters[distribution(generator)];
+			}
+
+			return unique;
+		}
+
+	}
 
 	class DebugServer::Impl {
 	public:
@@ -51,7 +72,7 @@ namespace mwetris::network {
 			}
 		}
 
-		void receivedFromClient(Client& client, const tp_c2s::Wrapper& wrapper) {
+		void receivedFromClient(DebugClient& client, const tp_c2s::Wrapper& wrapper) {
 			for (auto& remote : remotes_) {
 				if (remote.client.get() == &client) {
 					if (!remote.allowToConnect) {
@@ -61,14 +82,20 @@ namespace mwetris::network {
 				}
 			}
 
+			if (wrapperFromClient_.has_connect()) {
+				handleConnect(client, wrapperFromClient_.connect());
+			}
 			if (wrapperFromClient_.has_game_looby()) {
 				handleGameLooby(client, wrapperFromClient_.game_looby());
+			}
+			if (wrapperFromClient_.has_player_slot()) {
+				handlePlayerSlot(client, wrapperFromClient_.player_slot());
 			}
 			if (wrapperFromClient_.has_game_command()) {
 				handleGameCommand(wrapperFromClient_.game_command());
 			}
-			if (wrapperFromClient_.has_create_server_game()) {
-				handleCreateGameServer(wrapperFromClient_.create_server_game());
+			if (wrapperFromClient_.has_start_game()) {
+				handleStartGame(wrapperFromClient_.start_game());
 			}
 			if (wrapperFromClient_.has_board_move()) {
 				handleBoardMove(wrapperFromClient_.board_move());
@@ -83,6 +110,20 @@ namespace mwetris::network {
 				handleGameRestart(wrapperFromClient_.game_restart());
 			}
 			playerSlotsUpdated(playerSlots_);
+		}
+
+		void handleConnect(DebugClient& client, const tp_c2s::Connect& connect) {
+			wrapperToClient_.Clear();
+
+			if (remotePlayers_.contains(client.getUuid())) {
+				spdlog::warn("[DebugServer] Client with uuid {} already connect", client.getUuid());
+				return;
+			}
+
+			auto uuid = generateUuid();
+			client.setUuid(uuid);
+			wrapperToClient_.mutable_connected()->set_uuid(uuid);
+			sendToClient(client, wrapperToClient_);
 		}
 
 		void handleGameRestart(const tp_c2s::GameRestart& gameRestart) {
@@ -113,20 +154,35 @@ namespace mwetris::network {
 			remotePlayer->updateAddExternalRows(blockTypes);
 		}
 
-		void handleCreateGameServer(const tp_c2s::CreateServerGame& createServerGame) {
+		void handleStartGame(const tp_c2s::StartGame& createServerGame) {
 			remotePlayers_.clear();
+			wrapperToClient_.Clear();
+			auto createGame = wrapperToClient_.mutable_create_game();
+			createGame->set_width(10);
+			createGame->set_height(24);
 
-			auto current = static_cast<tetris::BlockType>(createServerGame.current());
-			auto next = static_cast<tetris::BlockType>(createServerGame.next());
+			auto current = tetris::randomBlockType();
+			auto next = tetris::randomBlockType();
 
+			remotePlayers_.clear();
 			std::vector<game::PlayerBoardPtr> playerBoards;
-			for (const auto& tpLocalPlayer : createServerGame.local_players()) {
-				auto remotePlayer = std::make_shared<game::RemotePlayer>(current, next, tpLocalPlayer.uuid());
-				remotePlayers_[remotePlayer->getUuid()] = remotePlayer;
-				playerBoards.push_back(remotePlayer->getPlayerBoard());
+			for (const auto& slot : playerSlots_) {
+				if (auto remote = std::get_if<game::Remote>(&slot)) {
+					auto remotePlayer = std::make_shared<game::RemotePlayer>(current, next, remote->uuid);
+					remotePlayers_[remote->uuid] = remotePlayer;
+					playerBoards.push_back(remotePlayer->getPlayerBoard());
+					auto tpRemotePlayer = createGame->add_players();
+					tpRemotePlayer->set_uuid(remote->uuid);
+					tpRemotePlayer->set_name(remote->name);
+					tpRemotePlayer->set_level(0);
+					tpRemotePlayer->set_points(0);
+					tpRemotePlayer->set_ai(remote->ai);
+					tpRemotePlayer->set_current(static_cast<tp::BlockType>(current));
+					tpRemotePlayer->set_next(static_cast<tp::BlockType>(next));
+				}
 			}
-
 			initGameEvent(game::InitGameEvent{playerBoards.begin(), playerBoards.end()});
+			sendToClients(wrapperToClient_);
 		}
 
 		void handleGameCommand(const tp_c2s::GameCommand& gameCommand) {
@@ -142,8 +198,12 @@ namespace mwetris::network {
 		}
 
 		void handleGameLooby(Client& client, const tp_c2s::GameLooby& gameLooby) {
-			int index = wrapperFromClient_.game_looby().index();
-			const auto& slot = wrapperFromClient_.game_looby();
+			//remotePlayers_[client.getUuid()]->
+		}
+
+		void handlePlayerSlot(Client& client, const tp_c2s::PlayerSlot& gameLooby) {
+			int index = wrapperFromClient_.player_slot().index();
+			const auto& slot = wrapperFromClient_.player_slot();
 			
 			if (index < 0 || index >= playerSlots_.size()) {
 				spdlog::error("Invalid index {}", index);
@@ -151,12 +211,12 @@ namespace mwetris::network {
 			}
 
 			if (slotBelongsToClient(client, index)) {
-				if (slot.slot_type() == tp_c2s::GameLooby_SlotType_OPEN_SLOT) {
+				if (slot.slot_type() == tp_c2s::PlayerSlot_SlotType_OPEN_SLOT) {
 					playerSlots_[index] = game::OpenSlot{};
 				} else {
 					playerSlots_[index] = game::Remote{
 						.name = slot.name(),
-						.ai = slot.slot_type() == tp_c2s::GameLooby_SlotType_AI,
+						.ai = slot.slot_type() == tp_c2s::PlayerSlot_SlotType_AI,
 						.uuid = client.getUuid()
 					};
 				}
@@ -253,8 +313,9 @@ namespace mwetris::network {
 		std::shared_ptr<Client> createClient(std::shared_ptr<DebugServer> debugServer) {
 			auto client = std::make_shared<DebugClient>(debugServer);
 			const auto& remote = remotes_.emplace_back(Remote{
-				.allowToConnect = false,
+				.allowToConnect = true,
 				.connected = false,
+				.type = RemoteType::Connected,
 				.client = client
 			});
 			triggerConnectedClient(remote);
@@ -280,9 +341,17 @@ namespace mwetris::network {
 		}
 
 	private:
+		enum class RemoteType {
+			Spectator,
+			Server,
+			Client,
+			Connected
+		};
+
 		struct Remote {
 			bool allowToConnect;
 			bool connected;
+			RemoteType type;
 			std::shared_ptr<DebugClient> client;
 		};
 

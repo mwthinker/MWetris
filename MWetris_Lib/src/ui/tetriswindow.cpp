@@ -97,7 +97,6 @@ namespace mwetris::ui {
 		}
 
 		pauseMenuText_ = "Pause";
-		serverId_ = network_->getServerId();
 
 		initPreLoop();
 	}
@@ -287,16 +286,18 @@ namespace mwetris::ui {
 				gameComponent_->draw(size.x, size.y - h - lowerBar, toSeconds(deltaTime));
 			}
 			if (customGame_) {
-				static bool internet = true;
+				bool internet = network_->isConnected();
 				if (ImGui::Checkbox("Network", &internet)) {
 					if (internet) {
-						
+						network_->connect();
 						spdlog::debug("Network on");
 					} else {
+						network_->disconnect();
 						spdlog::debug("Network off");
 					}
 				}
 				if (internet) {
+					serverId_ = network_->getServerId();
 					ImGui::SetCursorPosY(200);
 					ImGui::Separator();
 					ImGui::Text("Server Id: ");
@@ -313,7 +314,7 @@ namespace mwetris::ui {
 
 				if (ImGui::ConfirmationButton("Create Game", {width, height})) {
 					if (internet) {
-						network_->createGame(std::make_unique<game::SurvivalGameRules>(), TetrisWidth, TetrisHeight);
+						network_->startGame(std::make_unique<game::SurvivalGameRules>(), TetrisWidth, TetrisHeight);
 					} else {
 						game_->createGame(
 							std::make_unique<game::SurvivalGameRules>(),
