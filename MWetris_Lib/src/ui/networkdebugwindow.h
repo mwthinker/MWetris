@@ -35,18 +35,17 @@ namespace mwetris::ui {
 		}
 
 		SubWindow::Type getType() const override {
-			return type_;
+			return SubWindow::Type::SecondaryWindow;
 		}
 
 	private:
 		void update();
 
 		std::shared_ptr<network::DebugServer> debugServer_;
-		std::vector<game::PlayerSlot> playerSlots_;
+		std::vector<network::Slot> playerSlots_;
 		std::unique_ptr<graphic::GameComponent> gameComponent_;
 		std::vector<network::ConnectedClient> connectedClients_;
 		std::string name_ = "NetworkDebugWindow";
-		SubWindow::Type type_ = SubWindow::Type::SecondaryWindow;
 	};
 
 }

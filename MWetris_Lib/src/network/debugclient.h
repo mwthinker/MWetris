@@ -24,8 +24,6 @@ namespace mwetris::network {
 
 		~DebugClient() override;
 
-		const std::string& getUuid() const override;
-
 		bool receive(ProtobufMessage& message) override;
 
 		void send(ProtobufMessage&& message) override;
@@ -39,6 +37,8 @@ namespace mwetris::network {
 
 		// To be called by simulated server
 		void pushReceivedMessage(ProtobufMessage&& message);
+
+		const std::string& getUuid() const;
 
 		void setUuid(const std::string& uuid) {
 			uuid_ = uuid;

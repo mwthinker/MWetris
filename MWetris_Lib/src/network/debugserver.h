@@ -22,6 +22,20 @@ namespace mwetris::network {
 		bool allowToConnect;
 	};
 
+	enum class SlotType {
+		Open,
+		Remote,
+		Closed
+	};
+
+	struct Slot {
+		std::string clientUuid;
+		std::string playerUuid;
+		std::string name;
+		bool ai;
+		SlotType type;
+	};
+
 	class DebugServer : public std::enable_shared_from_this<DebugServer> {
 	public:
 		DebugServer();
@@ -42,7 +56,7 @@ namespace mwetris::network {
 
 		void restartGame();
 
-		mw::signals::Connection addPlayerSlotsCallback(const std::function<void(const std::vector<game::PlayerSlot>&)>& playerSlots);
+		mw::signals::Connection addPlayerSlotsCallback(const std::function<void(const std::vector<Slot>&)>& playerSlots);
 
 		mw::signals::Connection addInitGameCallback(const std::function<void(const game::InitGameEvent&)>& callback);
 

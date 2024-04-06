@@ -19,7 +19,7 @@ namespace mwetris::ui {
 		: debugServer_{server}
 		, gameComponent_{std::make_unique<graphic::GameComponent>()} {
 
-		debugServer_->addPlayerSlotsCallback([this](const std::vector<game::PlayerSlot>& playerSlots) {
+		debugServer_->addPlayerSlotsCallback([this](const std::vector<network::Slot>& playerSlots) {
 			playerSlots_ = playerSlots;
 		});
 
@@ -90,36 +90,33 @@ namespace mwetris::ui {
 			debugServer_->restartGame();
 		}
 
+		ImGui::Separator();
 		for (int i = 0; i < playerSlots_.size(); ++i) {
-			auto& playerSlot = playerSlots_[i];
+			auto& slot = playerSlots_[i];
 
 			ImGui::PushID(i + 1);
 
 			ImGui::BeginGroup();
-			std::visit([&](auto&& slot) mutable {
-				using T = std::decay_t<decltype(slot)>;
-				if constexpr (std::is_same_v<T, game::Human>) {
-					ImGui::Text("game::Human");
-					ImGui::Text("Player name: %s", slot.name.c_str());
-				} else if constexpr (std::is_same_v<T, game::Ai>) {
-					ImGui::Text("game::Ai");
-					ImGui::Text("Player name: %s", slot.name.c_str());
-				} else if constexpr (std::is_same_v<T, game::Remote>) {
-					ImGui::Text("game::Remote");
-					ImGui::Text("Player name: %s", slot.name.c_str());
-					ImGui::Text("Is AI: %s", slot.ai ? "true" : "false");
-				} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
-					// Skip.
-				} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
-					if (ImGui::Button("Open Slot", {100, 100})) {
-							
+			switch (slot.type) {
+				case network::SlotType::Open:
+					ImGui::Text("Open Slot");
+					break;
+				case network::SlotType::Remote:
+					if (slot.ai) {
+						ImGui::Text("Remote AI");
+					} else {
+						ImGui::Text("Remote Player");
 					}
-				} else {
-					static_assert(always_false_v<T>, "non-exhaustive visitor!");
-				}
-			}, playerSlot);
+					ImGui::Text("Player name: %s", slot.name.c_str());
+					ImGui::Text("Client UUID: %s", slot.clientUuid.c_str());
+					ImGui::Text("Player UUID: %s", slot.playerUuid.c_str());
+					break;
+				case network::SlotType::Closed:
+					ImGui::Text("Closed Slot");
+					break;
+			}
 			ImGui::EndGroup();
-
+			ImGui::Separator();
 			ImGui::PopID();
 		}
 	}

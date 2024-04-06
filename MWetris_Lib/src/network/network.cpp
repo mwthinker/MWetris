@@ -178,7 +178,7 @@ namespace mwetris::network {
 			for (const auto& tpSlot : gameLooby.slots()) {
 				switch (tpSlot.slot_type()) {
 					case tp_s2c::GameLooby_SlotType_REMOTE:
-						if (tpSlot.slot_type() == tp_s2c::GameLooby_SlotType_REMOTE && tpSlot.uuid() == client_->getUuid()) {
+						if (tpSlot.uuid() == uuid_) {
 							if (tpSlot.ai()) {
 								playerSlots_.push_back(game::Ai{.name = tpSlot.name()});
 							} else {
@@ -247,7 +247,6 @@ namespace mwetris::network {
 			wrapperToServer_.Clear();
 			auto connectToGame = wrapperToServer_.mutable_connect_to_game();
 			connectToGame->set_server_uuid(uuid);
-			connectToGame->set_uuid(client_->getUuid());
 			send(wrapperToServer_);
 		}
 
@@ -304,7 +303,7 @@ namespace mwetris::network {
 		}
 
 		const std::string& getServerId() const {
-			return client_->getUuid();
+			return uuid_;
 		}
 
 		void handleGameRestart(game::GameRestart gameRestart) {
@@ -331,7 +330,7 @@ namespace mwetris::network {
 			//spdlog::info("[Network] handle UpdateMove: {}", static_cast<int>(updateMove.move));
 			wrapperToServer_.Clear();
 			auto boardMove = wrapperToServer_.mutable_board_move();
-			boardMove->set_uuid(player.getUuid());
+			boardMove->set_player_uuid(player.getUuid());
 			boardMove->set_move(static_cast<tp::Move>(updateMove.move));
 			send(wrapperToServer_);
 		}

@@ -15,6 +15,7 @@
 
 #include <queue>
 #include <random>
+#include <variant>
 
 namespace mwetris::network {
 
@@ -40,13 +41,13 @@ namespace mwetris::network {
 
 	class DebugServer::Impl {
 	public:
-		mw::PublicSignal<DebugServer::Impl, const std::vector<game::PlayerSlot>&> playerSlotsUpdated;
+		mw::PublicSignal<DebugServer::Impl, const std::vector<Slot>&> playerSlotsUpdated;
 		mw::PublicSignal<DebugServer::Impl, const std::vector<game::RemotePlayerPtr>&> gameCreated;
 		mw::PublicSignal<DebugServer::Impl, const game::InitGameEvent&> initGameEvent;
 		mw::PublicSignal<DebugServer::Impl, const ConnectedClient&> connectedClientListener;
 
 		Impl() {
-			playerSlots_.resize(4, game::OpenSlot{});
+			playerSlots_.resize(4, Slot{ .type = SlotType::Open });
 		}
 
 		~Impl() {}
@@ -136,7 +137,7 @@ namespace mwetris::network {
 
 		void handleBoardMove(const tp_c2s::BoardMove& boardMove) {
 			auto move = static_cast<tetris::Move>(boardMove.move());
-			remotePlayers_[boardMove.uuid()]->updateMove(move);
+			remotePlayers_[boardMove.player_uuid()]->updateMove(move);
 		}
 
 		void handleBoardNextBlock(const tp_c2s::BoardNextBlock& boardNextBlock) {
@@ -167,16 +168,16 @@ namespace mwetris::network {
 			remotePlayers_.clear();
 			std::vector<game::PlayerBoardPtr> playerBoards;
 			for (const auto& slot : playerSlots_) {
-				if (auto remote = std::get_if<game::Remote>(&slot)) {
-					auto remotePlayer = std::make_shared<game::RemotePlayer>(current, next, remote->uuid);
-					remotePlayers_[remote->uuid] = remotePlayer;
+				if (slot.type == SlotType::Remote) {
+					auto remotePlayer = std::make_shared<game::RemotePlayer>(current, next, slot.playerUuid);
+					remotePlayers_[slot.playerUuid] = remotePlayer;
 					playerBoards.push_back(remotePlayer->getPlayerBoard());
 					auto tpRemotePlayer = createGame->add_players();
-					tpRemotePlayer->set_uuid(remote->uuid);
-					tpRemotePlayer->set_name(remote->name);
+					tpRemotePlayer->set_uuid(slot.playerUuid);
+					tpRemotePlayer->set_name(slot.name);
 					tpRemotePlayer->set_level(0);
 					tpRemotePlayer->set_points(0);
-					tpRemotePlayer->set_ai(remote->ai);
+					tpRemotePlayer->set_ai(slot.ai);
 					tpRemotePlayer->set_current(static_cast<tp::BlockType>(current));
 					tpRemotePlayer->set_next(static_cast<tp::BlockType>(next));
 				}
@@ -189,19 +190,19 @@ namespace mwetris::network {
 			paused_ = gameCommand.pause();
 		}
 
-		bool slotBelongsToClient(const Client& client, int slotIndex) {
+		bool slotBelongsToClient(const DebugClient& client, int slotIndex) {
 			const auto& slot = playerSlots_[slotIndex];
-			if (auto remote = std::get_if<game::Remote>(&slot); remote && remote->uuid == client.getUuid()) {
+			if (slot.type == SlotType::Remote && slot.clientUuid == client.getUuid()) {
 				return true;
 			}
-			return std::holds_alternative<game::OpenSlot>(slot);
+			return slot.type == SlotType::Open;
 		}
 
 		void handleGameLooby(Client& client, const tp_c2s::GameLooby& gameLooby) {
 			//remotePlayers_[client.getUuid()]->
 		}
 
-		void handlePlayerSlot(Client& client, const tp_c2s::PlayerSlot& gameLooby) {
+		void handlePlayerSlot(DebugClient& client, const tp_c2s::PlayerSlot& gameLooby) {
 			int index = wrapperFromClient_.player_slot().index();
 			const auto& slot = wrapperFromClient_.player_slot();
 			
@@ -212,12 +213,14 @@ namespace mwetris::network {
 
 			if (slotBelongsToClient(client, index)) {
 				if (slot.slot_type() == tp_c2s::PlayerSlot_SlotType_OPEN_SLOT) {
-					playerSlots_[index] = game::OpenSlot{};
+					playerSlots_[index] = Slot{ .type = SlotType::Open };
 				} else {
-					playerSlots_[index] = game::Remote{
+					playerSlots_[index] = Slot{
+						.clientUuid = client.getUuid(),
+						.playerUuid = generateUuid(),
 						.name = slot.name(),
 						.ai = slot.slot_type() == tp_c2s::PlayerSlot_SlotType_AI,
-						.uuid = client.getUuid()
+						.type = SlotType::Remote
 					};
 				}
 			}
@@ -225,25 +228,26 @@ namespace mwetris::network {
 			wrapperToClient_.Clear();
 			auto tpGameLooby = wrapperToClient_.mutable_game_looby();
 
-			for (const auto& playerSlot : playerSlots_) {
+			for (const auto& slot : playerSlots_) {
 				auto& tpSlot = *tpGameLooby->add_slots();
 				tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_UNSPECIFIED_SLOT_TYPE);
 
-				std::visit([&](auto&& slot) mutable {
-					using T = std::decay_t<decltype(slot)>;
-					if constexpr (std::is_same_v<T, game::Remote>) {
-						tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_REMOTE);
-						tpSlot.set_ai(slot.ai);
-						tpSlot.set_name(slot.name);
-						tpSlot.set_uuid(slot.uuid);
-					} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
-						tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_OPEN_SLOT);
-					} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
-						tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_CLOSED_SLOT);
-					} else {
-						spdlog::error("[DebugServer.cpp] Invalid slot type");
-					}
-				}, playerSlot);
+				switch (slot.type) {
+				case SlotType::Open:
+					tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_OPEN_SLOT);
+					break;
+				case SlotType::Remote:
+					tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_REMOTE);
+					tpSlot.set_ai(slot.ai);
+					tpSlot.set_name(slot.name);
+					tpSlot.set_uuid(slot.playerUuid);
+					break;
+				case SlotType::Closed:
+					tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_CLOSED_SLOT);
+					break;
+				default:
+					spdlog::error("[DebugServer.cpp] Invalid slot type");
+				}
 			}
 			sendToClients(wrapperToClient_);
 		}
@@ -373,6 +377,14 @@ namespace mwetris::network {
 			}
 		}
 
+		void sendToClientsExcept(const tp_s2c::Wrapper& wrapper, const DebugClient& client) {
+			for (auto& remote : remotes_) {
+				if (remote.client->getUuid() != client.getUuid()) {
+					sendToClient(*remote.client, wrapper);
+				}
+			}
+		}
+
 		void sendToClient(DebugClient& client, const tp_s2c::Wrapper& wrapper) {
 			ProtobufMessage message;
 			messageQueue_.acquire(message);
@@ -381,7 +393,7 @@ namespace mwetris::network {
 		}
 
 		std::map<std::string, game::RemotePlayerPtr> remotePlayers_;
-		std::vector<game::PlayerSlot> playerSlots_;
+		std::vector<Slot> playerSlots_;
 		std::vector<std::string> connectedUuids_;
 		bool paused_ = false;
 
@@ -408,7 +420,7 @@ namespace mwetris::network {
 
 	DebugServer::~DebugServer() {}
 
-	mw::signals::Connection DebugServer::addPlayerSlotsCallback(const std::function<void(const std::vector<game::PlayerSlot>&)>& callback) {
+	mw::signals::Connection DebugServer::addPlayerSlotsCallback(const std::function<void(const std::vector<Slot>&)>& callback) {
 		return impl_->playerSlotsUpdated.connect(callback);
 	}
 

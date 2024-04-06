@@ -39,8 +39,7 @@ message StartGame {
 }
 
 message ConnectToGame {
-	string uuid = 1;
-	string server_uuid = 2;
+	string server_uuid = 1;
 }
 
 message GameCommand {
@@ -48,7 +47,7 @@ message GameCommand {
 }
 
 message BoardMove {
-	string uuid = 1;
+	string player_uuid = 1;
 	tp.Move move = 2;
 }
 
