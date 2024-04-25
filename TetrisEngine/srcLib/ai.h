@@ -50,11 +50,7 @@ namespace tetris {
 	public:
 		Ai();
 
-		Ai(const std::string& name, const std::string& valueFunction, bool allowException = false);
-
-		const std::string& getName() const {
-			return name_;
-		}
+		Ai(const std::string& valueFunction, bool allowException = false);
 
 		const std::string& getValueFunction() const {
 			return valueFunction_;
@@ -78,8 +74,7 @@ namespace tetris {
 		void initAiParameters(const calc::Calculator& calculator, const calc::Cache& cache);
 
 		State calculateBestStateRecursive(const TetrisBoard& board, int depth);
-
-		std::string name_;
+		
 		std::string valueFunction_;
 
 		calc::Calculator calculator_;

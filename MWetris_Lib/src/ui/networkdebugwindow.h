@@ -27,6 +27,7 @@ namespace mwetris::ui {
 	class NetworkDebugWindow : public SubWindow {
 	public:
 		explicit NetworkDebugWindow(std::shared_ptr<network::DebugServer> server);
+		~NetworkDebugWindow() override;
 		
 		void imGuiUpdate(const sdl::DeltaTime& deltaTime) override;
 

@@ -18,7 +18,7 @@ public:
 
 	MainWindow(const Config& config);
 
-	~MainWindow();
+	~MainWindow() override;
 	
 private:
 	void initPreLoop() override;

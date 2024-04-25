@@ -56,6 +56,14 @@ namespace mwetris::game {
 		return players;
 	}
 
+	PlayerPtr PlayerFactory::createPlayer(int width, int height, const Human& human) {
+		return std::make_shared<HumanPlayer>(human.device, createLocalPlayerBoard(width, height, human.name));
+	}
+
+	PlayerPtr PlayerFactory::createPlayer(int width, int height, const Ai& ai) {
+		return std::make_shared<AiPlayer>(ai.ai, createLocalPlayerBoard(width, height, ai.name));
+	}
+
 	TetrisGame::TetrisGame() {
 	}
 
@@ -68,6 +76,10 @@ namespace mwetris::game {
 		}
 
 		const auto& player = *players_.front();
+
+		if (player.isLocal()) {
+			return false;
+		}
 
 		if (player.getPlayerBoard()->getRows() != TetrisHeight) {
 			return false;
@@ -97,10 +109,9 @@ namespace mwetris::game {
 
 	void TetrisGame::createDefaultGame(DevicePtr device) {
 		rules_ = std::make_unique<DefaultGameRules>();
-		remotePlayers_.clear();
 		saveDefaultGame();
 
-		if (isDefaultGame() && players_.size() == 1 && players_.front()->getPlayerBoard()->isGameOver()) {
+		if (isDefaultGame() && players_.front()->getPlayerBoard()->isGameOver()) {
 			restartGame();
 		} else {
 			LocalPlayerBoardPtr localPlayerBoard = loadGame();
@@ -118,18 +129,13 @@ namespace mwetris::game {
 		}
 	}
 
-	void TetrisGame::createGame(std::unique_ptr<GameRules> gameRules, int width, int height,
-		const std::vector<PlayerPtr>& players,
-		const std::vector<RemotePlayerPtr>& remotePlayers) {
+	void TetrisGame::createGame(std::unique_ptr<GameRules> gameRules, const std::vector<PlayerPtr>& players) {
 		
 		rules_ = std::move(gameRules);
 
 		saveDefaultGame();
-		remotePlayers_.clear();
 
 		players_ = players;
-		remotePlayers_ = remotePlayers;
-
 		rules_->createGame(players_);
 
 		initGame();
@@ -138,9 +144,6 @@ namespace mwetris::game {
 	void TetrisGame::initGame() {
 		std::vector<PlayerBoardPtr> playerBoards;
 		for (auto& player : players_) {
-			playerBoards.push_back(player->getPlayerBoard());
-		}
-		for (auto& player : remotePlayers_) {
 			playerBoards.push_back(player->getPlayerBoard());
 		}
 

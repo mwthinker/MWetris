@@ -27,6 +27,11 @@ namespace mwetris {
 
 	class Configuration {
 	public:
+		struct Ai {
+			std::string name;
+			tetris::Ai ai;
+		};
+
 		static Configuration& getInstance();
 
 		void quit();
@@ -128,7 +133,7 @@ namespace mwetris {
 		void setAi3Name(const std::string& name);
 		void setAi4Name(const std::string& name);
 
-		std::vector<tetris::Ai> getAiVector() const;
+		std::vector<Ai> getAiVector() const;
 
 		std::vector<HighscoreRecord> getHighscoreRecordVector() const;
 		void setHighscoreRecordVector(const std::vector<HighscoreRecord>& highscoreVector);

@@ -28,38 +28,17 @@ namespace mwetris::network {
 		constexpr std::string_view ServerIp = "127.0.0.1";
 		constexpr int Port = 59412;
 
-		std::vector<game::Human> extractHumans(const std::vector<game::PlayerSlot>& playerSlots) {
-			std::vector<game::Human> humans;
-			for (const auto& playerSlot : playerSlots) {
-				if (auto human = std::get_if<game::Human>(&playerSlot); human) {
-					humans.push_back(game::Human{
-						.name = human->name,
-						.device = human->device
-					});
-				}
-			}
-			return humans;
-		}
-
-		std::vector<game::Ai> extractAis(const std::vector<game::PlayerSlot>& playerSlots) {
-			std::vector<game::Ai> ais;
-			for (const auto& playerSlot : playerSlots) {
-				if (auto ai = std::get_if<game::Ai>(&playerSlot); ai) {
-					ais.push_back(game::Ai{
-						.name = ai->name,
-						.ai = ai->ai}
-					);
-				}
-			}
-			return ais;
-		}
-
 	}
 
 	class Network::Impl {
 	public:
 		mw::PublicSignal<Network::Impl, game::PlayerSlot, int> playerSlotUpdate;
 		mw::PublicSignal<Network::Impl, bool> connected;
+
+		struct NetworkPlayer {
+			game::PlayerPtr player;
+			std::string uuid;
+		};
 
 		Impl(std::shared_ptr<Client> client, std::shared_ptr<game::TetrisGame> tetrisGame)
 			: client_{client}
@@ -143,9 +122,7 @@ namespace mwetris::network {
 				bool valid = client_->receive(message);
 				if (valid) {
 					wrapperFromServer_.Clear();
-					int size = message.getSize();
-					int bodySize = message.getBodySize();
-					bool valid = wrapperFromServer_.ParseFromArray(message.getBodyData(), message.getBodySize());
+					valid = wrapperFromServer_.ParseFromArray(message.getBodyData(), message.getBodySize());
 					client_->release(std::move(message));
 				} else if (message.getSize() != 0) {
 					spdlog::info("[Network] Invalid data");
@@ -178,14 +155,14 @@ namespace mwetris::network {
 			for (const auto& tpSlot : gameLooby.slots()) {
 				switch (tpSlot.slot_type()) {
 					case tp_s2c::GameLooby_SlotType_REMOTE:
-						if (tpSlot.uuid() == uuid_) {
+						if (tpSlot.client_uuid() == uuid_) {
 							if (tpSlot.ai()) {
 								playerSlots_.push_back(game::Ai{.name = tpSlot.name()});
 							} else {
 								playerSlots_.push_back(game::Human{.name = tpSlot.name()});
 							}
 						} else {
-							playerSlots_.push_back(game::Remote{.name = tpSlot.name(), .uuid = tpSlot.uuid()});
+							//playerSlots_.push_back(game::Remote{.name = tpSlot.name(), .uuid = tpSlot.player_uuid()});
 						}
 						break;
 					case tp_s2c::GameLooby_SlotType_OPEN_SLOT:
@@ -260,23 +237,60 @@ namespace mwetris::network {
 			int h = createGame.height();
 
 			fillSlotsWithDevicesAndAis();
-			localPlayers_ = game::PlayerFactory{}.createPlayers(w, h, extractHumans(playerSlots_), extractAis(playerSlots_));
-			auto current = tetris::randomBlockType();
-			auto next = tetris::randomBlockType();
+			players_.clear();
+	
 
-			for (auto& player : localPlayers_) {
-				player->updateRestart(current, next); // Update before attaching the event handles, to avoid multiple calls.
-				connections_ += player->addPlayerBoardUpdateCallback([this, &player](game::PlayerBoardEvent playerBoardEvent) {
-					std::visit([&](auto&& event) {
-						handlePlayerBoardUpdate(*player, event);
-					}, playerBoardEvent);
-				});
-				connections_ += player->addEventCallback([this, &player](tetris::BoardEvent boardEvent, int nbr) {
-					handleBoardEvent(*player, boardEvent, nbr);
-				});
+			const auto& tpPlayers = createGame.players();
+			tpPlayers.Get(0);
+
+			int index = 0;
+			for (const auto& tpPlayer : createGame.players()) {
+				auto current = static_cast<tetris::BlockType>(tpPlayer.current());
+				auto next = static_cast<tetris::BlockType>(tpPlayer.next());
+				if (index < playerSlots_.size()) {
+					auto& playerSlot = playerSlots_[index];
+					if (auto human = std::get_if<game::Human>(&playerSlot); human) {
+						auto& networkPlayer = players_.emplace_back(
+							NetworkPlayer{
+								.player = game::PlayerFactory{}.createPlayer(w, h, *human),
+								.uuid = tpPlayer.player_uuid()
+							}
+						);
+						networkPlayer.player->updateRestart(current, next); // Update before attaching the event handles, to avoid multiple calls.
+						connections_ += networkPlayer.player->addPlayerBoardUpdateCallback([this, networkPlayer](game::PlayerBoardEvent playerBoardEvent) {
+							std::visit([&](auto&& event) {
+								handlePlayerBoardUpdate(networkPlayer, event);
+							}, playerBoardEvent);
+						});
+						connections_ += networkPlayer.player->addEventCallback([this, player = networkPlayer.player](tetris::BoardEvent boardEvent, int nbr) {
+							handleBoardEvent(*player, boardEvent, nbr);
+						});
+					} else if (auto ai = std::get_if<game::Ai>(&playerSlot); ai) {
+						auto& networkPlayer = players_.emplace_back(
+							NetworkPlayer{
+								.player = game::PlayerFactory{}.createPlayer(w, h, *ai),
+								.uuid = tpPlayer.player_uuid()
+							}
+						);
+						networkPlayer.player->updateRestart(current, next); // Update before attaching the event handles, to avoid multiple calls.
+						connections_ += networkPlayer.player->addPlayerBoardUpdateCallback([this, networkPlayer](game::PlayerBoardEvent playerBoardEvent) {
+							std::visit([&](auto&& event) {
+								handlePlayerBoardUpdate(networkPlayer, event);
+							}, playerBoardEvent);
+						});
+						connections_ += networkPlayer.player->addEventCallback([this, networkPlayer](tetris::BoardEvent boardEvent, int nbr) {
+							handleBoardEvent(*networkPlayer.player, boardEvent, nbr);
+						});
+					}
+				}
+				++index;
 			}
 
-			tetrisGame_->createGame(std::move(gameRules_), w, h, localPlayers_, {});
+			std::vector<game::PlayerPtr> players;
+			for (auto& player : players_) {
+				players.push_back(player.player);
+			}
+			tetrisGame_->createGame(std::move(gameRules_), players);
 			gameRules_ = nullptr;
 			connections_ += tetrisGame_->gameRestartEvent.connect([this](game::GameRestart gameRestart) {
 				handleGameRestart(gameRestart);
@@ -314,32 +328,34 @@ namespace mwetris::network {
 			send(wrapperToServer_);
 		}
 
-		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdateRestart& updateRestart) {
+		void handlePlayerBoardUpdate(const NetworkPlayer& player, const game::UpdateRestart& updateRestart) {
 			spdlog::info("[Network] handle UpdateRestart: current={}, next={}", static_cast<char>(updateRestart.current), static_cast<char>(updateRestart.next));
 		}
 
-		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdatePlayerData& updatePlayerData) {
+		void handlePlayerBoardUpdate(const NetworkPlayer& player, const game::UpdatePlayerData& updatePlayerData) {
 			spdlog::info("[Network] handle UpdatePlayerData");
 		}
 
-		void handlePlayerBoardUpdate(const game::Player& player, const game::ExternalRows& externalRows) {
+		void handlePlayerBoardUpdate(const NetworkPlayer& player, const game::ExternalRows& externalRows) {
 			spdlog::info("[Network] handle ExternalRows");
 		}
 
-		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdateMove& updateMove) {
+		void handlePlayerBoardUpdate(const NetworkPlayer& player, const game::UpdateMove& updateMove) {
 			//spdlog::info("[Network] handle UpdateMove: {}", static_cast<int>(updateMove.move));
 			wrapperToServer_.Clear();
 			auto boardMove = wrapperToServer_.mutable_board_move();
-			boardMove->set_player_uuid(player.getUuid());
+			//auto uuid = player.getUuid();
+			//boardMove->set_player_uuid(player.getUuid());
 			boardMove->set_move(static_cast<tp::Move>(updateMove.move));
+			boardMove->set_player_uuid(player.uuid);
 			send(wrapperToServer_);
 		}
 
-		void handlePlayerBoardUpdate(const game::Player& player, const game::UpdateNextBlock& updateNextBlock) {
+		void handlePlayerBoardUpdate(const NetworkPlayer& player, const game::UpdateNextBlock& updateNextBlock) {
 			//spdlog::info("[Network] handle UpdateNextBlock: {}", static_cast<char>(updateNextBlock.next));
 			wrapperToServer_.Clear();
 			auto nextBlock = wrapperToServer_.mutable_next_block();
-			nextBlock->set_uuid(player.getUuid());
+			nextBlock->set_uuid(player.uuid);
 			nextBlock->set_next(static_cast<tp::BlockType>(updateNextBlock.next));
 			send(wrapperToServer_);
 		}
@@ -378,7 +394,7 @@ namespace mwetris::network {
 
 		mw::signals::ScopedConnections connections_;
 
-		std::vector<game::PlayerPtr> localPlayers_;
+		std::vector<NetworkPlayer> players_;
 		
 		tp_c2s::Wrapper wrapperToServer_;
 		tp_s2c::Wrapper wrapperFromServer_;

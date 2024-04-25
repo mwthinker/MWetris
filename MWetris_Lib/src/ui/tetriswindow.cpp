@@ -318,9 +318,10 @@ namespace mwetris::ui {
 					} else {
 						game_->createGame(
 							std::make_unique<game::SurvivalGameRules>(),
-							TetrisWidth, TetrisHeight,
-							game::PlayerFactory{}.createPlayers(TetrisWidth, TetrisHeight, extract<game::Human>(playerSlots_), extract<game::Ai>(playerSlots_)),
-							{});
+							game::PlayerFactory{}
+								.createPlayers(TetrisWidth, TetrisHeight
+									, extract<game::Human>(playerSlots_)
+									, extract<game::Ai>(playerSlots_)));
 					}
 					customGame_ = false;
 				}
@@ -331,12 +332,11 @@ namespace mwetris::ui {
 
 	void TetrisWindow::imGuiCustomGame(int windowWidth, int windowHeight, double deltaTime) {
 		float width = windowWidth;
-		float height = windowHeight;
+
 		if (playerSlots_.size() > 1) {
 			width = windowWidth / playerSlots_.size();
 		}
-
-		auto drawList = ImGui::GetWindowDrawList();
+		
 		auto pos = ImGui::GetCursorScreenPos();
 
 		for (int i = 0; i < playerSlots_.size(); ++i) {

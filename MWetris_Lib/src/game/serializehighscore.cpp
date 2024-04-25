@@ -21,9 +21,16 @@ namespace mwetris::game {
 			for (const auto& result : repeatedField) {
 				auto timePoint = std::chrono::system_clock::from_time_t(result.last_played().seconds());
 				auto ymd = std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(timePoint)};
+				results.push_back(HighScoreResult{
+					.name = result.name(),
+					.points = result.points(),
+					.rows = result.rows(),
+					.level = result.level(),
+					.lastPlayed = ymd
+				});
 			}
 			std::sort(results.begin(), results.end(), [](const HighScoreResult& a, const HighScoreResult& b) {
-				return a.points > b.points || a.points == b.points && a.lastPlayed < b.lastPlayed;
+				return a.points > b.points || (a.points == b.points && a.lastPlayed < b.lastPlayed);
 			});
 			return results;
 		}

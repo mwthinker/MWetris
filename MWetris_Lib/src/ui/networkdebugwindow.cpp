@@ -27,16 +27,18 @@ namespace mwetris::ui {
 			gameComponent_->initGame(initGameEvent);
 		});
 
-		connectedClients_ = debugServer_->getConnectedClients();
 		debugServer_->addClientListener([this](const network::ConnectedClient& client) {
-			for (auto& c : connectedClients_) {
-				if (c.uuid == client.uuid) {
-					c = client;
-					break;
-				}
+			if (std::any_of(connectedClients_.begin(), connectedClients_.end(), [&client](const auto& connected) {
+				return connected.uuid == client.uuid;
+			})) {
+				return;
 			}
+
+			connectedClients_.push_back(client);
 		});
 	}
+
+	NetworkDebugWindow::~NetworkDebugWindow() = default;
 
 	void NetworkDebugWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
 		ImGui::SetNextWindowSize({650, 650});
@@ -64,12 +66,7 @@ namespace mwetris::ui {
 		int id = 0;
 		for (auto& connectedClient : connectedClients_) {
 			ImGui::PushID(++id);
-			ImGui::Text(connectedClient.uuid.c_str());
-			bool allow = connectedClient.allowToConnect;
-			ImGui::SameLine();
-			if (ImGui::Checkbox("Allow Connection", &allow)) {
-				debugServer_->allowClientToConnect(connectedClient.uuid, allow);
-			}
+			ImGui::Text("Connected: %s", connectedClient.uuid.c_str());
 			ImGui::PopID();
 		}
 

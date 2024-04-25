@@ -7,14 +7,14 @@ namespace mwetris::ui::scene {
 
 	namespace {
 
-		bool ComboAi(const char* name, int& item, const std::vector<tetris::Ai>& ais, ImGuiComboFlags flags = 0) {
+		bool ComboAi(const char* name, int& item, const std::vector<Configuration::Ai>& ais, ImGuiComboFlags flags = 0) {
 			int oldItem = item;
-			ImGui::ComboScoped(name, ais[item].getName().c_str(), flags, [&]() {
+			ImGui::ComboScoped(name, ais[item].name.c_str(), flags, [&]() {
 				auto size = ais.size();
 				for (int n = 0; n < size; ++n)
 				{
 					bool isSelected = (item == n);
-					if (ImGui::Selectable(ais[n].getName().c_str(), isSelected)) {
+					if (ImGui::Selectable(ais[item].name.c_str(), isSelected)) {
 						item = n;
 					}
 					if (isSelected) {
@@ -80,21 +80,21 @@ namespace mwetris::ui::scene {
 		ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.20f);
 
 		const auto& ais = Configuration::getInstance().getAiVector();
-		int nbrAi1 = std::find_if(ais.begin(), ais.end(), [](const tetris::Ai& ai) { return ai.getName() == Configuration::getInstance().getAi1Name(); }) - ais.begin();
+		int nbrAi1 = std::find_if(ais.begin(), ais.end(), [](const Configuration::Ai& ai) { return ai.name == Configuration::getInstance().getAi1Name(); }) - ais.begin();
 		if (ComboAi("Ai1", nbrAi1, ais)) {
-			Configuration::getInstance().setAi1Name(ais[nbrAi1].getName());
+			Configuration::getInstance().setAi1Name(ais[nbrAi1].name);
 		}
-		int nbrAi2 = std::find_if(ais.begin(), ais.end(), [](const tetris::Ai& ai) { return ai.getName() == Configuration::getInstance().getAi2Name(); }) - ais.begin();
+		int nbrAi2 = std::find_if(ais.begin(), ais.end(), [](const Configuration::Ai& ai) { return ai.name == Configuration::getInstance().getAi2Name(); }) - ais.begin();
 		if (ComboAi("Ai2", nbrAi2, ais)) {
-			Configuration::getInstance().setAi2Name(ais[nbrAi2].getName());
+			Configuration::getInstance().setAi2Name(ais[nbrAi2].name);
 		}
-		int nbrAi3 = std::find_if(ais.begin(), ais.end(), [](const tetris::Ai& ai) { return ai.getName() == Configuration::getInstance().getAi3Name(); }) - ais.begin();
+		int nbrAi3 = std::find_if(ais.begin(), ais.end(), [](const Configuration::Ai& ai) { return ai.name == Configuration::getInstance().getAi3Name(); }) - ais.begin();
 		if (ComboAi("Ai3", nbrAi3, ais)) {
-			Configuration::getInstance().setAi4Name(ais[nbrAi3].getName());
+			Configuration::getInstance().setAi4Name(ais[nbrAi3].name);
 		}
-		int nbrAi4 = std::find_if(ais.begin(), ais.end(), [](const tetris::Ai& ai) { return ai.getName() == Configuration::getInstance().getAi4Name(); }) - ais.begin();
+		int nbrAi4 = std::find_if(ais.begin(), ais.end(), [](const Configuration::Ai& ai) { return ai.name == Configuration::getInstance().getAi4Name(); }) - ais.begin();
 		if (ComboAi("Ai4", nbrAi4, ais)) {
-			Configuration::getInstance().setAi4Name(ais[nbrAi4].getName());
+			Configuration::getInstance().setAi4Name(ais[nbrAi4].name);
 		}
 
 		ImGui::PopItemWidth();

@@ -20,8 +20,8 @@ namespace mwetris::ui::scene {
 	}
 
 	JoinGame::JoinGame(std::shared_ptr<game::TetrisGame> game, std::shared_ptr<network::Network> network)
-		: game_{game}
-		, network_{network} {
+		: network_{network}
+		, game_{game} {
 
 		connections_ += network_->addPlayerSlotListener([this](game::PlayerSlot, int) {
 			connected_ = true;

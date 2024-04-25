@@ -56,7 +56,7 @@ Flags::Flags(const int argc, const char* const argv[])
 			if (i + 1 < argc) {
 				std::string valueFunction = argv[i + 1];
 				try {
-					ai_ = Ai{"AI", valueFunction, true};
+					ai_ = Ai{valueFunction, true};
 				} catch (const calc::CalculatorException& exception) {
 					throw FlagsException{fmt::format("Value function error. {}\n", exception.what())};
 				}

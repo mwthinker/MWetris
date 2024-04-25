@@ -137,6 +137,9 @@ namespace mwetris::network {
 
 		void handleBoardMove(const tp_c2s::BoardMove& boardMove) {
 			auto move = static_cast<tetris::Move>(boardMove.move());
+			// Confirm player uuid belongs to correct client
+			auto uuid = boardMove.player_uuid();
+
 			remotePlayers_[boardMove.player_uuid()]->updateMove(move);
 		}
 
@@ -173,7 +176,7 @@ namespace mwetris::network {
 					remotePlayers_[slot.playerUuid] = remotePlayer;
 					playerBoards.push_back(remotePlayer->getPlayerBoard());
 					auto tpRemotePlayer = createGame->add_players();
-					tpRemotePlayer->set_uuid(slot.playerUuid);
+					tpRemotePlayer->set_player_uuid(slot.playerUuid);
 					tpRemotePlayer->set_name(slot.name);
 					tpRemotePlayer->set_level(0);
 					tpRemotePlayer->set_points(0);
@@ -231,6 +234,7 @@ namespace mwetris::network {
 			for (const auto& slot : playerSlots_) {
 				auto& tpSlot = *tpGameLooby->add_slots();
 				tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_UNSPECIFIED_SLOT_TYPE);
+				tpSlot.set_client_uuid(client.getUuid());
 
 				switch (slot.type) {
 				case SlotType::Open:
@@ -240,7 +244,7 @@ namespace mwetris::network {
 					tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_REMOTE);
 					tpSlot.set_ai(slot.ai);
 					tpSlot.set_name(slot.name);
-					tpSlot.set_uuid(slot.playerUuid);
+					tpSlot.set_player_uuid(slot.playerUuid);
 					break;
 				case SlotType::Closed:
 					tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_CLOSED_SLOT);
@@ -314,12 +318,11 @@ namespace mwetris::network {
 			return paused_;
 		}
 
-		std::shared_ptr<Client> createClient(std::shared_ptr<DebugServer> debugServer) {
+		std::shared_ptr<Client> createDisconnectedClient(std::shared_ptr<DebugServer> debugServer) {
 			auto client = std::make_shared<DebugClient>(debugServer);
 			const auto& remote = remotes_.emplace_back(Remote{
 				.allowToConnect = true,
-				.connected = false,
-				.type = RemoteType::Connected,
+				.type = RemoteType::Disconnected,
 				.client = client
 			});
 			triggerConnectedClient(remote);
@@ -329,7 +332,9 @@ namespace mwetris::network {
 		std::vector<ConnectedClient> getConnectedClients() const {
 			std::vector<ConnectedClient> connectedClients;
 			for (const Remote& remote : remotes_) {
-				connectedClients.push_back(convertToConnectedClient(remote));
+				if (remote.type == RemoteType::Connected) {
+					connectedClients.push_back(convertToConnectedClient(remote));
+				}
 			}
 			return connectedClients;
 		}
@@ -349,12 +354,12 @@ namespace mwetris::network {
 			Spectator,
 			Server,
 			Client,
-			Connected
+			Connected,
+			Disconnected
 		};
 
 		struct Remote {
 			bool allowToConnect;
-			bool connected;
 			RemoteType type;
 			std::shared_ptr<DebugClient> client;
 		};
@@ -362,8 +367,6 @@ namespace mwetris::network {
 		ConnectedClient convertToConnectedClient(const Remote& remote) const {
 			return ConnectedClient{
 				.uuid = remote.client->getUuid(),
-				.connected = remote.connected,
-				.allowToConnect = remote.allowToConnect
 			};
 		}
 
@@ -408,7 +411,7 @@ namespace mwetris::network {
 	}
 
 	std::shared_ptr<Client> DebugServer::createClient() {
-		return impl_->createClient(shared_from_this());
+		return impl_->createDisconnectedClient(shared_from_this());
 	}
 
 	void DebugServer::disconnect(const std::string& uuid) {

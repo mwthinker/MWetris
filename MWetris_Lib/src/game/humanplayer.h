@@ -67,12 +67,12 @@ namespace mwetris::game {
 			return localPlayerBoard_->getName();
 		}
 
-		const std::string& getUuid() const override {
-			return localPlayerBoard_->getUniqueId();;
-		}
-
 		bool isAi() const override {
 			return false;
+		}
+
+		bool isLocal() const override {
+			return true;
 		}
 
 	private:

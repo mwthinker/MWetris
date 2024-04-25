@@ -4,7 +4,7 @@
 #include "protobufmessage.h"
 #include "client.h"
 #include "game/playerslot.h"
-#include "debugclient.h"
+#include "client.h"
 #include <sdl/window.h>
 
 #include "game/tetrisgame.h"
@@ -18,8 +18,6 @@ namespace mwetris::network {
 
 	struct ConnectedClient {
 		std::string uuid;
-		bool connected;
-		bool allowToConnect;
 	};
 
 	enum class SlotType {

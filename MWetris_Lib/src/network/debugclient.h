@@ -5,6 +5,7 @@
 #include "protobufmessagequeue.h"
 #include "client.h"
 #include "game/playerslot.h"
+#include "debugserver.h"
 
 #include "game/tetrisgame.h"
 
@@ -18,8 +19,6 @@ namespace mwetris::network {
 
 	class DebugClient : public Client {
 	public:
-		friend class DebugServer;
-
 		DebugClient(std::shared_ptr<DebugServer> debugServer);
 
 		~DebugClient() override;

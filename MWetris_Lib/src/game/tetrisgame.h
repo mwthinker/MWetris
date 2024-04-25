@@ -27,9 +27,13 @@ namespace mwetris::game {
 		PlayerFactory();
 
 		std::vector<PlayerPtr> createPlayers(int width, int height,
-			const std::vector<game::Human>& humans,
-			const std::vector<game::Ai>& ais
+			const std::vector<Human>& humans,
+			const std::vector<Ai>& ais
 		);
+
+		PlayerPtr createPlayer(int width, int height, const Human& human);
+
+		PlayerPtr createPlayer(int width, int height, const Ai& ai);
 	};
 
 	class TetrisGame {
@@ -47,9 +51,7 @@ namespace mwetris::game {
 
 		void createDefaultGame(DevicePtr device);
 
-		void createGame(std::unique_ptr<GameRules> gameRules, int width, int height,
-			const std::vector<PlayerPtr>& players,
-			const std::vector<RemotePlayerPtr>& remotePlayers);
+		void createGame(std::unique_ptr<GameRules> gameRules, const std::vector<PlayerPtr>& players);
 
 		bool isPaused() const;
 
@@ -79,7 +81,6 @@ namespace mwetris::game {
 		void updateGame(double deltaTime);
 
 		std::vector<PlayerPtr> players_;
-		std::vector<RemotePlayerPtr> remotePlayers_;
 
 		double accumulator_ = 0.0;
 		bool pause_ = false;

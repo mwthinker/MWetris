@@ -96,7 +96,7 @@ namespace mwetris::ui::scene {
 
 		auto ais = Configuration::getInstance().getAiVector();
 		for (auto& ai : ais) {
-			allAis_.emplace_back(ai.getName(), ai);
+			allAis_.emplace_back(ai.name, ai.ai);
 		}
 	}
 

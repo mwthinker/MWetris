@@ -98,8 +98,6 @@ namespace mwetris::game {
 			return tetrisBoard_.getNextBlockType();
 		}
 
-		const std::string& getUniqueId() const;
-
 		const tetris::TetrisBoard& getTetrisBoard() const {
 			return tetrisBoard_;
 		}
@@ -114,7 +112,6 @@ namespace mwetris::game {
 
 		tetris::TetrisBoard tetrisBoard_;
 		std::string name_;
-		std::string uniqueId_;
 	};
 
 }

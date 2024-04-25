@@ -78,11 +78,11 @@ namespace mwetris::game {
 			return remotePlayerBoard_->getName();
 		}
 
-		const std::string& getUuid() const override {
-			return uuid_;
+		bool isAi() const override {
+			return false;
 		}
 
-		bool isAi() const override {
+		bool isLocal() const override {
 			return false;
 		}
 

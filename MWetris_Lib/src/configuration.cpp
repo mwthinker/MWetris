@@ -27,8 +27,15 @@ namespace sdl {
 
 namespace tetris {
 
-	void from_json(const json& j, tetris::Ai& ai) {
-		ai = tetris::Ai{j.at("name").get<std::string>(), j.at("valueFunction").get<std::string>()};
+	void from_json(const json& j, Configuration::Ai& ai) {
+		auto name = j.at("name").get<std::string>();
+		auto valueFunction = j.at("valueFunction").get<std::string>();
+
+
+		ai = Configuration::Ai{
+			.name = name,
+			.ai = valueFunction,
+		};
 	}
 
 	void from_json(const json& j, tetris::BlockType& blockType) {
@@ -473,10 +480,11 @@ namespace mwetris {
 		impl_->jsonObject["ai4"] = name;
 	}
 
-	std::vector<tetris::Ai> Configuration::getAiVector() const {
-		std::vector<tetris::Ai> ais;
+	std::vector<Configuration::Ai> Configuration::getAiVector() const {
+		std::vector<Configuration::Ai> ais;
 		ais.push_back({});
-		ais.insert(ais.end(), impl_->jsonObject["ais"].begin(), impl_->jsonObject["ais"].end());
+		// TODO! Does not work!
+		//ais.insert(ais.end(), impl_->jsonObject["ais"].begin(), impl_->jsonObject["ais"].end());
 		return ais;
 	}
 

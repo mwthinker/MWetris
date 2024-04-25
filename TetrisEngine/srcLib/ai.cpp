@@ -328,12 +328,11 @@ namespace tetris {
 	}
 	
 	Ai::Ai()
-		: Ai{"Default", getDefaultValueFunction()} {
+		: Ai{getDefaultValueFunction()} {
 	}
 
-	Ai::Ai(const std::string& name, const std::string& valueFunction, bool allowException)
-		: name_{name}
-		, valueFunction_{valueFunction} {
+	Ai::Ai(const std::string& valueFunction, bool allowException)
+		: valueFunction_{valueFunction} {
 		
 		initCalculator(allowException);
 	}

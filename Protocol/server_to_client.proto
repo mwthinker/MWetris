@@ -28,7 +28,8 @@ message GameLooby {
 		SlotType slot_type = 1;
 		string name = 2;
 		bool ai = 3;
-		string uuid = 4;
+		string player_uuid = 4;
+		string client_uuid = 5;
 	}
 
 	repeated Slot slots = 1;
@@ -36,7 +37,7 @@ message GameLooby {
 
 message CreateGame {
 	message Player {
-		string uuid = 1;
+		string player_uuid = 1;
 		string name = 2;
 		int32 level = 3;
 		int32 points = 4;
