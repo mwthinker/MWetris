@@ -231,58 +231,58 @@ namespace mwetris::network {
 			connected_ = false;
 		}
 
-		bool handleCreateGame(const tp_s2c::CreateGame& createGame) {
-			connections_.clear();
-			int w = createGame.width();
-			int h = createGame.height();
+		void handleCreateGame(int width, int height, const tp_s2c::CreateGame_Player& tpPlayer, const game::PlayerSlot& playerSlot) {
+			auto current = static_cast<tetris::BlockType>(tpPlayer.current());
+			auto next = static_cast<tetris::BlockType>(tpPlayer.next());
+			
+			if (auto human = std::get_if<game::Human>(&playerSlot); human) {
+				auto& networkPlayer = players_.emplace_back(
+					NetworkPlayer{
+						.player = game::PlayerFactory{}.createPlayer(width, height, *human),
+						.uuid = tpPlayer.player_uuid()
+					}
+				);
+				networkPlayer.player->updateRestart(current, next); // Update before attaching the event handles, to avoid multiple calls.
+				connections_ += networkPlayer.player->addPlayerBoardUpdateCallback([this, networkPlayer](game::PlayerBoardEvent playerBoardEvent) {
+					std::visit([&](auto&& event) {
+						handlePlayerBoardUpdate(networkPlayer, event);
+					}, playerBoardEvent);
+				});
+				connections_ += networkPlayer.player->addEventCallback([this, player = networkPlayer.player](tetris::BoardEvent boardEvent, int nbr) {
+					handleBoardEvent(*player, boardEvent, nbr);
+				});
+			} else if (auto ai = std::get_if<game::Ai>(&playerSlot); ai) {
+				auto& networkPlayer = players_.emplace_back(
+					NetworkPlayer{
+						.player = game::PlayerFactory{}.createPlayer(height, height, *ai),
+						.uuid = tpPlayer.player_uuid()
+					}
+				);
+				networkPlayer.player->updateRestart(current, next); // Update before attaching the event handles, to avoid multiple calls.
+				connections_ += networkPlayer.player->addPlayerBoardUpdateCallback([this, networkPlayer](game::PlayerBoardEvent playerBoardEvent) {
+					std::visit([&](auto&& event) {
+						handlePlayerBoardUpdate(networkPlayer, event);
+					}, playerBoardEvent);
+				});
+				connections_ += networkPlayer.player->addEventCallback([this, networkPlayer](tetris::BoardEvent boardEvent, int nbr) {
+					handleBoardEvent(*networkPlayer.player, boardEvent, nbr);
+				});
+			}
+		}
 
-			fillSlotsWithDevicesAndAis();
+		void handleCreateGame(const tp_s2c::CreateGame& createGame) {
+			connections_.clear();
 			players_.clear();
-	
+			fillSlotsWithDevicesAndAis();
 
 			const auto& tpPlayers = createGame.players();
-			tpPlayers.Get(0);
 
 			int index = 0;
 			for (const auto& tpPlayer : createGame.players()) {
-				auto current = static_cast<tetris::BlockType>(tpPlayer.current());
-				auto next = static_cast<tetris::BlockType>(tpPlayer.next());
 				if (index < playerSlots_.size()) {
-					auto& playerSlot = playerSlots_[index];
-					if (auto human = std::get_if<game::Human>(&playerSlot); human) {
-						auto& networkPlayer = players_.emplace_back(
-							NetworkPlayer{
-								.player = game::PlayerFactory{}.createPlayer(w, h, *human),
-								.uuid = tpPlayer.player_uuid()
-							}
-						);
-						networkPlayer.player->updateRestart(current, next); // Update before attaching the event handles, to avoid multiple calls.
-						connections_ += networkPlayer.player->addPlayerBoardUpdateCallback([this, networkPlayer](game::PlayerBoardEvent playerBoardEvent) {
-							std::visit([&](auto&& event) {
-								handlePlayerBoardUpdate(networkPlayer, event);
-							}, playerBoardEvent);
-						});
-						connections_ += networkPlayer.player->addEventCallback([this, player = networkPlayer.player](tetris::BoardEvent boardEvent, int nbr) {
-							handleBoardEvent(*player, boardEvent, nbr);
-						});
-					} else if (auto ai = std::get_if<game::Ai>(&playerSlot); ai) {
-						auto& networkPlayer = players_.emplace_back(
-							NetworkPlayer{
-								.player = game::PlayerFactory{}.createPlayer(w, h, *ai),
-								.uuid = tpPlayer.player_uuid()
-							}
-						);
-						networkPlayer.player->updateRestart(current, next); // Update before attaching the event handles, to avoid multiple calls.
-						connections_ += networkPlayer.player->addPlayerBoardUpdateCallback([this, networkPlayer](game::PlayerBoardEvent playerBoardEvent) {
-							std::visit([&](auto&& event) {
-								handlePlayerBoardUpdate(networkPlayer, event);
-							}, playerBoardEvent);
-						});
-						connections_ += networkPlayer.player->addEventCallback([this, networkPlayer](tetris::BoardEvent boardEvent, int nbr) {
-							handleBoardEvent(*networkPlayer.player, boardEvent, nbr);
-						});
-					}
+					break;
 				}
+				handleCreateGame(createGame.width(), createGame.height(), tpPlayer, playerSlots_[index]);
 				++index;
 			}
 
@@ -295,8 +295,6 @@ namespace mwetris::network {
 			connections_ += tetrisGame_->gameRestartEvent.connect([this](game::GameRestart gameRestart) {
 				handleGameRestart(gameRestart);
 			});
-			
-			return true;
 		}
 
 		void fillSlotsWithDevicesAndAis() {
