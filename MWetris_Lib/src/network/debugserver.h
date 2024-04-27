@@ -5,34 +5,16 @@
 #include "client.h"
 #include "game/playerslot.h"
 #include "client.h"
-#include <sdl/window.h>
-
+#include "server.h"
 #include "game/tetrisgame.h"
 
+#include <sdl/window.h>
 #include <mw/signal.h>
 
 #include <memory>
 #include <string>
 
 namespace mwetris::network {
-
-	struct ConnectedClient {
-		std::string uuid;
-	};
-
-	enum class SlotType {
-		Open,
-		Remote,
-		Closed
-	};
-
-	struct Slot {
-		std::string clientUuid;
-		std::string playerUuid;
-		std::string name;
-		bool ai;
-		SlotType type;
-	};
 
 	class DebugServer : public std::enable_shared_from_this<DebugServer> {
 	public:
@@ -48,11 +30,11 @@ namespace mwetris::network {
 
 		void release(ProtobufMessage&& message);
 
-		void sendPause(bool pause);
+		void sendPause(const std::string& clientUuuid, bool pause);
 		
-		bool isPaused() const;
+		bool isPaused(const std::string& clientUuuid) const;
 
-		void restartGame();
+		void restartGame(const std::string& clientUuuid);
 
 		mw::signals::Connection addPlayerSlotsCallback(const std::function<void(const std::vector<Slot>&)>& playerSlots);
 

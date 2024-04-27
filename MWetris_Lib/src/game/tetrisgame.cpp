@@ -130,7 +130,6 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::createGame(std::unique_ptr<GameRules> gameRules, const std::vector<PlayerPtr>& players) {
-		
 		rules_ = std::move(gameRules);
 
 		saveDefaultGame();

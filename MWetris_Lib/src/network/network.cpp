@@ -123,10 +123,10 @@ namespace mwetris::network {
 				if (valid) {
 					wrapperFromServer_.Clear();
 					valid = wrapperFromServer_.ParseFromArray(message.getBodyData(), message.getBodySize());
-					client_->release(std::move(message));
 				} else if (message.getSize() != 0) {
 					spdlog::info("[Network] Invalid data");
 				}
+				client_->release(std::move(message));
 				return valid;
 			});
 			co_return;
@@ -279,7 +279,8 @@ namespace mwetris::network {
 
 			int index = 0;
 			for (const auto& tpPlayer : createGame.players()) {
-				if (index < playerSlots_.size()) {
+				if (index >= playerSlots_.size()) {
+					// TODO! Handle error!
 					break;
 				}
 				handleCreateGame(createGame.width(), createGame.height(), tpPlayer, playerSlots_[index]);

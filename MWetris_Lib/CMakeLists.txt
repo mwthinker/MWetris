@@ -56,6 +56,8 @@ set(SOURCES_LIB
 	src/network/debugclient.h
 	src/network/debugserver.cpp
 	src/network/debugserver.h
+	src/network/gameroom.cpp
+	src/network/gameroom.h
 	src/network/protocol.cpp
 	src/network/protocol.h
 	src/network/protobufmessage.cpp
@@ -64,6 +66,7 @@ set(SOURCES_LIB
 	src/network/protobufmessagequeue.h
 	src/network/network.cpp
 	src/network/network.h
+	src/network/server.h
 	
 	src/ui/scene/addplayer.cpp
 	src/ui/scene/addplayer.h
