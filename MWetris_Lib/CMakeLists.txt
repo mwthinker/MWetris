@@ -91,6 +91,8 @@ set(SOURCES_LIB
 	src/ui/tetriswindow.h
 
 	src/util/protofile.h
+	src/util/uuid.cpp
+	src/util/uuid.h
 	
 	src/configuration.cpp
 	src/configuration.h

@@ -2,6 +2,7 @@
 #include "debugclient.h"
 #include "protobufmessagequeue.h"
 #include "util.h"
+#include "util/uuid.h"
 #include "game/player.h"
 #include "game/remoteplayer.h"
 #include "protocol.h"
@@ -14,30 +15,10 @@
 #include <spdlog/spdlog.h>
 
 #include <queue>
-#include <random>
 #include <variant>
 
 namespace mwetris::network {
 
-	namespace {
-
-		constexpr std::string_view Characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-
-		std::string generateUuid() {
-			static std::mt19937 generator{std::random_device{}()};
-			static std::uniform_int_distribution<> distribution{0, static_cast<int>(Characters.size() - 1)};
-
-			constexpr int UniqueIdSize = 16;
-			std::string unique(UniqueIdSize, 'X');
-
-			for (auto& key : unique) {
-				key = Characters[distribution(generator)];
-			}
-
-			return unique;
-		}
-
-	}
 
 	class DebugServer::Impl {
 	public:
