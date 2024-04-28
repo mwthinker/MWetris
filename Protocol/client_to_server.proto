@@ -4,19 +4,16 @@ package tp_c2s;
 
 import "shared.proto";
 
-message RemotePlayer {
+message ConnectedToRoom {
+	message Client {
+		string uuid = 1;
+		string name = 2;
+	}
 
+	repeated Client clients = 1;
 }
 
-message Connections {
-	repeated string uuids = 1;
-}
-
-message CreateGameLooby {
-	string uuid = 1;
-}
-
-message GameLooby {
+message CreateGameRoom {
 	string name = 1;
 }
 
@@ -38,7 +35,7 @@ message StartGame {
 	bool ready = 1;
 }
 
-message ConnectToGame {
+message JoinGameRoom {
 	string server_uuid = 1;
 }
 
@@ -66,10 +63,6 @@ message GameRestart {
 	tp.BlockType next = 2;
 }
 
-message Connect {
-	string name = 1;
-}
-
 message FailedToConnect {
 }
 
@@ -78,16 +71,15 @@ message FromServer {
 }
 
 message Wrapper {
-	GameLooby game_looby = 1;
-	PlayerSlot player_slot = 12;
+	PlayerSlot player_slot = 1;
 	StartGame start_game = 2;
-	Connections connections = 3;
+	ConnectedToRoom connected_to_room = 3;
 	GameCommand game_command = 4;
 	BoardMove board_move = 5;
 	BoardExternalSquares board_external_squares = 6;
 	BoardNextBlock next_block = 7;
 	GameRestart game_restart = 8;
-	ConnectToGame connect_to_game = 9;
+	JoinGameRoom Join_game_room = 9;
 	FailedToConnect failed_to_connect = 10;
-	Connect Connect = 11;
+	CreateGameRoom create_game_room = 11;
 }

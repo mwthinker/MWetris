@@ -8,6 +8,7 @@
 #include "protocol.h"
 #include "gameroom.h"
 #include "server.h"
+#include "util/uuid.h"
 
 #include <helper.h>
 
@@ -21,6 +22,11 @@
 
 namespace mwetris::network {
 
+	struct Remote {
+		std::shared_ptr<DebugClient> client;
+		std::string uuid;
+	};
+
 	class DebugServer::Impl : public Server {
 	public:
 		mw::PublicSignal<DebugServer::Impl, const std::vector<Slot>&> playerSlotsUpdated;
@@ -33,17 +39,17 @@ namespace mwetris::network {
 
 		void update(const sdl::DeltaTime& deltaTime) {
 			for (auto& remote : remotes_) {
-				receivedFromClient(*remote.client);
+				receivedFromClient(remote);
 			}
 		}
 
-		void receivedFromClient(DebugClient& client) {
+		void receivedFromClient(Remote& remote) {
 			ProtobufMessage message;
-			while (client.pollSentMessage(message)) {
+			while (remote.client->pollSentMessage(message)) {
 				wrapperFromClient_.Clear();
 				bool valid = wrapperFromClient_.ParseFromArray(message.getBodyData(), message.getBodySize());
 				if (valid) {
-					receivedFromClient(client, wrapperFromClient_);
+					receivedFromRemote(remote, wrapperFromClient_);
 				} else {
 					spdlog::error("Protocol error");
 				}
@@ -52,78 +58,62 @@ namespace mwetris::network {
 			}
 		}
 
-		void receivedFromClient(DebugClient& client, const tp_c2s::Wrapper& wrapper) {
+		void receivedFromRemote(Remote& fromRemote, const tp_c2s::Wrapper& wrapper) {
 			wrapperToClient_.Clear();
 
-			for (auto& remote : remotes_) {
-				if (remote.client.get() == &client) {
-					if (!remote.allowToConnect) {
-						sendFailedToConnect(*remote.client);
-						return;
-					}
-				}
+			if (wrapperFromClient_.has_create_game_room()) {
+				handleCreateGameRoom(fromRemote, wrapperFromClient_.create_game_room());
+			} else if (wrapperFromClient_.has_join_game_room()) {
+				handleJoinGameRoom(fromRemote, wrapperFromClient_.join_game_room());
 			}
 
-			if (wrapperFromClient_.has_connect()) {
-				handleConnect(client, wrapperFromClient_.connect());
-			}
-			if (wrapperFromClient_.has_connect_to_game()) {
-				handleConnectToGame(wrapperFromClient_.connect_to_game());
-			}
-
-			if (auto it = gameRooms_.find(client.getUuid()); it != gameRooms_.end()) {
-				auto& gameRoom = it->second;
-				gameRoom.receiveMessage(*this, client.getUuid(), wrapper);
+			if (auto it = gameRoomUuidByClientUuid_.find(fromRemote.uuid); it != gameRoomUuidByClientUuid_.end()) {
+				auto& gameRoom = gameRooms_.at(gameRoomUuidByClientUuid_.at(fromRemote.uuid));
+				gameRoom.receiveMessage(*this, fromRemote.uuid, wrapper);
 			}
 		}
 
-		void handleConnectToGame(const tp_c2s::ConnectToGame& connectToGame) {
+		void handleCreateGameRoom(Remote& remote, const tp_c2s::CreateGameRoom& createGameRoom) {
+			if (gameRoomUuidByClientUuid_.contains(remote.uuid)) {
+				spdlog::warn("[DebugServer] Client with uuid {} already in a GameRoom", remote.uuid);
+				return;
+			}
+			GameRoom gameRoom{createGameRoom.name()};
+			gameRoom.addClient(remote.uuid);
+			
+			auto gameRomeCreated = wrapperToClient_.mutable_game_room_created();
+			gameRomeCreated->set_server_uuid(gameRoom.getUuid());
+			gameRomeCreated->set_client_uuid(remote.uuid);
+			sendToClient(*remote.client, wrapperToClient_);
+			
+			gameRoomUuidByClientUuid_.emplace(remote.uuid, gameRoom.getUuid());
+			gameRooms_.emplace(gameRoom.getUuid(), std::move(gameRoom));
 		}
 
-		void handleConnect(DebugClient& client, const tp_c2s::Connect& connect) {
-			if (gameRooms_.contains(client.getUuid())) {
-				spdlog::warn("[DebugServer] Client with uuid {} already connect", client.getUuid());
+		void handleJoinGameRoom(Remote& remote, const tp_c2s::JoinGameRoom& joinGameRoom) {
+			if (gameRoomUuidByClientUuid_.contains(remote.uuid)) {
+				spdlog::warn("[DebugServer] Client with uuid {} already in a GameRoom", remote.uuid);
 				return;
 			}
 
-			GameRoom gameRoom{connect.name()};
-			gameRoom.connectMaster(*this);
-			client.setUuid(gameRoom.getMasterUuid());
-			gameRooms_.emplace(gameRoom.getMasterUuid(), std::move(gameRoom));
+			if (auto it = gameRooms_.find(joinGameRoom.server_uuid()); it != gameRooms_.end()) {
+				auto& gameRoom = it->second;
+				gameRoom.addClient(remote.uuid);
+				gameRoomUuidByClientUuid_.emplace(remote.uuid, gameRoom.getUuid());
+				gameRooms_.emplace(gameRoom.getUuid(), std::move(gameRoom));
+
+				auto gameRoomJoined = wrapperToClient_.mutable_game_room_joined();
+				gameRoomJoined->set_server_uuid(joinGameRoom.server_uuid());
+				gameRoomJoined->set_client_uuid(remote.uuid);
+				sendToClient(*remote.client, wrapperToClient_);
+			} else {
+				spdlog::warn("[DebugServer] GameRoom with uuid {} not found", joinGameRoom.server_uuid());
+			}
 		}
 
 		void release(ProtobufMessage&& message) {
 			messageQueue_.release(std::move(message));
 		}
-
-		/*
-		void connect(const std::string& uuid) {
-			wrapperToClient_.Clear();
-			connectedUuids_.push_back(uuid);
-			for (const auto& connected : connectedUuids_) {
-				auto uuidTp = wrapperToClient_.mutable_connections()->add_uuids();
-				uuidTp->assign(uuid);
-			}
-			sendToClients(wrapperToClient_);
-		}
-
-		void disconnect(const std::string& uuid) {
-			wrapperToClient_.Clear();
-			connectedUuids_.push_back(uuid);
-
-			if (std::erase_if(connectedUuids_, [&uuid](const std::string& value) {
-				return value == uuid;
-			})) {
-				for (const auto& connected : connectedUuids_) {
-					auto uuidTp = wrapperToClient_.mutable_connections()->add_uuids();
-					uuidTp->assign(uuid);
-				}
-				sendToClients(wrapperToClient_);
-			} else {
-				spdlog::warn("[DebugServer] Failed to disconnect uuid {} (does not match existing)", uuid);
-			}
-		}
-		*/
 
 		void acquire(ProtobufMessage& message) {
 			messageQueue_.acquire(message);
@@ -154,9 +144,8 @@ namespace mwetris::network {
 		std::shared_ptr<Client> createDisconnectedClient(std::shared_ptr<DebugServer> debugServer) {
 			auto client = std::make_shared<DebugClient>(debugServer);
 			const auto& remote = remotes_.emplace_back(Remote{
-				.allowToConnect = true,
-				.type = RemoteType::Disconnected,
-				.client = client
+				.client = client,
+				.uuid = util::generateUuid()
 			});
 			triggerConnectedClient(remote);
 			return client;
@@ -165,35 +154,17 @@ namespace mwetris::network {
 		std::vector<ConnectedClient> getConnectedClients() const {
 			std::vector<ConnectedClient> connectedClients;
 			for (const Remote& remote : remotes_) {
-				if (remote.type == RemoteType::Connected) {
-					connectedClients.push_back(convertToConnectedClient(remote));
-				}
+				connectedClients.push_back(convertToConnectedClient(remote));
 			}
 			return connectedClients;
 		}
 
-		void allowClientToConnect(const std::string& uuid, bool allowed) {
-			for (auto& remote : remotes_) {
-				if (remote.client->getUuid() == uuid) {
-					remote.allowToConnect = allowed;
-					triggerConnectedClient(remote);
-					break;
-				}
-			}
-		}
-
 		void sendToClient(const std::string& clientUuid, const google::protobuf::MessageLite& message) override {
 			for (auto& remote : remotes_) {
-				if (remote.client->getUuid() == clientUuid) {
+				if (remote.uuid == clientUuid) {
 					sendToClient(*remote.client, message);
 					break;
 				}
-			}
-		}
-
-		void sendToAllClients(const google::protobuf::MessageLite& message) override {
-			for (auto& remote : remotes_) {
-				sendToClient(*remote.client, message);
 			}
 		}
 
@@ -210,23 +181,9 @@ namespace mwetris::network {
 		}
 
 	private:
-		enum class RemoteType {
-			Spectator,
-			Server,
-			Client,
-			Connected,
-			Disconnected
-		};
-
-		struct Remote {
-			bool allowToConnect;
-			RemoteType type;
-			std::shared_ptr<DebugClient> client;
-		};
-
 		ConnectedClient convertToConnectedClient(const Remote& remote) const {
 			return ConnectedClient{
-				.uuid = remote.client->getUuid(),
+				.uuid = remote.uuid
 			};
 		}
 
@@ -247,6 +204,7 @@ namespace mwetris::network {
 			client.pushReceivedMessage(std::move(message));
 		}
 
+		std::map<std::string, std::string> gameRoomUuidByClientUuid_;
 		std::map<std::string, GameRoom> gameRooms_;
 
 		tp_c2s::Wrapper wrapperFromClient_;
@@ -302,10 +260,6 @@ namespace mwetris::network {
 
 	std::vector<ConnectedClient> DebugServer::getConnectedClients() const {
 		return impl_->getConnectedClients();
-	}
-
-	void DebugServer::allowClientToConnect(const std::string& uuid, bool allow) {
-		impl_->allowClientToConnect(uuid, allow);
 	}
 
 	mw::signals::Connection DebugServer::addClientListener(const std::function<void(const ConnectedClient&)>& callback) {

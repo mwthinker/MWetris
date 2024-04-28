@@ -51,11 +51,6 @@ message CreateGame {
 	int32 height = 3;
 }
 
-message ConnectToGame {
-	string uuid = 1;
-	string server_uuid = 2;
-}
-
 message GameCommand {
 	bool pause = 1;
 }
@@ -80,15 +75,17 @@ message GameRestart {
 	tp.BlockType next = 2;
 }
 
-message Connected {
-	string uuid = 1;
+message GameRoomCreated {
+	string server_uuid = 1;
+	string client_uuid = 2;
+}
+
+message GameRoomJoined {
+	string server_uuid = 1;
+	string client_uuid = 2;
 }
 
 message FailedToConnect {
-}
-
-message FromServer {
-
 }
 
 message Wrapper {
@@ -100,7 +97,7 @@ message Wrapper {
 	BoardExternalSquares board_external_squares = 6;
 	BoardNextBlock next_block = 7;
 	GameRestart game_restart = 8;
-	ConnectToGame connect_to_game = 9;
-	FailedToConnect failed_to_connect = 10;
-	Connected connected = 11;
+	FailedToConnect failed_to_connect = 9;
+	GameRoomCreated game_room_created = 10;
+	GameRoomJoined game_room_joined = 11;
 }

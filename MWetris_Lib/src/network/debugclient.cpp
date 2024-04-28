@@ -19,10 +19,6 @@ namespace mwetris::network {
 
 	DebugClient::~DebugClient() = default;
 
-	const std::string& DebugClient::getUuid() const{
-		return uuid_;
-	}
-
 	bool DebugClient::receive(ProtobufMessage& message) {
 		if (receivedMessages_.empty()) {
 			return false;

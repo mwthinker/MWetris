@@ -22,11 +22,15 @@ namespace mwetris::network {
 
 		~GameRoom();
 
+		void sendToAllClients(Server& server, const tp_s2c::Wrapper& message);
+
 		const std::string& getName() const;
 
-		const std::string& getMasterUuid() const;
+		const std::string& getUuid() const;
 
-		void connectMaster(Server& server);
+		void addClient(const std::string& uuid);
+
+		const std::vector<std::string>& getConnectedClientUuids() const;
 
 		void disconnect(Server& server, const std::string& uuid);
 
@@ -39,10 +43,6 @@ namespace mwetris::network {
 		void receiveMessage(Server& server, const std::string& clientUuid, const tp_c2s::Wrapper& wrapperFromClient);
 
 	private:
-		void handleConnect(Server& server, const std::string& clientUuid, const tp_c2s::Connect& connect);
-
-		void handleGameLooby(const std::string& clientUuid, const tp_c2s::GameLooby& gameLooby);
-
 		void handlePlayerSlot(Server& server, const std::string& clientUuid, const tp_c2s::PlayerSlot& tpPlayerSlot);
 
 		void handleGameCommand(Server& server, const tp_c2s::GameCommand& gameCommand);
@@ -57,16 +57,16 @@ namespace mwetris::network {
 
 		void handleGameRestart(Server& server, const std::string& clientUuid, const tp_c2s::GameRestart& gameRestart);
 
-		void handleConnectToGame(Server& server, const std::string& clientUuid, const tp_c2s::ConnectToGame& connectToGame);
+		void handleJoinGameRoom(Server& server, const std::string& clientUuid, const tp_c2s::JoinGameRoom& joinGameRoom);
 	
 		bool slotBelongsToClient(const std::string& clientUuid, int slotIndex) const;
 
 		std::string name_;
-		std::string masterUuid_;
+		std::string uuid_;
 
 		std::map<std::string, game::RemotePlayerPtr> remotePlayers_;
 		std::vector<Slot> playerSlots_;
-		std::vector<std::string> connectedUuids_;
+		std::vector<std::string> connectedClientUuids_;
 		bool paused_ = false;
 
 		tp_s2c::Wrapper wrapperToClient_;

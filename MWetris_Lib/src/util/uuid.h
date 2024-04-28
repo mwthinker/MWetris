@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace mwetris {
+namespace mwetris::util {
 
 	std::string generateUuid();
 

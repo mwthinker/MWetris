@@ -16,6 +16,7 @@ namespace mwetris::network {
 		virtual void acquire(ProtobufMessage& message) = 0;
 
 		virtual void release(ProtobufMessage&& message) = 0;
+
 	};
 
 }

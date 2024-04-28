@@ -34,26 +34,22 @@ namespace mwetris::network {
 
 		void setPlayerSlot(const game::PlayerSlot& playerSlot, int slot);
 
-		const std::string& getServerId() const;
+		const std::string& getGameRoomUuid() const;
 
 		void sendPause(bool pause);
 
-		void createGameLooby(const std::string& serverId);
+		void joinGameRoom(const std::string& serverId);
 
-		void connectToGame(const std::string& serverId);
+		void createGameRoom(const std::string& name);
 
-		void connect();
+		void leaveRoom();
 
-		bool isConnected() const;
-
-		void disconnect();
+		bool isInsideRoom() const;
 
 		// Return true if ready.
 		bool startGame(std::unique_ptr<game::GameRules> gameRules, int w, int h);
 
 		mw::signals::Connection addPlayerSlotListener(std::function<void(game::PlayerSlot, int)> listener);
-		
-		mw::signals::Connection addConnectionListener(std::function<void(bool)> listener);
 
 	private:
 		class Impl;

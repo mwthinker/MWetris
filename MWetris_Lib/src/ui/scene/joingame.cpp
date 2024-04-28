@@ -46,7 +46,7 @@ namespace mwetris::ui::scene {
 		});
 
 		if (ImGui::ConfirmationButton("Connect")) {
-			network_->connectToGame(serverId_);
+			network_->joinGameRoom(serverId_);
 		}
 	}
 

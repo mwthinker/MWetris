@@ -31,8 +31,6 @@ namespace mwetris::network {
 		
 		virtual void sendToClient(const std::string& clientUuid, const google::protobuf::MessageLite& message) = 0;
 
-		virtual void sendToAllClients(const google::protobuf::MessageLite& message) = 0;
-
 		virtual void triggerConnectedClientEvent(const ConnectedClient& connectedClient) = 0;
 
 		virtual void triggerPlayerSlotEvent(const std::vector<Slot>& slots) = 0;

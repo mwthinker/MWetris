@@ -44,7 +44,6 @@ namespace mwetris::network {
 
 		std::vector<ConnectedClient> getConnectedClients() const;
 
-		void allowClientToConnect(const std::string& uuid, bool allowed);
 		void disconnect(const std::string& uuid);
 	
 	private:

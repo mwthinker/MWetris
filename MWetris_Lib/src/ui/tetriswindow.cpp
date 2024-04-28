@@ -242,6 +242,7 @@ namespace mwetris::ui {
 					}
 					ImGui::Separator();
 					if (ImGui::MenuItem("Create Game")) {
+						network_->createGameRoom("MW Room");
 						customGame_ = true;
 						reset(playerSlots_);
 					}
@@ -286,23 +287,13 @@ namespace mwetris::ui {
 				gameComponent_->draw(size.x, size.y - h - lowerBar, toSeconds(deltaTime));
 			}
 			if (customGame_) {
-				bool internet = network_->isConnected();
-				if (ImGui::Checkbox("Network", &internet)) {
-					if (internet) {
-						network_->connect();
-						spdlog::debug("Network on");
-					} else {
-						network_->disconnect();
-						spdlog::debug("Network off");
-					}
-				}
-				if (internet) {
-					serverId_ = network_->getServerId();
+				gameRoomUuid_ = network_->getGameRoomUuid();
+				if (!gameRoomUuid_.empty()) {
 					ImGui::SetCursorPosY(200);
 					ImGui::Separator();
 					ImGui::Text("Server Id: ");
 					ImGui::SameLine();
-					ImGui::InputText("##ServerId", &serverId_, ImGuiInputTextFlags_ReadOnly);
+					ImGui::InputText("##ServerId", &gameRoomUuid_, ImGuiInputTextFlags_ReadOnly);
 				}
 
 				float width = ImGui::GetWindowWidth() - 2 * ImGui::GetCursorPosX();
@@ -313,7 +304,7 @@ namespace mwetris::ui {
 				ImGui::SetCursorPosY(y);
 
 				if (ImGui::ConfirmationButton("Create Game", {width, height})) {
-					if (internet) {
+					if (!gameRoomUuid_.empty()) {
 						network_->startGame(std::make_unique<game::SurvivalGameRules>(), TetrisWidth, TetrisHeight);
 					} else {
 						game_->createGame(

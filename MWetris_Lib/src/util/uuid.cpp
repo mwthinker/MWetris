@@ -1,7 +1,7 @@
 #include "uuid.h"
 #include <random>
 
-namespace mwetris {
+namespace mwetris::util {
 
 	constexpr std::string_view Characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 

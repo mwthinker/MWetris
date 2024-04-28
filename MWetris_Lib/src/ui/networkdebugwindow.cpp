@@ -73,18 +73,18 @@ namespace mwetris::ui {
 		if (ImGui::Checkbox("Connected", &connect)) {
 			static const std::string& uuid = "REMOTE_UUID";
 			if (connect) {
-				//debugServer_->connect(uuid);
+				// TODO!
 			} else {
 				debugServer_->disconnect(uuid);
 			}
 		}
-		bool pause = debugServer_->isPaused();
+		bool pause = false;
 		if (ImGui::Checkbox("Paused", &pause)) {
-			debugServer_->sendPause(!pause);
+			// TODO!
 		}
 			
 		if (ImGui::Button("Restart Game")) {
-			debugServer_->restartGame();
+			// TODO!
 		}
 
 		ImGui::Separator();

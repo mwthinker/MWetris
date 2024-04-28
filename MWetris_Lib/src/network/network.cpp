@@ -33,7 +33,6 @@ namespace mwetris::network {
 	class Network::Impl {
 	public:
 		mw::PublicSignal<Network::Impl, game::PlayerSlot, int> playerSlotUpdate;
-		mw::PublicSignal<Network::Impl, bool> connected;
 
 		struct NetworkPlayer {
 			game::PlayerPtr player;
@@ -57,11 +56,15 @@ namespace mwetris::network {
 		~Impl() {
 		}
 
-		void send(const tp_c2s::Wrapper& wrapper) {
-			ProtobufMessage message;
-			client_->acquire(message);
-			message.setBuffer(wrapper);
-			client_->send(std::move(message));
+		const std::string& getGameRoomUuid() const {
+			return gameRoomUuid_;
+		}
+
+		void startGame(std::unique_ptr<game::GameRules> gameRules, int w, int h) {
+			gameRules_ = std::move(gameRules);
+			wrapperToServer_.Clear();
+			wrapperToServer_.mutable_start_game()->set_ready(true);
+			send(wrapperToServer_);
 		}
 
 		void update() {
@@ -69,15 +72,68 @@ namespace mwetris::network {
 			cv_.notify_all();
 		}
 
+		void sendPause(bool pause) {
+			wrapperToServer_.Clear();
+			wrapperToServer_.mutable_game_command()->set_pause(pause);
+			send(wrapperToServer_);
+		}
+
+		void createGameRoom(const std::string& gameRoom) {
+			wrapperToServer_.Clear();
+			wrapperToServer_.mutable_create_game_room()->set_name(gameRoom);
+			send(wrapperToServer_);
+		}
+
+		void leaveRoom() {
+
+		}
+
+		void setPlayerSlot(const game::PlayerSlot& playerSlot, int index) {
+			wrapperToServer_.Clear();
+			auto tpGameLooby = wrapperToServer_.mutable_player_slot();
+			tpGameLooby->set_index(index);
+			if (auto human = std::get_if<game::Human>(&playerSlot); human) {
+				tpGameLooby->set_slot_type(tp_c2s::PlayerSlot_SlotType_HUMAN);
+				tpGameLooby->set_name(human->name);
+				deviceBySlotIndex_[index] = human->device;
+				send(wrapperToServer_);
+			} else if (auto ai = std::get_if<game::Ai>(&playerSlot); ai) {
+				tpGameLooby->set_slot_type(tp_c2s::PlayerSlot_SlotType_AI);
+				tpGameLooby->set_name(ai->name);
+				aiBySlotIndex_[index] = ai->ai;
+				send(wrapperToServer_);
+			} else if (std::get_if<game::OpenSlot>(&playerSlot)) {
+				tpGameLooby->set_slot_type(tp_c2s::PlayerSlot_SlotType_OPEN_SLOT);
+				send(wrapperToServer_);
+			} else if (std::get_if<game::ClosedSlot>(&playerSlot)) {
+				tpGameLooby->set_slot_type(tp_c2s::PlayerSlot_SlotType_CLOSED_SLOT);
+				send(wrapperToServer_);
+			}
+		}
+
+		void joinGameRoom(const std::string& uuid) {
+			connections_.clear();
+
+			wrapperToServer_.Clear();
+			auto joinGameRoom = wrapperToServer_.mutable_join_game_room();
+			joinGameRoom->set_server_uuid(uuid);
+			send(wrapperToServer_);
+		}
+
+		bool isInsideRoom() const {
+			return !gameRoomUuid_.empty();
+		}
+
+	private:
 		conc::result<void> stepOnce() {
 			// Connect to server
 			co_await nextMessage();
 			if (wrapperFromServer_.has_failed_to_connect()) {
-				connected_ = false;
-				connected(connected_);
 				co_return;
-			} else if (wrapperFromServer_.has_connected()) {
-				handleConnected(wrapperFromServer_.connected());
+			} else if (wrapperFromServer_.has_game_room_created()) {
+				handlGameRoomCreated(wrapperFromServer_.game_room_created());
+			} else if (wrapperFromServer_.has_game_room_joined()) {
+				handleGameRoomJoined(wrapperFromServer_.game_room_joined());
 			} else {
 				co_return;
 			}
@@ -111,8 +167,6 @@ namespace mwetris::network {
 		}
 
 		void handleConnection() {
-			connected_ = true;
-			connected(connected_);
 		}
 
 		conc::result<void> nextMessage() {
@@ -143,10 +197,16 @@ namespace mwetris::network {
 			tetrisGame_->pause();
 		}
 
-		void handleConnected(const tp_s2c::Connected& connected) {
-			uuid_ = connected.uuid();
-			spdlog::info("[Network] connected: {}", "");
-			connected_ = true;
+		void handlGameRoomCreated(const tp_s2c::GameRoomCreated& gameRoomCreated) {
+			gameRoomUuid_ = gameRoomCreated.server_uuid();
+			clientUuid_ = gameRoomCreated.client_uuid();
+			spdlog::info("[Network] GameRoomCreated: {}", gameRoomUuid_);
+		}
+
+		void handleGameRoomJoined(const tp_s2c::GameRoomJoined& gameRoomJoined) {
+			spdlog::info("[Network] GameRoomJoined: {}, client uuid: {}", gameRoomJoined.server_uuid(), gameRoomJoined.client_uuid());
+			gameRoomUuid_ = "";
+			clientUuid_ = gameRoomJoined.client_uuid();
 		}
 
 		void handleGameLooby(const tp_s2c::GameLooby& gameLooby) {
@@ -155,7 +215,7 @@ namespace mwetris::network {
 			for (const auto& tpSlot : gameLooby.slots()) {
 				switch (tpSlot.slot_type()) {
 					case tp_s2c::GameLooby_SlotType_REMOTE:
-						if (tpSlot.client_uuid() == uuid_) {
+						if (tpSlot.client_uuid() == clientUuid_) {
 							if (tpSlot.ai()) {
 								playerSlots_.push_back(game::Ai{.name = tpSlot.name()});
 							} else {
@@ -183,52 +243,6 @@ namespace mwetris::network {
 			for (const auto& uuid : connections.uuids()) {
 				spdlog::info("[Network] Connected uuid: {}", uuid);
 			}
-		}
-
-		void setPlayerSlot(const game::PlayerSlot& playerSlot, int index) {
-			wrapperToServer_.Clear();
-			auto tpGameLooby = wrapperToServer_.mutable_player_slot();
-			tpGameLooby->set_index(index);
-			if (auto human = std::get_if<game::Human>(&playerSlot); human) {
-				tpGameLooby->set_slot_type(tp_c2s::PlayerSlot_SlotType_HUMAN);
-				tpGameLooby->set_name(human->name);
-				deviceBySlotIndex_[index] = human->device;
-				send(wrapperToServer_);
-			} else if (auto ai = std::get_if<game::Ai>(&playerSlot); ai) {
-				tpGameLooby->set_slot_type(tp_c2s::PlayerSlot_SlotType_AI);
-				tpGameLooby->set_name(ai->name);
-				aiBySlotIndex_[index] = ai->ai;
-				send(wrapperToServer_);
-			} else if (std::get_if<game::OpenSlot>(&playerSlot)) {
-				tpGameLooby->set_slot_type(tp_c2s::PlayerSlot_SlotType_OPEN_SLOT);
-				send(wrapperToServer_);
-			} else if (std::get_if<game::ClosedSlot>(&playerSlot)) {
-				tpGameLooby->set_slot_type(tp_c2s::PlayerSlot_SlotType_CLOSED_SLOT);
-				send(wrapperToServer_);
-			}
-		}
-
-		void createGameLooby(const std::string& uuid) {
-			connections_.clear();
-
-			wrapperToServer_.Clear();
-			auto gameLooby = wrapperToServer_.mutable_game_looby();
-			//connectToGame->set_server_uuid(uuid);
-			//connectToGame->set_uuid(client_->getUuid());
-			send(wrapperToServer_);
-		}
-
-		void connectToGame(const std::string& uuid) {
-			connections_.clear();
-			
-			wrapperToServer_.Clear();
-			auto connectToGame = wrapperToServer_.mutable_connect_to_game();
-			connectToGame->set_server_uuid(uuid);
-			send(wrapperToServer_);
-		}
-
-		void disconnect() {
-			connected_ = false;
 		}
 
 		void handleCreateGame(int width, int height, const tp_s2c::CreateGame_Player& tpPlayer, const game::PlayerSlot& playerSlot) {
@@ -308,17 +322,6 @@ namespace mwetris::network {
 			}
 		}
 
-		void startGame(std::unique_ptr<game::GameRules> gameRules, int w, int h) {
-			gameRules_ = std::move(gameRules);
-			wrapperToServer_.Clear();
-			wrapperToServer_.mutable_start_game()->set_ready(true);
-			send(wrapperToServer_);
-		}
-
-		const std::string& getServerId() const {
-			return uuid_;
-		}
-
 		void handleGameRestart(game::GameRestart gameRestart) {
 			wrapperToServer_.Clear();
 			auto tpGameRestart = wrapperToServer_.mutable_game_restart();
@@ -363,30 +366,19 @@ namespace mwetris::network {
 			spdlog::info("[Network] handle UpdateMove: {}, {}", static_cast<int>(boardEvent), nbr);
 		}
 
-		void sendPause(bool pause) {
-			wrapperToServer_.Clear();
-			wrapperToServer_.mutable_game_command()->set_pause(pause);
-			send(wrapperToServer_);
+		void send(const tp_c2s::Wrapper& wrapper) {
+			ProtobufMessage message;
+			client_->acquire(message);
+			message.setBuffer(wrapper);
+			client_->send(std::move(message));
 		}
 
-		void connect() {
-			wrapperToServer_.Clear();
-			wrapperToServer_.mutable_connect()->set_name("MW Server");
-			send(wrapperToServer_);
-		}
-
-		bool isConnected() const {
-			return connected_;
-		}
-
-	private:
 		std::unique_ptr<game::GameRules> gameRules_;
 		conc::runtime runtime_;
 		std::shared_ptr<conc::manual_executor> manualExecutor_;
 		conc::async_lock lock_;
 		conc::async_condition_variable cv_;
 
-		bool connected_ = false;
 		std::vector<game::PlayerSlot> playerSlots_;
 		std::map<int, game::DevicePtr> deviceBySlotIndex_;
 		std::map<int, tetris::Ai> aiBySlotIndex_;
@@ -399,15 +391,16 @@ namespace mwetris::network {
 		tp_s2c::Wrapper wrapperFromServer_;
 		std::shared_ptr<Client> client_;
 		std::shared_ptr<game::TetrisGame> tetrisGame_;
-		std::string uuid_;
+		std::string gameRoomUuid_;
+		std::string clientUuid_;
 	};
 
 	Network::Network(std::shared_ptr<Client> client, std::shared_ptr<game::TetrisGame> tetrisGame)
 		: impl_{std::make_unique<Network::Impl>(std::move(client), std::move(tetrisGame))} {
 	}
 
-	const std::string& Network::getServerId() const {
-		return impl_->getServerId();
+	const std::string& Network::getGameRoomUuid() const {
+		return impl_->getGameRoomUuid();
 	}
 
 	Network::~Network() {
@@ -425,24 +418,20 @@ namespace mwetris::network {
 		impl_->setPlayerSlot(playerSlot, slot);
 	}
 
-	void Network::createGameLooby(const std::string& serverId) {
-		impl_->createGameLooby(serverId);
+	void Network::joinGameRoom(const std::string& serverId) {
+		impl_->joinGameRoom(serverId);
 	}
 
-	void Network::connectToGame(const std::string& serverId) {
-		impl_->connectToGame(serverId);
+	void Network::leaveRoom() {
+		impl_->leaveRoom();
 	}
 
-	bool Network::isConnected() const {
-		return impl_->isConnected();
+	bool Network::isInsideRoom() const {
+		return impl_->isInsideRoom();
 	}
 
-	void Network::disconnect() {
-		impl_->disconnect();
-	}
-
-	void Network::connect() {
-		impl_->connect();
+	void Network::createGameRoom(const std::string& name) {
+		impl_->createGameRoom(name);
 	}
 
 	bool Network::startGame(std::unique_ptr<game::GameRules> gameRules, int w, int h) {
@@ -452,10 +441,6 @@ namespace mwetris::network {
 
 	mw::signals::Connection Network::addPlayerSlotListener(std::function<void(game::PlayerSlot, int)> listener) {
 		return impl_->playerSlotUpdate.connect(listener);
-	}
-
-	mw::signals::Connection Network::addConnectionListener(std::function<void(bool)> listener) {
-		return impl_->connected.connect(listener);
 	}
 
 }

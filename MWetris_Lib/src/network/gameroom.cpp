@@ -16,46 +16,48 @@ namespace mwetris::network {
 
 	GameRoom::GameRoom(const std::string& name) {
 		name_ = name;
-		masterUuid_ = generateUuid();
+		uuid_ = util::generateUuid();
 		playerSlots_.resize(4, Slot{.type = SlotType::Open});
 	}
 
 	GameRoom::~GameRoom() {}
 
+	void GameRoom::sendToAllClients(Server& server, const tp_s2c::Wrapper& message) {
+		for (const auto& uuid : connectedClientUuids_) {
+			server.sendToClient(uuid, message);
+		}
+	}
+
 	const std::string& GameRoom::getName() const {
 		return name_;
 	}
 
-	const std::string& GameRoom::getMasterUuid() const {
-		return masterUuid_;
+	const std::string& GameRoom::getUuid() const {
+		return uuid_;
 	}
 
-	void GameRoom::connectMaster(Server& server) {
-		wrapperToClient_.Clear();
+	void GameRoom::addClient(const std::string& uuid) {
+		connectedClientUuids_.push_back(uuid);
+	}
 
-		if (remotePlayers_.contains(masterUuid_)) {
-			spdlog::warn("[DebugServer] Master with uuid {} already connect", masterUuid_);
-			return;
-		}
-
-		wrapperToClient_.mutable_connected()->set_uuid(masterUuid_);
-		server.sendToAllClients(wrapperToClient_);
+	const std::vector<std::string>& GameRoom::getConnectedClientUuids() const {
+		return connectedClientUuids_;
 	}
 
 	void GameRoom::disconnect(Server& server, const std::string& uuid) {
 		wrapperToClient_.Clear();
 
-		if (remotePlayers_.contains(masterUuid_)) {
-			remotePlayers_.erase(masterUuid_);
+		if (remotePlayers_.contains(uuid_)) {
+			remotePlayers_.erase(uuid_);
 		}
-		server.sendToAllClients(wrapperToClient_);
+		sendToAllClients(server, wrapperToClient_);
 	}
 
 	void GameRoom::sendPause(Server& server, bool pause) {
 		paused_ = pause;
 		wrapperToClient_.Clear();
 		wrapperToClient_.mutable_game_command()->set_pause(pause);
-		server.sendToAllClients(wrapperToClient_);
+		sendToAllClients(server, wrapperToClient_);
 	}
 
 	bool GameRoom::isPaused() const {
@@ -67,18 +69,12 @@ namespace mwetris::network {
 		auto gameRestart = wrapperToClient_.mutable_game_restart();
 		gameRestart->set_current(static_cast<tp::BlockType>(tetris::randomBlockType()));
 		gameRestart->set_next(static_cast<tp::BlockType>(tetris::randomBlockType()));
-		server.sendToAllClients(wrapperToClient_);
+		sendToAllClients(server, wrapperToClient_);
 	}
 
 	void GameRoom::receiveMessage(Server& server, const std::string& clientUuid, const tp_c2s::Wrapper& wrapperFromClient) {
 		wrapperToClient_.Clear();
-
-		if (wrapperFromClient.has_connect()) {
-			handleConnect(server, clientUuid, wrapperFromClient.connect());
-		}
-		if (wrapperFromClient.has_game_looby()) {
-			handleGameLooby(clientUuid, wrapperFromClient.game_looby());
-		}
+				
 		if (wrapperFromClient.has_player_slot()) {
 			handlePlayerSlot(server, clientUuid, wrapperFromClient.player_slot());
 		}
@@ -100,26 +96,11 @@ namespace mwetris::network {
 		if (wrapperFromClient.has_game_restart()) {
 			handleGameRestart(server, clientUuid, wrapperFromClient.game_restart());
 		}
-		if (wrapperFromClient.has_connect_to_game()) {
-			handleConnectToGame(server, clientUuid, wrapperFromClient.connect_to_game());
+		if (wrapperFromClient.has_join_game_room()) {
+			handleJoinGameRoom(server, clientUuid, wrapperFromClient.join_game_room());
 		}
 
 		server.triggerPlayerSlotEvent(playerSlots_);
-	}
-
-	void GameRoom::handleConnect(Server& server, const std::string& clientUuid, const tp_c2s::Connect& connect) {
-		if (remotePlayers_.contains(clientUuid)) {
-			spdlog::warn("[DebugServer] Client with uuid {} already connect", clientUuid);
-			return;
-		}
-
-		auto uuid = generateUuid();
-		wrapperToClient_.mutable_connected()->set_uuid(uuid);
-		server.sendToClient(clientUuid, wrapperToClient_);
-	}
-
-	void GameRoom::handleGameLooby(const std::string& clientUuid, const tp_c2s::GameLooby& gameLooby) {
-		//remotePlayers_[client.getUuid()]->
 	}
 
 	void GameRoom::handlePlayerSlot(Server& server, const std::string& clientUuid, const tp_c2s::PlayerSlot& tpPlayerSlot) {
@@ -136,7 +117,7 @@ namespace mwetris::network {
 			} else {
 				playerSlots_[index] = Slot{
 					.clientUuid = clientUuid,
-					.playerUuid = generateUuid(),
+					.playerUuid = util::generateUuid(),
 					.name = tpPlayerSlot.name(),
 					.ai = tpPlayerSlot.slot_type() == tp_c2s::PlayerSlot_SlotType_AI,
 					.type = SlotType::Remote
@@ -168,7 +149,7 @@ namespace mwetris::network {
 					spdlog::error("[DebugServer.cpp] Invalid slot type");
 			}
 		}
-		server.sendToAllClients(wrapperToClient_);
+		sendToAllClients(server, wrapperToClient_);
 	}
 
 	void GameRoom::handleGameCommand(Server& server, const tp_c2s::GameCommand& gameCommand) {
@@ -201,7 +182,7 @@ namespace mwetris::network {
 				tpRemotePlayer->set_next(static_cast<tp::BlockType>(next));
 			}
 		}
-		server.sendToAllClients(wrapperToClient_);
+		sendToAllClients(server, wrapperToClient_);
 		server.triggerInitGameEvent(game::InitGameEvent{playerBoards.begin(), playerBoards.end()});
 	}
 
@@ -236,7 +217,8 @@ namespace mwetris::network {
 		}
 	}
 
-	void GameRoom::handleConnectToGame(Server& server, const std::string& clientUuid, const tp_c2s::ConnectToGame& connectToGame) {}
+	void GameRoom::handleJoinGameRoom(Server& server, const std::string& clientUuid, const tp_c2s::JoinGameRoom& joinGameRoom) {
+	}
 
 	bool GameRoom::slotBelongsToClient(const std::string& clientUuid, int slotIndex) const {
 		const auto& slot = playerSlots_.at(slotIndex);
