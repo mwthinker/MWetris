@@ -51,6 +51,8 @@ namespace mwetris::network {
 
 		mw::signals::Connection addPlayerSlotListener(std::function<void(game::PlayerSlot, int)> listener);
 
+		mw::signals::Connection joinGameListener(std::function<void(bool success)> listener);
+
 	private:
 		class Impl;
 		std::unique_ptr<Impl> impl_;

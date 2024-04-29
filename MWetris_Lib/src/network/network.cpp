@@ -5,6 +5,7 @@
 #include "util.h"
 #include "protocol.h"
 #include "random.h"
+#include "game/remoteplayer.h"
 
 #include <shared.pb.h>
 #include <client_to_server.pb.h>
@@ -30,9 +31,19 @@ namespace mwetris::network {
 
 	}
 
+	struct NetworkSlot {
+		game::PlayerSlot playerSlot;
+		std::string clientUuid;
+	};
+
+	game::RemotePlayerPtr createRemotePlayer(tetris::BlockType current, tetris::BlockType next, const std::string& playerUuid) {
+		return std::make_shared<game::RemotePlayer>(current, next, playerUuid);
+	}
+
 	class Network::Impl {
 	public:
 		mw::PublicSignal<Network::Impl, game::PlayerSlot, int> playerSlotUpdate;
+		mw::PublicSignal<Network::Impl, bool> joinGameEvent;
 
 		struct NetworkPlayer {
 			game::PlayerPtr player;
@@ -44,7 +55,7 @@ namespace mwetris::network {
 			, tetrisGame_{tetrisGame} {
 			
 			for (int i = 0; i < 4; ++i) {
-				playerSlots_.push_back(game::OpenSlot{});
+				networkSlots_.emplace_back(game::OpenSlot{}, "");
 			}
 
 			manualExecutor_ = runtime_.make_executor<conc::manual_executor>();
@@ -210,31 +221,31 @@ namespace mwetris::network {
 		}
 
 		void handleGameLooby(const tp_s2c::GameLooby& gameLooby) {
-			playerSlots_.clear();
+			networkSlots_.clear();
 			int index = 0;
 			for (const auto& tpSlot : gameLooby.slots()) {
 				switch (tpSlot.slot_type()) {
 					case tp_s2c::GameLooby_SlotType_REMOTE:
 						if (tpSlot.client_uuid() == clientUuid_) {
 							if (tpSlot.ai()) {
-								playerSlots_.push_back(game::Ai{.name = tpSlot.name()});
+								networkSlots_.emplace_back(game::Ai{.name = tpSlot.name()}, clientUuid_);
 							} else {
-								playerSlots_.push_back(game::Human{.name = tpSlot.name()});
+								networkSlots_.emplace_back(game::Human{.name = tpSlot.name()}, clientUuid_);
 							}
 						} else {
 							//playerSlots_.push_back(game::Remote{.name = tpSlot.name(), .uuid = tpSlot.player_uuid()});
 						}
 						break;
 					case tp_s2c::GameLooby_SlotType_OPEN_SLOT:
-						playerSlots_.push_back(game::OpenSlot{});
+						networkSlots_.emplace_back(game::OpenSlot{}, "");
 						break;
 					case tp_s2c::GameLooby_SlotType_CLOSED_SLOT:
-						playerSlots_.push_back(game::ClosedSlot{});
+						networkSlots_.emplace_back(game::ClosedSlot{}, "");
 						break;
 					default:
 						continue;
 				}
-				playerSlotUpdate(playerSlots_[index], index);
+				playerSlotUpdate(networkSlots_[index].playerSlot, index);
 				++index;
 			}
 		}
@@ -245,11 +256,11 @@ namespace mwetris::network {
 			}
 		}
 
-		void handleCreateGame(int width, int height, const tp_s2c::CreateGame_Player& tpPlayer, const game::PlayerSlot& playerSlot) {
+		void handleCreateGame(int width, int height, const tp_s2c::CreateGame_Player& tpPlayer, const NetworkSlot& networkSlot) {
 			auto current = static_cast<tetris::BlockType>(tpPlayer.current());
 			auto next = static_cast<tetris::BlockType>(tpPlayer.next());
 			
-			if (auto human = std::get_if<game::Human>(&playerSlot); human) {
+			if (auto human = std::get_if<game::Human>(&networkSlot.playerSlot); human) {
 				auto& networkPlayer = players_.emplace_back(
 					NetworkPlayer{
 						.player = game::PlayerFactory{}.createPlayer(width, height, *human),
@@ -265,7 +276,7 @@ namespace mwetris::network {
 				connections_ += networkPlayer.player->addEventCallback([this, player = networkPlayer.player](tetris::BoardEvent boardEvent, int nbr) {
 					handleBoardEvent(*player, boardEvent, nbr);
 				});
-			} else if (auto ai = std::get_if<game::Ai>(&playerSlot); ai) {
+			} else if (auto ai = std::get_if<game::Ai>(&networkSlot.playerSlot); ai) {
 				auto& networkPlayer = players_.emplace_back(
 					NetworkPlayer{
 						.player = game::PlayerFactory{}.createPlayer(height, height, *ai),
@@ -273,6 +284,21 @@ namespace mwetris::network {
 					}
 				);
 				networkPlayer.player->updateRestart(current, next); // Update before attaching the event handles, to avoid multiple calls.
+				connections_ += networkPlayer.player->addPlayerBoardUpdateCallback([this, networkPlayer](game::PlayerBoardEvent playerBoardEvent) {
+					std::visit([&](auto&& event) {
+						handlePlayerBoardUpdate(networkPlayer, event);
+					}, playerBoardEvent);
+				});
+				connections_ += networkPlayer.player->addEventCallback([this, networkPlayer](tetris::BoardEvent boardEvent, int nbr) {
+					handleBoardEvent(*networkPlayer.player, boardEvent, nbr);
+				});
+			} else if (auto remote = std::get_if<game::Remote>(&networkSlot.playerSlot); remote) {
+				auto& networkPlayer = players_.emplace_back(
+					NetworkPlayer{
+						.player = createRemotePlayer(current, next, tpPlayer.player_uuid()),
+						.uuid = tpPlayer.player_uuid()
+					}
+				);
 				connections_ += networkPlayer.player->addPlayerBoardUpdateCallback([this, networkPlayer](game::PlayerBoardEvent playerBoardEvent) {
 					std::visit([&](auto&& event) {
 						handlePlayerBoardUpdate(networkPlayer, event);
@@ -293,11 +319,11 @@ namespace mwetris::network {
 
 			int index = 0;
 			for (const auto& tpPlayer : createGame.players()) {
-				if (index >= playerSlots_.size()) {
+				if (index >= networkSlots_.size()) {
 					// TODO! Handle error!
 					break;
 				}
-				handleCreateGame(createGame.width(), createGame.height(), tpPlayer, playerSlots_[index]);
+				handleCreateGame(createGame.width(), createGame.height(), tpPlayer, networkSlots_[index]);
 				++index;
 			}
 
@@ -313,10 +339,10 @@ namespace mwetris::network {
 		}
 
 		void fillSlotsWithDevicesAndAis() {
-			for (int i = 0; i < playerSlots_.size(); ++i) {
-				if (auto human = std::get_if<game::Human>(&playerSlots_[i]); human) {
+			for (int i = 0; i < networkSlots_.size(); ++i) {
+				if (auto human = std::get_if<game::Human>(&networkSlots_[i].playerSlot); human) {
 					human->device = deviceBySlotIndex_[i];
-				} else if (auto ai = std::get_if<game::Ai>(&playerSlots_[i]); ai) {
+				} else if (auto ai = std::get_if<game::Ai>(&networkSlots_[i].playerSlot); ai) {
 					ai->ai = aiBySlotIndex_[i];
 				}
 			}
@@ -379,7 +405,7 @@ namespace mwetris::network {
 		conc::async_lock lock_;
 		conc::async_condition_variable cv_;
 
-		std::vector<game::PlayerSlot> playerSlots_;
+		std::vector<NetworkSlot> networkSlots_;
 		std::map<int, game::DevicePtr> deviceBySlotIndex_;
 		std::map<int, tetris::Ai> aiBySlotIndex_;
 
@@ -441,6 +467,10 @@ namespace mwetris::network {
 
 	mw::signals::Connection Network::addPlayerSlotListener(std::function<void(game::PlayerSlot, int)> listener) {
 		return impl_->playerSlotUpdate.connect(listener);
+	}
+
+	mw::signals::Connection Network::joinGameListener(std::function<void(bool)> listener) {
+		return impl_->joinGameEvent.connect(listener);
 	}
 
 }

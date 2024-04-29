@@ -8,6 +8,7 @@
 #include "scene/newhighscore.h"
 #include "scene/addplayer.h"
 #include "scene/joingame.h"
+#include "scene/creategame.h"
 
 #include "game/serialize.h"
 #include "game/tetrisgame.h"
@@ -71,9 +72,7 @@ namespace mwetris::ui {
 				ImGui::Window(subWindow.getName().c_str(), nullptr, ImguiSecondaryWindow, t);
 			}
 		}
-
 	}
-
 
 	TetrisWindow::TetrisWindow(const std::string& windowName, Type type, sdl::Window& window,
 		std::shared_ptr<game::DeviceManager> deviceManager,
@@ -91,10 +90,6 @@ namespace mwetris::ui {
 		connections_ += deviceManager_->deviceConnected.connect([](game::DevicePtr device) {
 			spdlog::info("Device found: {}", device->getName());
 		});
-
-		for (int i = 0; i < 4; ++i) {
-			playerSlots_.push_back(game::OpenSlot{});
-		}
 
 		pauseMenuText_ = "Pause";
 
@@ -129,28 +124,17 @@ namespace mwetris::ui {
 		
 		gameComponent_ = std::make_unique<graphic::GameComponent>();
 
-		sceneStateMachine_.emplace<scene::EmptyScene>();
-		sceneStateMachine_.emplace<scene::Settings>();
-		sceneStateMachine_.emplace<scene::HighScore>();
-		sceneStateMachine_.emplace<scene::NewHighScore>([this]() {
+		mainStateMachine_.emplace<scene::EmptyScene>();
+		mainStateMachine_.emplace<scene::CreateGame>(game_, network_, deviceManager_);
+
+		modalStateMachine_.emplace<scene::EmptyScene>();
+		modalStateMachine_.emplace<scene::Settings>();
+		modalStateMachine_.emplace<scene::HighScore>();
+		modalStateMachine_.emplace<scene::NewHighScore>([this]() {
 			openPopUp<scene::HighScore>();
 		});
-		sceneStateMachine_.emplace<scene::About>();
-		sceneStateMachine_.emplace<scene::AddPlayer>([this](scene::AddPlayer& createGame) {
-			int index = createGame.getSlotIndex();
-
-			if (index < playerSlots_.size()) {
-				network_->setPlayerSlot(createGame.getPlayer(), index);
-			} else {
-				spdlog::warn("[TetrisWindow] Player slot index {} out of range (size = {})", index, playerSlots_.size());
-			}
-		}, deviceManager_);
-		sceneStateMachine_.emplace<scene::JoinGame>(game_, network_);
-
-		connections_ += network_->addPlayerSlotListener([this](game::PlayerSlot playerSlot, int slot) {
-			playerSlots_[slot] = playerSlot;
-		});
-
+		modalStateMachine_.emplace<scene::About>();
+		modalStateMachine_.emplace<scene::JoinGame>(game_, network_);
 		game_->setFixTimestep(1.0 / getCurrentMonitorHz());
 
 		connections_ += game_->initGameEvent.connect(gameComponent_.get(), &mwetris::graphic::GameComponent::initGame);
@@ -201,6 +185,7 @@ namespace mwetris::ui {
 		ImGui::PushFont(Configuration::getInstance().getImGuiDefaultFont());
 		imGuiMainWindow(deltaTime);
 
+		ImGui::PushID(this);
 		constexpr auto popUpId = "Popup";
 		if (openPopUp_) {
 			openPopUp_ = false;
@@ -218,18 +203,18 @@ namespace mwetris::ui {
 			}
 			ImGui::SetCursorScreenPos(pos);
 
-			sceneStateMachine_.imGuiUpdate(deltaTime);
+			modalStateMachine_.imGuiUpdate(deltaTime);
 		})) {
-			sceneStateMachine_.switchTo<scene::EmptyScene>();
+			modalStateMachine_.switchTo<scene::EmptyScene>();
 		}
+		mainStateMachine_.imGuiUpdate(deltaTime);
+		ImGui::PopID();
 
 		ImGui::PopFont();
 	}
 
 	void TetrisWindow::imGuiMainWindow(const sdl::DeltaTime& deltaTime) {
 		MainWindow(*this, [&]() {
-			//networkDebugWindow_.imGuiUpdate(deltaTime);
-
 			ImGui::ImageBackground(background_);
 
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {10.0, 10.0});
@@ -237,14 +222,14 @@ namespace mwetris::ui {
 			ImGui::MenuBar([&]() {
 				ImGui::Menu("Game", [&]() {
 					if (ImGui::MenuItem(game::hasSavedGame() ? "Resume Single Player" : "New Single Player", "F1")) {
-						customGame_ = false;
+						mainStateMachine_.switchTo<scene::EmptyScene>();
+
 						game_->createDefaultGame(deviceManager_->getDefaultDevice1());
 					}
 					ImGui::Separator();
 					if (ImGui::MenuItem("Create Game")) {
 						network_->createGameRoom("MW Room");
-						customGame_ = true;
-						reset(playerSlots_);
+						mainStateMachine_.switchTo<scene::CreateGame>();
 					}
 					if (ImGui::MenuItem("Join Game")) {
 						openPopUp<scene::JoinGame>();
@@ -278,104 +263,15 @@ namespace mwetris::ui {
 			ImGui::PopStyleVar(2);
 
 			auto h = ImGui::GetCursorPosY();
-			auto lowerBar = customGame_ ? 100 : 0;
+			auto lowerBar = mainStateMachine_.isCurrentScene<scene::CreateGame>() ? 100 : 0;
 			auto size = ImGui::GetWindowSize();
-
-			if (customGame_) {
-				imGuiCustomGame(size.x, size.y - h - lowerBar, toSeconds(deltaTime));
+			
+			if (mainStateMachine_.isCurrentScene<scene::CreateGame>()) {
+				mainStateMachine_.imGuiUpdate(deltaTime);
 			} else {
 				gameComponent_->draw(size.x, size.y - h - lowerBar, toSeconds(deltaTime));
 			}
-			if (customGame_) {
-				gameRoomUuid_ = network_->getGameRoomUuid();
-				if (!gameRoomUuid_.empty()) {
-					ImGui::SetCursorPosY(200);
-					ImGui::Separator();
-					ImGui::Text("Server Id: ");
-					ImGui::SameLine();
-					ImGui::InputText("##ServerId", &gameRoomUuid_, ImGuiInputTextFlags_ReadOnly);
-				}
-
-				float width = ImGui::GetWindowWidth() - 2 * ImGui::GetCursorPosX();
-				float height = 100.f;
-				float y = ImGui::GetWindowHeight() - height - ImGui::GetStyle().WindowPadding.y;
-
-				ImGui::BeginDisabled(playersInSlots(playerSlots_) == 0);
-				ImGui::SetCursorPosY(y);
-
-				if (ImGui::ConfirmationButton("Create Game", {width, height})) {
-					if (!gameRoomUuid_.empty()) {
-						network_->startGame(std::make_unique<game::SurvivalGameRules>(), TetrisWidth, TetrisHeight);
-					} else {
-						game_->createGame(
-							std::make_unique<game::SurvivalGameRules>(),
-							game::PlayerFactory{}
-								.createPlayers(TetrisWidth, TetrisHeight
-									, extract<game::Human>(playerSlots_)
-									, extract<game::Ai>(playerSlots_)));
-					}
-					customGame_ = false;
-				}
-				ImGui::EndDisabled();
-			}
 		});
-	}
-
-	void TetrisWindow::imGuiCustomGame(int windowWidth, int windowHeight, double deltaTime) {
-		float width = windowWidth;
-
-		if (playerSlots_.size() > 1) {
-			width = windowWidth / playerSlots_.size();
-		}
-		
-		auto pos = ImGui::GetCursorScreenPos();
-
-		for (int i = 0; i < playerSlots_.size(); ++i) {
-			auto& playerSlot = playerSlots_[i];
-
-			ImGui::PushID(i + 1);
-			ImGui::SetCursorScreenPos(pos);
-			pos.x += width;
-
-			ImGui::BeginGroup();
-			std::visit([&](auto&& slot) mutable {
-				using T = std::decay_t<decltype(slot)>;
-				if constexpr (std::is_same_v<T, game::Human>) {
-					ImGui::Text("game::Human");
-					ImGui::Text("Player name: %s", slot.name.c_str());
-					if (ImGui::AbortButton("Remove")) {
-						playerSlot = game::OpenSlot{};
-						network_->setPlayerSlot(playerSlot, i);
-					}
-				} else if constexpr (std::is_same_v<T, game::Ai>) {
-					ImGui::Text("game::Ai");
-					ImGui::Text("Player name: %s", slot.name.c_str());
-					if (ImGui::AbortButton("Remove")) {
-						playerSlot = game::OpenSlot{};
-						network_->setPlayerSlot(playerSlot, i);
-					}
-				} else if constexpr (std::is_same_v<T, game::Remote>) {
-					ImGui::Text("game::Remote");
-					if (ImGui::AbortButton("Remove")) {
-						playerSlot = game::OpenSlot{};
-						network_->setPlayerSlot(playerSlot, i);
-					}
-				} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
-					// Skip.
-				} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
-					if (ImGui::Button("Open Slot", {100, 100})) {
-						scene::AddPlayerData data{};
-						data.index = i;
-						openPopUp<scene::AddPlayer>(data);
-					}
-				} else {
-					static_assert(always_false_v<T>, "non-exhaustive visitor!");
-				}
-			}, playerSlot);
-			ImGui::EndGroup();
-
-			ImGui::PopID();
-		}
 	}
 
 	void TetrisWindow::imGuiEventUpdate(const SDL_Event& windowEvent) {

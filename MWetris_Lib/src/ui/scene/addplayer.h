@@ -45,10 +45,10 @@ namespace mwetris::ui::scene {
 			return data_.index;
 		}
 
+		void switchedTo(const SceneData& sceneData) override;
 	private:
 		void deviceConnected(game::DevicePtr device);
 
-		void switchedTo(const SceneData& sceneData) override;
 		void switchedFrom() override;
 
 		std::function<void(AddPlayer&)> addCallback_;

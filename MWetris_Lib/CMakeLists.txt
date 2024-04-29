@@ -70,6 +70,8 @@ set(SOURCES_LIB
 	
 	src/ui/scene/addplayer.cpp
 	src/ui/scene/addplayer.h
+	src/ui/scene/creategame.cpp
+	src/ui/scene/creategame.h
 	src/ui/scene/highscore.cpp
 	src/ui/scene/highscore.h
 	src/ui/scene/joingame.cpp
