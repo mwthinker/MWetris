@@ -5,6 +5,7 @@
 #include "game/aiplayer.h"
 #include "game/playerslot.h"
 #include "network/client.h"
+#include "network/networkevent.h"
 
 #include <shared.pb.h>
 #include <client_to_server.pb.h>
@@ -21,37 +22,6 @@
 namespace conc = concurrencpp;
 
 namespace mwetris::network {
-
-	struct NetworkSlot {
-		game::PlayerSlot playerSlot;
-		std::string clientUuid;
-	};
-
-	struct PlayerSlotEvent {
-		game::PlayerSlot playerSlot;
-		int index;
-	};
-
-	struct RestartEvent {
-		tetris::BlockType current;
-		tetris::BlockType next;
-	};
-
-	struct JoinGameRoomEvent {
-		bool join;
-	};
-
-	struct CreateGameRoomEvent {
-		bool join;
-	};
-
-	struct PauseEvent {
-		bool pause;
-	};
-
-	struct CreateGameEvent {
-		std::vector<game::PlayerPtr> players;
-	};
 
 	class Network {
 	public:

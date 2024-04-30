@@ -122,8 +122,6 @@ namespace mwetris::ui {
 		background_ = Configuration::getInstance().getBackgroundSprite();
 
 		mainStateMachine_.emplace<scene::EmptyScene>();
-		scene::CreateGame{tetrisController_, deviceManager_};
-
 		mainStateMachine_.emplace<scene::CreateGame>(tetrisController_, deviceManager_);
 
 		modalStateMachine_.emplace<scene::EmptyScene>();
@@ -133,7 +131,7 @@ namespace mwetris::ui {
 			openPopUp<scene::HighScore>();
 		});
 		modalStateMachine_.emplace<scene::About>();
-		modalStateMachine_.emplace<scene::JoinGame>(tetrisController_);
+		modalStateMachine_.emplace<scene::JoinGame>(tetrisController_, deviceManager_);
 
 		connections_ += tetrisController_->tetrisEvent.connect([this](const TetrisEvent& tetrisEvent) {
 			std::visit([&](auto&& event) {
@@ -175,6 +173,23 @@ namespace mwetris::ui {
 	}
 
 	void TetrisWindow::onTetrisEvent(const PlayerSlotEvent& playerSlotEvent) {
+		// Nothing!
+	}
+
+	void TetrisWindow::onTetrisEvent(const network::JoinGameRoomEvent& joinGameRoomEvent) {
+		// Nothing!
+	}
+
+	void TetrisWindow::onTetrisEvent(const network::CreateGameRoomEvent& createGameRoomEvent) {
+		if (createGameRoomEvent.join) {
+			modalStateMachine_.switchTo<scene::EmptyScene>();
+			mainStateMachine_.switchTo<scene::CreateGame>();
+		}
+	}
+
+	void TetrisWindow::onTetrisEvent(const CreateGameEvent& createGameEvent) {
+		modalStateMachine_.switchTo<scene::EmptyScene>();
+		mainStateMachine_.switchTo<scene::EmptyScene>();
 	}
 
 	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
@@ -229,7 +244,6 @@ namespace mwetris::ui {
 					ImGui::Separator();
 					if (ImGui::MenuItem("Create Game")) {
 						tetrisController_->createGameRoom("MW Room");
-						mainStateMachine_.switchTo<scene::CreateGame>();
 					}
 					if (ImGui::MenuItem("Join Game")) {
 						openPopUp<scene::JoinGame>();

@@ -67,6 +67,7 @@ set(SOURCES_LIB
 	src/network/protobufmessagequeue.h
 	src/network/network.cpp
 	src/network/network.h
+	src/network/networkevent.h
 	src/network/server.h
 	
 	src/ui/scene/addplayer.cpp

@@ -5,6 +5,7 @@
 #include "game/gamerules.h"
 #include "game/player.h"
 #include "game/playerslot.h"
+#include "network/networkevent.h"
 
 #include <spdlog/spdlog.h>
 
@@ -37,7 +38,10 @@ namespace mwetris {
 		int slot;
 	};
 
-	using TetrisEvent = std::variant<game::GamePause, game::GameOver, PlayerSlotEvent>;
+	struct CreateGameEvent {
+	};
+
+	using TetrisEvent = std::variant<game::GamePause, game::GameOver, PlayerSlotEvent, network::JoinGameRoomEvent, network::CreateGameRoomEvent, CreateGameEvent>;
 
 	class TetrisController {
 	public:

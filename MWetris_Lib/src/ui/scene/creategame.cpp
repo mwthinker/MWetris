@@ -1,12 +1,12 @@
 #include "creategame.h"
-#include "../imguiextra.h"
+#include "addplayer.h"
+#include "util.h"
+#include "tetriscontroller.h"
 
+#include "game/devicemanager.h"
 #include "game/tetrisgame.h"
 #include "network/network.h"
-#include "ui/scene/addplayer.h"
-#include "util.h"
-#include "addplayer.h"
-#include "tetriscontroller.h"
+#include "ui/imguiextra.h"
 
 #include <array>
 #include <string>
@@ -27,16 +27,15 @@ namespace mwetris::ui::scene {
 	}
 
 	CreateGame::CreateGame(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager)
-		: tetrisController_{tetrisController}
-		, deviceManager_{deviceManager} {
+		: tetrisController_{tetrisController} {
 
 		for (int i = 0; i < 4; ++i) {
 			playerSlots_.push_back(game::OpenSlot{});
 		}
 
 		connections_ += tetrisController_->tetrisEvent.connect([this](const TetrisEvent& tetrisEvent) {
-			if (std::holds_alternative<PlayerSlotEvent>(tetrisEvent)) {
-				onPlayerSlotEvent(std::get<PlayerSlotEvent>(tetrisEvent));
+			if (auto playerSlotEvent = std::get_if<PlayerSlotEvent>(&tetrisEvent)) {
+				onPlayerSlotEvent(*playerSlotEvent);
 			}
 		});
 
@@ -44,7 +43,7 @@ namespace mwetris::ui::scene {
 			auto player = addPlayer.getPlayer();
 			playerSlots_[addPlayer.getSlotIndex()] = player;
 			tetrisController_->setPlayerSlot(player, addPlayer.getSlotIndex());
-		}, deviceManager_);
+		}, deviceManager);
 	}
 
 	void CreateGame::onPlayerSlotEvent(const PlayerSlotEvent& playerSlotEvent) {

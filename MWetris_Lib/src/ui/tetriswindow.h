@@ -8,6 +8,7 @@
 #include "game/serialize.h"
 #include "game/devicemanager.h"
 #include "network/client.h"
+#include "network/networkevent.h"
 #include "ui/subwindow.h"
 
 #include <sdl/imguiwindow.h>
@@ -16,6 +17,7 @@ namespace mwetris {
 
 	class TetrisController;
 	struct PlayerSlotEvent;
+	struct CreateGameEvent;
 
 	namespace network {
 
@@ -48,6 +50,9 @@ namespace mwetris::ui {
 		void onTetrisEvent(const game::GamePause& gamePause);
 		void onTetrisEvent(const game::GameOver& gameOver);
 		void onTetrisEvent(const PlayerSlotEvent& playerSlotEvent);
+		void onTetrisEvent(const network::JoinGameRoomEvent& joinGameRoomEvent);
+		void onTetrisEvent(const network::CreateGameRoomEvent& createGameRoomEvent);
+		void onTetrisEvent(const CreateGameEvent& createGameEvent);
 
 		void initPreLoop();
 		int getCurrentMonitorHz() const;

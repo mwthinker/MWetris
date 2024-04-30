@@ -35,7 +35,7 @@ namespace mwetris::network {
 				.withPlayerData(game::DefaultPlayerData{
 					.level = 1,
 					.points = 0
-					})
+				})
 				.withName(name)
 				.withMovingBlockType(tetris::randomBlockType())
 				.withNextBlockType(tetris::randomBlockType())
@@ -360,7 +360,7 @@ namespace mwetris::network {
 		}
 		createGameEvent(CreateGameEvent{
 			.players = std::move(players)
-			});
+		});
 	}
 
 	void Network::fillSlotsWithDevicesAndAis() {

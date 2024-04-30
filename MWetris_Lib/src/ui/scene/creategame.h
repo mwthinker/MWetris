@@ -9,8 +9,8 @@
 #include "ui/imguiextra.h"
 
 #include "game/serialize.h"
-#include "game/device.h"
 #include "game/playerslot.h"
+#include "game/devicemanager.h"
 
 #include <ai.h>
 
@@ -24,8 +24,8 @@ namespace mwetris {
 
 	namespace game {
 
-		class TetrisGame;
 		class Network;
+		class DeviceManager;
 
 	}
 
@@ -63,7 +63,6 @@ namespace mwetris::ui::scene {
 		std::vector<game::PlayerSlot> playerSlots_;
 		bool openPopUp_ = false;
 		std::unique_ptr<AddPlayer> addPlayer_;
-		std::shared_ptr<game::DeviceManager> deviceManager_;
 		std::string gameRoomUuid_;
 	};
 

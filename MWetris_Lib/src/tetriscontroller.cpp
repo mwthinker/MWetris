@@ -27,10 +27,19 @@ namespace mwetris {
 		});
 		connections_ += network_->createGameEvent.connect([this](const network::CreateGameEvent& createGameEvent) {
 			tetrisGame_->createGame(std::make_unique<game::DefaultGameRules>(), createGameEvent.players);
+			tetrisEvent(CreateGameEvent{});
+		});
+		connections_ += network_->createGameRoomEvent.connect([this](const network::CreateGameRoomEvent& createGameRoomEvent) {
+			tetrisEvent(createGameRoomEvent);
 		});
 		connections_ += network_->joinGameRoomEvent.connect([this](const network::JoinGameRoomEvent& joinGameRoomEvent) {
+			tetrisEvent(joinGameRoomEvent);
 		});
 		connections_ += network_->playerSlotEvent.connect([this](const network::PlayerSlotEvent& playerSlotEvent) {
+			tetrisEvent(PlayerSlotEvent{
+				.playerSlot = playerSlotEvent.playerSlot,
+				.slot = playerSlotEvent.index
+			});
 		});
 		
 		connections_ += tetrisGame_->initGameEvent.connect([this](const game::InitGameEvent& initGameEvent) {
