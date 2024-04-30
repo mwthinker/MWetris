@@ -5,7 +5,6 @@
 
 #include "types.h"
 #include "configuration.h"
-
 #include "ui/imguiextra.h"
 
 #include "game/serialize.h"
@@ -15,16 +14,22 @@
 
 #include <variant>
 
-namespace mwetris::game {
+namespace mwetris {
 
-	class TetrisGame;
-	class Network;
+	class TetrisController;
 
-}
+	namespace game {
 
-namespace mwetris::network {
+		class TetrisGame;
+		class Network;
 
-	class Network;
+	}
+
+	namespace network {
+
+		class Network;
+
+	}
 
 }
 
@@ -32,7 +37,7 @@ namespace mwetris::ui::scene {
 
 	class JoinGame : public Scene {
 	public:
-		JoinGame(std::shared_ptr<game::TetrisGame> game, std::shared_ptr<network::Network> network);
+		JoinGame(std::shared_ptr<TetrisController> tetrisController);
 
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
 
@@ -40,8 +45,7 @@ namespace mwetris::ui::scene {
 		void switchedTo(const SceneData& sceneData) override;
 		void switchedFrom() override;
 
-		std::shared_ptr<network::Network> network_;
-		std::shared_ptr<game::TetrisGame> game_;
+		std::shared_ptr<TetrisController> tetrisController_;
 		std::string serverId_ = "";
 		mw::signals::ScopedConnections connections_;
 		bool connected_ = true;

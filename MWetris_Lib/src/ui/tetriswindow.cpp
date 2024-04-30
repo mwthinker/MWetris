@@ -1,6 +1,8 @@
 #include "tetriswindow.h"
+#include "tetriscontroller.h"
 #include "imguiextra.h"
 #include "configuration.h"
+#include "util.h"
 
 #include "scene/about.h"
 #include "scene/settings.h"
@@ -9,16 +11,11 @@
 #include "scene/addplayer.h"
 #include "scene/joingame.h"
 #include "scene/creategame.h"
-
 #include "game/serialize.h"
 #include "game/tetrisgame.h"
-#include "game/localplayerboardbuilder.h"
-
 #include "graphic/gamecomponent.h"
-
 #include "network/client.h"
-#include "network/debugclient.h"
-#include "util.h"
+#include "network/network.h"
 
 #include <sdl/imguiauxiliary.h>
 
@@ -80,12 +77,14 @@ namespace mwetris::ui {
 	)
 		: window_{window}
 		, deviceManager_{deviceManager}
-		, client_{client}
 		, type_{type}
-		, windowName_{windowName}
-	{
-		game_ = std::make_shared<game::TetrisGame>();
-		network_ = std::make_shared<network::Network>(client_, game_);
+		, windowName_{windowName} {
+
+		auto game = std::make_shared<game::TetrisGame>();
+		auto network = std::make_shared<network::Network>(client);
+		auto gameComponent = std::make_shared<graphic::GameComponent>();
+
+		tetrisController_ = std::make_shared<TetrisController>(network, game, gameComponent);
 
 		connections_ += deviceManager_->deviceConnected.connect([](game::DevicePtr device) {
 			spdlog::info("Device found: {}", device->getName());
@@ -100,7 +99,7 @@ namespace mwetris::ui {
 		Configuration::getInstance().quit();
 
 		if (type_ == Type::MainWindow) {
-			game_->saveDefaultGame();
+			tetrisController_->saveDefaultGame();
 		}
 	}
 
@@ -121,11 +120,11 @@ namespace mwetris::ui {
 	void TetrisWindow::initPreLoop() {
 		Configuration::getInstance().bindTextureFromAtlas();
 		background_ = Configuration::getInstance().getBackgroundSprite();
-		
-		gameComponent_ = std::make_unique<graphic::GameComponent>();
 
 		mainStateMachine_.emplace<scene::EmptyScene>();
-		mainStateMachine_.emplace<scene::CreateGame>(game_, network_, deviceManager_);
+		scene::CreateGame{tetrisController_, deviceManager_};
+
+		mainStateMachine_.emplace<scene::CreateGame>(tetrisController_, deviceManager_);
 
 		modalStateMachine_.emplace<scene::EmptyScene>();
 		modalStateMachine_.emplace<scene::Settings>();
@@ -134,52 +133,53 @@ namespace mwetris::ui {
 			openPopUp<scene::HighScore>();
 		});
 		modalStateMachine_.emplace<scene::About>();
-		modalStateMachine_.emplace<scene::JoinGame>(game_, network_);
-		game_->setFixTimestep(1.0 / getCurrentMonitorHz());
+		modalStateMachine_.emplace<scene::JoinGame>(tetrisController_);
 
-		connections_ += game_->initGameEvent.connect(gameComponent_.get(), &mwetris::graphic::GameComponent::initGame);
-		connections_ += game_->gameOverEvent.connect([this](game::GameOver gameOver) {
-			game::DefaultPlayerData data{};
-			if (const auto playerData{std::get_if<game::DefaultPlayerData>(&gameOver.playerBoard->getPlayerData())}; playerData) {
-				data = *playerData;
-			}
-
-			if (const auto& playerBoard = *gameOver.playerBoard;  game_->isDefaultGame() && game::isNewHighScore(data.points)) {
-				scene::NewHighScoreData data;
-				data.name = playerBoard.getName();
-				data.points = data.points;
-				data.clearedRows = playerBoard.getClearedRows();
-				data.level = data.level;
-				openPopUp<scene::NewHighScore>(data);
-			}
-		});
-		connections_ += game_->gamePauseEvent.connect([this](const game::GamePause& gamePause) {
-			//network_->sendPause(gamePause.pause);
-			gameComponent_->gamePause(gamePause);
-
-			if (gamePause.pause) {
-				if (gamePause.countDown > 0) {
-					pauseMenuText_ = "Stop Countdown";
-				} else {
-					pauseMenuText_ = "Unpause";
-				}
-			} else {
-				pauseMenuText_ = "Pause";
-			}
+		connections_ += tetrisController_->tetrisEvent.connect([this](const TetrisEvent& tetrisEvent) {
+			std::visit([&](auto&& event) {
+				onTetrisEvent(event);
+			}, tetrisEvent);
 		});
 
 		// Keep the update loop in sync with monitor.
+		tetrisController_->setFixTimestep(1.0 / getCurrentMonitorHz());
 		timeHandler_.scheduleRepeat([this]() {
-			game_->setFixTimestep(1.0 / getCurrentMonitorHz());
+			tetrisController_->setFixTimestep(1.0 / getCurrentMonitorHz());
 		}, toSeconds(CheckRefreshRateInterval), std::numeric_limits<int>::max());
 
 		startNewGame();
 	}
 
+	void TetrisWindow::onTetrisEvent(const game::GamePause& gamePause) {
+		if (gamePause.pause) {
+			pauseMenuText_ = gamePause.countDown > 0 ? "Stop Countdown" : "Unpause";
+		} else {
+			pauseMenuText_ = "Pause";
+		}
+	}
+
+	void TetrisWindow::onTetrisEvent(const game::GameOver& gameOver) {
+		game::DefaultPlayerData data{};
+		if (const auto playerData{std::get_if<game::DefaultPlayerData>(&gameOver.playerBoard->getPlayerData())}; playerData) {
+			data = *playerData;
+		}
+
+		if (const auto& playerBoard = *gameOver.playerBoard;  tetrisController_->isDefaultGame() && game::isNewHighScore(data.points)) {
+			scene::NewHighScoreData data;
+			data.name = playerBoard.getName();
+			data.points = data.points;
+			data.clearedRows = playerBoard.getClearedRows();
+			data.level = data.level;
+			openPopUp<scene::NewHighScore>(data);
+		}
+	}
+
+	void TetrisWindow::onTetrisEvent(const PlayerSlotEvent& playerSlotEvent) {
+	}
+
 	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
-		network_->update();
 		auto deltaTimeSeconds = toSeconds(deltaTime);
-		game_->update(deltaTimeSeconds);
+		tetrisController_->update(deltaTimeSeconds);
 		timeHandler_.update(deltaTimeSeconds);
 
 		ImGui::PushFont(Configuration::getInstance().getImGuiDefaultFont());
@@ -224,11 +224,11 @@ namespace mwetris::ui {
 					if (ImGui::MenuItem(game::hasSavedGame() ? "Resume Single Player" : "New Single Player", "F1")) {
 						mainStateMachine_.switchTo<scene::EmptyScene>();
 
-						game_->createDefaultGame(deviceManager_->getDefaultDevice1());
+						tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
 					}
 					ImGui::Separator();
 					if (ImGui::MenuItem("Create Game")) {
-						network_->createGameRoom("MW Room");
+						tetrisController_->createGameRoom("MW Room");
 						mainStateMachine_.switchTo<scene::CreateGame>();
 					}
 					if (ImGui::MenuItem("Join Game")) {
@@ -236,7 +236,7 @@ namespace mwetris::ui {
 					}
 					ImGui::Separator();
 					if (ImGui::MenuItem("Highscore")) {
-						game_->pause();
+						tetrisController_->pause();
 						openPopUp<mwetris::ui::scene::HighScore>();
 					}
 					if (ImGui::MenuItem("Preferences")) {
@@ -248,10 +248,10 @@ namespace mwetris::ui {
 				});
 				ImGui::Menu("Current", [&]() {
 					if (ImGui::MenuItem(pauseMenuText_.c_str(), "P")) {
-						game_->pause();
+						tetrisController_->pause();
 					}
 					if (ImGui::MenuItem("Restart", "F5")) {
-						game_->restartGame();
+						tetrisController_->restartGame();
 					}
 				});
 				ImGui::Menu("Help", [&]() {
@@ -269,7 +269,7 @@ namespace mwetris::ui {
 			if (mainStateMachine_.isCurrentScene<scene::CreateGame>()) {
 				mainStateMachine_.imGuiUpdate(deltaTime);
 			} else {
-				gameComponent_->draw(size.x, size.y - h - lowerBar, toSeconds(deltaTime));
+				tetrisController_->draw(size.x, size.y - h - lowerBar, toSeconds(deltaTime));
 			}
 		});
 	}
@@ -283,14 +283,14 @@ namespace mwetris::ui {
 			case SDL_KEYDOWN:
 				switch (windowEvent.key.keysym.sym) {
 					case SDLK_F1:
-						game_->createDefaultGame(deviceManager_->getDefaultDevice1());
+						tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
 						break;
 					case SDLK_F5:
-						game_->restartGame();
+						tetrisController_->restartGame();
 						break;
 					case SDLK_p: [[fallthrough]];
 					case SDLK_PAUSE:
-						game_->pause();
+						tetrisController_->pause();
 						break;
 				}
 				break;
@@ -306,7 +306,7 @@ namespace mwetris::ui {
 	}
 
 	void TetrisWindow::startNewGame() {
-		game_->createDefaultGame(deviceManager_->getDefaultDevice1());
+		tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
 	}
 
 }

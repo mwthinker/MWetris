@@ -6,6 +6,7 @@
 #include "ui/scene/addplayer.h"
 #include "util.h"
 #include "addplayer.h"
+#include "tetriscontroller.h"
 
 #include <array>
 #include <string>
@@ -25,24 +26,29 @@ namespace mwetris::ui::scene {
 
 	}
 
-	CreateGame::CreateGame(std::shared_ptr<game::TetrisGame> game, std::shared_ptr<network::Network> network, std::shared_ptr<game::DeviceManager> deviceManager)
-		: network_{network}
-		, game_{game}
+	CreateGame::CreateGame(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager)
+		: tetrisController_{tetrisController}
 		, deviceManager_{deviceManager} {
 
 		for (int i = 0; i < 4; ++i) {
 			playerSlots_.push_back(game::OpenSlot{});
 		}
 
-		connections_ += network_->addPlayerSlotListener([this](game::PlayerSlot slot, int index) {
-			playerSlots_[index] = slot;
+		connections_ += tetrisController_->tetrisEvent.connect([this](const TetrisEvent& tetrisEvent) {
+			if (std::holds_alternative<PlayerSlotEvent>(tetrisEvent)) {
+				onPlayerSlotEvent(std::get<PlayerSlotEvent>(tetrisEvent));
+			}
 		});
 
 		addPlayer_ = std::make_unique<AddPlayer>([this](AddPlayer& addPlayer) {
 			auto player = addPlayer.getPlayer();
 			playerSlots_[addPlayer.getSlotIndex()] = player;
-			network_->setPlayerSlot(player, addPlayer.getSlotIndex());
+			tetrisController_->setPlayerSlot(player, addPlayer.getSlotIndex());
 		}, deviceManager_);
+	}
+
+	void CreateGame::onPlayerSlotEvent(const PlayerSlotEvent& playerSlotEvent) {
+		playerSlots_[playerSlotEvent.slot] = playerSlotEvent.playerSlot;
 	}
 
 	void CreateGame::imGuiUpdate(const DeltaTime& deltaTime) {
@@ -69,20 +75,20 @@ namespace mwetris::ui::scene {
 					ImGui::Text("Player name: %s", slot.name.c_str());
 					if (ImGui::AbortButton("Remove")) {
 						playerSlot = game::OpenSlot{};
-						network_->setPlayerSlot(playerSlot, i);
+						tetrisController_->setPlayerSlot(playerSlot, i);
 					}
 				} else if constexpr (std::is_same_v<T, game::Ai>) {
 					ImGui::Text("game::Ai");
 					ImGui::Text("Player name: %s", slot.name.c_str());
 					if (ImGui::AbortButton("Remove")) {
 						playerSlot = game::OpenSlot{};
-						network_->setPlayerSlot(playerSlot, i);
+						tetrisController_->setPlayerSlot(playerSlot, i);
 					}
 				} else if constexpr (std::is_same_v<T, game::Remote>) {
 					ImGui::Text("game::Remote");
 					if (ImGui::AbortButton("Remove")) {
 						playerSlot = game::OpenSlot{};
-						network_->setPlayerSlot(playerSlot, i);
+						tetrisController_->setPlayerSlot(playerSlot, i);
 					}
 				} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
 					// Skip.
@@ -120,7 +126,7 @@ namespace mwetris::ui::scene {
 
 			ImGui::PopID();
 		}
-		gameRoomUuid_ = network_->getGameRoomUuid();
+		gameRoomUuid_ = tetrisController_->getGameRoomUuid();
 		if (!gameRoomUuid_.empty()) {
 			ImGui::SetCursorPosY(200);
 			ImGui::Separator();
@@ -138,9 +144,10 @@ namespace mwetris::ui::scene {
 
 		if (ImGui::ConfirmationButton("Create Game", {width, height})) {
 			if (!gameRoomUuid_.empty()) {
-				network_->startGame(std::make_unique<game::SurvivalGameRules>(), TetrisWidth, TetrisHeight);
+				// std::make_unique<game::SurvivalGameRules>()
+				tetrisController_->startNetworkGame(TetrisWidth, TetrisHeight);
 			} else {
-				game_->createGame(
+				tetrisController_->createGame(
 					std::make_unique<game::SurvivalGameRules>(),
 					game::PlayerFactory{}
 					.createPlayers(TetrisWidth, TetrisHeight

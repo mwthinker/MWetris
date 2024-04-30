@@ -1,5 +1,5 @@
 #ifndef MWETRIS_GAME_AIPLAYER_H
-#define MWETRIS_GAME_AiPLAYER_H
+#define MWETRIS_GAME_AIPLAYER_H
 
 #include "player.h"
 #include "localplayerboard.h"

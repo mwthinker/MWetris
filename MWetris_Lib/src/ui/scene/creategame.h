@@ -17,16 +17,23 @@
 #include <variant>
 #include <memory>
 
-namespace mwetris::game {
+namespace mwetris {
 
-	class TetrisGame;
-	class Network;
+	class TetrisController;
+	struct PlayerSlotEvent;
 
-}
+	namespace game {
 
-namespace mwetris::network {
+		class TetrisGame;
+		class Network;
 
-	class Network;
+	}
+
+	namespace network {
+
+		class Network;
+
+	}
 
 }
 
@@ -37,19 +44,19 @@ namespace mwetris::ui::scene {
 	class CreateGame : public Scene {
 	public:
 		CreateGame(
-			std::shared_ptr<game::TetrisGame> game,
-			std::shared_ptr<network::Network> network,
+			std::shared_ptr<TetrisController> tetrisController,
 			std::shared_ptr<game::DeviceManager> deviceManager
 		);
 
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
 
 	private:
+		void onPlayerSlotEvent(const PlayerSlotEvent& playerSlotEvent);
+
 		void switchedTo(const SceneData& sceneData) override;
 		void switchedFrom() override;
 
-		std::shared_ptr<network::Network> network_;
-		std::shared_ptr<game::TetrisGame> game_;
+		std::shared_ptr<TetrisController> tetrisController_;
 		std::string serverId_ = "";
 		mw::signals::ScopedConnections connections_;
 

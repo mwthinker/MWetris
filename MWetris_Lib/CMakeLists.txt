@@ -28,6 +28,7 @@ set(SOURCES_LIB
 	src/game/input.h
 	src/game/gamepad.cpp
 	src/game/gamepad.h
+	src/game/gamerules.h
 	src/game/humanplayer.h
 	src/game/keyboard.cpp
 	src/game/keyboard.h
@@ -99,6 +100,8 @@ set(SOURCES_LIB
 	src/util/uuid.cpp
 	src/util/uuid.h
 	
+	src/tetriscontroller.cpp
+	src/tetriscontroller.h
 	src/configuration.cpp
 	src/configuration.h
 	src/timerhandler.cpp

@@ -2,36 +2,26 @@
 #define MWETRIS_UI_TETRISWINDOW_H
 
 #include "timerhandler.h"
-
-#include "networkdebugwindow.h"
-
 #include "scene/scene.h"
 #include "scene/statemachine.h"
 #include "scene/addplayer.h"
-
 #include "game/serialize.h"
 #include "game/devicemanager.h"
-
-#include "network/network.h"
 #include "network/client.h"
+#include "ui/subwindow.h"
 
 #include <sdl/imguiwindow.h>
 
 namespace mwetris {
 
-	class GameComponent;
+	class TetrisController;
+	struct PlayerSlotEvent;
 
-}
+	namespace network {
 
-namespace mwetris::graphic {
+		class Network;
 
-	class GameComponent;
-
-}
-
-namespace mwetris::game {
-
-	class TetrisGame;
+	}
 
 }
 
@@ -55,6 +45,10 @@ namespace mwetris::ui {
 		SubWindow::Type getType() const override;
 	
 	private:
+		void onTetrisEvent(const game::GamePause& gamePause);
+		void onTetrisEvent(const game::GameOver& gameOver);
+		void onTetrisEvent(const PlayerSlotEvent& playerSlotEvent);
+
 		void initPreLoop();
 		int getCurrentMonitorHz() const;
 
@@ -76,15 +70,12 @@ namespace mwetris::ui {
 
 		sdl::Window& window_;
 		std::shared_ptr<game::DeviceManager> deviceManager_;
-		std::shared_ptr<network::Network> network_;
-		std::shared_ptr<network::Client> client_;
 		sdl::TextureView background_;
 		scene::StateMachine modalStateMachine_;
 		scene::StateMachine mainStateMachine_;
-		
-		std::unique_ptr<graphic::GameComponent> gameComponent_;
-		std::shared_ptr<game::TetrisGame> game_;
+
 		mw::signals::ScopedConnections connections_;
+		std::shared_ptr<TetrisController> tetrisController_;
 
 		bool openPopUp_ = false;
 

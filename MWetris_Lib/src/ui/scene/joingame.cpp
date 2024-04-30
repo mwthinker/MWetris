@@ -1,6 +1,7 @@
 #include "joingame.h"
 #include "../imguiextra.h"
 
+#include "tetriscontroller.h"
 #include "game/tetrisgame.h"
 #include "network/network.h"
 
@@ -19,11 +20,10 @@ namespace mwetris::ui::scene {
 
 	}
 
-	JoinGame::JoinGame(std::shared_ptr<game::TetrisGame> game, std::shared_ptr<network::Network> network)
-		: network_{network}
-		, game_{game} {
+	JoinGame::JoinGame(std::shared_ptr<TetrisController> tetrisController)
+		: tetrisController_{tetrisController} {
 
-		connections_ += network_->addPlayerSlotListener([this](game::PlayerSlot, int) {
+		connections_ += tetrisController_->tetrisEvent.connect([this](const TetrisEvent& tetrisEvent) {
 			connected_ = true;
 		});
 	}
@@ -46,7 +46,7 @@ namespace mwetris::ui::scene {
 		});
 
 		if (ImGui::ConfirmationButton("Connect")) {
-			network_->joinGameRoom(serverId_);
+			tetrisController_->joinGameRoom(serverId_);
 		}
 	}
 

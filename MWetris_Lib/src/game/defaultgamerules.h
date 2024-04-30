@@ -5,6 +5,7 @@
 #include "localplayerboard.h"
 #include "player.h"
 #include "remoteplayer.h"
+#include "gamerules.h"
 
 #include <vector>
 #include <span>
@@ -12,17 +13,6 @@
 namespace mwetris::game {
 
 	constexpr int LevelUpNbr = 1;
-
-	class GameRules {
-	public:
-		virtual ~GameRules() = default;
-
-		virtual void update(double deltaTime) = 0;
-
-		virtual void restart() = 0;
-
-		virtual void createGame(std::span<PlayerPtr> players) = 0;
-	};
 
 	class DefaultGameRules : public GameRules {
 	public:

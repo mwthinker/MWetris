@@ -8,6 +8,7 @@
 #include "localplayerboardbuilder.h"
 #include "serialize.h"
 #include "defaultgamerules.h"
+#include "aiplayer.h"
 
 #include <vector>
 #include <algorithm>
