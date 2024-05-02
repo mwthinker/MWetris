@@ -14,8 +14,7 @@
 
 namespace mwetris::network {
 
-	GameRoom::GameRoom(const std::string& name) {
-		name_ = name;
+	GameRoom::GameRoom() {
 		uuid_ = util::generateUuid();
 		playerSlots_.resize(4, Slot{.type = SlotType::Open});
 	}
@@ -34,10 +33,6 @@ namespace mwetris::network {
 
 	const std::string& GameRoom::getUuid() const {
 		return uuid_;
-	}
-
-	void GameRoom::addClient(const std::string& uuid) {
-		connectedClientUuids_.push_back(uuid);
 	}
 
 	const std::vector<std::string>& GameRoom::getConnectedClientUuids() const {
@@ -74,7 +69,10 @@ namespace mwetris::network {
 
 	void GameRoom::receiveMessage(Server& server, const std::string& clientUuid, const tp_c2s::Wrapper& wrapperFromClient) {
 		wrapperToClient_.Clear();
-				
+		
+		if (wrapperFromClient.has_create_game_room()) {
+			handleCreateGameRoom(server, clientUuid, wrapperFromClient.create_game_room());
+		}
 		if (wrapperFromClient.has_join_game_room()) {
 			handleJoinGameRoom(server, clientUuid, wrapperFromClient.join_game_room());
 		}
@@ -217,7 +215,25 @@ namespace mwetris::network {
 		}
 	}
 
+	void GameRoom::handleCreateGameRoom(Server& server, const std::string& clientUuid, const tp_c2s::CreateGameRoom& createGameRoom) {
+		connectedClientUuids_.push_back(clientUuid);
+		name_ = createGameRoom.name();
+
+		auto gameRomeCreated = wrapperToClient_.mutable_game_room_created();
+		gameRomeCreated->set_server_uuid(uuid_);
+		gameRomeCreated->set_client_uuid(clientUuid);
+		
+		server.sendToClient(clientUuid, wrapperToClient_);
+	}
+
 	void GameRoom::handleJoinGameRoom(Server& server, const std::string& clientUuid, const tp_c2s::JoinGameRoom& joinGameRoom) {
+		connectedClientUuids_.push_back(clientUuid);
+		
+		auto gameRoomJoined = wrapperToClient_.mutable_game_room_joined();
+		gameRoomJoined->set_server_uuid(joinGameRoom.server_uuid());
+		gameRoomJoined->set_client_uuid(clientUuid);
+		
+		server.sendToClient(clientUuid, wrapperToClient_);
 	}
 
 	bool GameRoom::slotBelongsToClient(const std::string& clientUuid, int slotIndex) const {

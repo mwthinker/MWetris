@@ -16,9 +16,7 @@ namespace mwetris::network {
 
 	class GameRoom {
 	public:
-		GameRoom() = default;
-
-		GameRoom(const std::string& name);
+		GameRoom();
 
 		~GameRoom();
 
@@ -27,8 +25,6 @@ namespace mwetris::network {
 		const std::string& getName() const;
 
 		const std::string& getUuid() const;
-
-		void addClient(const std::string& uuid);
 
 		const std::vector<std::string>& getConnectedClientUuids() const;
 
@@ -56,6 +52,8 @@ namespace mwetris::network {
 		void handleBoardExternalSquares(Server& server, const std::string& clientUuid, const tp_c2s::BoardExternalSquares& boardExternalSquares);
 
 		void handleGameRestart(Server& server, const std::string& clientUuid, const tp_c2s::GameRestart& gameRestart);
+
+		void handleCreateGameRoom(Server& server, const std::string& clientUuid, const tp_c2s::CreateGameRoom& createGameRoom);
 
 		void handleJoinGameRoom(Server& server, const std::string& clientUuid, const tp_c2s::JoinGameRoom& joinGameRoom);
 	

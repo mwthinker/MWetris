@@ -23,15 +23,13 @@ namespace mwetris::network {
 
 	class GameRoomTest : public ::testing::Test {
 	protected:
-		const std::string ServerUuid = "server uuid";
-
 		GameRoomTest() {
 		}
 
 		~GameRoomTest() override {}
 
 		void SetUp() override {
-			gameRoom_ = std::make_shared<GameRoom>(ServerUuid);
+			gameRoom_ = std::make_shared<GameRoom>();
 		}
 
 		void TearDown() override {
@@ -59,9 +57,39 @@ namespace mwetris::network {
 		ASSERT_EQ(playerUuids.size(), size);
 	}
 
+	TEST_F(GameRoomTest, receiveJoinGameRoom) {
+		// Given
+		auto joinGameRoom = wrapperFromClient.mutable_join_game_room();
+		joinGameRoom->set_server_uuid("server uuid");
+
+		// When
+		gameRoom_->receiveMessage(mockServer_, "client uuid 0", wrapperFromClient);
+
+		// Then
+		ASSERT_EQ(gameRoom_->getConnectedClientUuids().size(), 1);
+		ASSERT_EQ(gameRoom_->getConnectedClientUuids()[0], "client uuid 0");
+	}
+
+	TEST_F(GameRoomTest, receiveGameRoomCreated) {
+		// Given
+		auto createGameRoom = wrapperFromClient.mutable_create_game_room();
+		createGameRoom->set_name("name");
+
+		// When
+		gameRoom_->receiveMessage(mockServer_, "client uuid 0", wrapperFromClient);
+
+		// Then
+		ASSERT_EQ(gameRoom_->getConnectedClientUuids().size(), 1);
+		ASSERT_EQ(gameRoom_->getConnectedClientUuids()[0], "client uuid 0");
+	}
+
 	TEST_F(GameRoomTest, receivePlayerSlot_thenSendGameLooby) {
 		// Given
-		gameRoom_->addClient("client uuid 0");
+		auto createGameRoom = wrapperFromClient.mutable_create_game_room();
+		createGameRoom->set_name("name");
+		gameRoom_->receiveMessage(mockServer_, "client uuid 0", wrapperFromClient);
+		wrapperFromClient.Clear();
+
 		auto mutablePlayerSlot = wrapperFromClient.mutable_player_slot();
 		mutablePlayerSlot->set_index(0);
 		mutablePlayerSlot->set_name("name 0");
