@@ -14,6 +14,36 @@
 
 namespace mwetris::network {
 
+	namespace {
+
+		void addPlayerSlotsToGameLooby(tp_s2c::GameLooby& gameLooby, const std::vector<Slot>& playerSlots) {
+			for (const auto& slot : playerSlots) {
+				auto tpSlot = gameLooby.add_slots();
+				tpSlot->set_slot_type(tp_s2c::GameLooby_SlotType_UNSPECIFIED_SLOT_TYPE);
+
+				switch (slot.type) {
+					case SlotType::Open:
+						tpSlot->set_slot_type(tp_s2c::GameLooby_SlotType_OPEN_SLOT);
+						break;
+					case SlotType::Remote:
+						tpSlot->set_slot_type(tp_s2c::GameLooby_SlotType_REMOTE);
+						tpSlot->set_ai(slot.ai);
+						tpSlot->set_name(slot.name);
+						tpSlot->set_player_uuid(slot.playerUuid);
+						tpSlot->set_client_uuid(slot.clientUuid);
+						break;
+					case SlotType::Closed:
+						tpSlot->set_slot_type(tp_s2c::GameLooby_SlotType_CLOSED_SLOT);
+						break;
+					default:
+						spdlog::error("[DebugServer.cpp] Invalid slot type");
+				}
+			}
+		}
+
+	}
+
+
 	GameRoom::GameRoom() {
 		uuid_ = util::generateUuid();
 		playerSlots_.resize(4, Slot{.type = SlotType::Open});
@@ -124,29 +154,7 @@ namespace mwetris::network {
 		}
 
 		auto tpGameLooby = wrapperToClient_.mutable_game_looby();
-
-		for (const auto& slot : playerSlots_) {
-			auto& tpSlot = *tpGameLooby->add_slots();
-			tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_UNSPECIFIED_SLOT_TYPE);
-
-			switch (slot.type) {
-				case SlotType::Open:
-					tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_OPEN_SLOT);
-					break;
-				case SlotType::Remote:
-					tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_REMOTE);
-					tpSlot.set_ai(slot.ai);
-					tpSlot.set_name(slot.name);
-					tpSlot.set_player_uuid(slot.playerUuid);
-					tpSlot.set_client_uuid(clientUuid);
-					break;
-				case SlotType::Closed:
-					tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_CLOSED_SLOT);
-					break;
-				default:
-					spdlog::error("[DebugServer.cpp] Invalid slot type");
-			}
-		}
+		addPlayerSlotsToGameLooby(*tpGameLooby, playerSlots_);
 		sendToAllClients(server, wrapperToClient_);
 	}
 
@@ -222,6 +230,7 @@ namespace mwetris::network {
 		auto gameRomeCreated = wrapperToClient_.mutable_game_room_created();
 		gameRomeCreated->set_server_uuid(uuid_);
 		gameRomeCreated->set_client_uuid(clientUuid);
+		addPlayerSlotsToGameLooby(*gameRomeCreated->mutable_game_looby(), playerSlots_);
 		
 		server.sendToClient(clientUuid, wrapperToClient_);
 	}
@@ -232,7 +241,8 @@ namespace mwetris::network {
 		auto gameRoomJoined = wrapperToClient_.mutable_game_room_joined();
 		gameRoomJoined->set_server_uuid(joinGameRoom.server_uuid());
 		gameRoomJoined->set_client_uuid(clientUuid);
-		
+		addPlayerSlotsToGameLooby(*gameRoomJoined->mutable_game_looby(), playerSlots_);
+
 		server.sendToClient(clientUuid, wrapperToClient_);
 	}
 

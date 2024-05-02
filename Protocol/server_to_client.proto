@@ -78,11 +78,13 @@ message GameRestart {
 message GameRoomCreated {
 	string server_uuid = 1;
 	string client_uuid = 2;
+	GameLooby game_looby = 3;
 }
 
 message GameRoomJoined {
 	string server_uuid = 1;
 	string client_uuid = 2;
+	GameLooby game_looby = 3;
 }
 
 message FailedToConnect {

@@ -234,6 +234,7 @@ namespace mwetris::network {
 		createGameRoomEvent(CreateGameRoomEvent{
 			.join = true
 		});
+		handleGameLooby(gameRoomCreated.game_looby());
 	}
 
 	void Network::handleGameRoomJoined(const tp_s2c::GameRoomJoined& gameRoomJoined) {
@@ -243,6 +244,7 @@ namespace mwetris::network {
 		joinGameRoomEvent(JoinGameRoomEvent{
 			.join = true
 		});
+		handleGameLooby(gameRoomJoined.game_looby());
 	}
 
 	void Network::handleGameLooby(const tp_s2c::GameLooby& gameLooby) {
@@ -415,6 +417,7 @@ namespace mwetris::network {
 		auto nextBlock = wrapperToServer_.mutable_next_block();
 		nextBlock->set_uuid(player.uuid);
 		nextBlock->set_next(static_cast<tp::BlockType>(updateNextBlock.next));
+
 		send(wrapperToServer_);
 	}
 
