@@ -123,6 +123,7 @@ namespace mwetris::ui {
 
 		mainStateMachine_.emplace<scene::EmptyScene>();
 		mainStateMachine_.emplace<scene::CreateGame>(tetrisController_, deviceManager_);
+		mainStateMachine_.emplace<scene::JoinGame>(tetrisController_, deviceManager_);
 
 		modalStateMachine_.emplace<scene::EmptyScene>();
 		modalStateMachine_.emplace<scene::Settings>();
@@ -131,7 +132,6 @@ namespace mwetris::ui {
 			openPopUp<scene::HighScore>();
 		});
 		modalStateMachine_.emplace<scene::About>();
-		modalStateMachine_.emplace<scene::JoinGame>(tetrisController_, deviceManager_);
 
 		connections_ += tetrisController_->tetrisEvent.connect([this](const TetrisEvent& tetrisEvent) {
 			std::visit([&](auto&& event) {
@@ -246,7 +246,8 @@ namespace mwetris::ui {
 						tetrisController_->createGameRoom("MW Room");
 					}
 					if (ImGui::MenuItem("Join Game")) {
-						openPopUp<scene::JoinGame>();
+						modalStateMachine_.switchTo<scene::EmptyScene>();
+						mainStateMachine_.switchTo<scene::JoinGame>();
 					}
 					ImGui::Separator();
 					if (ImGui::MenuItem("Highscore")) {
@@ -280,7 +281,7 @@ namespace mwetris::ui {
 			auto lowerBar = mainStateMachine_.isCurrentScene<scene::CreateGame>() ? 100 : 0;
 			auto size = ImGui::GetWindowSize();
 			
-			if (mainStateMachine_.isCurrentScene<scene::CreateGame>()) {
+			if (!mainStateMachine_.isCurrentScene<scene::EmptyScene>()) {
 				mainStateMachine_.imGuiUpdate(deltaTime);
 			} else {
 				tetrisController_->draw(size.x, size.y - h - lowerBar, toSeconds(deltaTime));

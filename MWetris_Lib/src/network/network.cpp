@@ -61,10 +61,6 @@ namespace mwetris::network {
 	Network::Network(std::shared_ptr<Client> client)
 		: client_{client} {
 
-		for (int i = 0; i < 4; ++i) {
-			networkSlots_.emplace_back(game::OpenSlot{}, "");
-		}
-
 		manualExecutor_ = runtime_.make_executor<conc::manual_executor>();
 		manualExecutor_->post([this]() {
 			stepOnce();
@@ -115,6 +111,11 @@ namespace mwetris::network {
 	}
 
 	void Network::setPlayerSlot(const game::PlayerSlot& playerSlot, int index) {
+		if (index >= networkSlots_.size()) {
+			spdlog::error("[Network] Invalid slot index: {}", index);
+			return;
+		}
+
 		wrapperToServer_.Clear();
 		auto tpGameLooby = wrapperToServer_.mutable_player_slot();
 		tpGameLooby->set_index(index);
@@ -216,14 +217,14 @@ namespace mwetris::network {
 		restartEvent(RestartEvent{
 			.current = current,
 			.next = next
-			});
+		});
 	}
 
 	void Network::handleGameCommand(const tp_s2c::GameCommand& gameCommand) {
 		spdlog::info("[Network] Paused: {}", gameCommand.pause() ? "true" : "false");
 		pauseEvent(PauseEvent{
 			.pause = gameCommand.pause()
-			});
+		});
 	}
 
 	void Network::handlGameRoomCreated(const tp_s2c::GameRoomCreated& gameRoomCreated) {
@@ -232,7 +233,7 @@ namespace mwetris::network {
 		spdlog::info("[Network] GameRoomCreated: {}", gameRoomUuid_);
 		createGameRoomEvent(CreateGameRoomEvent{
 			.join = true
-			});
+		});
 	}
 
 	void Network::handleGameRoomJoined(const tp_s2c::GameRoomJoined& gameRoomJoined) {
@@ -241,7 +242,7 @@ namespace mwetris::network {
 		clientUuid_ = gameRoomJoined.client_uuid();
 		joinGameRoomEvent(JoinGameRoomEvent{
 			.join = true
-			});
+		});
 	}
 
 	void Network::handleGameLooby(const tp_s2c::GameLooby& gameLooby) {
@@ -257,7 +258,10 @@ namespace mwetris::network {
 							networkSlots_.emplace_back(game::Human{.name = tpSlot.name()}, clientUuid_);
 						}
 					} else {
-						//playerSlots_.push_back(game::Remote{.name = tpSlot.name(), .uuid = tpSlot.player_uuid()});
+						networkSlots_.emplace_back(game::Remote{
+							.name = tpSlot.name(),
+							.ai = tpSlot.ai()
+						}, clientUuid_);
 					}
 					break;
 				case tp_s2c::GameLooby_SlotType_OPEN_SLOT:
@@ -272,9 +276,10 @@ namespace mwetris::network {
 			playerSlotEvent(PlayerSlotEvent{
 				.playerSlot = networkSlots_[index].playerSlot,
 				.index = index
-				});
+			});
 			++index;
 		}
+		index = 0;
 	}
 
 	void Network::handleConnections(const tp_s2c::Connections& connections) {

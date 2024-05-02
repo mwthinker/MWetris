@@ -24,7 +24,7 @@ namespace mwetris::ui::scene {
 			return data->BufTextLen < 30;
 		}
 
-		constexpr auto popUpId = "Popup";
+		constexpr auto PopUpId = "JoinPopup";
 
 	}
 
@@ -60,7 +60,7 @@ namespace mwetris::ui::scene {
 		ImGui::PopFont();
 
 		if (gameRoomJoined_) {
-		
+			imGuiJoinedGameRoom(deltaTime);
 		} else {
 			ImGui::Text("Server Id");
 			if (ImGui::InputText("##ServerId", &serverId_, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CallbackAlways, acceptNameInput)) {
@@ -127,7 +127,7 @@ namespace mwetris::ui::scene {
 						data.index = i;
 						addPlayer_->switchedTo(data);
 
-						ImGui::OpenPopup(popUpId);
+						ImGui::OpenPopup(PopUpId);
 						ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, {0.5f, 0.5f});
 						ImGui::SetNextWindowSize({800, 800}, ImGuiCond_Appearing);
 					}
@@ -137,12 +137,13 @@ namespace mwetris::ui::scene {
 			}, playerSlot);
 			ImGui::EndGroup();
 
+			auto size = ImVec2{60.f, 30.f};
+			auto cursorPos = ImGui::GetWindowWidth() - size.x - 10.f;
 
-			if (!ImGui::PopupModal(popUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
+			if (!ImGui::PopupModal(PopUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
 				auto pos = ImGui::GetCursorScreenPos();
-				auto size = ImVec2{60.f, 30.f};
 
-				ImGui::SetCursorPosX(ImGui::GetWindowWidth() - size.x - 10.f); // TODO! Fix more less hard coded right alignment.
+				ImGui::SetCursorPosX(cursorPos); // TODO! Fix more less hard coded right alignment.
 				if (ImGui::AbortButton("Cancel", size) || ImGui::IsKeyDown(ImGuiKey_Escape)) {
 					ImGui::CloseCurrentPopup();
 				}

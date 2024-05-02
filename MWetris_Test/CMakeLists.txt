@@ -12,6 +12,11 @@ set(SOURCES_TEST
 	src/game/devicemanagertest.cpp
 	src/game/serializetest.cpp
 	src/mwetristest.cpp
+	src/network/gameroomtest.cpp
+	src/network/networktest.cpp
+	src/network/testutil.cpp
+	src/network/testutil.h
+	src/main.cpp
 
 	CMakeLists.txt
 )
@@ -30,7 +35,7 @@ add_executable(MWetris_Test
 target_link_libraries(MWetris_Test
 	PUBLIC
 		MWetris_Lib
-		GTest::gtest GTest::gtest_main # Test explorer on Visual Studio 2022 will not find test if "GTest::gmock_main GTest::gmock" is added?
+		GTest::gtest GTest::gmock
 )
 
 if (MSVC)

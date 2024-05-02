@@ -75,6 +75,9 @@ namespace mwetris::network {
 	void GameRoom::receiveMessage(Server& server, const std::string& clientUuid, const tp_c2s::Wrapper& wrapperFromClient) {
 		wrapperToClient_.Clear();
 				
+		if (wrapperFromClient.has_join_game_room()) {
+			handleJoinGameRoom(server, clientUuid, wrapperFromClient.join_game_room());
+		}
 		if (wrapperFromClient.has_player_slot()) {
 			handlePlayerSlot(server, clientUuid, wrapperFromClient.player_slot());
 		}
@@ -95,9 +98,6 @@ namespace mwetris::network {
 		}
 		if (wrapperFromClient.has_game_restart()) {
 			handleGameRestart(server, clientUuid, wrapperFromClient.game_restart());
-		}
-		if (wrapperFromClient.has_join_game_room()) {
-			handleJoinGameRoom(server, clientUuid, wrapperFromClient.join_game_room());
 		}
 
 		server.triggerPlayerSlotEvent(playerSlots_);
@@ -130,7 +130,6 @@ namespace mwetris::network {
 		for (const auto& slot : playerSlots_) {
 			auto& tpSlot = *tpGameLooby->add_slots();
 			tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_UNSPECIFIED_SLOT_TYPE);
-			tpSlot.set_client_uuid(clientUuid);
 
 			switch (slot.type) {
 				case SlotType::Open:
@@ -141,6 +140,7 @@ namespace mwetris::network {
 					tpSlot.set_ai(slot.ai);
 					tpSlot.set_name(slot.name);
 					tpSlot.set_player_uuid(slot.playerUuid);
+					tpSlot.set_client_uuid(clientUuid);
 					break;
 				case SlotType::Closed:
 					tpSlot.set_slot_type(tp_s2c::GameLooby_SlotType_CLOSED_SLOT);

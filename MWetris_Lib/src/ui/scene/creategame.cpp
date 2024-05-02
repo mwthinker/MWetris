@@ -22,7 +22,7 @@ namespace mwetris::ui::scene {
 			return data->BufTextLen < 30;
 		}
 
-		constexpr auto popUpId = "Popup";
+		constexpr auto PopUpId = "CreatePopup";
 
 	}
 
@@ -97,7 +97,7 @@ namespace mwetris::ui::scene {
 						data.index = i;
 						addPlayer_->switchedTo(data);
 						
-						ImGui::OpenPopup(popUpId);
+						ImGui::OpenPopup(PopUpId);
 						ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, {0.5f, 0.5f});
 						ImGui::SetNextWindowSize({800, 800}, ImGuiCond_Appearing);
 					}
@@ -108,7 +108,7 @@ namespace mwetris::ui::scene {
 			ImGui::EndGroup();
 
 			
-			if (!ImGui::PopupModal(popUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
+			if (!ImGui::PopupModal(PopUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
 				auto pos = ImGui::GetCursorScreenPos();
 				auto size = ImVec2{60.f, 30.f};
 
