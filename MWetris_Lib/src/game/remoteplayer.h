@@ -18,8 +18,7 @@ namespace mwetris::game {
 
 	class RemotePlayer : public Player {
 	public:
-		RemotePlayer(tetris::BlockType current, tetris::BlockType next, const std::string& uuid) {
-			uuid_ = uuid;
+		RemotePlayer(tetris::BlockType current, tetris::BlockType next) {
 			tetris::TetrisBoard tetrisBoard{TetrisWidth, TetrisHeight, current, next};
 			remotePlayerBoard_ = std::make_shared<RemotePlayerBoard>(tetrisBoard, "RemotePlayer");
 		}
@@ -88,8 +87,6 @@ namespace mwetris::game {
 
 	private:
 		RemotePlayerBoardPtr remotePlayerBoard_;
-		std::string uuid_;
-
 	};
 
 }

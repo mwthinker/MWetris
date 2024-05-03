@@ -2,7 +2,6 @@
 #define MWETRIS_NETWORK_GAMEROOM_H
 
 #include "debugserver.h"
-#include "game/remoteplayer.h"
 #include "server.h"
 
 #include <server_to_client.pb.h>
@@ -20,7 +19,7 @@ namespace mwetris::network {
 
 		~GameRoom();
 
-		void sendToAllClients(Server& server, const tp_s2c::Wrapper& message);
+		void sendToAllClients(Server& server, const tp_s2c::Wrapper& message, const std::string& exceptClientUuid = "");
 
 		const std::string& getName() const;
 
@@ -34,7 +33,7 @@ namespace mwetris::network {
 
 		bool isPaused() const;
 
-		void restartGame(Server& server);
+		void requestRestartGame(Server& server);
 
 		void receiveMessage(Server& server, const std::string& clientUuid, const tp_c2s::Wrapper& wrapperFromClient);
 
@@ -51,6 +50,8 @@ namespace mwetris::network {
 
 		void handleBoardExternalSquares(Server& server, const std::string& clientUuid, const tp_c2s::BoardExternalSquares& boardExternalSquares);
 
+		void handleRequestGameRestart(Server& server, const std::string& clientUuid, const tp_c2s::RequestGameRestart& requestGameRestart);
+
 		void handleGameRestart(Server& server, const std::string& clientUuid, const tp_c2s::GameRestart& gameRestart);
 
 		void handleCreateGameRoom(Server& server, const std::string& clientUuid, const tp_c2s::CreateGameRoom& createGameRoom);
@@ -62,7 +63,6 @@ namespace mwetris::network {
 		std::string name_;
 		std::string uuid_;
 
-		std::map<std::string, game::RemotePlayerPtr> remotePlayers_;
 		std::vector<Slot> playerSlots_;
 		std::vector<std::string> connectedClientUuids_;
 		bool paused_ = false;

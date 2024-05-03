@@ -34,8 +34,6 @@ namespace mwetris::network {
 		virtual void triggerConnectedClientEvent(const ConnectedClient& connectedClient) = 0;
 
 		virtual void triggerPlayerSlotEvent(const std::vector<Slot>& slots) = 0;
-
-		virtual void triggerInitGameEvent(const game::InitGameEvent& initGameEvent) = 0;
 	};
 
 }

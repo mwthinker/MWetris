@@ -52,8 +52,8 @@ namespace mwetris::network {
 			return std::make_shared<game::AiPlayer>(ai.ai, createLocalPlayerBoard(width, height, ai.name));
 		}
 
-		game::RemotePlayerPtr createRemotePlayer(tetris::BlockType current, tetris::BlockType next, const std::string& playerUuid) {
-			return std::make_shared<game::RemotePlayer>(current, next, playerUuid);
+		game::RemotePlayerPtr createRemotePlayer(tetris::BlockType current, tetris::BlockType next) {
+			return std::make_shared<game::RemotePlayer>(current, next);
 		}
 
 	}
@@ -67,8 +67,8 @@ namespace mwetris::network {
 		});
 	}
 
-	bool Network::isActive() const {
-		return true;
+	bool Network::isInsideGameRoom() const {
+		return !gameRoomUuid_.empty();
 	}
 
 	Network::~Network() {}
@@ -96,7 +96,8 @@ namespace mwetris::network {
 
 	void Network::sendRestart() {
 		wrapperToServer_.Clear();
-		wrapperToServer_.mutable_game_restart();
+		auto requestGameRestart = wrapperToServer_.mutable_request_game_restart();
+		requestGameRestart->set_restart(true);
 		send(wrapperToServer_);
 	}
 
@@ -185,8 +186,17 @@ namespace mwetris::network {
 			if (wrapperFromServer_.has_game_command()) {
 				handleGameCommand(wrapperFromServer_.game_command());
 			}
+			if (wrapperFromServer_.has_request_game_restart()) {
+				handleRequestGameRestart(wrapperFromServer_.request_game_restart());
+			}
 			if (wrapperFromServer_.has_game_restart()) {
 				handleGameRestart(wrapperFromServer_.game_restart());
+			}
+			if (wrapperFromServer_.has_board_move()) {
+				handleBoardMove(wrapperFromServer_.board_move());
+			}
+			if (wrapperFromServer_.has_next_block()) {
+				handleBoardNextBlock(wrapperFromServer_.next_block());
 			}
 		}
 		co_return;
@@ -211,13 +221,43 @@ namespace mwetris::network {
 		co_return;
 	}
 
+	void Network::handleRequestGameRestart(const tp_s2c::RequestGameRestart& requestGameRestart) {
+		spdlog::info("[Network] RequestGameRestart");
+		if (std::none_of(players_.begin(), players_.end(), [this](const NetworkPlayer& networkPlayer) {
+			return networkPlayer.player->isLocal();
+		})) {
+			spdlog::debug("[Network] Ignore RequestGameRestart, no local players for client {}", clientUuid_);
+			return;
+		}
+		
+		wrapperToServer_.Clear();
+		auto gameRestartToServer = wrapperToServer_.mutable_game_restart();
+		gameRestartToServer->set_current(requestGameRestart.current());
+		gameRestartToServer->set_next(requestGameRestart.next());
+		send(wrapperToServer_);
+
+		for (auto& networkPlayer : players_) {
+			if (networkPlayer.player->isLocal()) {
+				networkPlayer.player->updateRestart(static_cast<tetris::BlockType>(requestGameRestart.current()), static_cast<tetris::BlockType>(requestGameRestart.next()));
+			}
+		}
+	}
+
 	void Network::handleGameRestart(const tp_s2c::GameRestart& gameRestart) {
 		auto current = static_cast<tetris::BlockType>(gameRestart.current());
 		auto next = static_cast<tetris::BlockType>(gameRestart.next());
-		restartEvent(RestartEvent{
-			.current = current,
-			.next = next
-		});
+		
+		const auto& clientUuid = gameRestart.client_uuid();
+		if (clientUuid == clientUuid_) {
+			spdlog::warn("[Network] Client {} received own GameRestart message. Ignoring!", clientUuid_);
+			return;
+		}
+
+		for (auto& networkPlayer : players_) {
+			if (networkPlayer.clientId == clientUuid) {
+				networkPlayer.player->updateRestart(current, next);
+			}
+		}
 	}
 
 	void Network::handleGameCommand(const tp_s2c::GameCommand& gameCommand) {
@@ -230,7 +270,7 @@ namespace mwetris::network {
 	void Network::handlGameRoomCreated(const tp_s2c::GameRoomCreated& gameRoomCreated) {
 		gameRoomUuid_ = gameRoomCreated.server_uuid();
 		clientUuid_ = gameRoomCreated.client_uuid();
-		spdlog::info("[Network] GameRoomCreated: {}", gameRoomUuid_);
+		spdlog::info("[Network] GameRoomCreated: {}, client uuid: {}", gameRoomUuid_, clientUuid_);
 		createGameRoomEvent(CreateGameRoomEvent{
 			.join = true
 		});
@@ -298,7 +338,8 @@ namespace mwetris::network {
 			auto& networkPlayer = players_.emplace_back(
 				NetworkPlayer{
 					.player = createPlayer(width, height, *human),
-					.uuid = tpPlayer.player_uuid()
+					.uuid = tpPlayer.player_uuid(),
+					.clientId = clientUuid_
 				}
 			);
 			networkPlayer.player->updateRestart(current, next); // Update before attaching the event handles, to avoid multiple calls.
@@ -314,7 +355,8 @@ namespace mwetris::network {
 			auto& networkPlayer = players_.emplace_back(
 				NetworkPlayer{
 					.player = createPlayer(height, height, *ai),
-					.uuid = tpPlayer.player_uuid()
+					.uuid = tpPlayer.player_uuid(),
+					.clientId = clientUuid_
 				}
 			);
 			networkPlayer.player->updateRestart(current, next); // Update before attaching the event handles, to avoid multiple calls.
@@ -329,8 +371,9 @@ namespace mwetris::network {
 		} else if (auto remote = std::get_if<game::Remote>(&networkSlot.playerSlot); remote) {
 			auto& networkPlayer = players_.emplace_back(
 				NetworkPlayer{
-					.player = createRemotePlayer(current, next, tpPlayer.player_uuid()),
-					.uuid = tpPlayer.player_uuid()
+					.player = createRemotePlayer(current, next),
+					.uuid = tpPlayer.player_uuid(),
+					.clientId = tpPlayer.client_uuid()
 				}
 			);
 			connections_ += networkPlayer.player->addPlayerBoardUpdateCallback([this, networkPlayer](game::PlayerBoardEvent playerBoardEvent) {
@@ -370,6 +413,32 @@ namespace mwetris::network {
 		});
 	}
 
+	void Network::handleBoardMove(const tp_s2c::BoardMove& boardMove) {
+		auto move = static_cast<tetris::Move>(boardMove.move());
+		for (auto& networkPlayer : players_) {
+			if (networkPlayer.uuid == boardMove.uuid()) {
+				if (auto remotePlayer = std::dynamic_pointer_cast<game::RemotePlayer>(networkPlayer.player)) {
+					remotePlayer->updateMove(move);
+				} else {
+					spdlog::error("[Network] Invalid player type for BoardMove");
+				}
+			}
+		}
+	}
+
+	void Network::handleBoardNextBlock(const tp_s2c::BoardNextBlock& boardNextBlock) {
+		for (auto& networkPlayer : players_) {
+			if (networkPlayer.uuid == boardNextBlock.uuid()) {
+				if (auto remotePlayer = std::dynamic_pointer_cast<game::RemotePlayer>(networkPlayer.player)) {
+					auto next = static_cast<tetris::BlockType>(boardNextBlock.next());
+					remotePlayer->updateNextBlock(next);
+				} else {
+					spdlog::error("[Network] Invalid player type for BoardNextBlock");
+				}
+			}
+		}
+	}
+
 	void Network::fillSlotsWithDevicesAndAis() {
 		for (int i = 0; i < networkSlots_.size(); ++i) {
 			if (auto human = std::get_if<game::Human>(&networkSlots_[i].playerSlot); human) {
@@ -380,13 +449,6 @@ namespace mwetris::network {
 		}
 	}
 
-	void Network::restartGame(game::GameRestart gameRestart) {
-		wrapperToServer_.Clear();
-		auto tpGameRestart = wrapperToServer_.mutable_game_restart();
-		tpGameRestart->set_current(static_cast<tp::BlockType>(gameRestart.current));
-		tpGameRestart->set_next(static_cast<tp::BlockType>(gameRestart.next));
-		send(wrapperToServer_);
-	}
 
 	void Network::handlePlayerBoardUpdate(const NetworkPlayer& player, const game::UpdateRestart& updateRestart) {
 		spdlog::info("[Network] handle UpdateRestart: current={}, next={}", static_cast<char>(updateRestart.current), static_cast<char>(updateRestart.next));

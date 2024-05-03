@@ -70,7 +70,7 @@ namespace mwetris {
 	}
 
 	void TetrisController::createGame(std::unique_ptr<game::GameRules> gameRules, const std::vector<game::PlayerPtr>& players) {
-		if (network_->isInsideRoom()) {
+		if (network_->isInsideGameRoom()) {
 			spdlog::error("Can't create a local game when inside a room.");
 			return;
 		}
@@ -82,15 +82,15 @@ namespace mwetris {
 	}
 
 	void TetrisController::pause() {
-		if (network_->isActive()) {
-			tetrisGame_->pause();
-		} else {
+		if (network_->isInsideGameRoom()) {
 			network_->sendPause(!tetrisGame_->isPaused()); // TODO! May need to handle delays, to avoid multiple pause events.
+		} else {
+			tetrisGame_->pause();
 		}
 	}
 
 	void TetrisController::restartGame() {
-		if (network_->isActive()) {
+		if (network_->isInsideGameRoom()) {
 			network_->sendRestart();
 		} else {
 			tetrisGame_->restartGame(tetris::randomBlockType(), tetris::randomBlockType());
@@ -110,7 +110,7 @@ namespace mwetris {
 	}
 
 	void TetrisController::setPlayerSlot(const game::PlayerSlot& playerSlot, int slot) {
-		if (network_->isActive()) {
+		if (network_->isInsideGameRoom()) {
 			network_->setPlayerSlot(playerSlot, slot);
 		} else {
 			tetrisEvent(PlayerSlotEvent{playerSlot, slot}); // TODO! Does this work?
@@ -130,7 +130,7 @@ namespace mwetris {
 	}
 
 	bool TetrisController::isDefaultGame() const {
-		return !network_->isInsideRoom() && tetrisGame_->isDefaultGame();
+		return !network_->isInsideGameRoom() && tetrisGame_->isDefaultGame();
 	}
 
 }

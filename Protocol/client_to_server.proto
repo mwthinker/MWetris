@@ -63,11 +63,11 @@ message GameRestart {
 	tp.BlockType next = 2;
 }
 
-message FailedToConnect {
+message RequestGameRestart {
+	bool restart = 1;
 }
 
-message FromServer {
-
+message FailedToConnect {
 }
 
 message Wrapper {
@@ -82,4 +82,5 @@ message Wrapper {
 	JoinGameRoom Join_game_room = 9;
 	FailedToConnect failed_to_connect = 10;
 	CreateGameRoom create_game_room = 11;
+	RequestGameRestart request_game_restart = 12;
 }

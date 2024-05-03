@@ -35,11 +35,12 @@ namespace mwetris::network {
 		struct NetworkPlayer {
 			game::PlayerPtr player;
 			std::string uuid;
+			std::string clientId;
 		};
 
 		Network(std::shared_ptr<Client> client);
 
-		bool isActive() const;
+		bool isInsideGameRoom() const;
 
 		~Network();
 
@@ -70,6 +71,8 @@ namespace mwetris::network {
 
 		conc::result<void> nextMessage();
 
+		void handleRequestGameRestart(const tp_s2c::RequestGameRestart& requestGameRestart);
+
 		void handleGameRestart(const tp_s2c::GameRestart& gameRestart);
 
 		void handleGameCommand(const tp_s2c::GameCommand& gameCommand);
@@ -86,9 +89,11 @@ namespace mwetris::network {
 
 		void handleCreateGame(const tp_s2c::CreateGame& createGame);
 
-		void fillSlotsWithDevicesAndAis();
+		void handleBoardMove(const tp_s2c::BoardMove& boardMove);
 
-		void restartGame(game::GameRestart gameRestart);
+		void handleBoardNextBlock(const tp_s2c::BoardNextBlock& boardNextBlock);
+
+		void fillSlotsWithDevicesAndAis();
 
 		void handlePlayerBoardUpdate(const NetworkPlayer& player, const game::UpdateRestart& updateRestart);
 

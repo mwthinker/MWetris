@@ -81,8 +81,6 @@ namespace mwetris::network {
 
 			GameRoom gameRoom;
 			gameRoomUuidByClientUuid_.emplace(remote.uuid, gameRoom.getUuid());
-			gameRoom.receiveMessage(*this, remote.uuid, wrapperFromClient_);
-			
 			gameRooms_.emplace(gameRoom.getUuid(), std::move(gameRoom));
 		}
 
@@ -96,8 +94,6 @@ namespace mwetris::network {
 				auto& gameRoom = it->second;
 				gameRoomUuidByClientUuid_.emplace(remote.uuid, gameRoom.getUuid());
 				gameRooms_.emplace(gameRoom.getUuid(), std::move(gameRoom));
-
-				gameRoom.receiveMessage(*this, remote.uuid, wrapperFromClient_);
 			} else {
 				spdlog::warn("[DebugServer] GameRoom with uuid {} not found", joinGameRoom.server_uuid());
 			}
@@ -122,7 +118,7 @@ namespace mwetris::network {
 		}
 
 		void restartGame(const std::string& clientUuid) {
-			gameRooms_[clientUuid].restartGame(*this);
+			gameRooms_[clientUuid].requestRestartGame(*this);
 		}
 
 		bool isPaused(const std::string& clientUuid) const {
@@ -166,10 +162,6 @@ namespace mwetris::network {
 
 		void triggerPlayerSlotEvent(const std::vector<Slot>& slots) override {
 			playerSlotsUpdated(slots);
-		}
-
-		void triggerInitGameEvent(const game::InitGameEvent& initGame) override {
-			initGameEvent(initGame);
 		}
 
 	private:

@@ -18,7 +18,6 @@ namespace mwetris::network {
 		MOCK_METHOD(void, sendToClient, (const std::string& clientUuid, const google::protobuf::MessageLite& message), (override));
 		MOCK_METHOD(void, triggerConnectedClientEvent, (const ConnectedClient& connectedClient), (override));
 		MOCK_METHOD(void, triggerPlayerSlotEvent, (const std::vector<Slot>& slots), (override));
-		MOCK_METHOD(void, triggerInitGameEvent, (const game::InitGameEvent& initGameEvent), (override));
 	};
 
 	class GameRoomTest : public ::testing::Test {

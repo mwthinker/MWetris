@@ -4,16 +4,8 @@ package tp_s2c;
 
 import "shared.proto";
 
-message RemotePlayer {
-
-}
-
 message Connections {
 	repeated string uuids = 1;
-}
-
-message CreateGameLooby {
-	string uuid = 1;
 }
 
 message GameLooby {
@@ -44,6 +36,7 @@ message CreateGame {
 		bool ai = 5;
 		tp.BlockType current = 6;
 		tp.BlockType next = 7;
+		string client_uuid = 8;
 	}
 
 	repeated Player players = 1;
@@ -71,8 +64,14 @@ message BoardNextBlock {
 }
 
 message GameRestart {
-	tp.BlockType current = 1;
-	tp.BlockType next = 2;
+	string client_uuid = 1;
+	tp.BlockType current = 2;
+	tp.BlockType next = 3;
+}
+
+message RequestGameRestart {
+	tp.BlockType current = 2;
+	tp.BlockType next = 3;
 }
 
 message GameRoomCreated {
@@ -102,4 +101,5 @@ message Wrapper {
 	FailedToConnect failed_to_connect = 9;
 	GameRoomCreated game_room_created = 10;
 	GameRoomJoined game_room_joined = 11;
+	RequestGameRestart request_game_restart = 12;
 }
