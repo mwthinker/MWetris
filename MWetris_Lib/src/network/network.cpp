@@ -279,7 +279,7 @@ namespace mwetris::network {
 
 	void Network::handleGameRoomJoined(const tp_s2c::GameRoomJoined& gameRoomJoined) {
 		spdlog::info("[Network] GameRoomJoined: {}, client uuid: {}", gameRoomJoined.server_uuid(), gameRoomJoined.client_uuid());
-		gameRoomUuid_ = "";
+		gameRoomUuid_ = gameRoomJoined.server_uuid();
 		clientUuid_ = gameRoomJoined.client_uuid();
 		joinGameRoomEvent(JoinGameRoomEvent{
 			.join = true

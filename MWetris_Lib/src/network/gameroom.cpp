@@ -164,6 +164,7 @@ namespace mwetris::network {
 			}
 		}
 
+		wrapperToClient_.Clear();
 		auto tpGameLooby = wrapperToClient_.mutable_game_looby();
 		addPlayerSlotsToGameLooby(*tpGameLooby, playerSlots_);
 		sendToAllClients(server, wrapperToClient_);

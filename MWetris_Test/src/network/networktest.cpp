@@ -49,6 +49,16 @@ namespace mwetris::network {
 			wrapperFromServer.Clear();
 		}
 
+		void mockReceiveGameRoomJoined(const std::string& serverUuid, const std::string& clientUuid) {
+			tp_s2c::Wrapper wrapperFromServer;
+			auto gameRoomJoined = wrapperFromServer.mutable_game_room_joined();
+			gameRoomJoined->set_client_uuid(clientUuid);
+			gameRoomJoined->set_server_uuid(serverUuid);
+
+			expectCallClientReceive(wrapperFromServer);
+			wrapperFromServer.Clear();
+		}
+
 		void expectCallClientReceive(const tp_s2c::Wrapper& wrapper) {
 			auto message = createMessage(wrapper);
 			EXPECT_CALL(*mockClient_, receive(_))
@@ -76,6 +86,7 @@ namespace mwetris::network {
 		mockReceiveGameRoomCreated("server uuid", "client uuid");
 
 		// When
+		EXPECT_FALSE(network_->isInsideRoom());
 		EXPECT_FALSE(createGameRoomEventCalled);
 		EXPECT_NE(network_->getGameRoomUuid(), "server uuid");
 		network_->update();
@@ -83,6 +94,28 @@ namespace mwetris::network {
 		// Then.
 		EXPECT_EQ(network_->getGameRoomUuid(), "server uuid");
 		EXPECT_TRUE(createGameRoomEventCalled);
+		EXPECT_TRUE(network_->isInsideRoom());
+	}
+
+	TEST_F(NetworkTest, network_joinGameRoom) {
+		// Given
+		bool joinGameRoomEventCalled = false;
+		auto connection = network_->joinGameRoomEvent.connect([&](const JoinGameRoomEvent& joinGameRoomEvent) {
+			joinGameRoomEventCalled = true;
+		});
+
+		mockReceiveGameRoomJoined("server uuid", "client uuid");
+
+		// When
+		EXPECT_FALSE(joinGameRoomEventCalled);
+		EXPECT_FALSE(network_->isInsideRoom());
+		EXPECT_NE(network_->getGameRoomUuid(), "server uuid");
+		network_->update();
+
+		// Then.
+		EXPECT_EQ(network_->getGameRoomUuid(), "server uuid");
+		EXPECT_TRUE(joinGameRoomEventCalled);
+		EXPECT_TRUE(network_->isInsideRoom());
 	}
 
 	TEST_F(NetworkTest, receiveGameLoobyContainingAllSlotTypes_thenEventsAreTriggered) {
@@ -138,19 +171,19 @@ namespace mwetris::network {
 		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "client uuid 0", "name 0");
 
 		expectCallClientReceive(wrapperFromServer);
-		ProtobufMessage messageToClient;
+		ProtobufMessage messageToServer;
 		EXPECT_CALL(*mockClient_, send(_))
-			.WillOnce(SaveArg<0>(&messageToClient));
+			.WillOnce(SaveArg<0>(&messageToServer));
 
 		// When
 		network_->update();
 		network_->setPlayerSlot(game::Human{
 			.name = "name 0"
-		}, 0);
+			}, 0);
 
 		// Then
 		tp_c2s::Wrapper wrapperToServer;
-		wrapperToServer.ParseFromArray(messageToClient.getBodyData(), messageToClient.getBodySize());
+		wrapperToServer.ParseFromArray(messageToServer.getBodyData(), messageToServer.getBodySize());
 		auto playerSlot = wrapperToServer.player_slot();
 		EXPECT_EQ(playerSlot.slot_type(), tp_c2s::PlayerSlot_SlotType_HUMAN);
 		EXPECT_EQ(playerSlot.index(), 0);
@@ -176,6 +209,37 @@ namespace mwetris::network {
 		network_->setPlayerSlot(game::Human{
 			.name = "name 1"
 			}, 1);
+	}
+
+	TEST_F(NetworkTest, receiveGameLoobyWithMultipleClientsAndSetSlot) {
+		// Given
+		mockReceiveGameRoomCreated("server uuid", "client uuid 0");
+		network_->update();
+
+		auto gameLooby = wrapperFromServer.mutable_game_looby();
+		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_REMOTE, "client uuid 0", "name 0");
+		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_REMOTE, "client uuid 1", "name 1");
+		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "", "");
+		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "", "");
+
+		expectCallClientReceive(wrapperFromServer);
+		ProtobufMessage messageToServer;
+		EXPECT_CALL(*mockClient_, send(_))
+			.WillOnce(SaveArg<0>(&messageToServer));
+
+		// When
+		network_->update();
+		network_->setPlayerSlot(game::Human{
+			.name = "name 2"
+			}, 2);
+
+		// Then
+		tp_c2s::Wrapper wrapperToServer;
+		wrapperToServer.ParseFromArray(messageToServer.getBodyData(), messageToServer.getBodySize());
+		auto playerSlot = wrapperToServer.player_slot();
+		EXPECT_EQ(playerSlot.slot_type(), tp_c2s::PlayerSlot_SlotType_HUMAN);
+		EXPECT_EQ(playerSlot.index(), 2);
+		EXPECT_EQ(playerSlot.name(), "name 2");
 	}
 
 }
