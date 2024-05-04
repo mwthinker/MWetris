@@ -1,5 +1,4 @@
 #include "tetriscontroller.h"
-#include "game/aiplayer.h"
 #include "game/tetrisgame.h"
 #include "game/device.h"
 #include "game/gamerules.h"

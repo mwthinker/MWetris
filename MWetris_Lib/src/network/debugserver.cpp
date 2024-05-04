@@ -4,7 +4,6 @@
 #include "util.h"
 #include "util/uuid.h"
 #include "game/player.h"
-#include "game/remoteplayer.h"
 #include "protocol.h"
 #include "gameroom.h"
 #include "server.h"
@@ -30,7 +29,7 @@ namespace mwetris::network {
 	class DebugServer::Impl : public Server {
 	public:
 		mw::PublicSignal<DebugServer::Impl, const std::vector<Slot>&> playerSlotsUpdated;
-		mw::PublicSignal<DebugServer::Impl, const std::vector<game::RemotePlayerPtr>&> gameCreated;
+		mw::PublicSignal<DebugServer::Impl, const std::vector<game::PlayerPtr>&> gameCreated;
 		mw::PublicSignal<DebugServer::Impl, const game::InitGameEvent&> initGameEvent;
 		mw::PublicSignal<DebugServer::Impl, const ConnectedClient&> connectedClientListener;
 

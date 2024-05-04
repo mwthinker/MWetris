@@ -1,7 +1,10 @@
 #ifndef MWETRIS_GAME_PLAYER_H
 #define MWETRIS_GAME_PLAYER_H
 
-#include "playerboard.h"
+#include "computer.h"
+#include "tetrisboardcontroller.h"
+#include "device.h"
+#include "playerboardevent.h"
 
 #include <tetrisboard.h>
 
@@ -15,35 +18,81 @@ namespace mwetris::game {
 	class Player;
 	using PlayerPtr = std::shared_ptr<Player>;
 
+	class TetrisBoardMoveController;
+	
+	PlayerPtr createAiPlayer(const tetris::Ai& ai, const PlayerData& playerData = DefaultPlayerData{}, tetris::TetrisBoard&& tetrisBoard = tetris::TetrisBoard{10, 10, tetris::BlockType::L, tetris::BlockType::L});
+	
+	PlayerPtr createHumanPlayer(DevicePtr device, const PlayerData& playerData = DefaultPlayerData{}, tetris::TetrisBoard&& tetrisBoard = tetris::TetrisBoard{10, 10, tetris::BlockType::L, tetris::BlockType::L});
+
+	PlayerPtr createRemotePlayer(const PlayerData& playerData = DefaultPlayerData{}, tetris::TetrisBoard&& tetrisBoard = tetris::TetrisBoard{10, 10, tetris::BlockType::L, tetris::BlockType::L});
+
 	class Player {
 	public:
-		virtual ~Player() = default;
+		enum class Type {
+			Human,
+			Ai,
+			Remote
+		};
 
-		virtual void update(double timeStep) = 0;
+		//mw::PublicSignal<Player, tetris::BoardEvent, int> gameboardEventUpdate;
+		mw::PublicSignal<Player, PlayerBoardEvent> playerBoardUpdate;
 
-		virtual void updateRestart(tetris::BlockType current, tetris::BlockType next) = 0;
+		Player(Type type, std::unique_ptr<TetrisBoardMoveController> moveController, tetris::TetrisBoard&& tetrisBoard);
 
-		virtual PlayerBoardPtr getPlayerBoard() const = 0;
+		void update(double deltaTime);
 
-		virtual void addRowWithHoles(int nbr) = 0;
+		int getRows() const;
 
-		virtual void updatePlayerData(const PlayerData& playerData) = 0;
+		int getColumns() const;
 
-		virtual const PlayerData& getPlayerData() const = 0;
+		tetris::BlockType getBlockType(int x, int y) const;
 
-		virtual void updateGravity(float speed) = 0;
+		tetris::BlockType getNextBlockType() const;
 
-		[[nodiscard]]
-		virtual mw::signals::Connection addPlayerBoardUpdateCallback(std::function<void(game::PlayerBoardEvent)>&& callback) = 0;
+		int getClearedRows() const;
 
-		[[nodiscard]]
-		virtual mw::signals::Connection addEventCallback(std::function<void(tetris::BoardEvent, int)>&& callback) = 0;
+		bool isGameOver() const;
 
-		virtual const std::string& getName() const = 0;
+		void updateRestart(tetris::BlockType current, tetris::BlockType next);
 
-		virtual bool isAi() const = 0;
+		void updatePlayerData(const PlayerData& playerData);
 
-		virtual bool isLocal() const = 0;
+		void updateMove(tetris::Move move);
+
+		void updateNextBlock(tetris::BlockType next);
+
+		tetris::Block getBlockDown() const;
+
+		tetris::Block getBlock() const;
+
+		const PlayerData& getPlayerData() const;
+
+		bool isHuman() const;
+
+		bool isAi() const;
+
+		bool isRemote() const;
+
+		bool isLocal() const;
+
+		void setGravity(double gravity);
+
+		void setClearedRows(int clearedRows);
+
+		const std::vector<tetris::BlockType>& getBoardVector() const;
+
+	protected:
+		void handleBoardEvent(tetris::BoardEvent boardEvent, int value);
+
+		void invokePlayerBoardUpdate(PlayerBoardEvent playerBoardEvent);
+
+		std::unique_ptr<TetrisBoardMoveController> moveController_;
+		mw::signals::ScopedConnections connections_;
+		tetris::TetrisBoard tetrisBoard_;
+		int clearedRows_ = 0;
+		std::vector<tetris::BlockType> externalRows_;
+		PlayerData playerData_;
+		Type type_;
 	};
 
 }

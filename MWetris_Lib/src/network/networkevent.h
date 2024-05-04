@@ -1,7 +1,7 @@
 #ifndef MWETRIS_NETWORK_NETWORKEVENT_H
 #define MWETRIS_NETWORK_NETWORKEVENT_H
 
-#include "game/aiplayer.h"
+#include "game/player.h"
 #include "game/playerslot.h"
 
 #include <block.h>

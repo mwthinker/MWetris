@@ -9,20 +9,8 @@
 
 namespace mwetris::game {
 
-	class PlayerBoard;
-	using PlayerBoardPtr = std::shared_ptr<PlayerBoard>;
-
-	class GameBoardEvent {
-	public:
-		GameBoardEvent(PlayerBoardPtr playerBoard, tetris::BoardEvent type, int nbr)
-			: playerBoard{playerBoard}
-			, type{type}
-			, nbr{nbr} {}
-
-		PlayerBoardPtr playerBoard;
-		tetris::BoardEvent type;
-		int nbr;
-	};
+	class Player;
+	using PlayerPtr = std::shared_ptr<Player>;
 
 	class NewConnection {
 	public:
@@ -56,40 +44,42 @@ namespace mwetris::game {
 
 	class GameOver {
 	public:
-		GameOver(PlayerBoardPtr playerBoard)
-			: playerBoard{playerBoard} {}
+		GameOver(PlayerPtr player)
+			: player{player} {
+		}
 
-		PlayerBoardPtr playerBoard;
+		PlayerPtr player;
 	};
 
 	class InitGameEvent {
 	public:
 		InitGameEvent(std::input_iterator auto begin, std::input_iterator auto end)
-			: playerBoards(begin, end) {}
+			: players(begin, end) {
+		}
 
-		std::vector<PlayerBoardPtr> playerBoards;
+		std::vector<PlayerPtr> players;
 	};
 
 	class LevelChange {
 	public:
-		LevelChange(PlayerBoardPtr playerBoard, int newLevel, int oldLevel)
-			: playerBoard{playerBoard}
+		LevelChange(PlayerPtr player, int newLevel, int oldLevel)
+			: player{player}
 			, newLevel{newLevel}
 			, oldLevel{oldLevel} {}
 
-		PlayerBoardPtr playerBoard;
+		PlayerPtr player;
 		int newLevel;
 		int oldLevel;
 	};
 
 	class PointsChange {
 	public:
-		PointsChange(PlayerBoardPtr playerBoard, int newPoints, int oldPoints)
-			: playerBoard{playerBoard}
+		PointsChange(PlayerPtr player, int newPoints, int oldPoints)
+			: player{player}
 			, newPoints{newPoints}
 			, oldPoints{oldPoints} {}
 
-		PlayerBoardPtr playerBoard;
+		PlayerPtr player;
 		int newPoints;
 		int oldPoints;
 	};

@@ -1,9 +1,9 @@
 #ifndef MWETRIS_GRAPHIC_IMGUIBOARD_H
 #define MWETRIS_GRAPHIC_IMGUIBOARD_H
 
-#include "game/playerboard.h"
 #include "tetrisboard.h"
 #include "types.h"
+#include "game/player.h"
 
 #include <sdl/sprite.h>
 
@@ -13,17 +13,19 @@ namespace mwetris::graphic {
 
 	class ImGuiBoard {
 	public:
-		explicit ImGuiBoard(game::PlayerBoardPtr playerBoardPtr);
+		explicit ImGuiBoard(game::PlayerPtr player);
 
 		void draw(float width, float height, double deltaTime);
 
-		const game::PlayerBoard& getPlayerBoard() const;
+		const game::Player& getPlayer() const;
 
 		ImGuiBoard(const ImGuiBoard& imGuiBoard);
 		ImGuiBoard& operator=(const ImGuiBoard& imGuiBoard);
 
 	private:
-		void gameBoardEvent(tetris::BoardEvent gameEvent, int nbr);
+		void handlePlayerBoardEvent(const game::PlayerBoardEvent& playerBoardEvent);
+
+		void handleGameBoardEvent(tetris::BoardEvent gameEvent, int nbr);
 
 		void drawBoard(double deltaTime);
 		void drawBorder(float width, float height, Color color);
@@ -38,7 +40,7 @@ namespace mwetris::graphic {
 		float squareSize_ = 0.f;
 		float borderSize_ = 2.f;
 		
-		game::PlayerBoardPtr playerBoard_;
+		game::PlayerPtr player_;
 		
 		std::vector<float> rows_;
 		float height_ = 0.f;

@@ -1,8 +1,6 @@
 #ifndef MWETRIS_GAME_SERIALIZEHIGHSCORE_H
 #define MWETRIS_GAME_SERIALIZEHIGHSCORE_H
 
-#include "localplayerboard.h"
-
 #include <chrono>
 
 namespace mwetris::game {

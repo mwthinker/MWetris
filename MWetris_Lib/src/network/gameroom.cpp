@@ -2,7 +2,6 @@
 #include "util/uuid.h"
 
 #include "debugserver.h"
-#include "game/remoteplayer.h"
 #include "util/uuid.h"
 
 #include <helper.h>
@@ -185,7 +184,7 @@ namespace mwetris::network {
 		auto current = tetris::randomBlockType();
 		auto next = tetris::randomBlockType();
 
-		std::vector<game::PlayerBoardPtr> playerBoards;
+		std::vector<game::PlayerPtr> playerBoards;
 		for (const auto& slot : playerSlots_) {
 			if (slot.type == SlotType::Remote) {
 				auto tpRemotePlayer = createGame->add_players();

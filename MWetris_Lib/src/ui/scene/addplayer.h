@@ -10,7 +10,6 @@
 
 #include "game/serialize.h"
 #include "game/device.h"
-#include "game/remoteplayer.h"
 #include "game/playerslot.h"
 
 #include <ai.h>

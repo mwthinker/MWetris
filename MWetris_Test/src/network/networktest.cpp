@@ -202,7 +202,7 @@ namespace mwetris::network {
 		network_->update();
 
 		// When
-		EXPECT_CALL(*mockClient_, send(_)).WillOnce(Invoke([](const ProtobufMessage& message) {
+		ON_CALL(*mockClient_, send(_)).WillByDefault(Invoke([](const ProtobufMessage& message) {
 			FAIL() << "send should not be called";
 		}));
 

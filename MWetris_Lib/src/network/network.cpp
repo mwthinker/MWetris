@@ -3,10 +3,6 @@
 #include "util.h"
 #include "protocol.h"
 #include "random.h"
-#include "game/remoteplayer.h"
-#include "game/localplayerboardbuilder.h"
-#include "game/humanplayer.h"
-#include "game/aiplayer.h"
 #include "game/playerslot.h"
 #include "network/client.h"
 
@@ -25,38 +21,6 @@
 namespace conc = concurrencpp;
 
 namespace mwetris::network {
-
-	namespace {
-
-		game::LocalPlayerBoardPtr createLocalPlayerBoard(int width, int height, const std::string& name) {
-			return game::LocalPlayerBoardBuilder{}
-				.withClearedRows(0)
-				.withGameOverPosition(0)
-				.withPlayerData(game::DefaultPlayerData{
-					.level = 1,
-					.points = 0
-				})
-				.withName(name)
-				.withMovingBlockType(tetris::randomBlockType())
-				.withNextBlockType(tetris::randomBlockType())
-				.withWidth(width)
-				.withHeight(height)
-				.build();
-		}
-
-		game::PlayerPtr createPlayer(int width, int height, const game::Human& human) {
-			return std::make_shared<game::HumanPlayer>(human.device, createLocalPlayerBoard(width, height, human.name));
-		}
-
-		game::PlayerPtr createPlayer(int width, int height, const game::Ai& ai) {
-			return std::make_shared<game::AiPlayer>(ai.ai, createLocalPlayerBoard(width, height, ai.name));
-		}
-
-		game::RemotePlayerPtr createRemotePlayer(tetris::BlockType current, tetris::BlockType next) {
-			return std::make_shared<game::RemotePlayer>(current, next);
-		}
-
-	}
 
 	Network::Network(std::shared_ptr<Client> client)
 		: client_{client} {
@@ -334,55 +298,42 @@ namespace mwetris::network {
 		auto current = static_cast<tetris::BlockType>(tpPlayer.current());
 		auto next = static_cast<tetris::BlockType>(tpPlayer.next());
 
+		tetris::TetrisBoard tetrisBoard{width, height, current, next};
+		game::DefaultPlayerData playerData{
+			.level = tpPlayer.level(),
+			.points = tpPlayer.points()
+		};
+		NetworkPlayer networkPlayer;
 		if (auto human = std::get_if<game::Human>(&networkSlot.playerSlot); human) {
-			auto& networkPlayer = players_.emplace_back(
+			networkPlayer = players_.emplace_back(
 				NetworkPlayer{
-					.player = createPlayer(width, height, *human),
+					.player = game::createHumanPlayer(human->device, playerData, std::move(tetrisBoard)),
 					.uuid = tpPlayer.player_uuid(),
 					.clientId = clientUuid_
 				}
 			);
-			networkPlayer.player->updateRestart(current, next); // Update before attaching the event handles, to avoid multiple calls.
-			connections_ += networkPlayer.player->addPlayerBoardUpdateCallback([this, networkPlayer](game::PlayerBoardEvent playerBoardEvent) {
-				std::visit([&](auto&& event) {
-					handlePlayerBoardUpdate(networkPlayer, event);
-				}, playerBoardEvent);
-			});
-			connections_ += networkPlayer.player->addEventCallback([this, player = networkPlayer.player](tetris::BoardEvent boardEvent, int nbr) {
-				handleBoardEvent(*player, boardEvent, nbr);
-			});
 		} else if (auto ai = std::get_if<game::Ai>(&networkSlot.playerSlot); ai) {
-			auto& networkPlayer = players_.emplace_back(
+			networkPlayer = players_.emplace_back(
 				NetworkPlayer{
-					.player = createPlayer(height, height, *ai),
+					.player = game::createAiPlayer(ai->ai, playerData, std::move(tetrisBoard)),
 					.uuid = tpPlayer.player_uuid(),
 					.clientId = clientUuid_
 				}
 			);
-			networkPlayer.player->updateRestart(current, next); // Update before attaching the event handles, to avoid multiple calls.
-			connections_ += networkPlayer.player->addPlayerBoardUpdateCallback([this, networkPlayer](game::PlayerBoardEvent playerBoardEvent) {
-				std::visit([&](auto&& event) {
-					handlePlayerBoardUpdate(networkPlayer, event);
-				}, playerBoardEvent);
-			});
-			connections_ += networkPlayer.player->addEventCallback([this, networkPlayer](tetris::BoardEvent boardEvent, int nbr) {
-				handleBoardEvent(*networkPlayer.player, boardEvent, nbr);
-			});
 		} else if (auto remote = std::get_if<game::Remote>(&networkSlot.playerSlot); remote) {
-			auto& networkPlayer = players_.emplace_back(
+			networkPlayer = players_.emplace_back(
 				NetworkPlayer{
-					.player = createRemotePlayer(current, next),
+					.player = game::createRemotePlayer(playerData, std::move(tetrisBoard)),
 					.uuid = tpPlayer.player_uuid(),
 					.clientId = tpPlayer.client_uuid()
 				}
 			);
-			connections_ += networkPlayer.player->addPlayerBoardUpdateCallback([this, networkPlayer](game::PlayerBoardEvent playerBoardEvent) {
+		}
+		if (networkPlayer.player) {
+			connections_ += networkPlayer.player->playerBoardUpdate.connect([this, networkPlayer](game::PlayerBoardEvent playerBoardEvent) {
 				std::visit([&](auto&& event) {
 					handlePlayerBoardUpdate(networkPlayer, event);
 				}, playerBoardEvent);
-			});
-			connections_ += networkPlayer.player->addEventCallback([this, networkPlayer](tetris::BoardEvent boardEvent, int nbr) {
-				handleBoardEvent(*networkPlayer.player, boardEvent, nbr);
 			});
 		}
 	}
@@ -417,8 +368,8 @@ namespace mwetris::network {
 		auto move = static_cast<tetris::Move>(boardMove.move());
 		for (auto& networkPlayer : players_) {
 			if (networkPlayer.uuid == boardMove.uuid()) {
-				if (auto remotePlayer = std::dynamic_pointer_cast<game::RemotePlayer>(networkPlayer.player)) {
-					remotePlayer->updateMove(move);
+				if (networkPlayer.player->isRemote()) {
+					networkPlayer.player->updateMove(move);
 				} else {
 					spdlog::error("[Network] Invalid player type for BoardMove");
 				}
@@ -429,9 +380,9 @@ namespace mwetris::network {
 	void Network::handleBoardNextBlock(const tp_s2c::BoardNextBlock& boardNextBlock) {
 		for (auto& networkPlayer : players_) {
 			if (networkPlayer.uuid == boardNextBlock.uuid()) {
-				if (auto remotePlayer = std::dynamic_pointer_cast<game::RemotePlayer>(networkPlayer.player)) {
+				if (networkPlayer.player->isRemote()) {
 					auto next = static_cast<tetris::BlockType>(boardNextBlock.next());
-					remotePlayer->updateNextBlock(next);
+					networkPlayer.player->updateNextBlock(next);
 				} else {
 					spdlog::error("[Network] Invalid player type for BoardNextBlock");
 				}
@@ -483,8 +434,8 @@ namespace mwetris::network {
 		send(wrapperToServer_);
 	}
 
-	void Network::handleBoardEvent(const game::Player& player, tetris::BoardEvent boardEvent, int nbr) {
-		spdlog::info("[Network] handle UpdateMove: {}, {}", static_cast<int>(boardEvent), nbr);
+	void Network::handlePlayerBoardUpdate(const NetworkPlayer& player, const game::TetrisBoardEvent& tetrisBoardEvent) {
+		spdlog::info("[Network] handle TetrisBoardEvent");
 	}
 
 	void Network::send(const tp_c2s::Wrapper& wrapper) {

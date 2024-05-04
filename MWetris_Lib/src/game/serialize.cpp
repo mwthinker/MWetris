@@ -1,8 +1,8 @@
 #include "serialize.h"
 
-#include "localplayerboardbuilder.h"
 #include "tetrisgame.h"
 #include "util/protofile.h"
+#include "player.h"
 
 #include <shared.pb.h>
 #include <spdlog/spdlog.h>
@@ -65,9 +65,9 @@ namespace mwetris::game {
 			return tetris::TetrisBoard{board, player.width(), player.height(), current, next};
 		}
 
-		void setTpPlayer(tp::PlayerBoard& tpPlayerBoard, const PlayerBoard& playerBoard) {
-			auto playerData = std::get<DefaultPlayerData>(playerBoard.getPlayerData()); // Do first in case throwing bad_variant
-			const auto& blockTypes = playerBoard.getBoardVector();
+		void setTpPlayer(tp::PlayerBoard& tpPlayerBoard, const Player& player) {
+			auto playerData = std::get<DefaultPlayerData>(player.getPlayerData()); // Do first in case throwing bad_variant
+			const auto& blockTypes = player.getBoardVector();
 			tpPlayerBoard.clear_board();
 			for (const auto type : blockTypes) {
 				tpPlayerBoard.add_board(static_cast<tp::BlockType>(type));
@@ -76,32 +76,28 @@ namespace mwetris::game {
 			tpPlayerBoard.set_level(playerData.level);
 			tpPlayerBoard.set_points(playerData.points);
 
-			tpPlayerBoard.set_name(playerBoard.getName());
-			tpPlayerBoard.set_next(static_cast<tp::BlockType>(playerBoard.getNextBlockType()));
-			tpPlayerBoard.set_cleared_rows(playerBoard.getClearedRows());
-			tpPlayerBoard.set_width(playerBoard.getColumns());
-			tpPlayerBoard.set_height(playerBoard.getRows());
+			//tpPlayerBoard.set_name(player.getName());
+			tpPlayerBoard.set_next(static_cast<tp::BlockType>(player.getNextBlockType()));
+			tpPlayerBoard.set_cleared_rows(player.getClearedRows());
+			tpPlayerBoard.set_width(player.getColumns());
+			tpPlayerBoard.set_height(player.getRows());
 
-			tpPlayerBoard.mutable_current()->set_lowest_start_row(playerBoard.getBlock().getLowestStartRow());
-			tpPlayerBoard.mutable_current()->set_start_column(playerBoard.getBlock().getStartColumn());
-			tpPlayerBoard.mutable_current()->set_rotations(playerBoard.getBlock().getCurrentRotation());
-			tpPlayerBoard.mutable_current()->set_type(static_cast<tp::BlockType>(playerBoard.getBlock().getBlockType()));
+			tpPlayerBoard.mutable_current()->set_lowest_start_row(player.getBlock().getLowestStartRow());
+			tpPlayerBoard.mutable_current()->set_start_column(player.getBlock().getStartColumn());
+			tpPlayerBoard.mutable_current()->set_rotations(player.getBlock().getCurrentRotation());
+			tpPlayerBoard.mutable_current()->set_type(static_cast<tp::BlockType>(player.getBlock().getBlockType()));
 		}
-
-		LocalPlayerBoardPtr createPlayer(const tp::PlayerBoard& player) {
-			return LocalPlayerBoardBuilder{}
-				.withBoard(toBoard(player))
-				.withMovingBlock(toBlock(player.current()))
-				.withHeight(player.height())
-				.withWidth(player.width())
-				.withPlayerData(DefaultPlayerData{
-					.level = player.level(),
-					.points = player.points()
-				})
-				.withName(player.name())
-				.withNextBlockType(static_cast<tetris::BlockType>(player.next()))
-				.withClearedRows(player.cleared_rows())
-				.build();
+		
+		PlayerPtr createPlayer(DevicePtr device, const tp::PlayerBoard& tpPlayer) {
+			tetris::TetrisBoard tetrisBoard = toTetrisBoard(tpPlayer);
+			DefaultPlayerData playerData{
+				.level = tpPlayer.level(),
+				.points = tpPlayer.points()
+			};
+			auto player = createHumanPlayer(device, playerData, std::move(tetrisBoard));
+			player->setClearedRows(tpPlayer.cleared_rows());
+			player->setGravity(calculateGravity(tpPlayer.level()));
+			return player;
 		}
 
 	}
@@ -118,9 +114,9 @@ namespace mwetris::game {
 		}
 	}
 
-	void saveGame(const PlayerBoard& playerBoard) {
+	void saveGame(const Player& player) {
 		try {
-			setTpPlayer(*cachedGame.mutable_player_board(), playerBoard);
+			setTpPlayer(*cachedGame.mutable_player_board(), player);
 			cachedGame.mutable_last_played()->CopyFrom(google::protobuf::util::TimeUtil::GetCurrentTime());
 			saveToFile(cachedGame, SavedGameFile);
 		} catch (const std::bad_variant_access& e) {
@@ -128,7 +124,7 @@ namespace mwetris::game {
 		}
 	}
 
-	LocalPlayerBoardPtr loadGame() {
+	PlayerPtr loadGame(DevicePtr devicePtr) {
 		if (!gameLoaded) {
 			gameLoaded = true;
 			
@@ -143,7 +139,7 @@ namespace mwetris::game {
 			}
 		}
 		if (cachedGame.has_player_board()) {
-			return createPlayer(cachedGame.player_board());
+			return createPlayer(devicePtr, cachedGame.player_board());
 		}
 		return nullptr;
 	}

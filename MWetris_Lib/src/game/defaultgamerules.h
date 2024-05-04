@@ -2,9 +2,7 @@
 #define MWETRIS_GAME_DEFAULTGAMERULES_H
 
 #include "tetrisboard.h"
-#include "localplayerboard.h"
 #include "player.h"
-#include "remoteplayer.h"
 #include "gamerules.h"
 
 #include <vector>
@@ -13,6 +11,10 @@
 namespace mwetris::game {
 
 	constexpr int LevelUpNbr = 1;
+
+	inline double calculateGravity(int level) {
+		return 1 + level * 0.5f;
+	}
 
 	class DefaultGameRules : public GameRules {
 	public:
@@ -30,9 +32,11 @@ namespace mwetris::game {
 			for (auto& player : players) {
 				auto& info = localPlayers_.emplace_back(player, DefaultPlayerData{});
 				info.player->updatePlayerData(info.data);
-				info.player->updateGravity(1 + info.data.level * 0.5f);
-				connections_ += player->addEventCallback([&info, this](tetris::BoardEvent gameEvent, int value) {
-					updateGameBoardEvent(gameEvent, value, info);
+				info.player->setGravity(1 + info.data.level * 0.5f);
+				connections_ += player->playerBoardUpdate.connect([&info, this](const PlayerBoardEvent& playerBoardEvent) {
+					if (auto value = std::get_if<TetrisBoardEvent>(&playerBoardEvent)) {
+						updateGameBoardEvent(value->event, value->value, info);
+					}
 				});
 			}
 		}
@@ -49,11 +53,11 @@ namespace mwetris::game {
 
 		void updateGameBoardEvent(tetris::BoardEvent gameEvent, int value, Info& info) {
 			if (gameEvent == tetris::BoardEvent::RowsRemoved) {
-				info.data.level = info.player->getPlayerBoard()->getClearedRows() / LevelUpNbr + 1;
+				info.data.level = info.player->getClearedRows() / LevelUpNbr + 1;
 				info.data.points += info.data.level * value * value;
 
 				info.player->updatePlayerData(info.data);
-				info.player->updateGravity(1 + info.data.level * 0.5f);
+				info.player->setGravity(1 + info.data.level * 0.5f);
 			}
 		}
 
@@ -75,8 +79,10 @@ namespace mwetris::game {
 			for (auto& player : players) {
 				auto& info = localPlayers_.emplace_back(player, SurvivalPlayerData{});
 				info.player->updatePlayerData(info.data);
-				connections_ += player->addEventCallback([board = info.player->getPlayerBoard(), this](tetris::BoardEvent gameEvent, int value) {
-					updateGameBoardEvent(gameEvent, value, board);
+				connections_ += player->playerBoardUpdate.connect([&info, player, this](const PlayerBoardEvent& playerBoardEvent) {
+					if (auto value = std::get_if<TetrisBoardEvent>(&playerBoardEvent)) {
+						updateGameBoardEvent(value->event, value->value, player);
+					}
 				});
 			}
 		}
@@ -89,21 +95,21 @@ namespace mwetris::game {
 		}
 
 	private:
-		void updateGameBoardEvent(tetris::BoardEvent gameEvent, int value, const PlayerBoardPtr& playerBoard) {
+		void updateGameBoardEvent(tetris::BoardEvent gameEvent, int value, const PlayerPtr& player) {
 			switch (gameEvent) {
 				case tetris::BoardEvent::RowsRemoved:
-					rowsRemove(playerBoard, value);
+					rowsRemove(player, value);
 					break;
 			}
 		}
 
-		void rowsRemove(const PlayerBoardPtr& fromPlayerBoard, int nbr) {
+		void rowsRemove(const PlayerPtr& fromPlayer, int nbr) {
 			for (auto& info : localPlayers_) {
-				if (info.player->getPlayerBoard() != fromPlayerBoard) {
+				if (info.player != fromPlayer) {
 					info.data.opponentRows += nbr;
 
-					if (nbr == 1 && !info.player->getPlayerBoard()->isGameOver()) {
-						info.player->addRowWithHoles(2);
+					if (nbr == 1 && !info.player->isGameOver()) {
+						//info.player->addRowWithHoles(2);
 					}
 				}
 			}
@@ -115,7 +121,7 @@ namespace mwetris::game {
 		};
 
 		std::vector<Info> localPlayers_;
-		std::vector<RemotePlayer> remotePlayers_;
+		std::vector<PlayerPtr> remotePlayers_;
 		mw::signals::ScopedConnections connections_;
 	};
 }

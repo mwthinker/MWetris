@@ -6,6 +6,7 @@
 #include "game/player.h"
 #include "game/playerslot.h"
 #include "network/networkevent.h"
+#include "game/tetrisgameevent.h"
 
 #include <spdlog/spdlog.h>
 

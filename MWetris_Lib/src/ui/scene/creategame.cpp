@@ -24,6 +24,18 @@ namespace mwetris::ui::scene {
 
 		constexpr auto PopUpId = "CreatePopup";
 
+		std::vector<game::PlayerPtr> createPlayersFromSlots(const std::vector<game::PlayerSlot>& playerSlots) {
+			std::vector<game::PlayerPtr> players;
+			for (const auto& playerSlot : playerSlots) {
+				if (auto human = std::get_if<game::Human>(&playerSlot)) {
+					players.push_back(game::createHumanPlayer(human->device));
+				} else if (auto ai = std::get_if<game::Ai>(&playerSlot)) {
+					players.push_back(game::createAiPlayer(ai->ai));
+				}
+			}
+			return players;
+		}
+
 	}
 
 	CreateGame::CreateGame(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager)
@@ -148,10 +160,8 @@ namespace mwetris::ui::scene {
 			} else {
 				tetrisController_->createGame(
 					std::make_unique<game::SurvivalGameRules>(),
-					game::PlayerFactory{}
-					.createPlayers(TetrisWidth, TetrisHeight
-						, extract<game::Human>(playerSlots_)
-						, extract<game::Ai>(playerSlots_)));
+					createPlayersFromSlots(playerSlots_)
+				);
 			}
 		}
 		ImGui::EndDisabled();

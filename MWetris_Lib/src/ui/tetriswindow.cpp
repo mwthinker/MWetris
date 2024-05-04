@@ -158,15 +158,15 @@ namespace mwetris::ui {
 
 	void TetrisWindow::onTetrisEvent(const game::GameOver& gameOver) {
 		game::DefaultPlayerData data{};
-		if (const auto playerData{std::get_if<game::DefaultPlayerData>(&gameOver.playerBoard->getPlayerData())}; playerData) {
+		if (const auto playerData{std::get_if<game::DefaultPlayerData>(&gameOver.player->getPlayerData())}; playerData) {
 			data = *playerData;
 		}
 
-		if (const auto& playerBoard = *gameOver.playerBoard;  tetrisController_->isDefaultGame() && game::isNewHighScore(data.points)) {
+		if (const auto& player = gameOver.player;  tetrisController_->isDefaultGame() && game::isNewHighScore(data.points)) {
 			scene::NewHighScoreData data;
-			data.name = playerBoard.getName();
+			data.name = "Name"; // TODO! Get name from player
 			data.points = data.points;
-			data.clearedRows = playerBoard.getClearedRows();
+			data.clearedRows = player->getClearedRows();
 			data.level = data.level;
 			openPopUp<scene::NewHighScore>(data);
 		}

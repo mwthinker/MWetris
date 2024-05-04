@@ -2,7 +2,6 @@
 #define MWETRIS_NETWORK_NETWORK_H
 
 #include "protocol.h"
-#include "game/aiplayer.h"
 #include "game/playerslot.h"
 #include "network/client.h"
 #include "network/networkevent.h"
@@ -105,7 +104,7 @@ namespace mwetris::network {
 
 		void handlePlayerBoardUpdate(const NetworkPlayer& player, const game::UpdateNextBlock& updateNextBlock);
 
-		void handleBoardEvent(const game::Player& player, tetris::BoardEvent boardEvent, int nbr);
+		void handlePlayerBoardUpdate(const NetworkPlayer& player, const game::TetrisBoardEvent& tetrisBoardEvent);
 
 		void send(const tp_c2s::Wrapper& wrapper);
 

@@ -4,12 +4,8 @@
 #include "device.h"
 #include "tetrisparameters.h"
 #include "tetrisgameevent.h"
-#include "localplayerboard.h"
 #include "computer.h"
 #include "timerhandler.h"
-#include "aiplayer.h"
-#include "humanplayer.h"
-#include "remoteplayer.h"
 #include "defaultgamerules.h"
 #include "playerslot.h"
 
@@ -21,20 +17,6 @@
 namespace mwetris::game {
 
 	constexpr double CountDownSeconds = 3.0;
-
-	class PlayerFactory {
-	public:
-		PlayerFactory();
-
-		std::vector<PlayerPtr> createPlayers(int width, int height,
-			const std::vector<Human>& humans,
-			const std::vector<Ai>& ais
-		);
-
-		PlayerPtr createPlayer(int width, int height, const Human& human);
-
-		PlayerPtr createPlayer(int width, int height, const Ai& ai);
-	};
 
 	class TetrisGame {
 	public:

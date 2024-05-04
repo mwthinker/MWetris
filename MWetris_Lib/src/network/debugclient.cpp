@@ -2,7 +2,6 @@
 #include "protobufmessagequeue.h"
 #include "util.h"
 #include "game/player.h"
-#include "game/remoteplayer.h"
 #include "debugserver.h"
 
 #include <helper.h>
