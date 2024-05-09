@@ -75,13 +75,13 @@ message RequestGameRestart {
 }
 
 message GameRoomCreated {
-	string server_uuid = 1;
+	tp.GameRoomId game_room_id = 1;
 	tp.ClientId client_id = 2;
 	GameLooby game_looby = 3;
 }
 
 message GameRoomJoined {
-	string server_uuid = 1;
+	tp.GameRoomId game_room_id = 1;
 	tp.ClientId client_id = 2;
 	GameLooby game_looby = 3;
 }

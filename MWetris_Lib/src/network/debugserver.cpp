@@ -67,35 +67,35 @@ namespace mwetris::network {
 				handleJoinGameRoom(fromRemote, wrapperFromClient_.join_game_room());
 			}
 
-			if (auto it = gameRoomUuidByClientUuid_.find(fromRemote.clientId); it != gameRoomUuidByClientUuid_.end()) {
-				auto& gameRoom = gameRooms_.at(gameRoomUuidByClientUuid_.at(fromRemote.clientId));
+			if (auto it = roomByClient_.find(fromRemote.clientId); it != roomByClient_.end()) {
+				auto& gameRoom = gameRooms_.at(roomByClient_.at(fromRemote.clientId));
 				gameRoom.receiveMessage(*this, fromRemote.clientId, wrapper);
 			}
 		}
 
 		void handleCreateGameRoom(Remote& remote, const tp_c2s::CreateGameRoom& createGameRoom) {
-			if (gameRoomUuidByClientUuid_.contains(remote.clientId)) {
+			if (roomByClient_.contains(remote.clientId)) {
 				spdlog::warn("[DebugServer] Client with uuid {} already in a GameRoom", remote.clientId);
 				return;
 			}
 
 			GameRoom gameRoom;
-			gameRoomUuidByClientUuid_.emplace(remote.clientId, gameRoom.getUuid());
-			gameRooms_.emplace(gameRoom.getUuid(), std::move(gameRoom));
+			roomByClient_.emplace(remote.clientId, gameRoom.getGameRoomId());
+			gameRooms_.emplace(gameRoom.getGameRoomId(), std::move(gameRoom));
 		}
 
 		void handleJoinGameRoom(Remote& remote, const tp_c2s::JoinGameRoom& joinGameRoom) {
-			if (gameRoomUuidByClientUuid_.contains(remote.clientId)) {
+			if (roomByClient_.contains(remote.clientId)) {
 				spdlog::warn("[DebugServer] Client with uuid {} already in a GameRoom", remote.clientId);
 				return;
 			}
 
-			if (auto it = gameRooms_.find(joinGameRoom.server_uuid()); it != gameRooms_.end()) {
+			if (auto it = gameRooms_.find(joinGameRoom.game_room_id()); it != gameRooms_.end()) {
 				auto& gameRoom = it->second;
-				gameRoomUuidByClientUuid_.emplace(remote.clientId, gameRoom.getUuid());
-				gameRooms_.emplace(gameRoom.getUuid(), std::move(gameRoom));
+				roomByClient_.emplace(remote.clientId, gameRoom.getGameRoomId());
+				gameRooms_.emplace(gameRoom.getGameRoomId(), std::move(gameRoom));
 			} else {
-				spdlog::warn("[DebugServer] GameRoom with uuid {} not found", joinGameRoom.server_uuid());
+				spdlog::warn("[DebugServer] GameRoom with uuid {} not found", joinGameRoom.game_room_id());
 			}
 		}
 
@@ -113,20 +113,20 @@ namespace mwetris::network {
 			sendToClient(client, wrapperToClient_);
 		}
 
-		void sendPause(const std::string& clientUuid, bool pause) {
-			gameRooms_[clientUuid].sendPause(*this, pause);
+		void sendPause(const GameRoomId& gameRoomId, bool pause) {
+			gameRooms_[gameRoomId].sendPause(*this, pause);
 		}
 
-		void restartGame(const std::string& clientUuid) {
-			gameRooms_[clientUuid].requestRestartGame(*this);
+		void restartGame(const GameRoomId& gameRoomId) {
+			gameRooms_[gameRoomId].requestRestartGame(*this);
 		}
 
-		bool isPaused(const std::string& clientUuid) const {
-			return gameRooms_.at(clientUuid).isPaused();
+		bool isPaused(const GameRoomId& gameRoomId) const {
+			return gameRooms_.at(gameRoomId).isPaused();
 		}
 
-		void disconnect(const std::string& uuid) {
-			gameRooms_.erase(uuid);
+		void disconnect(const GameRoomId& gameRoomId) {
+			gameRooms_.erase(gameRoomId);
 		}
 
 		std::shared_ptr<Client> createDisconnectedClient(std::shared_ptr<DebugServer> debugServer) {
@@ -188,8 +188,8 @@ namespace mwetris::network {
 			client.pushReceivedMessage(std::move(message));
 		}
 
-		std::map<ClientId, std::string> gameRoomUuidByClientUuid_;
-		std::map<std::string, GameRoom> gameRooms_;
+		std::map<ClientId, GameRoomId> roomByClient_;
+		std::map<GameRoomId, GameRoom> gameRooms_;
 
 		tp_c2s::Wrapper wrapperFromClient_;
 		tp_s2c::Wrapper wrapperToClient_;
@@ -205,8 +205,8 @@ namespace mwetris::network {
 		return impl_->createDisconnectedClient(shared_from_this());
 	}
 
-	void DebugServer::disconnect(const std::string& uuid) {
-		impl_->disconnect(uuid);
+	void DebugServer::disconnect(const GameRoomId& gameRoomId) {
+		impl_->disconnect(gameRoomId);
 	}
 
 	DebugServer::DebugServer()
@@ -230,16 +230,16 @@ namespace mwetris::network {
 		impl_->release(std::move(message));
 	}
 
-	void DebugServer::sendPause(const std::string& clientUuuid, bool pause) {
-		impl_->sendPause(clientUuuid, pause);
+	void DebugServer::sendPause(const GameRoomId& gameRoomId, bool pause) {
+		impl_->sendPause(gameRoomId, pause);
 	}
 
-	bool DebugServer::isPaused(const std::string& clientUuuid) const {
-		return impl_->isPaused(clientUuuid);
+	bool DebugServer::isPaused(const GameRoomId& gameRoomId) const {
+		return impl_->isPaused(gameRoomId);
 	}
 
-	void DebugServer::restartGame(const std::string& clientUuuid) {
-		impl_->restartGame(clientUuuid);
+	void DebugServer::restartGame(const GameRoomId& gameRoomId) {
+		impl_->restartGame(gameRoomId);
 	}
 
 	std::vector<ConnectedClient> DebugServer::getConnectedClients() const {

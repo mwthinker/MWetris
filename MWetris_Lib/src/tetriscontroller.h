@@ -68,7 +68,7 @@ namespace mwetris {
 		// Restart the active game.
 		void restartGame();
 
-		const std::string& getGameRoomUuid() const;
+		const char* getGameRoomId() const;
 
 		void createGameRoom(const std::string& name);
 

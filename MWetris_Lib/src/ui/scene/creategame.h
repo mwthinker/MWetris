@@ -63,7 +63,7 @@ namespace mwetris::ui::scene {
 		std::vector<game::PlayerSlot> playerSlots_;
 		bool openPopUp_ = false;
 		std::unique_ptr<AddPlayer> addPlayer_;
-		std::string gameRoomUuid_;
+		std::string gameRoomId_;
 	};
 
 }

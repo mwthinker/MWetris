@@ -96,8 +96,8 @@ namespace mwetris {
 		}
 	}
 
-	const std::string& TetrisController::getGameRoomUuid() const {
-		return network_->getGameRoomUuid();
+	const char* TetrisController::getGameRoomId() const {
+		return network_->getGameRoomId().c_str();
 	}
 
 	void TetrisController::createGameRoom(const std::string& name) {

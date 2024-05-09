@@ -137,13 +137,13 @@ namespace mwetris::ui::scene {
 
 			ImGui::PopID();
 		}
-		gameRoomUuid_ = tetrisController_->getGameRoomUuid();
-		if (!gameRoomUuid_.empty()) {
+		gameRoomId_ = tetrisController_->getGameRoomId();
+		if (!gameRoomId_.empty()) {
 			ImGui::SetCursorPosY(200);
 			ImGui::Separator();
 			ImGui::Text("Server Id: ");
 			ImGui::SameLine();
-			ImGui::InputText("##ServerId", &gameRoomUuid_, ImGuiInputTextFlags_ReadOnly);
+			ImGui::InputText("##ServerId", &gameRoomId_, ImGuiInputTextFlags_ReadOnly);
 		}
 
 		width = ImGui::GetWindowWidth() - 2 * ImGui::GetCursorPosX();
@@ -154,7 +154,7 @@ namespace mwetris::ui::scene {
 		ImGui::SetCursorPosY(y);
 
 		if (ImGui::ConfirmationButton("Create Game", {width, height})) {
-			if (!gameRoomUuid_.empty()) {
+			if (!gameRoomId_.empty()) {
 				// std::make_unique<game::SurvivalGameRules>()
 				tetrisController_->startNetworkGame(TetrisWidth, TetrisHeight);
 			} else {

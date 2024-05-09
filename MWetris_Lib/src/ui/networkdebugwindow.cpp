@@ -75,7 +75,7 @@ namespace mwetris::ui {
 			if (connect) {
 				// TODO!
 			} else {
-				debugServer_->disconnect(uuid);
+				//debugServer_->disconnect(GameRoomId{uuid});
 			}
 		}
 		bool pause = false;

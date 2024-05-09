@@ -54,7 +54,7 @@ namespace mwetris::network {
 
 
 	GameRoom::GameRoom() {
-		uuid_ = util::generateUuid();
+		gameRoomId_ = GameRoomId::generateUniqueId();
 		playerSlots_.resize(4, Slot{.type = SlotType::Open});
 	}
 
@@ -73,8 +73,8 @@ namespace mwetris::network {
 		return name_;
 	}
 
-	const std::string& GameRoom::getUuid() const {
-		return uuid_;
+	const GameRoomId& GameRoom::getGameRoomId() const {
+		return gameRoomId_;
 	}
 
 	const std::vector<ClientId>& GameRoom::getConnectedClientUuids() const {
@@ -258,7 +258,7 @@ namespace mwetris::network {
 		name_ = createGameRoom.name();
 
 		auto gameRomeCreated = wrapperToClient_.mutable_game_room_created();
-		gameRomeCreated->set_server_uuid(uuid_);
+		setTp(gameRoomId_, *gameRomeCreated->mutable_game_room_id());
 		setTp(clientId, *gameRomeCreated->mutable_client_id());
 		addPlayerSlotsToGameLooby(*gameRomeCreated->mutable_game_looby(), playerSlots_);
 
@@ -269,7 +269,7 @@ namespace mwetris::network {
 		connectedClientUuids_.push_back(clientId);
 
 		auto gameRoomJoined = wrapperToClient_.mutable_game_room_joined();
-		gameRoomJoined->set_server_uuid(joinGameRoom.server_uuid());
+		setTp(gameRoomId_, *gameRoomJoined->mutable_game_room_id());
 		setTp(clientId, *gameRoomJoined->mutable_client_id());
 		addPlayerSlotsToGameLooby(*gameRoomJoined->mutable_game_looby(), playerSlots_);
 

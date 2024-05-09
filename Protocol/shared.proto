@@ -67,3 +67,11 @@ enum Move {
 message ClientId {
 	string id = 1;
 }
+
+message GameRoomId {
+	string id = 1;
+}
+
+message PlayerId {
+	string id = 1;
+}

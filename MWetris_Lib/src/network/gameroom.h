@@ -24,7 +24,7 @@ namespace mwetris::network {
 
 		const std::string& getName() const;
 
-		const std::string& getUuid() const;
+		const GameRoomId& getGameRoomId() const;
 
 		const std::vector<ClientId>& getConnectedClientUuids() const;
 
@@ -62,7 +62,7 @@ namespace mwetris::network {
 		bool slotBelongsToClient(const ClientId& clientUuid, int slotIndex) const;
 
 		std::string name_;
-		std::string uuid_;
+		GameRoomId gameRoomId_;
 
 		std::vector<Slot> playerSlots_;
 		std::vector<ClientId> connectedClientUuids_;

@@ -30,11 +30,11 @@ namespace mwetris::network {
 
 		void release(ProtobufMessage&& message);
 
-		void sendPause(const std::string& clientUuuid, bool pause);
+		void sendPause(const GameRoomId& gameRoomId, bool pause);
 		
-		bool isPaused(const std::string& clientUuuid) const;
+		bool isPaused(const GameRoomId& gameRoomId) const;
 
-		void restartGame(const std::string& clientUuuid);
+		void restartGame(const GameRoomId& gameRoomId);
 
 		mw::signals::Connection addPlayerSlotsCallback(const std::function<void(const std::vector<Slot>&)>& playerSlots);
 
@@ -44,7 +44,7 @@ namespace mwetris::network {
 
 		std::vector<ConnectedClient> getConnectedClients() const;
 
-		void disconnect(const std::string& uuid);
+		void disconnect(const GameRoomId& gameRoomId);
 	
 	private:
 		class Impl;

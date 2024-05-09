@@ -36,7 +36,7 @@ message StartGame {
 }
 
 message JoinGameRoom {
-	string server_uuid = 1;
+	tp.GameRoomId game_room_id = 1;
 }
 
 message GameCommand {

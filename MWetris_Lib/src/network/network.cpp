@@ -32,13 +32,13 @@ namespace mwetris::network {
 	}
 
 	bool Network::isInsideGameRoom() const {
-		return !gameRoomUuid_.empty();
+		return !gameRoomId_;
 	}
 
 	Network::~Network() {}
 
-	const std::string& Network::getGameRoomUuid() const {
-		return gameRoomUuid_;
+	const GameRoomId& Network::getGameRoomId() const {
+		return gameRoomId_;
 	}
 
 	void Network::startGame(int w, int h) {
@@ -108,12 +108,12 @@ namespace mwetris::network {
 
 		wrapperToServer_.Clear();
 		auto joinGameRoom = wrapperToServer_.mutable_join_game_room();
-		joinGameRoom->set_server_uuid(uuid);
+		setTp(GameRoomId{uuid}, *joinGameRoom->mutable_game_room_id());
 		send(wrapperToServer_);
 	}
 
 	bool Network::isInsideRoom() const {
-		return !gameRoomUuid_.empty();
+		return !gameRoomId_;
 	}
 
 	conc::result<void> Network::stepOnce() {
@@ -193,7 +193,7 @@ namespace mwetris::network {
 			spdlog::debug("[Network] Ignore RequestGameRestart, no local players for client {}", clientId_);
 			return;
 		}
-		
+
 		wrapperToServer_.Clear();
 		auto gameRestartToServer = wrapperToServer_.mutable_game_restart();
 		gameRestartToServer->set_current(requestGameRestart.current());
@@ -210,7 +210,7 @@ namespace mwetris::network {
 	void Network::handleGameRestart(const tp_s2c::GameRestart& gameRestart) {
 		auto current = static_cast<tetris::BlockType>(gameRestart.current());
 		auto next = static_cast<tetris::BlockType>(gameRestart.next());
-		
+
 		const auto& clientId = gameRestart.client_id();
 		if (clientId == clientId_) {
 			spdlog::warn("[Network] Client {} received own GameRestart message. Ignoring!", clientId_);
@@ -228,22 +228,22 @@ namespace mwetris::network {
 		spdlog::info("[Network] Paused: {}", gameCommand.pause() ? "true" : "false");
 		pauseEvent(PauseEvent{
 			.pause = gameCommand.pause()
-		});
+			});
 	}
 
 	void Network::handlGameRoomCreated(const tp_s2c::GameRoomCreated& gameRoomCreated) {
-		gameRoomUuid_ = gameRoomCreated.server_uuid();
+		gameRoomId_ = gameRoomCreated.game_room_id();
 		clientId_ = gameRoomCreated.client_id();
-		spdlog::info("[Network] GameRoomCreated: {}, client uuid: {}", gameRoomUuid_, clientId_);
+		spdlog::info("[Network] GameRoomCreated: {}, client uuid: {}", gameRoomId_, clientId_);
 		createGameRoomEvent(CreateGameRoomEvent{
 			.join = true
-		});
+			});
 		handleGameLooby(gameRoomCreated.game_looby());
 	}
 
 	void Network::handleGameRoomJoined(const tp_s2c::GameRoomJoined& gameRoomJoined) {
-		spdlog::info("[Network] GameRoomJoined: {}, client uuid: {}", gameRoomJoined.server_uuid(), gameRoomJoined.client_id());
-		gameRoomUuid_ = gameRoomJoined.server_uuid();
+		spdlog::info("[Network] GameRoomJoined: {}, client uuid: {}", gameRoomJoined.game_room_id(), gameRoomJoined.client_id());
+		gameRoomId_ = gameRoomJoined.game_room_id();
 		clientId_ = gameRoomJoined.client_id();
 		joinGameRoomEvent(JoinGameRoomEvent{
 			.join = true

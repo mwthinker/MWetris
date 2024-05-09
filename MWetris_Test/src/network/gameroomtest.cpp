@@ -67,7 +67,7 @@ namespace mwetris::network {
 	TEST_F(GameRoomTest, receiveJoinGameRoom) {
 		// Given
 		auto joinGameRoom = wrapperFromClient.mutable_join_game_room();
-		joinGameRoom->set_server_uuid("server uuid");
+		setTp(GameRoomId{"game room id"}, *joinGameRoom->mutable_game_room_id());
 
 		// When
 		gameRoom_->receiveMessage(mockServer_, ClientId{"client uuid 0"}, wrapperFromClient);

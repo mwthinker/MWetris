@@ -45,7 +45,7 @@ namespace mwetris::network {
 
 		~Network();
 
-		const std::string& getGameRoomUuid() const;
+		const GameRoomId& getGameRoomId() const;
 
 		void startGame(int w, int h);
 
@@ -126,7 +126,7 @@ namespace mwetris::network {
 		tp_c2s::Wrapper wrapperToServer_;
 		tp_s2c::Wrapper wrapperFromServer_;
 		std::shared_ptr<Client> client_;
-		std::string gameRoomUuid_;
+		GameRoomId gameRoomId_;
 		ClientId clientId_;
 	};
 

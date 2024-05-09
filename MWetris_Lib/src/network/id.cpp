@@ -5,6 +5,8 @@
 
 namespace mwetris::network {
 
+	// GameRoomId
+
 	ClientId ClientId::generateUniqueId() {
 		return ClientId{util::generateUuid()};
 	}
@@ -33,4 +35,37 @@ namespace mwetris::network {
 		return lhs.id_ != rhs.id();
 	}
 
+	// GameRoomId
+
+	GameRoomId GameRoomId::generateUniqueId() {
+		return GameRoomId{util::generateUuid()};
+	}
+
+	GameRoomId::GameRoomId(const tp::GameRoomId& tpGameRoomId)
+		: id_(tpGameRoomId.id()) {}
+
+	GameRoomId& GameRoomId::operator=(const tp::GameRoomId& tpGameRoomId) {
+		id_ = tpGameRoomId.id();
+		return *this;
+	}
+
+	void setTp(const GameRoomId& gameRoomId, tp::GameRoomId& tpGameRoomId) {
+		tpGameRoomId.set_id(gameRoomId.id_);
+	}
+
+	bool operator==(const tp::GameRoomId& lhs, const GameRoomId& rhs) {
+		return lhs.id() == rhs.id_;
+	}
+
+	bool operator==(const GameRoomId& lhs, const tp::GameRoomId& rhs) {
+		return lhs.id_ == rhs.id();
+	}
+
+	bool operator!=(const tp::GameRoomId& lhs, const GameRoomId& rhs) {
+		return lhs.id() != rhs.id_;
+	}
+
+	bool operator!=(const GameRoomId& lhs, const tp::GameRoomId& rhs) {
+		return lhs.id_ != rhs.id();
+	}
 }
