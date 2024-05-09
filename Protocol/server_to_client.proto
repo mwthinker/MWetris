@@ -20,7 +20,7 @@ message GameLooby {
 		SlotType slot_type = 1;
 		string name = 2;
 		bool ai = 3;
-		string player_uuid = 4;
+		tp.PlayerId player_id = 4;
 		tp.ClientId client_id = 5;
 	}
 
@@ -29,7 +29,7 @@ message GameLooby {
 
 message CreateGame {
 	message Player {
-		string player_uuid = 1;
+		tp.PlayerId player_id = 1;
 		string name = 2;
 		int32 level = 3;
 		int32 points = 4;
@@ -49,17 +49,17 @@ message GameCommand {
 }
 
 message BoardMove {
-	string uuid = 1;
+	tp.PlayerId player_id = 1;
 	tp.Move move = 2;
 }
 
 message BoardExternalSquares {
-	string uuid = 1;
+	tp.PlayerId player_id = 1;
 	repeated tp.BlockType block_types = 2;
 }
 
 message BoardNextBlock {
-	string uuid = 1;
+	tp.PlayerId player_id = 1;
 	tp.BlockType next = 2;
 }
 

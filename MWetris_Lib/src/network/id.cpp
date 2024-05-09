@@ -68,4 +68,38 @@ namespace mwetris::network {
 	bool operator!=(const GameRoomId& lhs, const tp::GameRoomId& rhs) {
 		return lhs.id_ != rhs.id();
 	}
+
+	// PlayerId
+
+	PlayerId PlayerId::generateUniqueId() {
+		return PlayerId{util::generateUuid()};
+	}
+
+	PlayerId::PlayerId(const tp::PlayerId& tpPlayerId)
+		: id_(tpPlayerId.id()) {}
+
+	PlayerId& PlayerId::operator=(const tp::PlayerId& tpPlayerId) {
+		id_ = tpPlayerId.id();
+		return *this;
+	}
+
+	void setTp(const PlayerId& gameRoomId, tp::PlayerId& tpPlayerId) {
+		tpPlayerId.set_id(gameRoomId.id_);
+	}
+
+	bool operator==(const tp::PlayerId& lhs, const PlayerId& rhs) {
+		return lhs.id() == rhs.id_;
+	}
+
+	bool operator==(const PlayerId& lhs, const tp::PlayerId& rhs) {
+		return lhs.id_ == rhs.id();
+	}
+
+	bool operator!=(const tp::PlayerId& lhs, const PlayerId& rhs) {
+		return lhs.id() != rhs.id_;
+	}
+
+	bool operator!=(const PlayerId& lhs, const tp::PlayerId& rhs) {
+		return lhs.id_ != rhs.id();
+	}
 }

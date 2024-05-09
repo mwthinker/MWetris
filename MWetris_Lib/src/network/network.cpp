@@ -308,7 +308,7 @@ namespace mwetris::network {
 			networkPlayer = players_.emplace_back(
 				NetworkPlayer{
 					.player = game::createHumanPlayer(human->device, playerData, std::move(tetrisBoard)),
-					.uuid = tpPlayer.player_uuid(),
+					.playerId = tpPlayer.player_id(),
 					.clientId = clientId_
 				}
 			);
@@ -316,7 +316,7 @@ namespace mwetris::network {
 			networkPlayer = players_.emplace_back(
 				NetworkPlayer{
 					.player = game::createAiPlayer(ai->ai, playerData, std::move(tetrisBoard)),
-					.uuid = tpPlayer.player_uuid(),
+					.playerId = tpPlayer.player_id(),
 					.clientId = clientId_
 				}
 			);
@@ -324,7 +324,7 @@ namespace mwetris::network {
 			networkPlayer = players_.emplace_back(
 				NetworkPlayer{
 					.player = game::createRemotePlayer(playerData, std::move(tetrisBoard)),
-					.uuid = tpPlayer.player_uuid(),
+					.playerId = tpPlayer.player_id(),
 					.clientId = tpPlayer.client_id()
 				}
 			);
@@ -367,7 +367,7 @@ namespace mwetris::network {
 	void Network::handleBoardMove(const tp_s2c::BoardMove& boardMove) {
 		auto move = static_cast<tetris::Move>(boardMove.move());
 		for (auto& networkPlayer : players_) {
-			if (networkPlayer.uuid == boardMove.uuid()) {
+			if (networkPlayer.playerId == boardMove.player_id()) {
 				if (networkPlayer.player->isRemote()) {
 					networkPlayer.player->updateMove(move);
 				} else {
@@ -379,7 +379,7 @@ namespace mwetris::network {
 
 	void Network::handleBoardNextBlock(const tp_s2c::BoardNextBlock& boardNextBlock) {
 		for (auto& networkPlayer : players_) {
-			if (networkPlayer.uuid == boardNextBlock.uuid()) {
+			if (networkPlayer.playerId == boardNextBlock.player_id()) {
 				if (networkPlayer.player->isRemote()) {
 					auto next = static_cast<tetris::BlockType>(boardNextBlock.next());
 					networkPlayer.player->updateNextBlock(next);
@@ -414,21 +414,17 @@ namespace mwetris::network {
 	}
 
 	void Network::handlePlayerBoardUpdate(const NetworkPlayer& player, const game::UpdateMove& updateMove) {
-		//spdlog::info("[Network] handle UpdateMove: {}", static_cast<int>(updateMove.move));
 		wrapperToServer_.Clear();
 		auto boardMove = wrapperToServer_.mutable_board_move();
-		//auto uuid = player.getUuid();
-		//boardMove->set_player_uuid(player.getUuid());
 		boardMove->set_move(static_cast<tp::Move>(updateMove.move));
-		boardMove->set_player_uuid(player.uuid);
+		setTp(player.playerId, *boardMove->mutable_player_id());
 		send(wrapperToServer_);
 	}
 
 	void Network::handlePlayerBoardUpdate(const NetworkPlayer& player, const game::UpdateNextBlock& updateNextBlock) {
-		//spdlog::info("[Network] handle UpdateNextBlock: {}", static_cast<char>(updateNextBlock.next));
 		wrapperToServer_.Clear();
 		auto nextBlock = wrapperToServer_.mutable_next_block();
-		nextBlock->set_uuid(player.uuid);
+		setTp(player.playerId, *nextBlock->mutable_player_id());
 		nextBlock->set_next(static_cast<tp::BlockType>(updateNextBlock.next));
 
 		send(wrapperToServer_);

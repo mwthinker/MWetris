@@ -10,6 +10,7 @@ namespace tp {
 	
 	class ClientId;
 	class GameRoomId;
+	class PlayerId;
 
 }
 
@@ -99,6 +100,50 @@ namespace mwetris::network {
 		std::string id_;
 	};
 
+	class PlayerId {
+	public:
+		friend struct fmt::formatter<PlayerId>;
+		friend struct std::hash<mwetris::network::PlayerId>;
+		friend struct std::less<mwetris::network::PlayerId>;
+		friend struct fmt::formatter<mwetris::network::PlayerId>;
+		friend void setTp(const PlayerId& gameRoomId, tp::PlayerId& tpPlayerId);
+
+		static PlayerId generateUniqueId();
+
+		PlayerId() = default;
+
+		constexpr explicit PlayerId(const std::string& id)
+			: id_{id} {}
+
+		// Implicit conversion from tp::PlayerId to PlayerId to simlyfy usage.
+		PlayerId(const tp::PlayerId& tpPlayerId);
+		PlayerId& operator=(const tp::PlayerId& tpPlayerId);
+
+		friend bool operator==(const PlayerId& lhs, const PlayerId& rhs) {
+			return lhs.id_ == rhs.id_;
+		}
+
+		friend bool operator!=(const PlayerId& lhs, const PlayerId& rhs) {
+			return lhs.id_ != rhs.id_;
+		}
+
+		operator bool() const {
+			return id_.empty();
+		}
+
+		friend bool operator==(const tp::PlayerId& lhs, const PlayerId& rhs);
+		friend bool operator==(const PlayerId& lhs, const tp::PlayerId& rhs);
+		friend bool operator!=(const tp::PlayerId& lhs, const PlayerId& rhs);
+		friend bool operator!=(const PlayerId& lhs, const tp::PlayerId& rhs);
+
+		const char* c_str() const {
+			return id_.c_str();
+		}
+
+	private:
+		std::string id_;
+	};
+
 }
 
 // ClientId
@@ -151,6 +196,33 @@ struct std::hash<mwetris::network::GameRoomId> {
 
 template<> struct std::less<mwetris::network::GameRoomId> {
 	bool operator() (const mwetris::network::GameRoomId& lhs, const mwetris::network::GameRoomId& rhs) const {
+		return lhs.id_ < rhs.id_;
+	}
+};
+
+// PlayerId
+
+template <> struct fmt::formatter<mwetris::network::PlayerId> : fmt::formatter<std::string_view> {
+	auto format(const mwetris::network::PlayerId& clientId, fmt::format_context& ctx) const {
+		return formatter<string_view>::format(clientId.id_, ctx);
+	}
+};
+
+template <> struct fmt::formatter<tp::PlayerId> : fmt::formatter<mwetris::network::PlayerId> {
+	auto format(const mwetris::network::PlayerId& c, fmt::format_context& ctx) const {
+		return formatter<mwetris::network::PlayerId>::format(c, ctx);
+	}
+};
+
+template <>
+struct std::hash<mwetris::network::PlayerId> {
+	inline size_t operator()(const mwetris::network::PlayerId& clientId) const {
+		return std::hash<std::string_view>{}(clientId.id_);
+	}
+};
+
+template<> struct std::less<mwetris::network::PlayerId> {
+	bool operator() (const mwetris::network::PlayerId& lhs, const mwetris::network::PlayerId& rhs) const {
 		return lhs.id_ < rhs.id_;
 	}
 };

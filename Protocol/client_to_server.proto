@@ -44,17 +44,17 @@ message GameCommand {
 }
 
 message BoardMove {
-	string player_uuid = 1;
+	tp.PlayerId player_id = 1;
 	tp.Move move = 2;
 }
 
 message BoardExternalSquares {
-	string uuid = 1;
+	tp.PlayerId player_id = 1;
 	repeated tp.BlockType block_types = 2;
 }
 
 message BoardNextBlock {
-	string uuid = 1;
+	tp.PlayerId player_id = 1;
 	tp.BlockType next = 2;
 }
 

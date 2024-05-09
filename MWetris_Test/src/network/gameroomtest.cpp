@@ -57,9 +57,9 @@ namespace mwetris::network {
 	};
 
 	void assertUniquePlayerUuids(const tp_s2c::GameLooby& playerSlot, int size) {
-		std::set<std::string> playerUuids;
+		std::set<PlayerId> playerUuids;
 		for (const auto& slot : playerSlot.slots()) {
-			playerUuids.insert(slot.player_uuid());
+			playerUuids.insert(slot.player_id());
 		}
 		ASSERT_EQ(playerUuids.size(), size);
 	}

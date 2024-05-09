@@ -20,7 +20,7 @@ namespace mwetris::network {
 
 	struct Slot {
 		ClientId clientId;
-		std::string playerUuid;
+		PlayerId playerId;
 		std::string name;
 		bool ai;
 		SlotType type;

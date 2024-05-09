@@ -106,7 +106,7 @@ namespace mwetris::ui {
 					}
 					ImGui::Text("Player name: %s", slot.name.c_str());
 					ImGui::Text("Client UUID: %s", slot.clientId.c_str());
-					ImGui::Text("Player UUID: %s", slot.playerUuid.c_str());
+					ImGui::Text("Player UUID: %s", slot.playerId.c_str());
 					break;
 				case network::SlotType::Closed:
 					ImGui::Text("Closed Slot");

@@ -29,7 +29,7 @@ namespace mwetris::network {
 						tpSlot->set_slot_type(tp_s2c::GameLooby_SlotType_REMOTE);
 						tpSlot->set_ai(slot.ai);
 						tpSlot->set_name(slot.name);
-						tpSlot->set_player_uuid(slot.playerUuid);
+						setTp(slot.playerId, *tpSlot->mutable_player_id());
 						setTp(slot.clientId, *tpSlot->mutable_client_id());
 						break;
 					case SlotType::Closed:
@@ -61,11 +61,11 @@ namespace mwetris::network {
 	GameRoom::~GameRoom() {}
 
 	void GameRoom::sendToAllClients(Server& server, const tp_s2c::Wrapper& message, const ClientId& exceptClientUuid) {
-		for (const auto& uuid : connectedClientUuids_) {
-			if (uuid == exceptClientUuid) {
+		for (const auto& clientId : connectedClientUuids_) {
+			if (clientId == exceptClientUuid) {
 				continue;
 			}
-			server.sendToClient(uuid, message);
+			server.sendToClient(clientId, message);
 		}
 	}
 
@@ -156,7 +156,7 @@ namespace mwetris::network {
 			} else {
 				playerSlots_[index] = Slot{
 					.clientId = clientId,
-					.playerUuid = util::generateUuid(),
+					.playerId = PlayerId::generateUniqueId(),
 					.name = tpPlayerSlot.name(),
 					.ai = tpPlayerSlot.slot_type() == tp_c2s::PlayerSlot_SlotType_AI,
 					.type = SlotType::Remote
@@ -190,7 +190,7 @@ namespace mwetris::network {
 			if (slot.type == SlotType::Remote) {
 				auto tpRemotePlayer = createGame->add_players();
 				setTp(slot.clientId, *tpRemotePlayer->mutable_client_id());
-				tpRemotePlayer->set_player_uuid(slot.playerUuid);
+				setTp(slot.playerId, *tpRemotePlayer->mutable_player_id());
 				tpRemotePlayer->set_name(slot.name);
 				tpRemotePlayer->set_level(0);
 				tpRemotePlayer->set_points(0);
@@ -205,22 +205,24 @@ namespace mwetris::network {
 	void GameRoom::handleBoardMove(Server& server, const ClientId& clientId, const tp_c2s::BoardMove& boardMove) {
 		auto move = static_cast<tetris::Move>(boardMove.move());
 		// TODO! Confirm player uuid belongs to correct client
-		const auto& uuid = boardMove.player_uuid();
+		PlayerId playerId = boardMove.player_id();
 
 		wrapperToClient_.Clear();
 		auto boardMoveToClient = wrapperToClient_.mutable_board_move();
 		boardMoveToClient->set_move(boardMove.move());
-		boardMoveToClient->set_uuid(uuid);
+		setTp(playerId, *boardMoveToClient->mutable_player_id());
 		sendToAllClients(server, wrapperToClient_, clientId);
 	}
 
 	void GameRoom::handleBoardNextBlock(Server& server, const ClientId& clientId, const tp_c2s::BoardNextBlock& boardNextBlock) {
 		// TODO! Confirm player uuid belongs to correct client
 
+		PlayerId playerId = boardNextBlock.player_id();
+
 		wrapperToClient_.Clear();
 		auto boardNextBlockToClient = wrapperToClient_.mutable_next_block();
 		boardNextBlockToClient->set_next(boardNextBlock.next());
-		boardNextBlockToClient->set_uuid(boardNextBlock.uuid());
+		setTp(playerId, *boardNextBlockToClient->mutable_player_id());
 
 		sendToAllClients(server, wrapperToClient_, clientId);
 	}

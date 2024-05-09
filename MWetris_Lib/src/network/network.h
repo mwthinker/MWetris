@@ -35,7 +35,7 @@ namespace mwetris::network {
 
 		struct NetworkPlayer {
 			game::PlayerPtr player;
-			std::string uuid;
+			PlayerId playerId;
 			ClientId clientId;
 		};
 
