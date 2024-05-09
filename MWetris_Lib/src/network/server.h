@@ -2,13 +2,14 @@
 #define MWETRIS_NETWORK_SERVER_H
 
 #include "game/tetrisgameevent.h"
+#include "id.h"
 
 #include <google/protobuf/message_lite.h>
 
 namespace mwetris::network {
 
 	struct ConnectedClient {
-		std::string uuid;
+		ClientId clientId;
 	};
 
 	enum class SlotType {
@@ -18,7 +19,7 @@ namespace mwetris::network {
 	};
 
 	struct Slot {
-		std::string clientUuid;
+		ClientId clientId;
 		std::string playerUuid;
 		std::string name;
 		bool ai;
@@ -29,7 +30,7 @@ namespace mwetris::network {
 	public:
 		virtual ~Server() = default;
 		
-		virtual void sendToClient(const std::string& clientUuid, const google::protobuf::MessageLite& message) = 0;
+		virtual void sendToClient(const ClientId& clientId, const google::protobuf::MessageLite& message) = 0;
 
 		virtual void triggerConnectedClientEvent(const ConnectedClient& connectedClient) = 0;
 

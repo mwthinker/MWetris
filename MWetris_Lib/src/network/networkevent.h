@@ -3,6 +3,7 @@
 
 #include "game/player.h"
 #include "game/playerslot.h"
+#include "id.h"
 
 #include <block.h>
 
@@ -12,7 +13,7 @@ namespace mwetris::network {
 
 	struct NetworkSlot {
 		game::PlayerSlot playerSlot;
-		std::string clientUuid;
+		ClientId clientId;
 	};
 
 	struct PlayerSlotEvent {

@@ -51,6 +51,8 @@ set(SOURCES_LIB
 	src/network/debugserver.h
 	src/network/gameroom.cpp
 	src/network/gameroom.h
+	src/network/id.cpp
+	src/network/id.h
 	src/network/protocol.cpp
 	src/network/protocol.h
 	src/network/protobufmessage.cpp

@@ -5,6 +5,7 @@
 #include "game/playerslot.h"
 #include "network/client.h"
 #include "network/networkevent.h"
+#include "id.h"
 
 #include <shared.pb.h>
 #include <client_to_server.pb.h>
@@ -13,6 +14,7 @@
 #include <net/client.h>
 
 #include <mw/signal.h>
+
 
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
@@ -34,7 +36,7 @@ namespace mwetris::network {
 		struct NetworkPlayer {
 			game::PlayerPtr player;
 			std::string uuid;
-			std::string clientId;
+			ClientId clientId;
 		};
 
 		Network(std::shared_ptr<Client> client);
@@ -125,7 +127,7 @@ namespace mwetris::network {
 		tp_s2c::Wrapper wrapperFromServer_;
 		std::shared_ptr<Client> client_;
 		std::string gameRoomUuid_;
-		std::string clientUuid_;
+		ClientId clientId_;
 	};
 
 }

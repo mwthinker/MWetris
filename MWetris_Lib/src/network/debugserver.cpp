@@ -8,6 +8,7 @@
 #include "gameroom.h"
 #include "server.h"
 #include "util/uuid.h"
+#include "id.h"
 
 #include <helper.h>
 
@@ -23,7 +24,7 @@ namespace mwetris::network {
 
 	struct Remote {
 		std::shared_ptr<DebugClient> client;
-		std::string uuid;
+		ClientId clientId;
 	};
 
 	class DebugServer::Impl : public Server {
@@ -66,32 +67,32 @@ namespace mwetris::network {
 				handleJoinGameRoom(fromRemote, wrapperFromClient_.join_game_room());
 			}
 
-			if (auto it = gameRoomUuidByClientUuid_.find(fromRemote.uuid); it != gameRoomUuidByClientUuid_.end()) {
-				auto& gameRoom = gameRooms_.at(gameRoomUuidByClientUuid_.at(fromRemote.uuid));
-				gameRoom.receiveMessage(*this, fromRemote.uuid, wrapper);
+			if (auto it = gameRoomUuidByClientUuid_.find(fromRemote.clientId); it != gameRoomUuidByClientUuid_.end()) {
+				auto& gameRoom = gameRooms_.at(gameRoomUuidByClientUuid_.at(fromRemote.clientId));
+				gameRoom.receiveMessage(*this, fromRemote.clientId, wrapper);
 			}
 		}
 
 		void handleCreateGameRoom(Remote& remote, const tp_c2s::CreateGameRoom& createGameRoom) {
-			if (gameRoomUuidByClientUuid_.contains(remote.uuid)) {
-				spdlog::warn("[DebugServer] Client with uuid {} already in a GameRoom", remote.uuid);
+			if (gameRoomUuidByClientUuid_.contains(remote.clientId)) {
+				spdlog::warn("[DebugServer] Client with uuid {} already in a GameRoom", remote.clientId);
 				return;
 			}
 
 			GameRoom gameRoom;
-			gameRoomUuidByClientUuid_.emplace(remote.uuid, gameRoom.getUuid());
+			gameRoomUuidByClientUuid_.emplace(remote.clientId, gameRoom.getUuid());
 			gameRooms_.emplace(gameRoom.getUuid(), std::move(gameRoom));
 		}
 
 		void handleJoinGameRoom(Remote& remote, const tp_c2s::JoinGameRoom& joinGameRoom) {
-			if (gameRoomUuidByClientUuid_.contains(remote.uuid)) {
-				spdlog::warn("[DebugServer] Client with uuid {} already in a GameRoom", remote.uuid);
+			if (gameRoomUuidByClientUuid_.contains(remote.clientId)) {
+				spdlog::warn("[DebugServer] Client with uuid {} already in a GameRoom", remote.clientId);
 				return;
 			}
 
 			if (auto it = gameRooms_.find(joinGameRoom.server_uuid()); it != gameRooms_.end()) {
 				auto& gameRoom = it->second;
-				gameRoomUuidByClientUuid_.emplace(remote.uuid, gameRoom.getUuid());
+				gameRoomUuidByClientUuid_.emplace(remote.clientId, gameRoom.getUuid());
 				gameRooms_.emplace(gameRoom.getUuid(), std::move(gameRoom));
 			} else {
 				spdlog::warn("[DebugServer] GameRoom with uuid {} not found", joinGameRoom.server_uuid());
@@ -132,7 +133,7 @@ namespace mwetris::network {
 			auto client = std::make_shared<DebugClient>(debugServer);
 			const auto& remote = remotes_.emplace_back(Remote{
 				.client = client,
-				.uuid = util::generateUuid()
+				.clientId = ClientId::generateUniqueId()
 			});
 			triggerConnectedClient(remote);
 			return client;
@@ -146,9 +147,9 @@ namespace mwetris::network {
 			return connectedClients;
 		}
 
-		void sendToClient(const std::string& clientUuid, const google::protobuf::MessageLite& message) override {
+		void sendToClient(const ClientId& clientId, const google::protobuf::MessageLite& message) override {
 			for (auto& remote : remotes_) {
-				if (remote.uuid == clientUuid) {
+				if (remote.clientId == clientId) {
 					sendToClient(*remote.client, message);
 					break;
 				}
@@ -166,7 +167,7 @@ namespace mwetris::network {
 	private:
 		ConnectedClient convertToConnectedClient(const Remote& remote) const {
 			return ConnectedClient{
-				.uuid = remote.uuid
+				.clientId = remote.clientId
 			};
 		}
 
@@ -187,7 +188,7 @@ namespace mwetris::network {
 			client.pushReceivedMessage(std::move(message));
 		}
 
-		std::map<std::string, std::string> gameRoomUuidByClientUuid_;
+		std::map<ClientId, std::string> gameRoomUuidByClientUuid_;
 		std::map<std::string, GameRoom> gameRooms_;
 
 		tp_c2s::Wrapper wrapperFromClient_;

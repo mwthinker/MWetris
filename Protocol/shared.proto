@@ -63,3 +63,7 @@ enum Move {
 	RIGHT = 7;
 	GAMEOVER = 8;
 }
+
+message ClientId {
+	string id = 1;
+}

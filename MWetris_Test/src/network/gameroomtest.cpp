@@ -15,7 +15,7 @@ namespace mwetris::network {
 
 	namespace {
 
-		void assertEqSlot(const tp_s2c::GameLooby& gameLooby, int index, tp_s2c::GameLooby_SlotType slotType, const std::string& name, bool ai, const std::string& clientUuid) {
+		void assertEqSlot(const tp_s2c::GameLooby& gameLooby, int index, tp_s2c::GameLooby_SlotType slotType, const std::string& name, bool ai, const ClientId& clientId) {
 			if (index >= gameLooby.slots().size()) {
 				FAIL() << "index out of range, index = " << index;
 			}
@@ -23,14 +23,14 @@ namespace mwetris::network {
 			ASSERT_EQ(slot.slot_type(), slotType) << "Error for slot index = " << index;
 			ASSERT_EQ(slot.name(), name) << "Error for slot index = " << index;
 			ASSERT_EQ(slot.ai(), false) << "Error for slot index = " << index;
-			ASSERT_EQ(slot.client_uuid(), clientUuid) << "Error for slot index = " << index;
+			ASSERT_EQ(slot.client_id(), clientId) << "Error for slot index = " << index;
 		}
 
 	}
 
 	class MockServer : public network::Server {
 	public:
-		MOCK_METHOD(void, sendToClient, (const std::string& clientUuid, const google::protobuf::MessageLite& message), (override));
+		MOCK_METHOD(void, sendToClient, (const ClientId& clientId, const google::protobuf::MessageLite& message), (override));
 		MOCK_METHOD(void, triggerConnectedClientEvent, (const ConnectedClient& connectedClient), (override));
 		MOCK_METHOD(void, triggerPlayerSlotEvent, (const std::vector<Slot>& slots), (override));
 	};
@@ -70,11 +70,11 @@ namespace mwetris::network {
 		joinGameRoom->set_server_uuid("server uuid");
 
 		// When
-		gameRoom_->receiveMessage(mockServer_, "client uuid 0", wrapperFromClient);
+		gameRoom_->receiveMessage(mockServer_, ClientId{"client uuid 0"}, wrapperFromClient);
 
 		// Then
 		ASSERT_EQ(gameRoom_->getConnectedClientUuids().size(), 1);
-		ASSERT_EQ(gameRoom_->getConnectedClientUuids()[0], "client uuid 0");
+		ASSERT_EQ(gameRoom_->getConnectedClientUuids()[0], ClientId{"client uuid 0"});
 	}
 
 	TEST_F(GameRoomTest, receiveGameRoomCreated) {
@@ -83,18 +83,18 @@ namespace mwetris::network {
 		createGameRoom->set_name("name");
 
 		// When
-		gameRoom_->receiveMessage(mockServer_, "client uuid 0", wrapperFromClient);
+		gameRoom_->receiveMessage(mockServer_, ClientId{"client uuid 0"}, wrapperFromClient);
 
 		// Then
 		ASSERT_EQ(gameRoom_->getConnectedClientUuids().size(), 1);
-		ASSERT_EQ(gameRoom_->getConnectedClientUuids()[0], "client uuid 0");
+		ASSERT_EQ(gameRoom_->getConnectedClientUuids()[0], ClientId{"client uuid 0"});
 	}
 
 	TEST_F(GameRoomTest, receivePlayerSlot_thenSendGameLooby) {
 		// Given
 		auto createGameRoom = wrapperFromClient.mutable_create_game_room();
 		createGameRoom->set_name("name");
-		gameRoom_->receiveMessage(mockServer_, "client uuid 0", wrapperFromClient);
+		gameRoom_->receiveMessage(mockServer_, ClientId{"client uuid 0"}, wrapperFromClient);
 		wrapperFromClient.Clear();
 
 		auto mutablePlayerSlot = wrapperFromClient.mutable_player_slot();
@@ -103,26 +103,26 @@ namespace mwetris::network {
 		mutablePlayerSlot->set_slot_type(tp_c2s::PlayerSlot_SlotType_HUMAN);
 		
 		tp_s2c::Wrapper wrapperToClient;
-		std::string clientUuid;
+		ClientId clientId;
 		EXPECT_CALL(mockServer_, sendToClient(_, _)).WillOnce(
-			Invoke([&](const std::string& uuid, const google::protobuf::MessageLite& message) {
-				clientUuid = uuid;
+			Invoke([&](const ClientId& id, const google::protobuf::MessageLite& message) {
+				clientId = id;
 				wrapperToClient = dynamic_cast<const tp_s2c::Wrapper&>(message);
 			}));
 
 		// When
-		gameRoom_->receiveMessage(mockServer_, "client uuid 0", wrapperFromClient);
+		gameRoom_->receiveMessage(mockServer_, ClientId{"client uuid 0"}, wrapperFromClient);
 
 		// Then
-		ASSERT_EQ(clientUuid, "client uuid 0");
+		ASSERT_EQ(clientId, ClientId{"client uuid 0"});
 		const auto& playerSlot = wrapperToClient.game_looby();
 		
 		assertUniquePlayerUuids(playerSlot, 2);
 		ASSERT_EQ(playerSlot.slots().size(), 4);
-		assertEqSlot(playerSlot, 0, tp_s2c::GameLooby_SlotType_REMOTE, "name 0", false, "client uuid 0");
-		assertEqSlot(playerSlot, 1, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "", false, "");
-		assertEqSlot(playerSlot, 2, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "", false, "");
-		assertEqSlot(playerSlot, 3, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "", false, "");
+		assertEqSlot(playerSlot, 0, tp_s2c::GameLooby_SlotType_REMOTE, "name 0", false, ClientId{"client uuid 0"});
+		assertEqSlot(playerSlot, 1, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "", false, ClientId{""});
+		assertEqSlot(playerSlot, 2, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "", false, ClientId{""});
+		assertEqSlot(playerSlot, 3, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "", false, ClientId{""});
 	}
 
 	void addPlayerSlotFromClient(tp_c2s::PlayerSlot& playerSlot, const std::string& clientUuid, int index, const std::string& name, tp_c2s::PlayerSlot_SlotType slotType) {
@@ -133,14 +133,14 @@ namespace mwetris::network {
 		// Given
 		auto createGameRoom = wrapperFromClient.mutable_create_game_room();
 		createGameRoom->set_name("name");
-		gameRoom_->receiveMessage(mockServer_, "client uuid 0", wrapperFromClient);
+		gameRoom_->receiveMessage(mockServer_, ClientId{"client uuid 0"}, wrapperFromClient);
 		wrapperFromClient.Clear();
 
 		tp_s2c::Wrapper wrapperToClient;
-		std::string clientUuid;
+		ClientId clientId;
 		ON_CALL(mockServer_, sendToClient(_, _)).WillByDefault(
-			Invoke([&](const std::string& uuid, const google::protobuf::MessageLite& message) {
-			clientUuid = uuid;
+			Invoke([&](const ClientId& id, const google::protobuf::MessageLite& message) {
+			clientId = id;
 			wrapperToClient = dynamic_cast<const tp_s2c::Wrapper&>(message);
 		}));
 
@@ -149,23 +149,23 @@ namespace mwetris::network {
 		mutablePlayerSlot->set_index(0);
 		mutablePlayerSlot->set_name("name 0");
 		mutablePlayerSlot->set_slot_type(tp_c2s::PlayerSlot_SlotType_HUMAN);
-		gameRoom_->receiveMessage(mockServer_, "client uuid 0", wrapperFromClient);
+		gameRoom_->receiveMessage(mockServer_, ClientId{"client uuid 0"}, wrapperFromClient);
 		
 		mutablePlayerSlot->set_index(1);
 		mutablePlayerSlot->set_name("name 1");
 		mutablePlayerSlot->set_slot_type(tp_c2s::PlayerSlot_SlotType_HUMAN);
-		gameRoom_->receiveMessage(mockServer_, "client uuid 1", wrapperFromClient);
+		gameRoom_->receiveMessage(mockServer_, ClientId{"client uuid 1"}, wrapperFromClient);
 
 		// Then
-		ASSERT_EQ(clientUuid, "client uuid 0");
+		ASSERT_EQ(clientId, ClientId{"client uuid 0"});
 		const auto& playerSlot = wrapperToClient.game_looby();
 
 		assertUniquePlayerUuids(playerSlot, 3);
 		ASSERT_EQ(playerSlot.slots().size(), 4);
-		assertEqSlot(playerSlot, 0, tp_s2c::GameLooby_SlotType_REMOTE, "name 0", false, "client uuid 0");
-		assertEqSlot(playerSlot, 1, tp_s2c::GameLooby_SlotType_REMOTE, "name 1", false, "client uuid 1");
-		assertEqSlot(playerSlot, 2, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "", false, "");
-		assertEqSlot(playerSlot, 3, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "", false, "");
+		assertEqSlot(playerSlot, 0, tp_s2c::GameLooby_SlotType_REMOTE, "name 0", false, ClientId{"client uuid 0"});
+		assertEqSlot(playerSlot, 1, tp_s2c::GameLooby_SlotType_REMOTE, "name 1", false, ClientId{"client uuid 1"});
+		assertEqSlot(playerSlot, 2, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "", false, ClientId{""});
+		assertEqSlot(playerSlot, 3, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "", false, ClientId{""});
 	}
 
 }

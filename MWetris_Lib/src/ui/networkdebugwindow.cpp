@@ -29,7 +29,7 @@ namespace mwetris::ui {
 
 		debugServer_->addClientListener([this](const network::ConnectedClient& client) {
 			if (std::any_of(connectedClients_.begin(), connectedClients_.end(), [&client](const auto& connected) {
-				return connected.uuid == client.uuid;
+				return connected.clientId == client.clientId;
 			})) {
 				return;
 			}
@@ -66,7 +66,7 @@ namespace mwetris::ui {
 		int id = 0;
 		for (auto& connectedClient : connectedClients_) {
 			ImGui::PushID(++id);
-			ImGui::Text("Connected: %s", connectedClient.uuid.c_str());
+			ImGui::Text("Connected: %s", connectedClient.clientId.c_str());
 			ImGui::PopID();
 		}
 
@@ -105,7 +105,7 @@ namespace mwetris::ui {
 						ImGui::Text("Remote Player");
 					}
 					ImGui::Text("Player name: %s", slot.name.c_str());
-					ImGui::Text("Client UUID: %s", slot.clientUuid.c_str());
+					ImGui::Text("Client UUID: %s", slot.clientId.c_str());
 					ImGui::Text("Player UUID: %s", slot.playerUuid.c_str());
 					break;
 				case network::SlotType::Closed:

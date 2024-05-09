@@ -6,6 +6,7 @@
 
 #include <concepts>
 #include <filesystem>
+#include <chrono>
 #include <google/protobuf/util/time_util.h>
 
 namespace mwetris::game {

@@ -5,7 +5,7 @@ package tp_s2c;
 import "shared.proto";
 
 message Connections {
-	repeated string uuids = 1;
+	repeated tp.ClientId client_ids = 1;
 }
 
 message GameLooby {
@@ -21,7 +21,7 @@ message GameLooby {
 		string name = 2;
 		bool ai = 3;
 		string player_uuid = 4;
-		string client_uuid = 5;
+		tp.ClientId client_id = 5;
 	}
 
 	repeated Slot slots = 1;
@@ -36,7 +36,7 @@ message CreateGame {
 		bool ai = 5;
 		tp.BlockType current = 6;
 		tp.BlockType next = 7;
-		string client_uuid = 8;
+		tp.ClientId client_id = 8;
 	}
 
 	repeated Player players = 1;
@@ -64,7 +64,7 @@ message BoardNextBlock {
 }
 
 message GameRestart {
-	string client_uuid = 1;
+	tp.ClientId client_id = 1;
 	tp.BlockType current = 2;
 	tp.BlockType next = 3;
 }
@@ -76,13 +76,13 @@ message RequestGameRestart {
 
 message GameRoomCreated {
 	string server_uuid = 1;
-	string client_uuid = 2;
+	tp.ClientId client_id = 2;
 	GameLooby game_looby = 3;
 }
 
 message GameRoomJoined {
 	string server_uuid = 1;
-	string client_uuid = 2;
+	tp.ClientId client_id = 2;
 	GameLooby game_looby = 3;
 }
 

@@ -5,6 +5,7 @@
 
 #include <network/client.h>
 #include <network/network.h>
+#include <network/id.h>
 
 #include <shared.pb.h>
 #include <client_to_server.pb.h>
@@ -39,20 +40,20 @@ namespace mwetris::network {
 			wrapperFromServer.Clear();
 		}
 
-		void mockReceiveGameRoomCreated(const std::string& serverUuid, const std::string& clientUuid) {
+		void mockReceiveGameRoomCreated(const std::string& serverUuid, const ClientId& clientUuid) {
 			tp_s2c::Wrapper wrapperFromServer;
 			auto gameRoomCreated = wrapperFromServer.mutable_game_room_created();
-			gameRoomCreated->set_client_uuid(clientUuid);
+			setTp(clientUuid, *gameRoomCreated->mutable_client_id());
 			gameRoomCreated->set_server_uuid(serverUuid);
 
 			expectCallClientReceive(wrapperFromServer);
 			wrapperFromServer.Clear();
 		}
 
-		void mockReceiveGameRoomJoined(const std::string& serverUuid, const std::string& clientUuid) {
+		void mockReceiveGameRoomJoined(const std::string& serverUuid, const ClientId& clientUuid) {
 			tp_s2c::Wrapper wrapperFromServer;
 			auto gameRoomJoined = wrapperFromServer.mutable_game_room_joined();
-			gameRoomJoined->set_client_uuid(clientUuid);
+			setTp(clientUuid, *gameRoomJoined->mutable_client_id());
 			gameRoomJoined->set_server_uuid(serverUuid);
 
 			expectCallClientReceive(wrapperFromServer);
@@ -83,7 +84,7 @@ namespace mwetris::network {
 			createGameRoomEventCalled = true;
 		});
 		
-		mockReceiveGameRoomCreated("server uuid", "client uuid");
+		mockReceiveGameRoomCreated("server uuid", ClientId{"client uuid"});
 
 		// When
 		EXPECT_FALSE(network_->isInsideRoom());
@@ -104,7 +105,7 @@ namespace mwetris::network {
 			joinGameRoomEventCalled = true;
 		});
 
-		mockReceiveGameRoomJoined("server uuid", "client uuid");
+		mockReceiveGameRoomJoined("server uuid", ClientId{"client uuid"});
 
 		// When
 		EXPECT_FALSE(joinGameRoomEventCalled);
@@ -120,7 +121,7 @@ namespace mwetris::network {
 
 	TEST_F(NetworkTest, receiveGameLoobyContainingAllSlotTypes_thenEventsAreTriggered) {
 		// Given
-		mockReceiveGameRoomCreated("server uuid", "client uuid 0");
+		mockReceiveGameRoomCreated("server uuid", ClientId{"client uuid 0"});
 		network_->update();
 
 		std::vector<PlayerSlotEvent> actualPlayerSlotEvents;
@@ -129,12 +130,12 @@ namespace mwetris::network {
 		});
 		
 		auto gameLooby = wrapperFromServer.mutable_game_looby();
-		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_REMOTE, "client uuid 0", "name 0");
-		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_CLOSED_SLOT, "", "");
-		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_REMOTE, "client uuid 2", "name 2", false);
-		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "", "");
-		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_REMOTE, "client uuid 4", "name 4", true);
-		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_REMOTE, "client uuid 0", "name 5", true);
+		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_REMOTE, ClientId{"client uuid 0"}, "name 0");
+		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_CLOSED_SLOT, ClientId{""}, "");
+		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_REMOTE, ClientId{"client uuid 2"}, "name 2", false);
+		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_OPEN_SLOT, ClientId{""}, "");
+		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_REMOTE, ClientId{"client uuid 4"}, "name 4", true);
+		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_REMOTE, ClientId{"client uuid 0"}, "name 5", true);
 
 		expectCallClientReceive(wrapperFromServer);
 
@@ -164,11 +165,11 @@ namespace mwetris::network {
 
 	TEST_F(NetworkTest, receiveGameLoobyAndSetSlot) {
 		// Given
-		mockReceiveGameRoomCreated("server uuid", "client uuid 0");
+		mockReceiveGameRoomCreated("server uuid", ClientId{"client uuid 0"});
 		network_->update();
 
 		auto gameLooby = wrapperFromServer.mutable_game_looby();
-		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "client uuid 0", "name 0");
+		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_OPEN_SLOT, ClientId{"client uuid 0"}, "name 0");
 
 		expectCallClientReceive(wrapperFromServer);
 		ProtobufMessage messageToServer;
@@ -192,11 +193,11 @@ namespace mwetris::network {
 
 	TEST_F(NetworkTest, receiveGameLoobyAndSetSlotOutsideRange_thenIgnoreSlot) {
 		// Given
-		mockReceiveGameRoomCreated("server uuid", "client uuid 0");
+		mockReceiveGameRoomCreated("server uuid", ClientId{"client uuid 0"});
 		network_->update();
 
 		auto gameLooby = wrapperFromServer.mutable_game_looby();
-		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "client uuid 0", "name 0");
+		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_OPEN_SLOT, ClientId{"client uuid 0"}, "name 0");
 
 		expectCallClientReceive(wrapperFromServer);
 		network_->update();
@@ -213,14 +214,14 @@ namespace mwetris::network {
 
 	TEST_F(NetworkTest, receiveGameLoobyWithMultipleClientsAndSetSlot) {
 		// Given
-		mockReceiveGameRoomCreated("server uuid", "client uuid 0");
+		mockReceiveGameRoomCreated("server uuid", ClientId{"client uuid 0"});
 		network_->update();
 
 		auto gameLooby = wrapperFromServer.mutable_game_looby();
-		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_REMOTE, "client uuid 0", "name 0");
-		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_REMOTE, "client uuid 1", "name 1");
-		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "", "");
-		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "", "");
+		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_REMOTE, ClientId{"client uuid 0"}, "name 0");
+		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_REMOTE, ClientId{"client uuid 1"}, "name 1");
+		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_OPEN_SLOT, ClientId{""}, "");
+		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_OPEN_SLOT, ClientId{""}, "");
 
 		expectCallClientReceive(wrapperFromServer);
 		ProtobufMessage messageToServer;

@@ -14,7 +14,7 @@ namespace mwetris::network {
 
 	ProtobufMessage createMessage(const google::protobuf::MessageLite& wrapper);
 
-	void addPlayerSlot(tp_s2c::GameLooby& gameLooby, const tp_s2c::GameLooby_SlotType slotType, const std::string& clientUuid, const std::string& name, bool ai = false);
+	void addPlayerSlot(tp_s2c::GameLooby& gameLooby, const tp_s2c::GameLooby_SlotType slotType, const ClientId& clientUuid, const std::string& name, bool ai = false);
 
 	void expectEqual(const PlayerSlotEvent& playerSlotEvent, int index, const game::Human& remote);
 

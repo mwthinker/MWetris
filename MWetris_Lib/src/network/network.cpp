@@ -190,7 +190,7 @@ namespace mwetris::network {
 		if (std::none_of(players_.begin(), players_.end(), [this](const NetworkPlayer& networkPlayer) {
 			return networkPlayer.player->isLocal();
 		})) {
-			spdlog::debug("[Network] Ignore RequestGameRestart, no local players for client {}", clientUuid_);
+			spdlog::debug("[Network] Ignore RequestGameRestart, no local players for client {}", clientId_);
 			return;
 		}
 		
@@ -211,14 +211,14 @@ namespace mwetris::network {
 		auto current = static_cast<tetris::BlockType>(gameRestart.current());
 		auto next = static_cast<tetris::BlockType>(gameRestart.next());
 		
-		const auto& clientUuid = gameRestart.client_uuid();
-		if (clientUuid == clientUuid_) {
-			spdlog::warn("[Network] Client {} received own GameRestart message. Ignoring!", clientUuid_);
+		const auto& clientId = gameRestart.client_id();
+		if (clientId == clientId_) {
+			spdlog::warn("[Network] Client {} received own GameRestart message. Ignoring!", clientId_);
 			return;
 		}
 
 		for (auto& networkPlayer : players_) {
-			if (networkPlayer.clientId == clientUuid) {
+			if (networkPlayer.clientId == clientId) {
 				networkPlayer.player->updateRestart(current, next);
 			}
 		}
@@ -233,8 +233,8 @@ namespace mwetris::network {
 
 	void Network::handlGameRoomCreated(const tp_s2c::GameRoomCreated& gameRoomCreated) {
 		gameRoomUuid_ = gameRoomCreated.server_uuid();
-		clientUuid_ = gameRoomCreated.client_uuid();
-		spdlog::info("[Network] GameRoomCreated: {}, client uuid: {}", gameRoomUuid_, clientUuid_);
+		clientId_ = gameRoomCreated.client_id();
+		spdlog::info("[Network] GameRoomCreated: {}, client uuid: {}", gameRoomUuid_, clientId_);
 		createGameRoomEvent(CreateGameRoomEvent{
 			.join = true
 		});
@@ -242,9 +242,9 @@ namespace mwetris::network {
 	}
 
 	void Network::handleGameRoomJoined(const tp_s2c::GameRoomJoined& gameRoomJoined) {
-		spdlog::info("[Network] GameRoomJoined: {}, client uuid: {}", gameRoomJoined.server_uuid(), gameRoomJoined.client_uuid());
+		spdlog::info("[Network] GameRoomJoined: {}, client uuid: {}", gameRoomJoined.server_uuid(), gameRoomJoined.client_id());
 		gameRoomUuid_ = gameRoomJoined.server_uuid();
-		clientUuid_ = gameRoomJoined.client_uuid();
+		clientId_ = gameRoomJoined.client_id();
 		joinGameRoomEvent(JoinGameRoomEvent{
 			.join = true
 		});
@@ -257,24 +257,24 @@ namespace mwetris::network {
 		for (const auto& tpSlot : gameLooby.slots()) {
 			switch (tpSlot.slot_type()) {
 				case tp_s2c::GameLooby_SlotType_REMOTE:
-					if (tpSlot.client_uuid() == clientUuid_) {
+					if (tpSlot.client_id() == clientId_) {
 						if (tpSlot.ai()) {
-							networkSlots_.emplace_back(game::Ai{.name = tpSlot.name()}, clientUuid_);
+							networkSlots_.emplace_back(game::Ai{.name = tpSlot.name()}, clientId_);
 						} else {
-							networkSlots_.emplace_back(game::Human{.name = tpSlot.name()}, clientUuid_);
+							networkSlots_.emplace_back(game::Human{.name = tpSlot.name()}, clientId_);
 						}
 					} else {
 						networkSlots_.emplace_back(game::Remote{
 							.name = tpSlot.name(),
 							.ai = tpSlot.ai()
-						}, clientUuid_);
+						}, clientId_);
 					}
 					break;
 				case tp_s2c::GameLooby_SlotType_OPEN_SLOT:
-					networkSlots_.emplace_back(game::OpenSlot{}, "");
+					networkSlots_.emplace_back(game::OpenSlot{}, ClientId{});
 					break;
 				case tp_s2c::GameLooby_SlotType_CLOSED_SLOT:
-					networkSlots_.emplace_back(game::ClosedSlot{}, "");
+					networkSlots_.emplace_back(game::ClosedSlot{}, ClientId{});
 					break;
 				default:
 					continue;
@@ -289,7 +289,7 @@ namespace mwetris::network {
 	}
 
 	void Network::handleConnections(const tp_s2c::Connections& connections) {
-		for (const auto& uuid : connections.uuids()) {
+		for (const auto& uuid : connections.client_ids()) {
 			spdlog::info("[Network] Connected uuid: {}", uuid);
 		}
 	}
@@ -309,7 +309,7 @@ namespace mwetris::network {
 				NetworkPlayer{
 					.player = game::createHumanPlayer(human->device, playerData, std::move(tetrisBoard)),
 					.uuid = tpPlayer.player_uuid(),
-					.clientId = clientUuid_
+					.clientId = clientId_
 				}
 			);
 		} else if (auto ai = std::get_if<game::Ai>(&networkSlot.playerSlot); ai) {
@@ -317,7 +317,7 @@ namespace mwetris::network {
 				NetworkPlayer{
 					.player = game::createAiPlayer(ai->ai, playerData, std::move(tetrisBoard)),
 					.uuid = tpPlayer.player_uuid(),
-					.clientId = clientUuid_
+					.clientId = clientId_
 				}
 			);
 		} else if (auto remote = std::get_if<game::Remote>(&networkSlot.playerSlot); remote) {
@@ -325,7 +325,7 @@ namespace mwetris::network {
 				NetworkPlayer{
 					.player = game::createRemotePlayer(playerData, std::move(tetrisBoard)),
 					.uuid = tpPlayer.player_uuid(),
-					.clientId = tpPlayer.client_uuid()
+					.clientId = tpPlayer.client_id()
 				}
 			);
 		}
