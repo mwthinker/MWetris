@@ -2,6 +2,8 @@
 #define MWETRIS_GAME_SERIALIZEHIGHSCORE_H
 
 #include <chrono>
+#include <string>
+#include <vector>
 
 namespace mwetris::game {
 

@@ -28,7 +28,7 @@ namespace mwetris::network {
 
 		ClientId() = default;
 
-		constexpr explicit ClientId(const std::string& id)
+		explicit ClientId(const std::string& id)
 			: id_{id} {
 		}
 	
@@ -68,8 +68,9 @@ namespace mwetris::network {
 
 		GameRoomId() = default;
 
-		constexpr explicit GameRoomId(const std::string& id)
-			: id_{id} {}
+		explicit GameRoomId(const std::string& id)
+			: id_{id} {
+		}
 
 		// Implicit conversion from tp::GameRoomId to GameRoomId to simlyfy usage.
 		GameRoomId(const tp::GameRoomId& tpGameRoomId);
@@ -112,7 +113,7 @@ namespace mwetris::network {
 
 		PlayerId() = default;
 
-		constexpr explicit PlayerId(const std::string& id)
+		explicit PlayerId(const std::string& id)
 			: id_{id} {}
 
 		// Implicit conversion from tp::PlayerId to PlayerId to simlyfy usage.
