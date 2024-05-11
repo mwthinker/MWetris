@@ -35,6 +35,9 @@ namespace mwetris::network {
 	}
 
 	Network::~Network() {
+		// To avoid getting stuck
+		gameRoomId_ = GameRoomId{};
+
 		// In order to avoid errors::broken_task
 		running_ = false;
 		update();
@@ -271,7 +274,7 @@ namespace mwetris::network {
 		spdlog::info("[Network] Paused: {}", gameCommand.pause() ? "true" : "false");
 		pauseEvent(PauseEvent{
 			.pause = gameCommand.pause()
-			});
+		});
 	}
 
 	void Network::handlGameRoomCreated(const tp_s2c::GameRoomCreated& gameRoomCreated) {
@@ -373,9 +376,14 @@ namespace mwetris::network {
 			);
 		}
 		if (networkPlayer.player) {
-			connections_ += networkPlayer.player->playerBoardUpdate.connect([this, networkPlayer](game::PlayerBoardEvent playerBoardEvent) {
+			connections_ += networkPlayer.player->playerBoardUpdate.connect([this, index = players_.size() - 1](game::PlayerBoardEvent playerBoardEvent) {
+				if (index < 0 && index >= players_.size()) {
+					spdlog::error("[Network] Invalid index: {}", index);
+					return;
+				}
+				auto& networkPlayerRef = players_[index];
 				std::visit([&](auto&& event) {
-					handlePlayerBoardUpdate(networkPlayer, event);
+					handlePlayerBoardUpdate(networkPlayerRef, event);
 				}, playerBoardEvent);
 			});
 		}

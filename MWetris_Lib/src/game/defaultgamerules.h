@@ -4,6 +4,9 @@
 #include "tetrisboard.h"
 #include "player.h"
 #include "gamerules.h"
+#include "helper.h"
+
+#include <spdlog/spdlog.h>
 
 #include <vector>
 #include <span>
@@ -19,7 +22,6 @@ namespace mwetris::game {
 	class DefaultGameRules : public GameRules {
 	public:
 		DefaultGameRules() {
-			restart();
 		}
 
 		void update(double deltaTime) override {
@@ -28,21 +30,37 @@ namespace mwetris::game {
 		
 		void createGame(std::span<PlayerPtr> players) override {
 			connections_.clear();
-			localPlayers_.clear();
+			players_.clear();
 			for (auto& player : players) {
-				auto& info = localPlayers_.emplace_back(player, DefaultPlayerData{});
+				auto& info = players_.emplace_back(player, DefaultPlayerData{
+					.level = 1,
+					.points = 0
+				});
 				info.player->updatePlayerData(info.data);
-				info.player->setGravity(1 + info.data.level * 0.5f);
-				connections_ += player->playerBoardUpdate.connect([&info, this](const PlayerBoardEvent& playerBoardEvent) {
+				info.player->setGravity(calculateGravity(info.data.level));
+
+				connections_ += player->playerBoardUpdate.connect([this, index = players_.size()](const PlayerBoardEvent& playerBoardEvent) {
+					if (index < 0 && index >= players_.size()) {
+						spdlog::error("[DefaultGameRules] Index {} is out of bounds.", index);
+						return;
+					}
 					if (auto value = std::get_if<TetrisBoardEvent>(&playerBoardEvent)) {
-						updateGameBoardEvent(value->event, value->value, info);
+						auto& playerInfo = players_[index];
+						updateGameBoardEvent(value->event, value->value, playerInfo);
 					}
 				});
 			}
 		}
 
 		void restart() override {
-			localPlayers_.clear();
+			for (auto& info : players_) {
+				info.data = DefaultPlayerData{
+					.level = 1,
+					.points = 0
+				};
+				info.player->updatePlayerData(info.data);
+				info.player->setGravity(calculateGravity(info.data.level));
+			}
 		}
 
 	private:
@@ -52,16 +70,17 @@ namespace mwetris::game {
 		};
 
 		void updateGameBoardEvent(tetris::BoardEvent gameEvent, int value, Info& info) {
-			if (gameEvent == tetris::BoardEvent::RowsRemoved) {
+			spdlog::info("[DefaultGameRules] Game event player: {}", static_cast<char>(info.player->getNextBlockType()));
+			if (info.player->isLocal() && gameEvent == tetris::BoardEvent::RowsRemoved) {
 				info.data.level = info.player->getClearedRows() / LevelUpNbr + 1;
 				info.data.points += info.data.level * value * value;
 
 				info.player->updatePlayerData(info.data);
-				info.player->setGravity(1 + info.data.level * 0.5f);
+				info.player->setGravity(calculateGravity(info.data.level));
 			}
 		}
 
-		std::vector<Info> localPlayers_;
+		std::vector<Info> players_;
 		mw::signals::ScopedConnections connections_;
 	};
 
@@ -75,21 +94,30 @@ namespace mwetris::game {
 
 		void createGame(std::span<PlayerPtr> players) override {
 			connections_.clear();
-			localPlayers_.clear();
+			players_.clear();
 			for (auto& player : players) {
-				auto& info = localPlayers_.emplace_back(player, SurvivalPlayerData{});
+				auto& info = players_.emplace_back(player, SurvivalPlayerData{
+					.opponentRows = 0	
+				});
 				info.player->updatePlayerData(info.data);
-				connections_ += player->playerBoardUpdate.connect([&info, player, this](const PlayerBoardEvent& playerBoardEvent) {
+				connections_ += player->playerBoardUpdate.connect([this, index = players_.size() - 1](const PlayerBoardEvent& playerBoardEvent) {
+					if (index < 0 && index >= players_.size()) {
+						spdlog::error("[DefaultGameRules] Index {} is out of bounds", index);
+						return;
+					}
+					auto& info = players_[index];
 					if (auto value = std::get_if<TetrisBoardEvent>(&playerBoardEvent)) {
-						updateGameBoardEvent(value->event, value->value, player);
+						updateGameBoardEvent(value->event, value->value, info.player);
 					}
 				});
 			}
 		}
 
 		void restart() override {
-			for (auto& info : localPlayers_) {
-				info.data.opponentRows = 0;
+			for (auto& info : players_) {
+				info.data = SurvivalPlayerData{
+					.opponentRows = 0
+				};
 				info.player->updatePlayerData(info.data);
 			}
 		}
@@ -104,14 +132,25 @@ namespace mwetris::game {
 		}
 
 		void rowsRemove(const PlayerPtr& fromPlayer, int nbr) {
-			for (auto& info : localPlayers_) {
-				if (info.player != fromPlayer) {
+			for (auto& info : players_) {
+				if (info.player == fromPlayer) {
+					if (fromPlayer->isLocal()) {
+						fromPlayer->setGravity(calculateGravity(info.data.opponentRows));
+					}
+				} else if (info.player->isLocal()) {
 					info.data.opponentRows += nbr;
-
+					info.player->updatePlayerData(info.data);
 					if (nbr == 1 && !info.player->isGameOver()) {
-						//info.player->addRowWithHoles(2);
+						addExternalRows(*info.player, 2);
 					}
 				}
+			}
+		}
+
+		void addExternalRows(Player& player, int rows) {
+			for (int i = 0; i < rows; ++i) {
+				auto blockTypes = tetris::generateRow(player.getColumns(), 2);
+				player.addExternalRows(blockTypes);
 			}
 		}
 
@@ -120,8 +159,7 @@ namespace mwetris::game {
 			SurvivalPlayerData data;
 		};
 
-		std::vector<Info> localPlayers_;
-		std::vector<PlayerPtr> remotePlayers_;
+		std::vector<Info> players_;
 		mw::signals::ScopedConnections connections_;
 	};
 }

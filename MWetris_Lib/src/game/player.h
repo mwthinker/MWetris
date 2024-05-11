@@ -15,6 +15,16 @@
 
 namespace mwetris::game {
 
+	class PlayerBoardEventInvoker {
+	protected:
+		friend class HumanMoveController;
+		friend class AiMoveController;
+
+		virtual ~PlayerBoardEventInvoker() = default;
+
+		virtual void invokePlayerBoardEvent(const PlayerBoardEvent& playerBoardEvent) = 0;
+	};
+
 	class Player;
 	using PlayerPtr = std::shared_ptr<Player>;
 
@@ -26,7 +36,7 @@ namespace mwetris::game {
 
 	PlayerPtr createRemotePlayer(const PlayerData& playerData = DefaultPlayerData{}, tetris::TetrisBoard&& tetrisBoard = tetris::TetrisBoard{10, 10, tetris::BlockType::L, tetris::BlockType::L});
 
-	class Player {
+	class Player : public PlayerBoardEventInvoker {
 	public:
 		enum class Type {
 			Human,
@@ -34,7 +44,6 @@ namespace mwetris::game {
 			Remote
 		};
 
-		//mw::PublicSignal<Player, tetris::BoardEvent, int> gameboardEventUpdate;
 		mw::PublicSignal<Player, PlayerBoardEvent> playerBoardUpdate;
 
 		Player(Type type, std::unique_ptr<TetrisBoardMoveController> moveController, tetris::TetrisBoard&& tetrisBoard);
@@ -61,6 +70,8 @@ namespace mwetris::game {
 
 		void updateNextBlock(tetris::BlockType next);
 
+		void addExternalRows(const std::vector<tetris::BlockType>& rows);
+
 		tetris::Block getBlockDown() const;
 
 		tetris::Block getBlock() const;
@@ -83,8 +94,8 @@ namespace mwetris::game {
 
 	protected:
 		void handleBoardEvent(tetris::BoardEvent boardEvent, int value);
-
-		void invokePlayerBoardUpdate(PlayerBoardEvent playerBoardEvent);
+		
+		void invokePlayerBoardEvent(const PlayerBoardEvent&) override;
 
 		std::unique_ptr<TetrisBoardMoveController> moveController_;
 		mw::signals::ScopedConnections connections_;

@@ -60,6 +60,7 @@ namespace mwetris::game {
 		rules_ = std::make_unique<DefaultGameRules>();
 
 		if (isDefaultGame() && players_.front()->isGameOver()) {
+			rules_->createGame(players_);
 			restartGame();
 		} else {
 			PlayerPtr player = loadGame(device);
@@ -73,9 +74,12 @@ namespace mwetris::game {
 			}
 			connections_.clear();
 			players_ = {player};
+
 			connections_ += player->playerBoardUpdate.connect([](const PlayerBoardEvent& playerBoardEvent) {
 				game::clearSavedGame();
 			});
+
+			rules_->createGame(players_);
 			setPause(true);
 			initGame();
 		}

@@ -14,16 +14,24 @@ namespace mwetris::game {
 	public:
 		virtual ~TetrisBoardMoveController() = default;
 
-		virtual void updateMove(tetris::TetrisBoard& tetrisBoard, double deltaTime, std::function<void(const PlayerBoardEvent&)> callback);
+		virtual void updateMove(tetris::TetrisBoard& tetrisBoard, double deltaTime, PlayerBoardEventInvoker& invoker) {
+		}
 
-		virtual void setGravity(double gravity) {}
+		virtual void setGravity(double gravity) {
+		}
 	};
 
 	class HumanMoveController : public TetrisBoardMoveController {
 	public:
-		HumanMoveController(DevicePtr device);
+		HumanMoveController(DevicePtr device)
+			: device_{device} {
+		}
 
-		void updateMove(tetris::TetrisBoard& tetrisBoard, double deltaTime, std::function<void(const PlayerBoardEvent&)> callback) override;
+		void updateMove(tetris::TetrisBoard& tetrisBoard, double deltaTime, PlayerBoardEventInvoker& invoker) override {
+			tetrisBoardController_.update(tetrisBoard, device_->getInput(), deltaTime, [&](const PlayerBoardEvent& event) {
+				invoker.invokePlayerBoardEvent(event);
+			});
+		}
 
 		void setGravity(double gravity) override {
 			tetrisBoardController_.updateGravity(gravity);
@@ -36,9 +44,18 @@ namespace mwetris::game {
 
 	class AiMoveController : public TetrisBoardMoveController {
 	public:
-		AiMoveController(const tetris::Ai& ai);
+		AiMoveController(const tetris::Ai& ai)
+			: computer_{tetris::Ai{}} {
+		}
 
-		void updateMove(tetris::TetrisBoard& tetrisBoard, double deltaTime, std::function<void(const PlayerBoardEvent&)> callback) override;
+		void updateMove(tetris::TetrisBoard& tetrisBoard, double deltaTime, PlayerBoardEventInvoker& invoker) override {
+			tetrisBoardController_.update(tetrisBoard, computer_.getInput(), deltaTime, [&](const PlayerBoardEvent& playerBoardEvent) {
+				invoker.invokePlayerBoardEvent(playerBoardEvent);
+				if (auto tetrisBoardEvent = std::get_if<TetrisBoardEvent>(&playerBoardEvent)) {
+					computer_.onGameboardEvent(tetrisBoard, tetrisBoardEvent->event, tetrisBoardEvent->value);
+				}
+			});
+		}
 
 		void setGravity(double gravity) override {
 			tetrisBoardController_.updateGravity(gravity);
@@ -48,29 +65,6 @@ namespace mwetris::game {
 		TetrisBoardController tetrisBoardController_;
 		Computer computer_;
 	};
-
-	void TetrisBoardMoveController::updateMove(tetris::TetrisBoard& tetrisBoard, double deltaTime, std::function<void(const PlayerBoardEvent&)> callback) {}
-
-	HumanMoveController::HumanMoveController(DevicePtr device)
-		: device_{device} {}
-
-	void HumanMoveController::updateMove(tetris::TetrisBoard& tetrisBoard, double deltaTime, std::function<void(const PlayerBoardEvent&)> callback) {
-		tetrisBoardController_.update(tetrisBoard, device_->getInput(), deltaTime, [&](const PlayerBoardEvent& event) {
-			callback(event);
-		});
-	}
-
-	AiMoveController::AiMoveController(const tetris::Ai& ai)
-		: computer_{tetris::Ai{}} {}
-
-	void AiMoveController::updateMove(tetris::TetrisBoard& tetrisBoard, double deltaTime, std::function<void(const PlayerBoardEvent&)> callback) {
-		tetrisBoardController_.update(tetrisBoard, computer_.getInput(), deltaTime, [&](const PlayerBoardEvent& playerBoardEvent) {
-			callback(playerBoardEvent);
-			if (auto tetrisBoardEvent = std::get_if<TetrisBoardEvent>(&playerBoardEvent)) {
-				computer_.onGameboardEvent(tetrisBoard, tetrisBoardEvent->event, tetrisBoardEvent->value);
-			}
-		});
-	}
 
 	PlayerPtr createHumanPlayer(DevicePtr device, const PlayerData& playerData, tetris::TetrisBoard&& tetrisBoard) {
 		auto moveController = std::make_unique<HumanMoveController>(device);
@@ -100,12 +94,7 @@ namespace mwetris::game {
 	}
 	
 	void Player::update(double deltaTime) {
-		moveController_->updateMove(tetrisBoard_, deltaTime, [&](const PlayerBoardEvent& playerBoardEvent) {
-			invokePlayerBoardUpdate(playerBoardEvent);
-			if (auto value = std::get_if<TetrisBoardEvent>(&playerBoardEvent)) {
-				handleBoardEvent(value->event, value->value);
-			}
-		});
+		moveController_->updateMove(tetrisBoard_, deltaTime, *this);
 	}
 
 	int Player::getRows() const {
@@ -140,17 +129,17 @@ namespace mwetris::game {
 			.current = current,
 			.next = next
 		};
-		invokePlayerBoardUpdate(updateRestart);
+		playerBoardUpdate(updateRestart);
 		tetrisBoard_.restart(current, next);
 	}
 
 	void Player::updatePlayerData(const PlayerData& playerData) {
-		invokePlayerBoardUpdate(UpdatePlayerData{playerData});
+		playerBoardUpdate(UpdatePlayerData{playerData});
 		playerData_ = playerData;
 	}
 
 	void Player::updateMove(tetris::Move move) {
-		invokePlayerBoardUpdate(UpdateMove{move});
+		playerBoardUpdate(UpdateMove{move});
 		tetrisBoard_.update(move, [&](tetris::BoardEvent event, int nbr) {
 			handleBoardEvent(event, nbr);
 		});
@@ -158,6 +147,10 @@ namespace mwetris::game {
 
 	void Player::updateNextBlock(tetris::BlockType next) {
 		tetrisBoard_.setNextBlock(next);
+	}
+
+	void Player::addExternalRows(const std::vector<tetris::BlockType>& rows) {
+		externalRows_.insert(externalRows_.end(), rows.begin(), rows.end());
 	}
 
 	tetris::Block Player::getBlockDown() const {
@@ -192,6 +185,13 @@ namespace mwetris::game {
 		moveController_->setGravity(gravity);
 	}
 
+	void Player::invokePlayerBoardEvent(const PlayerBoardEvent& playerBoardEvent) {
+		playerBoardUpdate(playerBoardEvent);
+		if (auto value = std::get_if<TetrisBoardEvent>(&playerBoardEvent)) {
+			handleBoardEvent(value->event, value->value);
+		}
+	}
+
 	void Player::setClearedRows(int clearedRows) {
 		clearedRows_ = clearedRows;
 	}
@@ -205,7 +205,7 @@ namespace mwetris::game {
 			UpdateNextBlock nextBlock{
 				.next = tetris::randomBlockType()
 			};
-			invokePlayerBoardUpdate(nextBlock);
+			playerBoardUpdate(nextBlock);
 			tetrisBoard_.setNextBlock(nextBlock.next);
 		}
 		if (boardEvent == tetris::BoardEvent::RowsRemoved) {
@@ -215,10 +215,6 @@ namespace mwetris::game {
 			tetrisBoard_.addExternalRows(externalRows_);
 			externalRows_.clear();
 		}
-	}
-
-	void Player::invokePlayerBoardUpdate(PlayerBoardEvent playerBoardEvent) {
-		playerBoardUpdate(playerBoardEvent);
 	}
 
 }
