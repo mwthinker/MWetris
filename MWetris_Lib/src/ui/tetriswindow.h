@@ -54,6 +54,7 @@ namespace mwetris::ui {
 		void onTetrisEvent(const network::JoinGameRoomEvent& joinGameRoomEvent);
 		void onTetrisEvent(const network::CreateGameRoomEvent& createGameRoomEvent);
 		void onTetrisEvent(const CreateGameEvent& createGameEvent);
+		void onTetrisEvent(const network::LeaveGameRoomEvent& leaveGameRoomEvent);
 
 		void initPreLoop();
 		int getCurrentMonitorHz() const;

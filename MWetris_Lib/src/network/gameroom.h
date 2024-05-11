@@ -28,7 +28,7 @@ namespace mwetris::network {
 
 		const std::vector<ClientId>& getConnectedClientUuids() const;
 
-		void disconnect(Server& server, const std::string& uuid);
+		void disconnect(Server& server);
 
 		void sendPause(Server& server, bool pause);
 
@@ -59,13 +59,15 @@ namespace mwetris::network {
 
 		void handleJoinGameRoom(Server& server, const ClientId& clientUuid, const tp_c2s::JoinGameRoom& joinGameRoom);
 
+		void handleLeaveGameRoom(Server& server, const ClientId& clientUuid, const tp_c2s::LeaveGameRoom& leaveGameRoom);
+
 		bool slotBelongsToClient(const ClientId& clientUuid, int slotIndex) const;
 
 		std::string name_;
 		GameRoomId gameRoomId_;
 
 		std::vector<Slot> playerSlots_;
-		std::vector<ClientId> connectedClientUuids_;
+		std::vector<ClientId> connectedClientIds;
 		bool paused_ = false;
 
 		tp_s2c::Wrapper wrapperToClient_;

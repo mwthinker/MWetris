@@ -42,7 +42,7 @@ namespace mwetris {
 	struct CreateGameEvent {
 	};
 
-	using TetrisEvent = std::variant<game::GamePause, game::GameOver, PlayerSlotEvent, network::JoinGameRoomEvent, network::CreateGameRoomEvent, CreateGameEvent>;
+	using TetrisEvent = std::variant<game::GamePause, game::GameOver, PlayerSlotEvent, network::JoinGameRoomEvent, network::CreateGameRoomEvent, CreateGameEvent, network::LeaveGameRoomEvent>;
 
 	class TetrisController {
 	public:

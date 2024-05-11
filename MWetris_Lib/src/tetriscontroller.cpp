@@ -40,6 +40,9 @@ namespace mwetris {
 				.slot = playerSlotEvent.index
 			});
 		});
+		connections_ += network_->leaveGameRoomEvent.connect([this](const network::LeaveGameRoomEvent& leaveGameRoomEvent) {
+			tetrisEvent(leaveGameRoomEvent);
+		});
 		
 		connections_ += tetrisGame_->initGameEvent.connect([this](const game::InitGameEvent& initGameEvent) {
 			gameComponent_->initGame(initGameEvent);
@@ -61,7 +64,11 @@ namespace mwetris {
 	}
 
 	void TetrisController::createDefaultGame(game::DevicePtr device) {
+		if (network_->isInsideGameRoom()) {
+			network_->leaveRoom();
+		}
 		tetrisGame_->createDefaultGame(device);
+		tetrisGame_->saveDefaultGame();
 	}
 
 	void TetrisController::startNetworkGame(int w, int h) {
@@ -74,6 +81,7 @@ namespace mwetris {
 			return;
 		}
 		tetrisGame_->createGame(std::move(gameRules), players);
+		tetrisGame_->saveDefaultGame();
 	}
 
 	bool TetrisController::isPaused() const {
@@ -121,6 +129,11 @@ namespace mwetris {
 	}
 
 	void TetrisController::saveDefaultGame() {
+		if (network_->isInsideGameRoom()) {
+			spdlog::debug("[TetrisController] Can't save default game when inside a room.");
+			return;
+		}
+
 		tetrisGame_->saveDefaultGame();
 	}
 

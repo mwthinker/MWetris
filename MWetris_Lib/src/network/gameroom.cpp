@@ -61,7 +61,7 @@ namespace mwetris::network {
 	GameRoom::~GameRoom() {}
 
 	void GameRoom::sendToAllClients(Server& server, const tp_s2c::Wrapper& message, const ClientId& exceptClientUuid) {
-		for (const auto& clientId : connectedClientUuids_) {
+		for (const auto& clientId : connectedClientIds) {
 			if (clientId == exceptClientUuid) {
 				continue;
 			}
@@ -78,11 +78,18 @@ namespace mwetris::network {
 	}
 
 	const std::vector<ClientId>& GameRoom::getConnectedClientUuids() const {
-		return connectedClientUuids_;
+		return connectedClientIds;
 	}
 
-	void GameRoom::disconnect(Server& server, const std::string& uuid) {
-
+	void GameRoom::disconnect(Server& server) {
+		wrapperToClient_.Clear();
+		for (const auto& clientId : connectedClientIds) {
+			wrapperToClient_.Clear();
+			auto leaveGameRoom = wrapperToClient_.mutable_leave_game_room();
+			setTp(gameRoomId_, *leaveGameRoom->mutable_game_room_id());
+			setTp(clientId, *leaveGameRoom->mutable_client_id());
+			sendToAllClients(server, wrapperToClient_);
+		}
 	}
 
 	void GameRoom::sendPause(Server& server, bool pause) {
@@ -256,7 +263,7 @@ namespace mwetris::network {
 	}
 
 	void GameRoom::handleCreateGameRoom(Server& server, const ClientId& clientId, const tp_c2s::CreateGameRoom& createGameRoom) {
-		connectedClientUuids_.push_back(clientId);
+		connectedClientIds.push_back(clientId);
 		name_ = createGameRoom.name();
 
 		auto gameRomeCreated = wrapperToClient_.mutable_game_room_created();
@@ -268,7 +275,7 @@ namespace mwetris::network {
 	}
 
 	void GameRoom::handleJoinGameRoom(Server& server, const ClientId& clientId, const tp_c2s::JoinGameRoom& joinGameRoom) {
-		connectedClientUuids_.push_back(clientId);
+		connectedClientIds.push_back(clientId);
 
 		auto gameRoomJoined = wrapperToClient_.mutable_game_room_joined();
 		setTp(gameRoomId_, *gameRoomJoined->mutable_game_room_id());
@@ -276,6 +283,22 @@ namespace mwetris::network {
 		addPlayerSlotsToGameLooby(*gameRoomJoined->mutable_game_looby(), playerSlots_);
 
 		server.sendToClient(clientId, wrapperToClient_);
+	}
+
+	void GameRoom::handleLeaveGameRoom(Server& server, const ClientId& clientId, const tp_c2s::LeaveGameRoom& leaveGameRoom) {
+		if (auto it = std::find(connectedClientIds.begin(), connectedClientIds.end(), clientId);
+			it != connectedClientIds.end()) {
+
+			connectedClientIds.erase(it);
+
+			wrapperToClient_.Clear();
+			auto leaveGameRoom = wrapperToClient_.mutable_leave_game_room();
+			setTp(gameRoomId_, *leaveGameRoom->mutable_game_room_id());
+			setTp(clientId, *leaveGameRoom->mutable_client_id());
+			sendToAllClients(server, wrapperToClient_);
+		} else {
+			spdlog::error("Client {} not found in connected clients", clientId);
+		}
 	}
 
 	bool GameRoom::slotBelongsToClient(const ClientId& clientId, int slotIndex) const {

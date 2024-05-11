@@ -42,6 +42,9 @@ namespace mwetris::network {
 		std::vector<game::PlayerPtr> players;
 	};
 
+	struct LeaveGameRoomEvent {
+	};
+
 }
 
 #endif

@@ -53,8 +53,6 @@ set(SOURCES_LIB
 	src/network/gameroom.h
 	src/network/id.cpp
 	src/network/id.h
-	src/network/protocol.cpp
-	src/network/protocol.h
 	src/network/protobufmessage.cpp
 	src/network/protobufmessage.h
 	src/network/protobufmessagequeue.cpp

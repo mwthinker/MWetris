@@ -58,7 +58,6 @@ namespace mwetris::game {
 
 	void TetrisGame::createDefaultGame(DevicePtr device) {
 		rules_ = std::make_unique<DefaultGameRules>();
-		saveDefaultGame();
 
 		if (isDefaultGame() && players_.front()->isGameOver()) {
 			restartGame();
@@ -84,8 +83,6 @@ namespace mwetris::game {
 
 	void TetrisGame::createGame(std::unique_ptr<GameRules> gameRules, const std::vector<PlayerPtr>& players) {
 		rules_ = std::move(gameRules);
-
-		saveDefaultGame();
 
 		players_ = players;
 		rules_->createGame(players_);

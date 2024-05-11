@@ -32,7 +32,7 @@ namespace mwetris::network {
 			: id_{id} {
 		}
 	
-		// Implicit conversion from tp::ClientId to ClientId to simlyfy usage.
+		// Implicit conversion from tp::ClientId to ClientId to simlify usage.
 		ClientId(const tp::ClientId& tpClientId);
 
 		friend bool operator==(const ClientId& lhs, const ClientId& rhs) {
@@ -41,6 +41,10 @@ namespace mwetris::network {
 
 		friend bool operator!=(const ClientId& lhs, const ClientId& rhs) {
 			return lhs.id_ != rhs.id_;
+		}
+
+		explicit operator bool() const {
+			return !id_.empty();
 		}
 
 		friend bool operator==(const tp::ClientId& lhs, const ClientId& rhs);
@@ -72,7 +76,7 @@ namespace mwetris::network {
 			: id_{id} {
 		}
 
-		// Implicit conversion from tp::GameRoomId to GameRoomId to simlyfy usage.
+		// Implicit conversion from tp::GameRoomId to GameRoomId to simlify usage.
 		GameRoomId(const tp::GameRoomId& tpGameRoomId);
 		GameRoomId& operator=(const tp::GameRoomId& tpGameRoomId);
 
@@ -84,8 +88,8 @@ namespace mwetris::network {
 			return lhs.id_ != rhs.id_;
 		}
 
-		operator bool() const {
-			return id_.empty();
+		explicit operator bool() const {
+			return !id_.empty();
 		}
 
 		friend bool operator==(const tp::GameRoomId& lhs, const GameRoomId& rhs);
@@ -95,6 +99,10 @@ namespace mwetris::network {
 
 		const char* c_str() const {
 			return id_.c_str();
+		}
+
+		bool isEmpty() const {
+			return id_.empty();
 		}
 
 	private:
@@ -116,7 +124,7 @@ namespace mwetris::network {
 		explicit PlayerId(const std::string& id)
 			: id_{id} {}
 
-		// Implicit conversion from tp::PlayerId to PlayerId to simlyfy usage.
+		// Implicit conversion from tp::PlayerId to PlayerId to simlify usage.
 		PlayerId(const tp::PlayerId& tpPlayerId);
 		PlayerId& operator=(const tp::PlayerId& tpPlayerId);
 
@@ -128,8 +136,8 @@ namespace mwetris::network {
 			return lhs.id_ != rhs.id_;
 		}
 
-		operator bool() const {
-			return id_.empty();
+		explicit operator bool() const {
+			return !id_.empty();
 		}
 
 		friend bool operator==(const tp::PlayerId& lhs, const PlayerId& rhs);

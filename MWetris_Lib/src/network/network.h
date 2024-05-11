@@ -1,7 +1,6 @@
 #ifndef MWETRIS_NETWORK_NETWORK_H
 #define MWETRIS_NETWORK_NETWORK_H
 
-#include "protocol.h"
 #include "game/playerslot.h"
 #include "network/client.h"
 #include "network/networkevent.h"
@@ -32,6 +31,7 @@ namespace mwetris::network {
 		mw::PublicSignal<Network, const RestartEvent&> restartEvent;
 		mw::PublicSignal<Network, const PauseEvent&> pauseEvent;
 		mw::PublicSignal<Network, const CreateGameEvent&> createGameEvent;
+		mw::PublicSignal<Network, const LeaveGameRoomEvent&> leaveGameRoomEvent;
 
 		struct NetworkPlayer {
 			game::PlayerPtr player;
@@ -39,7 +39,7 @@ namespace mwetris::network {
 			ClientId clientId;
 		};
 
-		Network(std::shared_ptr<Client> client);
+		explicit Network(std::shared_ptr<Client> client);
 
 		bool isInsideGameRoom() const;
 
@@ -67,8 +67,6 @@ namespace mwetris::network {
 
 	private:
 		conc::result<void> stepOnce();
-
-		void handleConnection();
 
 		conc::result<void> nextMessage();
 
@@ -127,6 +125,8 @@ namespace mwetris::network {
 		tp_s2c::Wrapper wrapperFromServer_;
 		std::shared_ptr<Client> client_;
 		GameRoomId gameRoomId_;
+		bool leaveRoom_ = false; // To make stepOnce() to proceed
+		bool running_ = true;
 		ClientId clientId_;
 	};
 

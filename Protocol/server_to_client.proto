@@ -86,6 +86,11 @@ message GameRoomJoined {
 	GameLooby game_looby = 3;
 }
 
+message LeaveGameRoom {
+	tp.GameRoomId game_room_id = 1;
+	tp.ClientId client_id = 2;
+}
+
 message FailedToConnect {
 }
 
@@ -102,4 +107,5 @@ message Wrapper {
 	GameRoomCreated game_room_created = 10;
 	GameRoomJoined game_room_joined = 11;
 	RequestGameRestart request_game_restart = 12;
+	LeaveGameRoom leave_game_room = 13;
 }

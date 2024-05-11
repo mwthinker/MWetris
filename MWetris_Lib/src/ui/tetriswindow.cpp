@@ -173,11 +173,15 @@ namespace mwetris::ui {
 	}
 
 	void TetrisWindow::onTetrisEvent(const PlayerSlotEvent& playerSlotEvent) {
-		// Nothing!
+		spdlog::debug("[TetrisWindow] Player slot event");
 	}
 
 	void TetrisWindow::onTetrisEvent(const network::JoinGameRoomEvent& joinGameRoomEvent) {
-		// Nothing!
+		spdlog::debug("[TetrisWindow] Join game room");
+
+		if (modalStateMachine_.isCurrentScene<scene::CreateGame>() || modalStateMachine_.isCurrentScene<scene::JoinGame>()) {
+			modalStateMachine_.switchTo<scene::EmptyScene>();
+		}
 	}
 
 	void TetrisWindow::onTetrisEvent(const network::CreateGameRoomEvent& createGameRoomEvent) {
@@ -190,6 +194,11 @@ namespace mwetris::ui {
 	void TetrisWindow::onTetrisEvent(const CreateGameEvent& createGameEvent) {
 		modalStateMachine_.switchTo<scene::EmptyScene>();
 		mainStateMachine_.switchTo<scene::EmptyScene>();
+	}
+
+	void TetrisWindow::onTetrisEvent(const network::LeaveGameRoomEvent& leaveGameRoomEvent) {
+		spdlog::debug("[TetrisWindow] Leave game room");
+		tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
 	}
 
 	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
@@ -238,7 +247,6 @@ namespace mwetris::ui {
 				ImGui::Menu("Game", [&]() {
 					if (ImGui::MenuItem(game::hasSavedGame() ? "Resume Single Player" : "New Single Player", "F1")) {
 						mainStateMachine_.switchTo<scene::EmptyScene>();
-
 						tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
 					}
 					ImGui::Separator();

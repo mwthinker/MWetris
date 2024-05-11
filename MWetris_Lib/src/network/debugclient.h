@@ -19,7 +19,7 @@ namespace mwetris::network {
 
 	class DebugClient : public Client {
 	public:
-		DebugClient(std::shared_ptr<DebugServer> debugServer);
+		explicit DebugClient(std::shared_ptr<DebugServer> debugServer);
 
 		~DebugClient() override;
 

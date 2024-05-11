@@ -39,6 +39,10 @@ message JoinGameRoom {
 	tp.GameRoomId game_room_id = 1;
 }
 
+message LeaveGameRoom {
+	tp.GameRoomId game_room_id = 1;
+}
+
 message GameCommand {
 	bool pause = 1;
 }
@@ -83,4 +87,5 @@ message Wrapper {
 	FailedToConnect failed_to_connect = 10;
 	CreateGameRoom create_game_room = 11;
 	RequestGameRestart request_game_restart = 12;
+	LeaveGameRoom leave_game_room = 13;
 }

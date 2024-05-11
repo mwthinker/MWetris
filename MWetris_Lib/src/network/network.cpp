@@ -1,7 +1,6 @@
 #include "network.h"
 #include "protobufmessagequeue.h"
 #include "util.h"
-#include "protocol.h"
 #include "random.h"
 #include "game/playerslot.h"
 #include "network/client.h"
@@ -32,16 +31,25 @@ namespace mwetris::network {
 	}
 
 	bool Network::isInsideGameRoom() const {
-		return !gameRoomId_;
+		return !gameRoomId_.isEmpty();
 	}
 
-	Network::~Network() {}
+	Network::~Network() {
+		// In order to avoid errors::broken_task
+		running_ = false;
+		update();
+	}
 
 	const GameRoomId& Network::getGameRoomId() const {
 		return gameRoomId_;
 	}
 
 	void Network::startGame(int w, int h) {
+		if (!isInsideGameRoom()) {
+			spdlog::warn("[Network] Can't start game, not inside a room");
+			return;
+		}
+
 		wrapperToServer_.Clear();
 		wrapperToServer_.mutable_start_game()->set_ready(true);
 		send(wrapperToServer_);
@@ -53,12 +61,21 @@ namespace mwetris::network {
 	}
 
 	void Network::sendPause(bool pause) {
+		if (!isInsideGameRoom()) {
+			spdlog::warn("[Network] Can't pause game, not inside a room");
+			return;
+		}
+
 		wrapperToServer_.Clear();
 		wrapperToServer_.mutable_game_command()->set_pause(pause);
 		send(wrapperToServer_);
 	}
 
 	void Network::sendRestart() {
+		if (!isInsideGameRoom()) {
+			spdlog::warn("[Network] Can't restart game, not inside a room");
+			return;
+		}
 		wrapperToServer_.Clear();
 		auto requestGameRestart = wrapperToServer_.mutable_request_game_restart();
 		requestGameRestart->set_restart(true);
@@ -66,16 +83,33 @@ namespace mwetris::network {
 	}
 
 	void Network::createGameRoom(const std::string& gameRoom) {
+		if (isInsideRoom()) {
+			spdlog::warn("[Network] Can't create room, already inside a room");
+			return;
+		}
 		wrapperToServer_.Clear();
 		wrapperToServer_.mutable_create_game_room()->set_name(gameRoom);
 		send(wrapperToServer_);
 	}
 
 	void Network::leaveRoom() {
-
+		if (!isInsideRoom()) {
+			spdlog::warn("[Network] Can't leave room, not inside a room");
+			return;
+		}
+		wrapperToServer_.Clear();
+		auto leaveGameRoom = wrapperToServer_.mutable_leave_game_room();
+		setTp(gameRoomId_, *leaveGameRoom->mutable_game_room_id());
+		send(wrapperToServer_);
+		leaveRoom_ = true;
+		gameRoomId_ = GameRoomId{};
 	}
 
 	void Network::setPlayerSlot(const game::PlayerSlot& playerSlot, int index) {
+		if (!isInsideRoom()) {
+			spdlog::warn("[Network] Can't set player slot, not inside a room");
+			return;
+		}
 		if (index >= networkSlots_.size()) {
 			spdlog::error("[Network] Invalid slot index: {}", index);
 			return;
@@ -104,6 +138,11 @@ namespace mwetris::network {
 	}
 
 	void Network::joinGameRoom(const std::string& uuid) {
+		if (isInsideRoom()) {
+			spdlog::warn("[Network] Can't join room, already inside a room");
+			return;
+		}
+
 		connections_.clear();
 
 		wrapperToServer_.Clear();
@@ -113,60 +152,63 @@ namespace mwetris::network {
 	}
 
 	bool Network::isInsideRoom() const {
-		return !gameRoomId_;
+		return !gameRoomId_.isEmpty();
 	}
 
 	conc::result<void> Network::stepOnce() {
-		// Connect to server
-		co_await nextMessage();
-		if (wrapperFromServer_.has_failed_to_connect()) {
-			co_return;
-		} else if (wrapperFromServer_.has_game_room_created()) {
-			handlGameRoomCreated(wrapperFromServer_.game_room_created());
-		} else if (wrapperFromServer_.has_game_room_joined()) {
-			handleGameRoomJoined(wrapperFromServer_.game_room_joined());
-		} else {
-			co_return;
-		}
-
-		// Wait for game to start
-		while (true) {
+		while (running_) {
+			// Connect to server
 			co_await nextMessage();
-			if (wrapperFromServer_.has_game_looby()) {
-				handleGameLooby(wrapperFromServer_.game_looby());
+			if (wrapperFromServer_.has_failed_to_connect()) {
+				continue;
+			} else if (wrapperFromServer_.has_game_room_created()) {
+				handlGameRoomCreated(wrapperFromServer_.game_room_created());
+			} else if (wrapperFromServer_.has_game_room_joined()) {
+				handleGameRoomJoined(wrapperFromServer_.game_room_joined());
+			} else {
+				continue;
 			}
-			if (wrapperFromServer_.has_connections()) {
-				handleConnections(wrapperFromServer_.connections());
-			}
-			if (wrapperFromServer_.has_create_game()) {
-				handleCreateGame(wrapperFromServer_.create_game());
-				break;
-			}
-		}
 
-		// Game loop
-		while (true) {
-			co_await nextMessage();
-			if (wrapperFromServer_.has_game_command()) {
-				handleGameCommand(wrapperFromServer_.game_command());
+			// Wait for game to start
+			do {
+				co_await nextMessage();
+				if (wrapperFromServer_.has_game_looby()) {
+					handleGameLooby(wrapperFromServer_.game_looby());
+				}
+				if (wrapperFromServer_.has_connections()) {
+					handleConnections(wrapperFromServer_.connections());
+				}
+				if (wrapperFromServer_.has_create_game()) {
+					handleCreateGame(wrapperFromServer_.create_game());
+					break;
+				}
+			} while (gameRoomId_);
+
+			spdlog::debug("[Network] Game started GameRoomId {}", gameRoomId_);
+
+			// Game loop
+			while (gameRoomId_) {
+				co_await nextMessage();
+				if (wrapperFromServer_.has_game_command()) {
+					handleGameCommand(wrapperFromServer_.game_command());
+				}
+				if (wrapperFromServer_.has_request_game_restart()) {
+					handleRequestGameRestart(wrapperFromServer_.request_game_restart());
+				}
+				if (wrapperFromServer_.has_game_restart()) {
+					handleGameRestart(wrapperFromServer_.game_restart());
+				}
+				if (wrapperFromServer_.has_board_move()) {
+					handleBoardMove(wrapperFromServer_.board_move());
+				}
+				if (wrapperFromServer_.has_next_block()) {
+					handleBoardNextBlock(wrapperFromServer_.next_block());
+				}
 			}
-			if (wrapperFromServer_.has_request_game_restart()) {
-				handleRequestGameRestart(wrapperFromServer_.request_game_restart());
-			}
-			if (wrapperFromServer_.has_game_restart()) {
-				handleGameRestart(wrapperFromServer_.game_restart());
-			}
-			if (wrapperFromServer_.has_board_move()) {
-				handleBoardMove(wrapperFromServer_.board_move());
-			}
-			if (wrapperFromServer_.has_next_block()) {
-				handleBoardNextBlock(wrapperFromServer_.next_block());
-			}
+			leaveGameRoomEvent(LeaveGameRoomEvent{});
 		}
 		co_return;
 	}
-
-	void Network::handleConnection() {}
 
 	conc::result<void> Network::nextMessage() {
 		auto guard = co_await lock_.lock(manualExecutor_);
@@ -180,8 +222,9 @@ namespace mwetris::network {
 				spdlog::info("[Network] Invalid data");
 			}
 			client_->release(std::move(message));
-			return valid;
+			return valid || leaveRoom_ || !running_;
 		});
+		leaveRoom_ = false;
 		co_return;
 	}
 
@@ -237,7 +280,7 @@ namespace mwetris::network {
 		spdlog::info("[Network] GameRoomCreated: {}, client uuid: {}", gameRoomId_, clientId_);
 		createGameRoomEvent(CreateGameRoomEvent{
 			.join = true
-			});
+		});
 		handleGameLooby(gameRoomCreated.game_looby());
 	}
 

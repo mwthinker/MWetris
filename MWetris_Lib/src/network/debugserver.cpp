@@ -4,7 +4,6 @@
 #include "util.h"
 #include "util/uuid.h"
 #include "game/player.h"
-#include "protocol.h"
 #include "gameroom.h"
 #include "server.h"
 #include "util/uuid.h"
@@ -65,37 +64,53 @@ namespace mwetris::network {
 				handleCreateGameRoom(fromRemote, wrapperFromClient_.create_game_room());
 			} else if (wrapperFromClient_.has_join_game_room()) {
 				handleJoinGameRoom(fromRemote, wrapperFromClient_.join_game_room());
+			} else if (wrapperFromClient_.has_leave_game_room()) {
+				handleLeaveGameRoom(fromRemote, wrapperFromClient_.leave_game_room());
 			}
 
-			if (auto it = roomByClient_.find(fromRemote.clientId); it != roomByClient_.end()) {
-				auto& gameRoom = gameRooms_.at(roomByClient_.at(fromRemote.clientId));
+			if (auto it = roomIdByClientId_.find(fromRemote.clientId); it != roomIdByClientId_.end()) {
+				auto& gameRoom = gameRoomById_.at(roomIdByClientId_.at(fromRemote.clientId));
 				gameRoom.receiveMessage(*this, fromRemote.clientId, wrapper);
 			}
 		}
 
 		void handleCreateGameRoom(Remote& remote, const tp_c2s::CreateGameRoom& createGameRoom) {
-			if (roomByClient_.contains(remote.clientId)) {
+			if (roomIdByClientId_.contains(remote.clientId)) {
 				spdlog::warn("[DebugServer] Client with uuid {} already in a GameRoom", remote.clientId);
 				return;
 			}
 
 			GameRoom gameRoom;
-			roomByClient_.emplace(remote.clientId, gameRoom.getGameRoomId());
-			gameRooms_.emplace(gameRoom.getGameRoomId(), std::move(gameRoom));
+			roomIdByClientId_.emplace(remote.clientId, gameRoom.getGameRoomId());
+			gameRoomById_.emplace(gameRoom.getGameRoomId(), std::move(gameRoom));
 		}
 
 		void handleJoinGameRoom(Remote& remote, const tp_c2s::JoinGameRoom& joinGameRoom) {
-			if (roomByClient_.contains(remote.clientId)) {
+			if (roomIdByClientId_.contains(remote.clientId)) {
 				spdlog::warn("[DebugServer] Client with uuid {} already in a GameRoom", remote.clientId);
 				return;
 			}
 
-			if (auto it = gameRooms_.find(joinGameRoom.game_room_id()); it != gameRooms_.end()) {
+			if (auto it = gameRoomById_.find(joinGameRoom.game_room_id()); it != gameRoomById_.end()) {
 				auto& gameRoom = it->second;
-				roomByClient_.emplace(remote.clientId, gameRoom.getGameRoomId());
-				gameRooms_.emplace(gameRoom.getGameRoomId(), std::move(gameRoom));
+				roomIdByClientId_.emplace(remote.clientId, gameRoom.getGameRoomId());
+				gameRoomById_.emplace(gameRoom.getGameRoomId(), std::move(gameRoom));
 			} else {
 				spdlog::warn("[DebugServer] GameRoom with uuid {} not found", joinGameRoom.game_room_id());
+			}
+		}
+
+		void handleLeaveGameRoom(Remote& remote, const tp_c2s::LeaveGameRoom& leaveGameRoom) {
+			if (auto it = roomIdByClientId_.find(remote.clientId); it != roomIdByClientId_.end()) {
+				auto gameRoomId = it->second;
+				auto& gameRoom = gameRoomById_.at(gameRoomId);
+
+				roomIdByClientId_.erase(it);
+				if (gameRoom.getConnectedClientUuids().size() == 1) {
+					gameRoom.disconnect(*this);
+					gameRoomById_.erase(gameRoomId);
+					spdlog::info("[DebugServer] GameRoom with uuid {} is removed", gameRoomId);
+				}
 			}
 		}
 
@@ -114,19 +129,19 @@ namespace mwetris::network {
 		}
 
 		void sendPause(const GameRoomId& gameRoomId, bool pause) {
-			gameRooms_[gameRoomId].sendPause(*this, pause);
+			gameRoomById_[gameRoomId].sendPause(*this, pause);
 		}
 
 		void restartGame(const GameRoomId& gameRoomId) {
-			gameRooms_[gameRoomId].requestRestartGame(*this);
+			gameRoomById_[gameRoomId].requestRestartGame(*this);
 		}
 
 		bool isPaused(const GameRoomId& gameRoomId) const {
-			return gameRooms_.at(gameRoomId).isPaused();
+			return gameRoomById_.at(gameRoomId).isPaused();
 		}
 
 		void disconnect(const GameRoomId& gameRoomId) {
-			gameRooms_.erase(gameRoomId);
+			gameRoomById_.erase(gameRoomId);
 		}
 
 		std::shared_ptr<Client> createDisconnectedClient(std::shared_ptr<DebugServer> debugServer) {
@@ -188,8 +203,8 @@ namespace mwetris::network {
 			client.pushReceivedMessage(std::move(message));
 		}
 
-		std::map<ClientId, GameRoomId> roomByClient_;
-		std::map<GameRoomId, GameRoom> gameRooms_;
+		std::map<ClientId, GameRoomId> roomIdByClientId_;
+		std::map<GameRoomId, GameRoom> gameRoomById_;
 
 		tp_c2s::Wrapper wrapperFromClient_;
 		tp_s2c::Wrapper wrapperToClient_;
