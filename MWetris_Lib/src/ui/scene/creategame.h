@@ -64,6 +64,7 @@ namespace mwetris::ui::scene {
 		bool openPopUp_ = false;
 		std::unique_ptr<AddPlayer> addPlayer_;
 		std::string gameRoomId_;
+		bool networkGame_ = false;
 	};
 
 }

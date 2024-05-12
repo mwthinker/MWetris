@@ -92,6 +92,8 @@ namespace mwetris::network {
 
 		void handleBoardNextBlock(const tp_s2c::BoardNextBlock& boardNextBlock);
 
+		void handleBoardExternalSquares(const tp_s2c::BoardExternalSquares& boardExternalSquares);
+
 		void fillSlotsWithDevicesAndAis();
 
 		void handlePlayerBoardUpdate(const NetworkPlayer& player, const game::UpdateRestart& updateRestart);

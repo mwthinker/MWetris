@@ -37,7 +37,9 @@ namespace mwetris::game {
 		int value;
 	};
 
-	struct ExternalRows {};
+	struct ExternalRows {
+		std::vector<tetris::BlockType> blockTypes;
+	};
 
 	using PlayerBoardEvent = std::variant<UpdateRestart, UpdatePlayerData, ExternalRows, UpdateMove, UpdateNextBlock, TetrisBoardEvent>;
 

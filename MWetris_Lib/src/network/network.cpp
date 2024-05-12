@@ -207,6 +207,9 @@ namespace mwetris::network {
 				if (wrapperFromServer_.has_next_block()) {
 					handleBoardNextBlock(wrapperFromServer_.next_block());
 				}
+				if (wrapperFromServer_.has_board_external_squares()) {
+					handleBoardExternalSquares(wrapperFromServer_.board_external_squares());
+				}
 			}
 			leaveGameRoomEvent(LeaveGameRoomEvent{});
 		}
@@ -377,7 +380,7 @@ namespace mwetris::network {
 		}
 		if (networkPlayer.player) {
 			connections_ += networkPlayer.player->playerBoardUpdate.connect([this, index = players_.size() - 1](game::PlayerBoardEvent playerBoardEvent) {
-				if (index < 0 && index >= players_.size()) {
+				if (index < 0 || index >= players_.size()) {
 					spdlog::error("[Network] Invalid index: {}", index);
 					return;
 				}
@@ -441,6 +444,22 @@ namespace mwetris::network {
 		}
 	}
 
+	void Network::handleBoardExternalSquares(const tp_s2c::BoardExternalSquares& boardExternalSquares) {
+		for (auto& networkPlayer : players_) {
+			if (networkPlayer.playerId == boardExternalSquares.player_id()) {
+				if (networkPlayer.player->isRemote()) {
+					std::vector<tetris::BlockType> blockTypes;
+					for (const auto& blockType : boardExternalSquares.block_types()) {
+						blockTypes.push_back(static_cast<tetris::BlockType>(blockType));
+					}
+					networkPlayer.player->addExternalRows(blockTypes);
+				} else {
+					spdlog::error("[Network] Invalid player type for BoardExternalSquares");
+				}
+			}
+		}
+	}
+
 	void Network::fillSlotsWithDevicesAndAis() {
 		for (int i = 0; i < networkSlots_.size(); ++i) {
 			if (auto human = std::get_if<game::Human>(&networkSlots_[i].playerSlot); human) {
@@ -461,7 +480,16 @@ namespace mwetris::network {
 	}
 
 	void Network::handlePlayerBoardUpdate(const NetworkPlayer& player, const game::ExternalRows& externalRows) {
-		spdlog::info("[Network] handle ExternalRows");
+		if (player.player->isLocal()) {
+			spdlog::info("[Network] handle ExternalRows");
+			wrapperToServer_.Clear();
+			auto boardExternalSquares = wrapperToServer_.mutable_board_external_squares();
+			for (const auto& blockType : externalRows.blockTypes) {
+				boardExternalSquares->add_block_types(static_cast<tp::BlockType>(blockType));
+			}
+			setTp(player.playerId, *boardExternalSquares->mutable_player_id());
+			send(wrapperToServer_);
+		}
 	}
 
 	void Network::handlePlayerBoardUpdate(const NetworkPlayer& player, const game::UpdateMove& updateMove) {

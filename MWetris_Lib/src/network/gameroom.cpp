@@ -235,11 +235,14 @@ namespace mwetris::network {
 	}
 
 	void GameRoom::handleBoardExternalSquares(Server& server, const ClientId& clientId, const tp_c2s::BoardExternalSquares& boardExternalSquares) {
-		static std::vector<tetris::BlockType> blockTypes;
-		blockTypes.clear();
-		for (const auto& tpBlockType : boardExternalSquares.block_types()) {
-			blockTypes.push_back(static_cast<tetris::BlockType>(tpBlockType));
+		wrapperToClient_.Clear();
+		auto boardExternalSquaresToClient = wrapperToClient_.mutable_board_external_squares();
+		for (const auto& blockType : boardExternalSquares.block_types()) {
+			boardExternalSquaresToClient->add_block_types(static_cast<tp::BlockType>(blockType));
 		}
+		PlayerId playerId = boardExternalSquares.player_id();
+		setTp(playerId, *boardExternalSquaresToClient->mutable_player_id());
+		sendToAllClients(server, wrapperToClient_, clientId);
 	}
 
 	void GameRoom::handleRequestGameRestart(Server& server, const ClientId& clientId, const tp_c2s::RequestGameRestart& requestGameRestart) {

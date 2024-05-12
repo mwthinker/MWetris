@@ -59,7 +59,7 @@ namespace mwetris {
 
 		void startNetworkGame(int w, int h);
 
-		void createGame(std::unique_ptr<game::GameRules> gameRules, const std::vector<game::PlayerPtr>& players);
+		void startLocalGame(std::unique_ptr<game::GameRules> gameRules, const std::vector<game::PlayerPtr>& players);
 		bool isPaused() const;
 
 		// Pause/Unpause the game depending on the current state of the game.

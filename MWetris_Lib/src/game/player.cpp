@@ -141,7 +141,10 @@ namespace mwetris::game {
 	void Player::updateMove(tetris::Move move) {
 		playerBoardUpdate(UpdateMove{move});
 		tetrisBoard_.update(move, [&](tetris::BoardEvent event, int nbr) {
-			handleBoardEvent(event, nbr);
+			invokePlayerBoardEvent(TetrisBoardEvent{
+				.event = event,
+				.value = nbr
+			});
 		});
 	}
 
@@ -150,6 +153,7 @@ namespace mwetris::game {
 	}
 
 	void Player::addExternalRows(const std::vector<tetris::BlockType>& rows) {
+		playerBoardUpdate(ExternalRows{rows});
 		externalRows_.insert(externalRows_.end(), rows.begin(), rows.end());
 	}
 

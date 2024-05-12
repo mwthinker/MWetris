@@ -40,7 +40,7 @@ namespace mwetris::game {
 				info.player->setGravity(calculateGravity(info.data.level));
 
 				connections_ += player->playerBoardUpdate.connect([this, index = players_.size()](const PlayerBoardEvent& playerBoardEvent) {
-					if (index < 0 && index >= players_.size()) {
+					if (index < 0 || index >= players_.size()) {
 						spdlog::error("[DefaultGameRules] Index {} is out of bounds.", index);
 						return;
 					}
@@ -101,7 +101,7 @@ namespace mwetris::game {
 				});
 				info.player->updatePlayerData(info.data);
 				connections_ += player->playerBoardUpdate.connect([this, index = players_.size() - 1](const PlayerBoardEvent& playerBoardEvent) {
-					if (index < 0 && index >= players_.size()) {
+					if (index < 0 || index >= players_.size()) {
 						spdlog::error("[DefaultGameRules] Index {} is out of bounds", index);
 						return;
 					}

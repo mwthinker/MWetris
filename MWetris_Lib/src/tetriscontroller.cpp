@@ -25,7 +25,7 @@ namespace mwetris {
 			tetrisGame_->restartGame(restartEvent.current, restartEvent.next);
 		});
 		connections_ += network_->createGameEvent.connect([this](const network::CreateGameEvent& createGameEvent) {
-			tetrisGame_->createGame(std::make_unique<game::DefaultGameRules>(), createGameEvent.players);
+			tetrisGame_->createGame(std::make_unique<game::SurvivalGameRules>(), createGameEvent.players);
 			tetrisEvent(CreateGameEvent{});
 		});
 		connections_ += network_->createGameRoomEvent.connect([this](const network::CreateGameRoomEvent& createGameRoomEvent) {
@@ -75,13 +75,14 @@ namespace mwetris {
 		network_->startGame(w, h);
 	}
 
-	void TetrisController::createGame(std::unique_ptr<game::GameRules> gameRules, const std::vector<game::PlayerPtr>& players) {
+	void TetrisController::startLocalGame(std::unique_ptr<game::GameRules> gameRules, const std::vector<game::PlayerPtr>& players) {
 		if (network_->isInsideGameRoom()) {
-			spdlog::error("Can't create a local game when inside a room.");
-			return;
+			spdlog::debug("[TetrisController] Leaving game room before starting local game.");
+			network_->leaveRoom();
 		}
 		tetrisGame_->createGame(std::move(gameRules), players);
 		tetrisGame_->saveDefaultGame();
+		tetrisEvent(CreateGameEvent{});
 	}
 
 	bool TetrisController::isPaused() const {

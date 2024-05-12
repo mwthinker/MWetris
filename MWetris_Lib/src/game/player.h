@@ -62,14 +62,25 @@ namespace mwetris::game {
 
 		bool isGameOver() const;
 
+		/// @brief Perform a restart.
+		/// @param current
+		/// @param next 
 		void updateRestart(tetris::BlockType current, tetris::BlockType next);
 
+		/// @brief Update the player data.
+		/// @param playerData 
 		void updatePlayerData(const PlayerData& playerData);
 
+		/// @brief Update the move. Only to be called by a remote player.
+		/// @param move 
 		void updateMove(tetris::Move move);
 
+		/// @brief Update the next block. Only to be called by a remote player.
+		/// @param next 
 		void updateNextBlock(tetris::BlockType next);
 
+		/// @brief Add external rows.
+		/// @param rows 
 		void addExternalRows(const std::vector<tetris::BlockType>& rows);
 
 		tetris::Block getBlockDown() const;

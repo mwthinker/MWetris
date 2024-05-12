@@ -88,9 +88,10 @@ namespace mwetris::game {
 	void TetrisGame::createGame(std::unique_ptr<GameRules> gameRules, const std::vector<PlayerPtr>& players) {
 		rules_ = std::move(gameRules);
 
+		connections_.clear();
 		players_ = players;
 		rules_->createGame(players_);
-
+		setPause(true);
 		initGame();
 	}
 
