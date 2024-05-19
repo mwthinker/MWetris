@@ -17,9 +17,9 @@
 
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
-#include <concurrencpp/concurrencpp.h>
+#include <asio.hpp>
 
-namespace conc = concurrencpp;
+#include <chrono>
 
 namespace mwetris::network {
 
@@ -49,8 +49,6 @@ namespace mwetris::network {
 
 		void startGame(int w, int h);
 
-		void update();
-
 		void sendPause(bool pause);
 
 		void sendRestart();
@@ -66,9 +64,9 @@ namespace mwetris::network {
 		bool isInsideRoom() const;
 
 	private:
-		conc::result<void> stepOnce();
+		asio::awaitable<void> run();
 
-		conc::result<void> nextMessage();
+		asio::awaitable<void> nextMessage();
 
 		void handleRequestGameRestart(const tp_s2c::RequestGameRestart& requestGameRestart);
 
@@ -110,11 +108,6 @@ namespace mwetris::network {
 
 		void send(const tp_c2s::Wrapper& wrapper);
 
-		conc::runtime runtime_;
-		std::shared_ptr<conc::manual_executor> manualExecutor_;
-		conc::async_lock lock_;
-		conc::async_condition_variable cv_;
-
 		std::vector<NetworkSlot> networkSlots_;
 		std::map<int, game::DevicePtr> deviceBySlotIndex_;
 		std::map<int, tetris::Ai> aiBySlotIndex_;
@@ -127,9 +120,10 @@ namespace mwetris::network {
 		tp_s2c::Wrapper wrapperFromServer_;
 		std::shared_ptr<Client> client_;
 		GameRoomId gameRoomId_;
-		bool leaveRoom_ = false; // To make stepOnce() to proceed
+		bool leaveRoom_ = false; // To make run() to proceed
 		bool running_ = true;
 		ClientId clientId_;
+		asio::high_resolution_timer timer_;
 	};
 
 }

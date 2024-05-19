@@ -6,41 +6,45 @@
 #include <network/client.h>
 #include <network/network.h>
 #include <network/id.h>
+#include <network/debugclient.h>
+#include <network/debugserver.h>
 
 #include <shared.pb.h>
 #include <client_to_server.pb.h>
 #include <server_to_client.pb.h>
+#include <asio.hpp>
 
 using namespace ::testing;
 
 namespace mwetris::network {
 
-	class MockClient : public network::Client {
-	public:
-		MOCK_METHOD(bool, receive, (ProtobufMessage& message), (override));
-		MOCK_METHOD(void, send, (ProtobufMessage&& message), (override));
-		MOCK_METHOD(void, acquire, (ProtobufMessage& message), (override));
-		MOCK_METHOD(void, release, (ProtobufMessage&& message), (override));
-	};
-
 	class NetworkTest : public ::testing::Test {
 	protected:
-
 		NetworkTest() {
-			mockClient_ = std::make_shared<MockClient>();
 		}
 
 		~NetworkTest() override {}
 
 		void SetUp() override {
-			network_ = std::make_shared<Network>(mockClient_);
+			auto debugServer = std::make_shared<DebugServer>(ioContext_);
+			debugClient_ = std::make_shared<DebugClient>(debugServer);
+			network_ = std::make_shared<Network>(debugClient_);
+			debugClient_->getIoContext().restart();
 		}
 
 		void TearDown() override {
+			debugClient_ = nullptr;
+			network_ = nullptr;
+			ioContext_.stop();
+			ioContext_.restart();
 			wrapperFromServer.Clear();
 		}
 
-		void mockReceiveGameRoomCreated(const GameRoomId& gameRoomId, const ClientId & clientUuid) {
+		void pollOne() {
+			debugClient_->getIoContext().poll_one();
+		}
+
+		void mockReceiveGameRoomCreated(const GameRoomId& gameRoomId, const ClientId& clientUuid) {
 			tp_s2c::Wrapper wrapperFromServer;
 			auto gameRoomCreated = wrapperFromServer.mutable_game_room_created();
 			setTp(clientUuid, *gameRoomCreated->mutable_client_id());
@@ -50,7 +54,7 @@ namespace mwetris::network {
 			wrapperFromServer.Clear();
 		}
 
-		void mockReceiveGameRoomJoined(const GameRoomId& gameRoomId, const ClientId & clientUuid) {
+		void mockReceiveGameRoomJoined(const GameRoomId& gameRoomId, const ClientId& clientUuid) {
 			tp_s2c::Wrapper wrapperFromServer;
 			auto gameRoomJoined = wrapperFromServer.mutable_game_room_joined();
 			setTp(clientUuid, *gameRoomJoined->mutable_client_id());
@@ -61,15 +65,16 @@ namespace mwetris::network {
 		}
 
 		void expectCallClientReceive(const tp_s2c::Wrapper& wrapper) {
-			auto message = createMessage(wrapper);
-			EXPECT_CALL(*mockClient_, receive(_))
-				.WillOnce(DoAll(SetArgReferee<0>(message), Return(true)))
-				.WillOnce(Return(false));
+			ProtobufMessage message;
+			message.clear();
+			message.setBuffer(wrapper);
+			debugClient_->pushReceivedMessage(std::move(message));
 		}
 
 		tp_s2c::Wrapper wrapperFromServer;
-		std::shared_ptr<MockClient> mockClient_;
+		std::shared_ptr<DebugClient> debugClient_;
 		std::shared_ptr<Network> network_;
+		asio::io_context ioContext_;
 	};
 
 	TEST_F(NetworkTest, network_isNotInsideRoom) {
@@ -83,14 +88,14 @@ namespace mwetris::network {
 		auto connection = network_->createGameRoomEvent.connect([&](const CreateGameRoomEvent& createGameRoomEvent) {
 			createGameRoomEventCalled = true;
 		});
-		
+
 		mockReceiveGameRoomCreated(GameRoomId{"server uuid"}, ClientId{"client uuid"});
 
 		// When
 		EXPECT_FALSE(network_->isInsideRoom());
 		EXPECT_FALSE(createGameRoomEventCalled);
 		EXPECT_NE(network_->getGameRoomId(), GameRoomId{"server uuid"});
-		network_->update();
+		pollOne();
 
 		// Then.
 		EXPECT_EQ(network_->getGameRoomId(), GameRoomId{"server uuid"});
@@ -111,7 +116,7 @@ namespace mwetris::network {
 		EXPECT_FALSE(joinGameRoomEventCalled);
 		EXPECT_FALSE(network_->isInsideRoom());
 		EXPECT_NE(network_->getGameRoomId(), GameRoomId{"server uuid"});
-		network_->update();
+		pollOne();
 
 		// Then.
 		EXPECT_EQ(network_->getGameRoomId(), GameRoomId{"server uuid"});
@@ -122,13 +127,13 @@ namespace mwetris::network {
 	TEST_F(NetworkTest, receiveGameLoobyContainingAllSlotTypes_thenEventsAreTriggered) {
 		// Given
 		mockReceiveGameRoomCreated(GameRoomId{"server uuid"}, ClientId{"client uuid 0"});
-		network_->update();
+		pollOne();
 
 		std::vector<PlayerSlotEvent> actualPlayerSlotEvents;
 		auto connection = network_->playerSlotEvent.connect([&](const PlayerSlotEvent& playerSlotEvent) {
 			actualPlayerSlotEvents.push_back(playerSlotEvent);
 		});
-		
+
 		auto gameLooby = wrapperFromServer.mutable_game_looby();
 		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_REMOTE, ClientId{"client uuid 0"}, "name 0");
 		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_CLOSED_SLOT, ClientId{""}, "");
@@ -140,7 +145,7 @@ namespace mwetris::network {
 		expectCallClientReceive(wrapperFromServer);
 
 		// When
-		network_->update();
+		pollOne();
 
 		// Then.
 		EXPECT_EQ(network_->getGameRoomId(), GameRoomId{"server uuid"});
@@ -166,21 +171,22 @@ namespace mwetris::network {
 	TEST_F(NetworkTest, receiveGameLoobyAndSetSlot) {
 		// Given
 		mockReceiveGameRoomCreated(GameRoomId{"server uuid"}, ClientId{"client uuid 0"});
-		network_->update();
+		pollOne();
 
 		auto gameLooby = wrapperFromServer.mutable_game_looby();
 		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_OPEN_SLOT, ClientId{"client uuid 0"}, "name 0");
 
 		expectCallClientReceive(wrapperFromServer);
 		ProtobufMessage messageToServer;
-		EXPECT_CALL(*mockClient_, send(_))
-			.WillOnce(SaveArg<0>(&messageToServer));
+		debugClient_->setSentToServerCallback([&](const ProtobufMessage& message) {
+			messageToServer = message;
+		});
 
 		// When
-		network_->update();
+		pollOne();
 		network_->setPlayerSlot(game::Human{
 			.name = "name 0"
-			}, 0);
+		}, 0);
 
 		// Then
 		tp_c2s::Wrapper wrapperToServer;
@@ -194,28 +200,28 @@ namespace mwetris::network {
 	TEST_F(NetworkTest, receiveGameLoobyAndSetSlotOutsideRange_thenIgnoreSlot) {
 		// Given
 		mockReceiveGameRoomCreated(GameRoomId{"server uuid"}, ClientId{"client uuid 0"});
-		network_->update();
+		pollOne();
 
 		auto gameLooby = wrapperFromServer.mutable_game_looby();
 		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_OPEN_SLOT, ClientId{"client uuid 0"}, "name 0");
 
 		expectCallClientReceive(wrapperFromServer);
-		network_->update();
+		pollOne();
 
 		// When
-		ON_CALL(*mockClient_, send(_)).WillByDefault(Invoke([](const ProtobufMessage& message) {
+		debugClient_->setSentToServerCallback([](const ProtobufMessage& message) {
 			FAIL() << "send should not be called";
-		}));
+		});
 
 		network_->setPlayerSlot(game::Human{
 			.name = "name 1"
-			}, 1);
+		}, 1);
 	}
 
 	TEST_F(NetworkTest, receiveGameLoobyWithMultipleClientsAndSetSlot) {
 		// Given
 		mockReceiveGameRoomCreated(GameRoomId{"server uuid"}, ClientId{"client uuid 0"});
-		network_->update();
+		pollOne();
 
 		auto gameLooby = wrapperFromServer.mutable_game_looby();
 		addPlayerSlot(*gameLooby, tp_s2c::GameLooby_SlotType_REMOTE, ClientId{"client uuid 0"}, "name 0");
@@ -225,14 +231,15 @@ namespace mwetris::network {
 
 		expectCallClientReceive(wrapperFromServer);
 		ProtobufMessage messageToServer;
-		EXPECT_CALL(*mockClient_, send(_))
-			.WillOnce(SaveArg<0>(&messageToServer));
+		debugClient_->setSentToServerCallback([&](const ProtobufMessage& message) {
+			messageToServer = message;
+		});
 
 		// When
-		network_->update();
+		pollOne();
 		network_->setPlayerSlot(game::Human{
 			.name = "name 2"
-			}, 2);
+		}, 2);
 
 		// Then
 		tp_c2s::Wrapper wrapperToServer;

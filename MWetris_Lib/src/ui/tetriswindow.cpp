@@ -73,7 +73,7 @@ namespace mwetris::ui {
 
 	TetrisWindow::TetrisWindow(const std::string& windowName, Type type, sdl::Window& window,
 		std::shared_ptr<game::DeviceManager> deviceManager,
-		std::shared_ptr<network::Client> client
+		std::shared_ptr<network::Network> network
 	)
 		: window_{window}
 		, deviceManager_{deviceManager}
@@ -81,7 +81,6 @@ namespace mwetris::ui {
 		, windowName_{windowName} {
 
 		auto game = std::make_shared<game::TetrisGame>();
-		auto network = std::make_shared<network::Network>(client);
 		auto gameComponent = std::make_shared<graphic::GameComponent>();
 
 		tetrisController_ = std::make_shared<TetrisController>(network, game, gameComponent);

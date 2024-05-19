@@ -3,13 +3,15 @@
 
 #include "protobufmessage.h"
 
+#include <asio.hpp>
+
 namespace mwetris::network {
 
 	class Client {
 	public:
 		virtual ~Client() = default;
 
-		virtual bool receive(ProtobufMessage& message) = 0;
+		virtual asio::awaitable<ProtobufMessage> receive() = 0;
 
 		virtual void send(ProtobufMessage&& message) = 0;
 
@@ -17,6 +19,7 @@ namespace mwetris::network {
 
 		virtual void release(ProtobufMessage&& message) = 0;
 
+		virtual asio::io_context& getIoContext() = 0;
 	};
 
 }

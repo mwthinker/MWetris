@@ -21,7 +21,6 @@
 		"asio",
 		"magic-enum",
 		"freetype",
-		"concurrencpp",
 		"argparse"
 	]
 }

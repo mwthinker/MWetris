@@ -109,7 +109,6 @@ find_package(fmt CONFIG REQUIRED)
 find_package(CppProtoNetwork REQUIRED)
 find_package(Signal REQUIRED)
 find_package(CppSdl2 REQUIRED)
-find_package(concurrencpp CONFIG REQUIRED)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT MWetris_Lib)
@@ -163,7 +162,6 @@ target_link_libraries(MWetris_Lib
 		fmt::fmt
 		Protocol
 		Signal
-		concurrencpp::concurrencpp
 		${ExternalDependencies}
 )
 

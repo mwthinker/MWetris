@@ -7,6 +7,7 @@
 #include <game/devicemanager.h>
 
 #include <network/debugserver.h>
+#include <asio.hpp>
 
 class MainWindow : public sdl::ImGuiWindow {
 public:
@@ -33,6 +34,7 @@ private:
 	std::shared_ptr<mwetris::game::DeviceManager> deviceManager_;
 	std::shared_ptr<mwetris::network::DebugServer> debugServer_;
 	Config config_;
+	asio::io_context ioContext_;
 };
 
 #endif

@@ -9,6 +9,7 @@
 
 #include "game/tetrisgame.h"
 
+#include <asio.hpp>
 #include <mw/signal.h>
 
 #include <memory>
@@ -23,7 +24,7 @@ namespace mwetris::network {
 
 		~DebugClient() override;
 
-		bool receive(ProtobufMessage& message) override;
+		asio::awaitable<ProtobufMessage> receive() override;
 
 		void send(ProtobufMessage&& message) override;
 
@@ -31,17 +32,25 @@ namespace mwetris::network {
 
 		void release(ProtobufMessage&& message) override;
 
+		asio::io_context& getIoContext() override;
+
 		// To be called by simulated server
 		bool pollSentMessage(ProtobufMessage& message);
 
 		// To be called by simulated server
 		void pushReceivedMessage(ProtobufMessage&& message);
+
+		// Used for testing
+		void setSentToServerCallback(const std::function<void(const ProtobufMessage&)>& callback);
 		
 	private:
 		std::queue<ProtobufMessage> receivedMessages_;
 		std::queue<ProtobufMessage> sentMessages_;
 
+		std::function<void(const ProtobufMessage&)> sendToServerCallback_;
 		std::shared_ptr<DebugServer> debugServer_;
+		asio::high_resolution_timer timer_;
+
 	};
 
 }

@@ -5,6 +5,7 @@
 #include <ui/networkdebugwindow.h>
 #include <ui/tetriswindow.h>
 #include <network/debugclient.h>
+#include <network/network.h>
 
 #include <ui/tetriswindow.h>
 
@@ -34,7 +35,7 @@ void MainWindow::initPreLoop() {
 	mwetris::Configuration::getInstance().getImGuiHeaderFont();
 
 	deviceManager_ = std::make_shared<mwetris::game::DeviceManager>();
-	debugServer_ = std::make_shared<mwetris::network::DebugServer>();
+	debugServer_ = std::make_shared<mwetris::network::DebugServer>(ioContext_);
 
 	for (int i = 0; i < config_.windows; ++i) {
 		auto debugClient = debugServer_->createClient();
@@ -42,7 +43,7 @@ void MainWindow::initPreLoop() {
 		std::string name = (i == 0) ? "MainWindow" : fmt::format("SecondaryWindow{}", i);
 		subWindows_.push_back(std::make_unique<mwetris::ui::TetrisWindow>(name, type , *this,
 			deviceManager_,
-			debugClient
+			std::make_shared<mwetris::network::Network>(debugClient)
 		));
 	}
 
@@ -61,6 +62,7 @@ void MainWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
 	for (auto& subWindow : subWindows_) {
 		subWindow->imGuiUpdate(deltaTime);
 	}
+	ioContext_.poll_one();
 	debugServer_->update(deltaTime);
 }
 

@@ -34,7 +34,7 @@ namespace mwetris::ui {
 	public:
 		TetrisWindow(const std::string& windowName, Type type, sdl::Window& window,
 			std::shared_ptr<game::DeviceManager> deviceManager,
-			std::shared_ptr<network::Client> client
+			std::shared_ptr<network::Network> network
 		);
 
 		~TetrisWindow();

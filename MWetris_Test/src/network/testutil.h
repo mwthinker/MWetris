@@ -10,9 +10,9 @@
 #include <client_to_server.pb.h>
 #include <server_to_client.pb.h>
 
-namespace mwetris::network {
+#include <asio.hpp>
 
-	ProtobufMessage createMessage(const google::protobuf::MessageLite& wrapper);
+namespace mwetris::network {
 
 	void addPlayerSlot(tp_s2c::GameLooby& gameLooby, const tp_s2c::GameLooby_SlotType slotType, const ClientId& clientUuid, const std::string& name, bool ai = false);
 

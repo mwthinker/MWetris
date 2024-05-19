@@ -11,6 +11,8 @@
 #include <sdl/window.h>
 #include <mw/signal.h>
 
+#include <asio.hpp>
+
 #include <memory>
 #include <string>
 
@@ -18,7 +20,7 @@ namespace mwetris::network {
 
 	class DebugServer : public std::enable_shared_from_this<DebugServer> {
 	public:
-		DebugServer();
+		explicit DebugServer(asio::io_context& ioContext);
 		~DebugServer();
 
 		void update(const sdl::DeltaTime& deltaTime);
@@ -45,6 +47,8 @@ namespace mwetris::network {
 		std::vector<ConnectedClient> getConnectedClients() const;
 
 		void disconnect(const GameRoomId& gameRoomId);
+
+		asio::io_context& getIoContext();
 	
 	private:
 		class Impl;

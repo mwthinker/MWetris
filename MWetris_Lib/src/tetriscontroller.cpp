@@ -55,7 +55,6 @@ namespace mwetris {
 
 	// Updates everything. Should be called each frame.
 	void TetrisController::update(double deltaTime) {
-		network_->update();
 		tetrisGame_->update(deltaTime);
 	}
 

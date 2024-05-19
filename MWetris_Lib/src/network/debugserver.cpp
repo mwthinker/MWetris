@@ -33,7 +33,11 @@ namespace mwetris::network {
 		mw::PublicSignal<DebugServer::Impl, const game::InitGameEvent&> initGameEvent;
 		mw::PublicSignal<DebugServer::Impl, const ConnectedClient&> connectedClientListener;
 
-		Impl() {}
+		explicit Impl(asio::io_context& ioContext)
+			: messageQueue_{100}
+			, ioContext_{ioContext} {
+		}
+
 		~Impl() {}
 
 		void update(const sdl::DeltaTime& deltaTime) {
@@ -179,6 +183,10 @@ namespace mwetris::network {
 			playerSlotsUpdated(slots);
 		}
 
+		asio::io_context& getIoContext() {
+			return ioContext_;
+		}
+
 	private:
 		ConnectedClient convertToConnectedClient(const Remote& remote) const {
 			return ConnectedClient{
@@ -210,7 +218,12 @@ namespace mwetris::network {
 		tp_s2c::Wrapper wrapperToClient_;
 		ProtobufMessageQueue messageQueue_;
 		std::vector<Remote> remotes_;
+		asio::io_context& ioContext_;
 	};
+
+	asio::io_context& DebugServer::getIoContext() {
+		return impl_->getIoContext();
+	}
 
 	void DebugServer::update(const sdl::DeltaTime& deltaTime) {
 		impl_->update(deltaTime);
@@ -224,8 +237,8 @@ namespace mwetris::network {
 		impl_->disconnect(gameRoomId);
 	}
 
-	DebugServer::DebugServer()
-		: impl_{std::make_unique<DebugServer::Impl>()} {}
+	DebugServer::DebugServer(asio::io_context& ioContext)
+		: impl_{std::make_unique<DebugServer::Impl>(ioContext)} {}
 
 	DebugServer::~DebugServer() {}
 

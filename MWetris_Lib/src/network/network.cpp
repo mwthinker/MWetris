@@ -15,19 +15,18 @@
 
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
-#include <concurrencpp/concurrencpp.h>
 
-namespace conc = concurrencpp;
+#include <asio.hpp>
 
 namespace mwetris::network {
 
 	Network::Network(std::shared_ptr<Client> client)
-		: client_{client} {
+		: client_{client}
+		, timer_{client->getIoContext()} {
 
-		manualExecutor_ = runtime_.make_executor<conc::manual_executor>();
-		manualExecutor_->post([this]() {
-			stepOnce();
-		});
+		asio::co_spawn(client->getIoContext(), [this]() mutable -> asio::awaitable<void> {
+			co_await run();
+		}, asio::detached);
 	}
 
 	bool Network::isInsideGameRoom() const {
@@ -40,7 +39,7 @@ namespace mwetris::network {
 
 		// In order to avoid errors::broken_task
 		running_ = false;
-		update();
+		//update();
 	}
 
 	const GameRoomId& Network::getGameRoomId() const {
@@ -56,11 +55,6 @@ namespace mwetris::network {
 		wrapperToServer_.Clear();
 		wrapperToServer_.mutable_start_game()->set_ready(true);
 		send(wrapperToServer_);
-	}
-
-	void Network::update() {
-		manualExecutor_->loop_once();
-		cv_.notify_all();
 	}
 
 	void Network::sendPause(bool pause) {
@@ -158,7 +152,7 @@ namespace mwetris::network {
 		return !gameRoomId_.isEmpty();
 	}
 
-	conc::result<void> Network::stepOnce() {
+	asio::awaitable<void> Network::run() {
 		while (running_) {
 			// Connect to server
 			co_await nextMessage();
@@ -216,20 +210,20 @@ namespace mwetris::network {
 		co_return;
 	}
 
-	conc::result<void> Network::nextMessage() {
-		auto guard = co_await lock_.lock(manualExecutor_);
-		co_await cv_.await(manualExecutor_, guard, [this]() {
-			ProtobufMessage message;
-			bool valid = client_->receive(message);
+	asio::awaitable<void> Network::nextMessage() {
+		bool valid = false;
+		do {
+			ProtobufMessage message = co_await client_->receive();
+			valid = message.getSize() > 0;
 			if (valid) {
 				wrapperFromServer_.Clear();
 				valid = wrapperFromServer_.ParseFromArray(message.getBodyData(), message.getBodySize());
-			} else if (message.getSize() != 0) {
-				spdlog::info("[Network] Invalid data");
+				if (message.getSize() != 0) {
+					spdlog::info("[Network] Invalid data");
+				}
+				client_->release(std::move(message));
 			}
-			client_->release(std::move(message));
-			return valid || leaveRoom_ || !running_;
-		});
+		} while (!valid || leaveRoom_ || !running_);
 		leaveRoom_ = false;
 		co_return;
 	}

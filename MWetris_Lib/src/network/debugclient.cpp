@@ -12,22 +12,29 @@
 
 namespace mwetris::network {
 
-	DebugClient::DebugClient(std::shared_ptr<DebugServer> debugServer) 
-		: debugServer_{debugServer} {
+	DebugClient::DebugClient(std::shared_ptr<DebugServer> debugServer)
+		: debugServer_{debugServer}
+		, timer_{debugServer->getIoContext()} {
+
+		timer_.expires_after(std::chrono::seconds{0});
 	}
 
 	DebugClient::~DebugClient() = default;
 
-	bool DebugClient::receive(ProtobufMessage& message) {
-		if (receivedMessages_.empty()) {
-			return false;
+	asio::awaitable<ProtobufMessage> DebugClient::receive() {
+		while (receivedMessages_.empty()) {
+			co_await timer_.async_wait(asio::use_awaitable);
+			timer_.expires_after(std::chrono::seconds(0));
 		}
-		message = std::move(receivedMessages_.front());
+		auto message = std::move(receivedMessages_.front());
 		receivedMessages_.pop();
-		return true;
+		co_return message;
 	}
 
 	void DebugClient::send(ProtobufMessage&& message) {
+		if (sendToServerCallback_) {
+			sendToServerCallback_(message);
+		}
 		sentMessages_.push(std::move(message));
 	}
 
@@ -37,6 +44,10 @@ namespace mwetris::network {
 
 	void DebugClient::release(ProtobufMessage&& message) {
 		debugServer_->release(std::move(message));
+	}
+
+	asio::io_context& DebugClient::getIoContext() {
+		return debugServer_->getIoContext();
 	}
 
 	bool DebugClient::pollSentMessage(ProtobufMessage& message) {
@@ -50,6 +61,10 @@ namespace mwetris::network {
 
 	void DebugClient::pushReceivedMessage(ProtobufMessage&& message) {
 		receivedMessages_.push(std::move(message));
+	}
+
+	void DebugClient::setSentToServerCallback(const std::function<void(const ProtobufMessage&)>& callback) {
+		sendToServerCallback_ = callback;
 	}
 
 }

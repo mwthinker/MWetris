@@ -4,12 +4,6 @@ using namespace ::testing;
 
 namespace mwetris::network {
 
-	ProtobufMessage createMessage(const google::protobuf::MessageLite& wrapper) {
-		ProtobufMessage message;
-		message.setBuffer(wrapper);
-		return message;
-	}
-
 	void addPlayerSlot(tp_s2c::GameLooby& gameLooby, const tp_s2c::GameLooby_SlotType slotType, const ClientId& clientUuid, const std::string& name, bool ai) {
 		auto slot = gameLooby.add_slots();
 		slot->set_ai(ai);
