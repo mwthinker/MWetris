@@ -27,13 +27,13 @@ namespace mwetris::network {
 
 		void SetUp() override {
 			auto debugServer = std::make_shared<DebugServer>(ioContext_);
-			debugClient_ = std::make_shared<DebugClient>(debugServer);
-			network_ = std::make_shared<Network>(debugClient_);
-			debugClient_->getIoContext().restart();
+			debugClientOnNetwork_ = std::dynamic_pointer_cast<DebugClientOnNetwork>(debugServer->addClient());
+			network_ = std::make_shared<Network>(debugClientOnNetwork_);
+			debugClientOnNetwork_->getIoContext().restart();
 		}
 
 		void TearDown() override {
-			debugClient_ = nullptr;
+			debugClientOnNetwork_ = nullptr;
 			network_ = nullptr;
 			ioContext_.stop();
 			ioContext_.restart();
@@ -41,7 +41,7 @@ namespace mwetris::network {
 		}
 
 		void pollOne() {
-			debugClient_->getIoContext().poll_one();
+			debugClientOnNetwork_->getIoContext().poll_one();
 		}
 
 		void mockReceiveGameRoomCreated(const GameRoomId& gameRoomId, const ClientId& clientUuid) {
@@ -68,11 +68,11 @@ namespace mwetris::network {
 			ProtobufMessage message;
 			message.clear();
 			message.setBuffer(wrapper);
-			debugClient_->pushReceivedMessage(std::move(message));
+			debugClientOnNetwork_->pushReceivedMessage(std::move(message));
 		}
 
 		tp_s2c::Wrapper wrapperFromServer;
-		std::shared_ptr<DebugClient> debugClient_;
+		std::shared_ptr<DebugClientOnNetwork> debugClientOnNetwork_;
 		std::shared_ptr<Network> network_;
 		asio::io_context ioContext_;
 	};
@@ -178,7 +178,7 @@ namespace mwetris::network {
 
 		expectCallClientReceive(wrapperFromServer);
 		ProtobufMessage messageToServer;
-		debugClient_->setSentToServerCallback([&](const ProtobufMessage& message) {
+		debugClientOnNetwork_->setSentToServerCallback([&](const ProtobufMessage& message) {
 			messageToServer = message;
 		});
 
@@ -190,7 +190,7 @@ namespace mwetris::network {
 
 		// Then
 		tp_c2s::Wrapper wrapperToServer;
-		wrapperToServer.ParseFromArray(messageToServer.getBodyData(), messageToServer.getBodySize());
+		messageToServer.parseBodyInto(wrapperFromServer);
 		auto playerSlot = wrapperToServer.player_slot();
 		EXPECT_EQ(playerSlot.slot_type(), tp_c2s::PlayerSlot_SlotType_HUMAN);
 		EXPECT_EQ(playerSlot.index(), 0);
@@ -209,7 +209,7 @@ namespace mwetris::network {
 		pollOne();
 
 		// When
-		debugClient_->setSentToServerCallback([](const ProtobufMessage& message) {
+		debugClientOnNetwork_->setSentToServerCallback([](const ProtobufMessage& message) {
 			FAIL() << "send should not be called";
 		});
 
@@ -231,7 +231,7 @@ namespace mwetris::network {
 
 		expectCallClientReceive(wrapperFromServer);
 		ProtobufMessage messageToServer;
-		debugClient_->setSentToServerCallback([&](const ProtobufMessage& message) {
+		debugClientOnNetwork_->setSentToServerCallback([&](const ProtobufMessage& message) {
 			messageToServer = message;
 		});
 
@@ -243,7 +243,7 @@ namespace mwetris::network {
 
 		// Then
 		tp_c2s::Wrapper wrapperToServer;
-		wrapperToServer.ParseFromArray(messageToServer.getBodyData(), messageToServer.getBodySize());
+		messageToServer.parseBodyInto(wrapperFromServer);
 		auto playerSlot = wrapperToServer.player_slot();
 		EXPECT_EQ(playerSlot.slot_type(), tp_c2s::PlayerSlot_SlotType_HUMAN);
 		EXPECT_EQ(playerSlot.index(), 2);

@@ -1,14 +1,14 @@
 #ifndef MWETRIS_UI_NETWORKDEBUGWINDOW_H
 #define MWETRIS_UI_NETWORKDEBUGWINDOW_H
 
+#include "subwindow.h"
 #include "timerhandler.h"
 #include "game/playerslot.h"
 
+#include <network/servercore.h>
+
 #include <sdl/imguiwindow.h>
-
-#include <network/debugserver.h>
-
-#include "subwindow.h"
+#include <signal.h>
 
 namespace mwetris::network {
 
@@ -26,7 +26,7 @@ namespace mwetris::ui {
 
 	class NetworkDebugWindow : public SubWindow {
 	public:
-		explicit NetworkDebugWindow(std::shared_ptr<network::DebugServer> server);
+		explicit NetworkDebugWindow(std::shared_ptr<network::ServerCore> server);
 		~NetworkDebugWindow() override;
 		
 		void imGuiUpdate(const sdl::DeltaTime& deltaTime) override;
@@ -42,11 +42,12 @@ namespace mwetris::ui {
 	private:
 		void update();
 
-		std::shared_ptr<network::DebugServer> debugServer_;
+		std::shared_ptr<network::ServerCore> server_;
 		std::vector<network::Slot> playerSlots_;
 		std::unique_ptr<graphic::GameComponent> gameComponent_;
 		std::vector<network::ConnectedClient> connectedClients_;
 		std::string name_ = "NetworkDebugWindow";
+		mw::signals::ScopedConnections connections_;
 	};
 
 }

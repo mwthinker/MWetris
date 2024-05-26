@@ -2,6 +2,11 @@ project(Protocol)
 
 find_package(Protobuf CONFIG REQUIRED)
 
+set (PROTO_UTIL
+	tp/util.cpp
+	tp/util.h
+)
+
 set(PROTO_FILES
 	"client_to_server.proto"
 	"high_score.proto"
@@ -10,7 +15,7 @@ set(PROTO_FILES
 )
 
 protobuf_generate_cpp(PROTO_SRC PROTO_HDRS ${PROTO_FILES})
-add_library(Protocol ${PROTO_HDRS} ${PROTO_SRC} ${PROTO_FILES})
+add_library(Protocol ${PROTO_UTIL} ${PROTO_HDRS} ${PROTO_SRC} ${PROTO_FILES})
 if (MSVC)
 	target_compile_options(Protocol
 		PUBLIC

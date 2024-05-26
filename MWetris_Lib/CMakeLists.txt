@@ -11,10 +11,10 @@ if (MSVC)
 endif ()
 
 set(SOURCES_LIB
-	src/graphic/imguiboard.cpp
-	src/graphic/imguiboard.h
 	src/graphic/gamecomponent.cpp
 	src/graphic/gamecomponent.h
+	src/graphic/imguiboard.cpp
+	src/graphic/imguiboard.h
 	
 	src/game/actionhandler.cpp
 	src/game/actionhandler.h
@@ -53,15 +53,23 @@ set(SOURCES_LIB
 	src/network/gameroom.h
 	src/network/id.cpp
 	src/network/id.h
+	src/network/network.cpp
+	src/network/network.h
+	src/network/networkevent.h
 	src/network/protobufmessage.cpp
 	src/network/protobufmessage.h
 	src/network/protobufmessagequeue.cpp
 	src/network/protobufmessagequeue.h
-	src/network/network.cpp
-	src/network/network.h
-	src/network/networkevent.h
 	src/network/server.h
+	src/network/servercore.cpp
+	src/network/servercore.h
+	src/network/tcpclient.cpp
+	src/network/tcpclient.h
+	src/network/tcpserver.cpp
+	src/network/tcpserver.h
 	
+	src/ui/scene/about.cpp
+	src/ui/scene/about.h
 	src/ui/scene/addplayer.cpp
 	src/ui/scene/addplayer.h
 	src/ui/scene/creategame.cpp
@@ -70,16 +78,13 @@ set(SOURCES_LIB
 	src/ui/scene/highscore.h
 	src/ui/scene/joingame.cpp
 	src/ui/scene/joingame.h
-	src/ui/scene/settings.cpp
-	src/ui/scene/settings.h
 	src/ui/scene/newhighscore.cpp
 	src/ui/scene/newhighscore.h
 	src/ui/scene/scene.h
+	src/ui/scene/settings.cpp
+	src/ui/scene/settings.h
 	src/ui/scene/statemachine.cpp
 	src/ui/scene/statemachine.h
-
-	src/ui/scene/about.cpp
-	src/ui/scene/about.h
 
 	src/ui/imguiextra.cpp
 	src/ui/imguiextra.h

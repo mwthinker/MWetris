@@ -37,9 +37,8 @@ namespace mwetris::network {
 		// To avoid getting stuck
 		gameRoomId_ = GameRoomId{};
 
-		// In order to avoid errors::broken_task
+		// To be able to stop the coroutine
 		running_ = false;
-		//update();
 	}
 
 	const GameRoomId& Network::getGameRoomId() const {
@@ -217,9 +216,9 @@ namespace mwetris::network {
 			valid = message.getSize() > 0;
 			if (valid) {
 				wrapperFromServer_.Clear();
-				valid = wrapperFromServer_.ParseFromArray(message.getBodyData(), message.getBodySize());
+				valid = message.parseBodyInto(wrapperFromServer_);
 				if (message.getSize() != 0) {
-					spdlog::info("[Network] Invalid data");
+					spdlog::warn("[Network] Invalid data");
 				}
 				client_->release(std::move(message));
 			}

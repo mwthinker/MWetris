@@ -2,10 +2,15 @@
 #define MWETRIS_NETWORK_PROTOBUFMESSAGE_H
 
 #include <google/protobuf/message_lite.h>
+#include <asio/buffer.hpp>
 
+#include <concepts>
 #include <vector>
 
 namespace mwetris::network {
+
+	template <typename Message>
+	concept MessageLite = std::derived_from<Message, google::protobuf::MessageLite>;
 
 	class ProtobufMessage {
 	public:
@@ -32,14 +37,23 @@ namespace mwetris::network {
 
 		int getBodySize() const;
 
-		const unsigned char* getData() const {
-			return buffer_.data();
+		asio::const_buffer getDataBuffer() const {
+			return asio::buffer(buffer_);
 		}
 
-		unsigned char* getData() {
-			return buffer_.data();
+		asio::mutable_buffer getMutableDataBuffer() {
+			return asio::buffer(buffer_);
 		}
 
+		asio::mutable_buffer getMutableBodyBuffer() {
+			return asio::buffer(getBodyData(), getBodySize());
+		}
+		
+		bool parseBodyInto(MessageLite auto& message) const {
+			return message.ParseFromArray(getBodyData(), getBodySize());
+		}
+
+	private:
 		const unsigned char* getBodyData() const {
 			return buffer_.data() + getHeaderSize();
 		}
@@ -48,7 +62,6 @@ namespace mwetris::network {
 			return buffer_.data() + getHeaderSize();
 		}
 
-	private:
 		void reserveHeaderSize();
 
 		void defineBodySize();

@@ -1,11 +1,10 @@
 #ifndef MWETRIS_GAME_TETRISGAMEEVENT_H
 #define MWETRIS_GAME_TETRISGAMEEVENT_H
 
-#include <vector>
-
-//#include "player.h"
-
 #include <tetrisboard.h>
+
+#include <vector>
+#include <memory>
 
 namespace mwetris::game {
 

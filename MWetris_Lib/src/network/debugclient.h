@@ -5,7 +5,6 @@
 #include "protobufmessagequeue.h"
 #include "client.h"
 #include "game/playerslot.h"
-#include "debugserver.h"
 
 #include "game/tetrisgame.h"
 
@@ -15,14 +14,19 @@
 #include <memory>
 #include <string>
 #include <queue>
+#include <functional>
 
 namespace mwetris::network {
 
-	class DebugClient : public Client {
-	public:
-		explicit DebugClient(std::shared_ptr<DebugServer> debugServer);
+	class DebugServer;
+	class DebugClient;
+	class DebugClientOnNetwork;
 
-		~DebugClient() override;
+	class DebugClientOnServer : public Client, public std::enable_shared_from_this<DebugClientOnServer> {
+	public:
+		static std::shared_ptr<DebugClientOnServer> create(std::shared_ptr<DebugServer> debugServer);
+
+		~DebugClientOnServer() override;
 
 		asio::awaitable<ProtobufMessage> receive() override;
 
@@ -34,23 +38,47 @@ namespace mwetris::network {
 
 		asio::io_context& getIoContext() override;
 
-		// To be called by simulated server
-		bool pollSentMessage(ProtobufMessage& message);
+		std::shared_ptr<DebugClientOnNetwork> getDebugClientOnNetwork();
 
-		// To be called by simulated server
 		void pushReceivedMessage(ProtobufMessage&& message);
 
-		// Used for testing
-		void setSentToServerCallback(const std::function<void(const ProtobufMessage&)>& callback);
-		
 	private:
-		std::queue<ProtobufMessage> receivedMessages_;
-		std::queue<ProtobufMessage> sentMessages_;
+		explicit DebugClientOnServer(std::shared_ptr<DebugServer> debugServer);
 
-		std::function<void(const ProtobufMessage&)> sendToServerCallback_;
-		std::shared_ptr<DebugServer> debugServer_;
 		asio::high_resolution_timer timer_;
+		std::shared_ptr<DebugServer> debugServer_;
+		std::shared_ptr<DebugClientOnNetwork> debugClientOnNetwork_;
+		std::queue<ProtobufMessage> receivedMessages_;
+	};
 
+	class DebugClientOnNetwork : public Client {
+	public:
+		static std::shared_ptr<DebugClientOnNetwork> create(std::shared_ptr<DebugClientOnServer> debugClientOnServer);
+
+		~DebugClientOnNetwork() override;
+
+		asio::awaitable<ProtobufMessage> receive() override;
+
+		void send(ProtobufMessage&& message) override;
+
+		void acquire(ProtobufMessage& message) override;
+
+		void release(ProtobufMessage&& message) override;
+
+		void pushReceivedMessage(ProtobufMessage&& message);
+
+		asio::io_context& getIoContext() override;
+
+		void setSentToServerCallback(const std::function<void(const ProtobufMessage&)>& callback);
+
+	private:
+		friend class DebugClientOnServer;
+		explicit DebugClientOnNetwork(std::weak_ptr<DebugClientOnServer> debugClientOnServer);
+
+		asio::high_resolution_timer timer_;
+		std::weak_ptr<DebugClientOnServer> debugClientOnServer_;
+		std::queue<ProtobufMessage> receivedMessages_;
+		std::function<void(const ProtobufMessage&)> sendToServerCallback_;
 	};
 
 }

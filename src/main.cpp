@@ -35,6 +35,16 @@ int main(int argc, char** argv) {
 		.help("Number of windows")
 		.default_value(1)
 		.scan<'i', int>();
+	auto& group = program.add_mutually_exclusive_group(true);
+	group.add_argument("-s", "--simulate")
+		.help("Simulate network")
+		.flag();
+	group.add_argument("-t", "--tcpclient")
+		.help("TCP client")
+		.flag();
+	group.add_argument("-T", "--tcpserver")
+		.help("TCP server")
+		.flag();
 	program
 		.add_argument("-d", "--debug")
 		.help("Show debug windows")
@@ -56,6 +66,13 @@ int main(int argc, char** argv) {
 	config.windows = program.get<int>("-w");
 	config.showDebugWindow = program.get<bool>("-d");
 	config.showDemoWindow = program.get<bool>("-D");
+	if (program.get<bool>("-s")) {
+		config.network = Network::DebugServer;
+	} else if (program.get<bool>("-t")) {
+		config.network = Network::SingleTcpClient;
+	} else if (program.get<bool>("-T")) {
+		config.network = Network::TcpServer;
+	}
 
 	startApplication(config);
 	return 0;

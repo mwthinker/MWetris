@@ -1,7 +1,6 @@
 #ifndef MWETRIS_NETWORK_GAMEROOM_H
 #define MWETRIS_NETWORK_GAMEROOM_H
 
-#include "debugserver.h"
 #include "server.h"
 #include "id.h"
 

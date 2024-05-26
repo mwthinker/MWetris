@@ -15,19 +15,17 @@ namespace mwetris::ui {
 
 	}
 
-	NetworkDebugWindow::NetworkDebugWindow(std::shared_ptr<network::DebugServer> server)
-		: debugServer_{server}
+	NetworkDebugWindow::NetworkDebugWindow(std::shared_ptr<network::ServerCore> server)
+		: server_{server}
 		, gameComponent_{std::make_unique<graphic::GameComponent>()} {
 
-		debugServer_->addPlayerSlotsCallback([this](const std::vector<network::Slot>& playerSlots) {
+		connections_ += server_->playerSlotsUpdated.connect([this](const std::vector<network::Slot>& playerSlots) {
 			playerSlots_ = playerSlots;
 		});
-
-		debugServer_->addInitGameCallback([this](const game::InitGameEvent& initGameEvent) {
+		connections_ += server_->initGameEvent.connect([this](const game::InitGameEvent& initGameEvent) {
 			gameComponent_->initGame(initGameEvent);
 		});
-
-		debugServer_->addClientListener([this](const network::ConnectedClient& client) {
+		connections_ += server_->connectedClientListener.connect([this](const network::ConnectedClient& client) {
 			if (std::any_of(connectedClients_.begin(), connectedClients_.end(), [&client](const auto& connected) {
 				return connected.clientId == client.clientId;
 			})) {
