@@ -130,6 +130,19 @@ namespace mwetris {
 		return blocktypes_;
 	}
 
+	void from_json(const json& j, Configuration::Network& network) {
+		network = Configuration::Network{
+			.global = {
+				.ip = j.at("globalServer").at("ip").get<std::string>(),
+				.port = j.at("globalServer").at("port").get<int>()
+			},
+			.server = {
+				.ip = j.at("server").at("ip").get<std::string>(),
+				.port = j.at("server").at("port").get<int>()
+			}
+		};
+	}
+
 	void from_json(const json& j, HighscoreRecord& highscoreRecord) {
 		highscoreRecord.name = j.at("name").get<std::string>();
 		highscoreRecord.date = j.at("date").get<std::string>();
@@ -523,16 +536,8 @@ namespace mwetris {
 		impl_->jsonObject["window"]["moveWindowByHoldingDownMouse"] = activate;
 	}
 
-	int Configuration::getPort() const {
-		return impl_->jsonObject["window"]["port"].get<int>();
-	}
-
-	void Configuration::setPort(int port) {
-		impl_->jsonObject["window"]["port"] = port;
-	}
-
-	int Configuration::getTimeToConnectMS() const {
-		return impl_->jsonObject["window"]["timeToConnectMS"].get<int>();
+	Configuration::Network Configuration::getNetwork() const {
+		return impl_->jsonObject["network"].get<Configuration::Network>();
 	}
 
 	std::string Configuration::getIp() const {

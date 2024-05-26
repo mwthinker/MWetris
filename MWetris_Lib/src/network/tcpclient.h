@@ -21,7 +21,7 @@ namespace mwetris::network {
 	public:
 		/// @brief Connect to server.
 		/// @param ioContext The io_context to use for asynchronous operations.
-		explicit TcpClient(asio::io_context& ioContext);
+		TcpClient(asio::io_context& ioContext, const std::string& ip, int port);
 
 		/// @brief Use exisiting connection on active socket.
 		/// @param ioContext The io_context to use for asynchronous operations.

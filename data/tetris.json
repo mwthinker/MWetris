@@ -87,10 +87,17 @@
 			"middleTextBoxSize": 7,
 			"showDownBlock": true,
 			"downBlockColor": "#ffffff26"
+		}
+	},
+	"network": {
+		"globalServer": {
+			"ip": "127.0.0.1",
+			"port": 11155
 		},
-		"port": 11155,
-		"ip": "127.0.0.1",
-		"timeToConnectMS": 5000
+		"server": {
+			"ip": "127.0.0.1",
+			"port": 11175
+		}
 	},
 	"ai1": "Default",
 	"ai2": "Default",

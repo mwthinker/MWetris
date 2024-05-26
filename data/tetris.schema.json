@@ -1,11 +1,12 @@
 {
-	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$schema": "https://json-schema.org/draft/2020-12/output/schema#",
 	"$id": "http://mwthinker/schemas/tetris-0.1.json",
 
 	"type": "object",
 	"properties": {
 		"$schema":  { "type": "string" },
 		"window": { "$ref": "#/definitions/Window" },
+		"network": { "$ref": "#/definitions/Network" },
 		"ai1": { "type": "string" },
 		"ai2": { "type": "string" },
 		"ai3": { "type": "string" },
@@ -21,7 +22,7 @@
 			}
 		}
 	},
-	"required": ["window", "ai1", "ai2", "ai3" ,"ai4", "ais"],
+	"required": ["window", "network", "ai1", "ai2", "ai3" ,"ai4", "ais"],
 	"additionalProperties": false,
 	
 	"definitions": {
@@ -81,6 +82,11 @@
 			"type": "string",
 			"pattern": "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$"
 		},
+		"Port":{
+			"type": "integer",
+			"minimum": 1,
+			"maximum": 65535
+		},
 
 		"Date":{
 			"type": "string",
@@ -128,12 +134,9 @@
 					"required": ["background", "computer", "human", "cross", "zoom"],
 					"additionalProperties": false
 				},
-				"tetrisBoard": { "$ref": "#/definitions/TetrisBoard" },
-				"ip": { "$ref": "#/definitions/Ip" },
-				"port": { "type": "integer" },
-				"timeToConnectMS": { "type": "integer" }
+				"tetrisBoard": { "$ref": "#/definitions/TetrisBoard" }
 			},
-			"required": ["fullscreenOnDoubleClick", "border", "pauseOnLostFocus", "moveWindowByHoldingDownMouse", "vsync", "limitFps", "multiSampleBuffers", "multiSampleSamples", "rowFadingTime", "rowMovingTime", "bar", "label", "checkBox", "radioButton", "button", "comboBox", "font", "width", "height", "positionX", "positionY", "maximized", "resizeable", "minWidth", "minHeight", "icon", "sprites", "tetrisBoard", "ip", "port", "timeToConnectMS"],
+			"required": ["fullscreenOnDoubleClick", "border", "pauseOnLostFocus", "moveWindowByHoldingDownMouse", "vsync", "limitFps", "multiSampleBuffers", "multiSampleSamples", "rowFadingTime", "rowMovingTime", "bar", "label", "checkBox", "radioButton", "button", "comboBox", "font", "width", "height", "positionX", "positionY", "maximized", "resizeable", "minWidth", "minHeight", "icon", "sprites", "tetrisBoard" ],
 			"additionalProperties": false
 		},
 		"Bar": {
@@ -247,6 +250,29 @@
 				},
 				"required": ["name", "date", "points"],
 				"additionalProperties": false
+			}
+		},
+		"Network": {
+			"type": "object",
+			"properties": {
+				"globalServer": {
+					"type": "object",
+					"properties": {
+						"ip": { "$ref": "#/definitions/Ip" },
+						"port": { "$ref": "#/definitions/Port" }
+					},
+					"required": ["ip", "port"],
+					"additionalProperties": false
+				},
+				"server": {
+					"type": "object",
+					"properties": {
+						"ip": { "$ref": "#/definitions/Ip" },
+						"port": { "$ref": "#/definitions/Port" }
+					},
+					"required": ["ip", "port"],
+					"additionalProperties": false
+				}
 			}
 		}
 	}

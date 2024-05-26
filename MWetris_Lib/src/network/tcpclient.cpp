@@ -16,23 +16,21 @@ namespace mwetris::network {
 	namespace {
 		
 		constexpr int MaxSize = 1024;
-		constexpr int Port = 12556;
-		const std::string LocalHost = "127.0.0.1";
 
 	}
 
-	TcpClient::TcpClient(asio::io_context& ioContext)
+	TcpClient::TcpClient(asio::io_context& ioContext, const std::string& ip, int port)
 		: ioContext_{ioContext}
 		, timer_{ioContext}
 		, socket_{ioContext}
 		, name_{"TcpClient_Network"} {
 
-		asio::co_spawn(ioContext_, [&]() -> asio::awaitable<void> {
+		asio::co_spawn(ioContext_, [this, ip = ip, port = port]() -> asio::awaitable<void> {
 			// TODO! Catch exception if something goes wrong?
 			
 			while (true) {
 				try {
-					co_await socket_.async_connect(asio::ip::tcp::endpoint(asio::ip::make_address_v4(LocalHost), Port), asio::use_awaitable);
+					co_await socket_.async_connect(asio::ip::tcp::endpoint(asio::ip::make_address_v4(ip), port), asio::use_awaitable);
 					spdlog::error("[TcpClient] {} async_connect success", name_);
 					break;
 				} catch (std::exception& e) {

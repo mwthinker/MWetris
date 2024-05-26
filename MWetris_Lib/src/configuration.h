@@ -32,6 +32,17 @@ namespace mwetris {
 			tetris::Ai ai;
 		};
 
+		struct Network {
+			struct {
+				std::string ip;
+				int port;
+			} global;
+			struct {
+				std::string ip;
+				int port;
+			} server;
+		};
+
 		static Configuration& getInstance();
 
 		void quit();
@@ -113,10 +124,7 @@ namespace mwetris {
 		bool isMoveWindowByHoldingDownMouse() const;
 		void setMoveWindowByHoldingDownMouse(bool activate);
 
-		int getPort() const;
-		void setPort(int port);
-
-		int getTimeToConnectMS() const;
+		Network getNetwork() const;
 
 		std::string getIp() const;
 		void setIp(const std::string& ip);

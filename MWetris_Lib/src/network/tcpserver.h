@@ -21,15 +21,20 @@ namespace mwetris::network {
 
 	class TcpServer : public ServerCore {
 	public:
-		explicit TcpServer(asio::io_context& ioContext)
-			: ServerCore(ioContext) {
+		struct Settings {
+			int port;
+		};
+
+		TcpServer(asio::io_context& ioContext, const Settings& settings)
+			: ServerCore(ioContext)
+			, settings_{settings} {
 		}
 
 		~TcpServer() override {
 		}
 
 		asio::awaitable<void> run() override {
-			asio::ip::tcp::acceptor acceptor(ioContext_, {asio::ip::tcp::v4(), 12556});
+			asio::ip::tcp::acceptor acceptor(ioContext_, {asio::ip::tcp::v4(), static_cast<asio::ip::port_type>(settings_.port)});
 			for (;;) try {
 				asio::ip::tcp::socket socket = co_await acceptor.async_accept(asio::use_awaitable);
 				spdlog::error("[TcpServer] Socket open: {}", socket.is_open());
@@ -42,7 +47,9 @@ namespace mwetris::network {
 				spdlog::error("[TcpServer] Exception: {}", e.what());
 			}
 		}
-
+	private:
+		asio::ip::port_type port_;
+		Settings settings_;
 	};
 
 }

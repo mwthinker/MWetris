@@ -41,45 +41,6 @@ namespace mwetris::network {
 		co_return;
 	}
 
-	/*
-	asio::awaitable<void> listener() {
-		auto executor = co_await asio::this_coro::executor;
-		asio::ip::tcp::acceptor acceptor(executor, {asio::ip::tcp::v4(), 55555});
-		for (;;) {
-			asio::ip::tcp::socket socket = co_await acceptor.async_accept(asio::use_awaitable);
-			asio::co_spawn(executor, receivedFromClient(std::move(socket)), asio::detached);
-		}
-	}
-
-	asio::awaitable<void> receivedFromClient(asio::ip::tcp::socket&& socket) {
-		auto client = std::make_shared<TcpClient>(ioContext_);
-		const auto& remote = remotes_.emplace_back(Remote{
-			.client = nullptr,
-			.clientId = ClientId::generateUniqueId()
-		});
-		triggerConnectedClient(remote);
-
-		ProtobufMessage protobufMessage;
-		while (socket.is_open()) {
-			protobufMessage.clear();
-
-			// Read header.
-			std::size_t size = co_await socket.async_read_some(
-				asio::buffer(protobufMessage.getData(), protobufMessage.getHeaderSize()),
-				asio::use_awaitable
-			);
-			protobufMessage.reserveBodySize();
-
-			// Read body.
-			size = co_await socket.async_read_some(
-				asio::buffer(protobufMessage.getBodyData(), protobufMessage.getBodySize()),
-				asio::use_awaitable
-			);
-		}
-		co_return;
-	}
-	*/
-
 	std::shared_ptr<Client> DebugServer::addClient() {
 		auto client = DebugClientOnServer::create(shared_from_this());
 		const auto& remote = remotes_.emplace_back(Remote{
