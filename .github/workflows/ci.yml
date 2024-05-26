@@ -42,7 +42,9 @@ jobs:
 
       - name: Run Debug tests
         shell: bash
-        run: ctest --rerun-failed --output-on-failure --test-dir build_debug/TetrisEngine/TetrisEngine_Test/
+        run: |
+          ctest --rerun-failed --output-on-failure --test-dir build_debug/TetrisEngine/TetrisEngine_Test/
+          ctest --rerun-failed --output-on-failure --test-dir build_debug/MWetris_Test/
       
       - name: Display help text for Debug TetrisEngine 
         shell: bash
@@ -75,7 +77,9 @@ jobs:
 
       - name: Run Release tests
         shell: bash
-        run: ctest --rerun-failed --output-on-failure --test-dir build_release/TetrisEngine/TetrisEngine_Test/
+        run: |
+          ctest --rerun-failed --output-on-failure --test-dir build_release/TetrisEngine/TetrisEngine_Test/
+          ctest --rerun-failed --output-on-failure --test-dir build_release/MWetris_Test/
       
       - name: Display help text for Release TetrisEngine 
         shell: bash
