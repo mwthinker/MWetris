@@ -4,7 +4,7 @@ FetchContent_Declare(CppSdl2
 	GIT_REPOSITORY
 		https://github.com/mwthinker/CppSdl2.git
 	GIT_TAG
-		29358a9b6b061fd0f7e04075528e3a9beab2c493
+		0a22c944347373be493ecaa4cafbfb8012eb191c
 	OVERRIDE_FIND_PACKAGE
 )
 

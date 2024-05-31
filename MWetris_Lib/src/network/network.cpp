@@ -112,23 +112,23 @@ namespace mwetris::network {
 		}
 
 		wrapperToServer_.Clear();
-		auto tpGameLooby = wrapperToServer_.mutable_player_slot();
-		tpGameLooby->set_index(index);
+		auto tpPlayerSlot = wrapperToServer_.mutable_player_slot();
+		tpPlayerSlot->set_index(index);
 		if (auto human = std::get_if<game::Human>(&playerSlot); human) {
-			tpGameLooby->set_slot_type(tp_c2s::PlayerSlot_SlotType_HUMAN);
-			tpGameLooby->set_name(human->name);
+			tpPlayerSlot->set_slot_type(tp_c2s::PlayerSlot_SlotType_HUMAN);
+			tpPlayerSlot->set_name(human->name);
 			deviceBySlotIndex_[index] = human->device;
 			send(wrapperToServer_);
 		} else if (auto ai = std::get_if<game::Ai>(&playerSlot); ai) {
-			tpGameLooby->set_slot_type(tp_c2s::PlayerSlot_SlotType_AI);
-			tpGameLooby->set_name(ai->name);
+			tpPlayerSlot->set_slot_type(tp_c2s::PlayerSlot_SlotType_AI);
+			tpPlayerSlot->set_name(ai->name);
 			aiBySlotIndex_[index] = ai->ai;
 			send(wrapperToServer_);
 		} else if (std::get_if<game::OpenSlot>(&playerSlot)) {
-			tpGameLooby->set_slot_type(tp_c2s::PlayerSlot_SlotType_OPEN_SLOT);
+			tpPlayerSlot->set_slot_type(tp_c2s::PlayerSlot_SlotType_OPEN_SLOT);
 			send(wrapperToServer_);
 		} else if (std::get_if<game::ClosedSlot>(&playerSlot)) {
-			tpGameLooby->set_slot_type(tp_c2s::PlayerSlot_SlotType_CLOSED_SLOT);
+			tpPlayerSlot->set_slot_type(tp_c2s::PlayerSlot_SlotType_CLOSED_SLOT);
 			send(wrapperToServer_);
 		}
 	}

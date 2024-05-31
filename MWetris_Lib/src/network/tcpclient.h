@@ -17,7 +17,7 @@
 
 namespace mwetris::network {
 
-	class TcpClient : public Client {
+	class TcpClient : public Client, std::enable_shared_from_this<TcpClient> {
 	public:
 		/// @brief Connect to server.
 		/// @param ioContext The io_context to use for asynchronous operations.

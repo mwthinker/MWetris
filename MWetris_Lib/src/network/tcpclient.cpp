@@ -26,11 +26,13 @@ namespace mwetris::network {
 		, name_{"TcpClient_Network"} {
 
 		asio::co_spawn(ioContext_, [this, ip = ip, port = port]() -> asio::awaitable<void> {
-			// TODO! Catch exception if something goes wrong?
+			// Must use ip and port before first co_await to guarantee lifetime.
+			assert(port > 0 && port < 65536);
+			auto endpoint = asio::ip::tcp::endpoint{asio::ip::make_address_v4(ip), static_cast<asio::ip::port_type>(port)};
 			
 			while (true) {
 				try {
-					co_await socket_.async_connect(asio::ip::tcp::endpoint(asio::ip::make_address_v4(ip), port), asio::use_awaitable);
+					co_await socket_.async_connect(endpoint, asio::use_awaitable);
 					spdlog::error("[TcpClient] {} async_connect success", name_);
 					break;
 				} catch (std::exception& e) {
@@ -52,7 +54,10 @@ namespace mwetris::network {
 		spdlog::warn("[TcpClient] {} 0 Socket is open: {}", name_, socket_.is_open());
 	}
 
-	TcpClient::~TcpClient() = default;
+	TcpClient::~TcpClient() {
+		int a = 1;
+		a++;
+	}
 
 	asio::awaitable<ProtobufMessage> TcpClient::receive() {
 		spdlog::warn("[TcpClient] {} 1 Socket is open: {}", name_, socket_.is_open());
