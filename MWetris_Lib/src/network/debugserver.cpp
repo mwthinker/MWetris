@@ -10,8 +10,7 @@
 #include "id.h"
 #include "tcpclient.h"
 
-
-#include <helper.h>
+#include <tetris/helper.h>
 
 #include <server_to_client.pb.h>
 #include <client_to_server.pb.h>

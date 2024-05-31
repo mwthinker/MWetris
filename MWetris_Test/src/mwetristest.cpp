@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <tetrisboard.h>
+#include <tetris/tetrisboard.h>
 
 namespace mwetris {
 

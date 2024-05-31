@@ -1,8 +1,8 @@
 #ifndef MWETRIS_CONFIGURATION_H
 #define MWETRIS_CONFIGURATION_H
 
-#include "block.h"
-#include "ai.h"
+#include <tetris/block.h>
+#include <tetris/ai.h>
 
 #include <sdl/textureview.h>
 #include <sdl/sound.h>
@@ -125,9 +125,6 @@ namespace mwetris {
 		void setMoveWindowByHoldingDownMouse(bool activate);
 
 		Network getNetwork() const;
-
-		std::string getIp() const;
-		void setIp(const std::string& ip);
 
 		sdl::TextureView getBackgroundSprite();
 

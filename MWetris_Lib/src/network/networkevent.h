@@ -5,7 +5,7 @@
 #include "game/playerslot.h"
 #include "id.h"
 
-#include <block.h>
+#include <tetris/block.h>
 
 #include <vector>
 

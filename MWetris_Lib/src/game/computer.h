@@ -1,10 +1,11 @@
 #ifndef MWETRIS_GAME_COMPUTER_H
 #define MWETRIS_GAME_COMPUTER_H
 
-#include "block.h"
-#include "tetrisboard.h"
-#include "ai.h"
 #include "input.h"
+
+#include <tetris/ai.h>
+#include <tetris/block.h>
+#include <tetris/tetrisboard.h>
 
 #include <memory>
 

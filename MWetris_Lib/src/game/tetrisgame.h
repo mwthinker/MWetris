@@ -9,7 +9,7 @@
 #include "defaultgamerules.h"
 #include "playerslot.h"
 
-#include <ai.h>
+#include <tetris/ai.h>
 
 #include <vector>
 #include <memory>

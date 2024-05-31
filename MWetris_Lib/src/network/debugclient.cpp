@@ -4,7 +4,7 @@
 #include "game/player.h"
 #include "debugserver.h"
 
-#include <helper.h>
+#include <tetris/helper.h>
 
 #include <spdlog/spdlog.h>
 

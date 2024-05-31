@@ -1,10 +1,10 @@
 #include "imguiboard.h"
 #include "configuration.h"
-#include "tetrisboard.h"
 #include "game/player.h"
-
 #include "configuration.h"
 #include "util.h"
+
+#include <tetris/tetrisboard.h>
 
 #include <sdl/imguiauxiliary.h>
 

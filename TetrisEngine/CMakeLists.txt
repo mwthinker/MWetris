@@ -7,15 +7,15 @@ project(TetrisEngine
 
 # ----- TetrisEngineLib -------------
 set(SOURCES_LIB
-	srcLib/ai.cpp
-	srcLib/ai.h
-	srcLib/block.cpp
-	srcLib/block.h
-	srcLib/helper.cpp
-	srcLib/helper.h
-	srcLib/random.h
-	srcLib/tetrisboard.cpp
-	srcLib/tetrisboard.h
+	srcLib/tetris/ai.cpp
+	srcLib/tetris/ai.h
+	srcLib/tetris/block.cpp
+	srcLib/tetris/block.h
+	srcLib/tetris/helper.cpp
+	srcLib/tetris/helper.h
+	srcLib/tetris/random.h
+	srcLib/tetris/tetrisboard.cpp
+	srcLib/tetris/tetrisboard.h
 )
 
 if (MSVC)

@@ -3,7 +3,7 @@
 
 #include "device.h"
 
-#include <ai.h>
+#include <tetris/ai.h>
 
 #include <variant>
 #include <vector>

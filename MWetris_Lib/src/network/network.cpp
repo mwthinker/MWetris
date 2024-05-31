@@ -1,7 +1,6 @@
 #include "network.h"
 #include "protobufmessagequeue.h"
 #include "util.h"
-#include "random.h"
 #include "game/playerslot.h"
 #include "network/client.h"
 
@@ -9,7 +8,8 @@
 #include <client_to_server.pb.h>
 #include <server_to_client.pb.h>
 
-#include <helper.h>
+#include <tetris/random.h>
+#include <tetris/helper.h>
 
 #include <net/client.h>
 

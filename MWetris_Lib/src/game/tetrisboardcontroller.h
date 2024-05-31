@@ -1,10 +1,11 @@
 #ifndef MWETRIS_GAME_TETRISBOARDCONTROLLER_H
 #define MWETRIS_GAME_TETRISBOARDCONTROLLER_H
 
-#include "tetrisboard.h"
 #include "input.h"
 #include "actionhandler.h"
 #include "playerboardevent.h"
+
+#include <tetris/tetrisboard.h>
 
 namespace mwetris::game {
 

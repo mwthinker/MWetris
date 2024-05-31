@@ -1,7 +1,8 @@
 #ifndef MWETRIS_GAME_PLAYERBOARDEVENT_H
 #define MWETRIS_GAME_PLAYERBOARDEVENT_H
 
-#include <tetrisboard.h>
+#include <tetris/tetrisboard.h>
+
 #include <variant>
 #include <concepts>
 

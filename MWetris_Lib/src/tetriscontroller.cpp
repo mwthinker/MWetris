@@ -5,7 +5,7 @@
 #include "graphic/gamecomponent.h"
 #include "network/network.h"
 
-#include <helper.h>
+#include <tetris/helper.h>
 
 #include <spdlog/spdlog.h>
 

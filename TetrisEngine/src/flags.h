@@ -1,7 +1,7 @@
 #ifndef FLAGS_H
 #define FLAGS_H
 
-#include <ai.h>
+#include <tetris/ai.h>
 #include <calc/calculatorexception.h>
 
 #include <chrono>

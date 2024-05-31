@@ -12,7 +12,7 @@
 #include "game/playerslot.h"
 #include "game/devicemanager.h"
 
-#include <ai.h>
+#include <tetris/ai.h>
 
 #include <variant>
 #include <memory>

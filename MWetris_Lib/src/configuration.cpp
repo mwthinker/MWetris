@@ -540,14 +540,6 @@ namespace mwetris {
 		return impl_->jsonObject["network"].get<Configuration::Network>();
 	}
 
-	std::string Configuration::getIp() const {
-		return impl_->jsonObject["window"]["ip"].get<std::string>();
-	}
-
-	void Configuration::setIp(const std::string& ip) {
-		impl_->jsonObject["window"]["ip"] = ip;
-	}
-
 	float Configuration::getWindowBarHeight() const {
 		return impl_->jsonObject["window"]["bar"]["height"].get<float>();
 	}

@@ -1,12 +1,13 @@
 #include "tetrisgame.h"
 
-#include "tetrisboard.h"
-#include "helper.h"
 #include "tetrisgameevent.h"
 #include "tetrisparameters.h"
 #include "serialize.h"
 #include "defaultgamerules.h"
 #include "player.h"
+
+#include <tetris/helper.h>
+#include <tetris/tetrisboard.h>
 
 #include <vector>
 #include <algorithm>

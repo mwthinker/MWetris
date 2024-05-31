@@ -1,8 +1,9 @@
 #include "computer.h"
-#include "tetrisboard.h"
 
-#include <vector>
+#include <tetris/tetrisboard.h>
+
 #include <string>
+#include <vector>
 
 namespace mwetris::game {
 

@@ -1,10 +1,11 @@
 #ifndef MWETRIS_GAME_DEFAULTGAMERULES_H
 #define MWETRIS_GAME_DEFAULTGAMERULES_H
 
-#include "tetrisboard.h"
 #include "player.h"
 #include "gamerules.h"
-#include "helper.h"
+
+#include <tetris/helper.h>
+#include <tetris/tetrisboard.h>
 
 #include <spdlog/spdlog.h>
 

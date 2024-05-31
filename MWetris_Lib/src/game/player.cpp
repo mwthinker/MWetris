@@ -4,7 +4,7 @@
 #include "computer.h"
 #include "device.h"
 
-#include "helper.h"
+#include <tetris/helper.h>
 
 #include <queue>
 

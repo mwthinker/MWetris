@@ -1,9 +1,9 @@
 #include "flags.h"
 #include "flagsexception.h"
 
-#include <tetrisboard.h>
-#include <helper.h>
-#include <ai.h>
+#include <tetris/tetrisboard.h>
+#include <tetris/helper.h>
+#include <tetris/ai.h>
 #include <calc/calculatorexception.h>
 
 #include <fmt/core.h>

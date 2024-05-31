@@ -6,7 +6,7 @@
 #include "device.h"
 #include "playerboardevent.h"
 
-#include <tetrisboard.h>
+#include <tetris/tetrisboard.h>
 
 #include <mw/signal.h>
 
