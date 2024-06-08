@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <ai.h>
+#include <tetris/ai.h>
 
 using namespace tetris;
 

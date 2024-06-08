@@ -31,6 +31,11 @@ target_include_directories(TetrisEngineLib
 
 find_package(Calculator REQUIRED)
 
+if (CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+	target_compile_options(TetrisEngineLib PUBLIC --coverage)
+	target_link_options(TetrisEngineLib PUBLIC --coverage)
+endif ()
+
 target_compile_definitions(TetrisEngineLib
 	PUBLIC
 		NOMINMAX

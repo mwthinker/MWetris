@@ -150,6 +150,10 @@ if (MSVC)
 			/MP
 	)
 else ()
+	if (CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+		target_compile_options(MWetris_Lib PUBLIC --coverage)
+		target_link_options(MWetris_Lib PUBLIC --coverage)
+	endif ()
 	target_compile_options(MWetris_Lib
 		PRIVATE
 			-Wall -pedantic -Wcast-align -Woverloaded-virtual -Wno-unused-parameter -Wno-sign-compare -Wno-unused-function

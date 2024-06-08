@@ -107,6 +107,7 @@ else ()
 	)
 endif ()
 
+option(CODE_COVERAGE "Enable coverage reporting" OFF)
 
 target_include_directories(MWetris
 	PRIVATE
