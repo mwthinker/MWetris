@@ -40,7 +40,7 @@ namespace mwetris::game {
 				info.player->updatePlayerData(info.data);
 				info.player->setGravity(calculateGravity(info.data.level));
 
-				connections_ += player->playerBoardUpdate.connect([this, index = players_.size()](const PlayerBoardEvent& playerBoardEvent) {
+				connections_ += player->playerBoardUpdate.connect([this, index = players_.size() - 1](const PlayerBoardEvent& playerBoardEvent) {
 					if (index < 0 || index >= players_.size()) {
 						spdlog::error("[DefaultGameRules] Index {} is out of bounds.", index);
 						return;
@@ -71,8 +71,8 @@ namespace mwetris::game {
 		};
 
 		void updateGameBoardEvent(tetris::BoardEvent gameEvent, int value, Info& info) {
-			spdlog::info("[DefaultGameRules] Game event player: {}", static_cast<char>(info.player->getNextBlockType()));
 			if (info.player->isLocal() && gameEvent == tetris::BoardEvent::RowsRemoved) {
+				spdlog::info("[DefaultGameRules] Game event player: {}", static_cast<char>(info.player->getNextBlockType()));
 				info.data.level = info.player->getClearedRows() / LevelUpNbr + 1;
 				info.data.points += info.data.level * value * value;
 

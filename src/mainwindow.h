@@ -43,12 +43,12 @@ private:
 	void imGuiUpdate(const sdl::DeltaTime& deltaTime) override;
 
 	void imGuiEventUpdate(const SDL_Event& windowEvent) override;
-
+		
+	asio::io_context ioContext_; // Must be declared first to guarantee destruction order.
 	std::vector<std::unique_ptr<mwetris::ui::SubWindow>> subWindows_;
 	std::shared_ptr<mwetris::game::DeviceManager> deviceManager_;
 	std::shared_ptr<mwetris::network::ServerCore> server_;
 	Config config_;
-	asio::io_context ioContext_;
 };
 
 #endif

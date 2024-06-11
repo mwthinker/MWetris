@@ -29,6 +29,8 @@ namespace mwetris::network {
 		constexpr int getHeaderSize() const noexcept {
 			return 2;
 		}
+		
+		void reserveHeaderSize();
 
 		void reserveBodySize();
 
@@ -45,6 +47,10 @@ namespace mwetris::network {
 			return asio::buffer(buffer_);
 		}
 
+		/// @brief Mutable buffer for the body data to be set.
+		/// Important! Must reserve the body size before using this to set the data.
+		/// 
+		/// @return Mutable buffer
 		asio::mutable_buffer getMutableBodyBuffer() {
 			return asio::buffer(getBodyData(), getBodySize());
 		}
@@ -61,8 +67,6 @@ namespace mwetris::network {
 		unsigned char* getBodyData() {
 			return buffer_.data() + getHeaderSize();
 		}
-
-		void reserveHeaderSize();
 
 		void defineBodySize();
 

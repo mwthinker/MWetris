@@ -20,7 +20,7 @@ namespace mwetris::network {
 	}
 
 	std::shared_ptr<DebugClientOnServer> DebugClientOnServer::create(std::shared_ptr<DebugServer> debugServer) {
-		return std::shared_ptr<DebugClientOnServer>(new DebugClientOnServer(debugServer));
+		return std::shared_ptr<DebugClientOnServer>(new DebugClientOnServer{debugServer});
 	}
 
 	DebugClientOnServer::~DebugClientOnServer() {
@@ -29,7 +29,7 @@ namespace mwetris::network {
 	asio::awaitable<ProtobufMessage> DebugClientOnServer::receive() {
 		while (receivedMessages_.empty()) {
 			co_await timer_.async_wait(asio::use_awaitable);
-			timer_.expires_after(std::chrono::seconds(0));
+			timer_.expires_after(std::chrono::seconds{0});
 		}
 		auto message = std::move(receivedMessages_.front());
 		receivedMessages_.pop();
@@ -66,7 +66,7 @@ namespace mwetris::network {
 	// ------------------------------------------------------------------------
 
 	std::shared_ptr<DebugClientOnNetwork> DebugClientOnNetwork::create(std::shared_ptr<DebugClientOnServer> debugClientOnServer) {
-		return std::shared_ptr<DebugClientOnNetwork>(new DebugClientOnNetwork(debugClientOnServer));
+		return std::shared_ptr<DebugClientOnNetwork>(new DebugClientOnNetwork{debugClientOnServer});
 	}
 
 	DebugClientOnNetwork::DebugClientOnNetwork(std::weak_ptr<DebugClientOnServer> debugClientOnServer)

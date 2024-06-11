@@ -4,8 +4,8 @@
 #include "protobufmessage.h"
 #include "protobufmessagequeue.h"
 #include "client.h"
-#include "game/playerslot.h"
 
+#include "game/playerslot.h"
 #include "game/tetrisgame.h"
 
 #include <asio.hpp>
@@ -17,16 +17,16 @@
 
 namespace mwetris::network {
 
-	class TcpClient : public Client, std::enable_shared_from_this<TcpClient> {
+	class TcpClient : public Client, public std::enable_shared_from_this<TcpClient> {
 	public:
 		/// @brief Connect to server.
-		/// @param ioContext The io_context to use for asynchronous operations.
-		TcpClient(asio::io_context& ioContext, const std::string& ip, int port);
+		/// @param ioContext to use for asynchronous operations.
+		static std::shared_ptr<TcpClient> connectToServer(asio::io_context& ioContext, const std::string& ip, int port);
 
 		/// @brief Use exisiting connection on active socket.
-		/// @param ioContext The io_context to use for asynchronous operations.
-		/// @param socket The socket to use.
-		TcpClient(asio::io_context& ioContext, asio::ip::tcp::socket socket);
+		/// @param ioContext to use for asynchronous operations.
+		/// @param socket that is connectd to server.
+		static std::shared_ptr<TcpClient> useExistingSocket(asio::io_context& ioContext, asio::ip::tcp::socket socket);
 
 		~TcpClient() override;
 
@@ -39,13 +39,29 @@ namespace mwetris::network {
 		void release(ProtobufMessage&& message) override;
 
 		asio::io_context& getIoContext() override;
-		
+
+		const std::string& getName() const;
+
+		void stop() override;
+
 	private:
+		TcpClient(asio::io_context& ioContext, const std::string& ip, int port);
+
+		TcpClient(asio::io_context& ioContext, asio::ip::tcp::socket socket);
+
+		asio::awaitable<ProtobufMessage> asyncRead();
+
+		/// @brief Keeps this tcp client alive until the async operation is done.
+		/// @param client to act on
+		/// @return coroutine handle.
+		static asio::awaitable<ProtobufMessage> receive(std::shared_ptr<TcpClient> client);
+
 		asio::io_context& ioContext_;
 		asio::high_resolution_timer timer_;
 		asio::ip::tcp::socket socket_;
 		ProtobufMessageQueue queue_;
 		std::string name_;
+		bool isStopped_ = false;
 	};
 
 }

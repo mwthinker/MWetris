@@ -8,10 +8,11 @@
 #include "game/playerslot.h"
 #include "debugserver.h"
 #include "tcpclient.h"
+#include "asio.h"
 
 #include "game/tetrisgame.h"
 
-#include <asio.hpp>
+
 #include <mw/signal.h>
 
 #include <memory>
@@ -25,39 +26,24 @@ namespace mwetris::network {
 		bool shutDown = false;
 	};
 
-	class TcpServer : public ServerCore {
+	class TcpServer : public ServerCore, public std::enable_shared_from_this<TcpServer> {
 	public:
 		struct Settings {
 			int port;
 		};
 
-		TcpServer(asio::io_context& ioContext, const Settings& settings)
-			: ServerCore(ioContext)
-			, settings_{settings} {
-		}
+		TcpServer(asio::io_context& ioContext, const Settings& settings);
 
-		~TcpServer() override {
-		}
+		~TcpServer() override;
 
-		asio::awaitable<void> run() override {
-			asio::ip::tcp::acceptor acceptor{ioContext_, getEndpoint()};
-			for (;;) try {
-				asio::ip::tcp::socket socket = co_await acceptor.async_accept(asio::use_awaitable);
-
-				auto remote = remotes_.emplace_back(Remote{
-					.client = std::make_shared<TcpClient>(ioContext_, std::move(socket)),
-					.clientId = ClientId::generateUniqueId()
-				});
-				asio::co_spawn(ioContext_, receivedFromClient(remote), asio::detached);
-			} catch (std::exception& e) {
-				spdlog::error("[TcpServer] Exception: {}", e.what());
-			}
-		}
+		asio::awaitable<void> run() override;
 
 	private:
-		asio::ip::tcp::endpoint getEndpoint() const {
-			return asio::ip::tcp::endpoint(asio::ip::tcp::v4(), static_cast<asio::ip::port_type>(settings_.port));
-		}
+		static asio::awaitable<void> run(std::shared_ptr<TcpServer> server);
+
+		void spawnCoroutine(asio::ip::tcp::socket socket);
+
+		asio::ip::tcp::endpoint getEndpoint() const;
 
 		Settings settings_;
 	};

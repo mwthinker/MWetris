@@ -1,9 +1,10 @@
 #include <benchmark/benchmark.h>
 
-#include <tetrisboard.h>
-#include <block.h>
+#include <tetris/tetrisboard.h>
+#include <tetris/block.h>
+#include <tetris/ai.h>
+
 #include <vector>
-#include <ai.h>
 
 using namespace tetris;
 

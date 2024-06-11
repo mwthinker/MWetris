@@ -24,6 +24,10 @@ MainWindow::MainWindow(const Config& config)
 }
 
 MainWindow::~MainWindow() {
+	//ioContext_.stop();
+	server_->stop();
+	ioContext_.stop();
+	ioContext_.run();
 	mwetris::Configuration::getInstance().quit();
 }
 
@@ -62,7 +66,7 @@ void MainWindow::initPreLoop() {
 void MainWindow::initSingleTcpClient() {
 	auto [ip, port] = mwetris::Configuration::getInstance().getNetwork().server;
 	for (int i = 0; i < config_.windows; ++i) {
-		auto tcpClient = std::make_shared<mwetris::network::TcpClient>(ioContext_, ip, port);
+		auto tcpClient = mwetris::network::TcpClient::connectToServer(ioContext_, ip, port);
 		auto type = (i == 0) ? mwetris::ui::TetrisWindow::Type::MainWindow : mwetris::ui::TetrisWindow::Type::SecondaryWindow;
 		std::string name = (i == 0) ? "MainWindow" : fmt::format("SecondaryWindow{}", i);
 		subWindows_.push_back(std::make_unique<mwetris::ui::TetrisWindow>(name, type, *this,
@@ -79,7 +83,7 @@ void MainWindow::initTcpServer() {
 	};
 	auto server = std::make_shared<mwetris::network::TcpServer>(ioContext_, settings);
 	for (int i = 0; i < config_.windows; ++i) {
-		auto tcpClient = std::make_shared<mwetris::network::TcpClient>(ioContext_, ip, port);
+		auto tcpClient = mwetris::network::TcpClient::connectToServer(ioContext_, ip, port);
 		auto type = (i == 0) ? mwetris::ui::TetrisWindow::Type::MainWindow : mwetris::ui::TetrisWindow::Type::SecondaryWindow;
 		std::string name = (i == 0) ? "MainWindow" : fmt::format("SecondaryWindow{}", i);
 		subWindows_.push_back(std::make_unique<mwetris::ui::TetrisWindow>(name, type, *this,

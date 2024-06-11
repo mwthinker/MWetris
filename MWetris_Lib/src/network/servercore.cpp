@@ -12,9 +12,18 @@ namespace mwetris::network {
 		asio::co_spawn(ioContext_, run(), asio::detached);
 	}
 
-	asio::awaitable<void> ServerCore::receivedFromClient(Remote remote) {
-		while (true) {
-			ProtobufMessage message = co_await remote.client->receive();
+	void ServerCore::stop() {
+		for (auto& remote : remotes_) {
+			remote.client->stop();
+		}
+		remotes_.clear();
+		isStopped_ = true;
+	}
+
+	asio::awaitable<void> ServerCore::receivedFromClient(Remote remote) try {
+		while (!isStopped_) {
+			auto client = remote.client;
+			ProtobufMessage message = co_await client->receive();
 			bool valid = message.getSize() > 0;
 			if (valid) {
 				wrapperFromClient_.Clear();
@@ -29,6 +38,10 @@ namespace mwetris::network {
 				spdlog::info("[ServerCore] Invalid message size");
 			}
 		}
+		co_return;
+	} catch (const std::exception& e) {
+		spdlog::error("[ServerCore] Exception: {}", e.what());
+		//throw;
 		co_return;
 	}
 
@@ -145,6 +158,7 @@ namespace mwetris::network {
 	}
 
 	ServerCore::~ServerCore() {
+		stop();
 	}
 
 	ConnectedClient ServerCore::convertToConnectedClient(const Remote& remote) const {

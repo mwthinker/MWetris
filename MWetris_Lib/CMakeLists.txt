@@ -34,7 +34,6 @@ set(SOURCES_LIB
 	src/game/player.cpp
 	src/game/playerboardevent.h
 	src/game/playerslot.h
-	src/game/taskqueue.h
 	src/game/tetrisgame.cpp
 	src/game/tetrisgameevent.h
 	src/game/tetrisgame.h
@@ -44,6 +43,7 @@ set(SOURCES_LIB
 	src/game/serializehighscore.cpp
 	src/game/serializehighscore.h
 
+	src/network/asio.h
 	src/network/client.h
 	src/network/debugclient.cpp
 	src/network/debugclient.h

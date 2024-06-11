@@ -24,16 +24,35 @@ namespace mwetris::network {
 		: client_{client}
 		, timer_{client->getIoContext()} {
 
-		asio::co_spawn(client->getIoContext(), [this]() mutable -> asio::awaitable<void> {
-			co_await run();
-		}, asio::detached);
+		start();
 	}
 
 	bool Network::isInsideGameRoom() const {
 		return !gameRoomId_.isEmpty();
 	}
 
+	void Network::start() {
+		running_ = true;
+
+		asio::co_spawn(client_->getIoContext(), [this]() mutable -> asio::awaitable<void> {
+			auto network = shared_from_this();
+			co_await run(network);
+		}, asio::detached);
+	}
+
+	void Network::stop() {
+		client_->stop();
+		// To avoid getting stuck
+		gameRoomId_ = GameRoomId{};
+
+		// To be able to stop the coroutine
+		running_ = false;
+	}
+
 	Network::~Network() {
+		spdlog::info("[Network] Destructor");
+		stop();
+
 		// To avoid getting stuck
 		gameRoomId_ = GameRoomId{};
 
@@ -151,79 +170,89 @@ namespace mwetris::network {
 		return !gameRoomId_.isEmpty();
 	}
 
-	asio::awaitable<void> Network::run() {
-		while (running_) {
+	asio::awaitable<void> Network::run(std::shared_ptr<Network> network) try {
+		int value = network.use_count();
+		while (network->running_) {
 			// Connect to server
-			co_await nextMessage();
-			if (wrapperFromServer_.has_failed_to_connect()) {
+			co_await network->nextMessage(network);
+			if (network->wrapperFromServer_.has_failed_to_connect()) {
 				continue;
-			} else if (wrapperFromServer_.has_game_room_created()) {
-				handlGameRoomCreated(wrapperFromServer_.game_room_created());
-			} else if (wrapperFromServer_.has_game_room_joined()) {
-				handleGameRoomJoined(wrapperFromServer_.game_room_joined());
+			} else if (network->wrapperFromServer_.has_game_room_created()) {
+				network->handlGameRoomCreated(network->wrapperFromServer_.game_room_created());
+			} else if (network->wrapperFromServer_.has_game_room_joined()) {
+				network->handleGameRoomJoined(network->wrapperFromServer_.game_room_joined());
 			} else {
 				continue;
 			}
 
 			// Wait for game to start
 			do {
-				co_await nextMessage();
-				if (wrapperFromServer_.has_game_looby()) {
-					handleGameLooby(wrapperFromServer_.game_looby());
+				co_await network->nextMessage(network);
+				if (network->wrapperFromServer_.has_game_looby()) {
+					network->handleGameLooby(network->wrapperFromServer_.game_looby());
 				}
-				if (wrapperFromServer_.has_connections()) {
-					handleConnections(wrapperFromServer_.connections());
+				if (network->wrapperFromServer_.has_connections()) {
+					network->handleConnections(network->wrapperFromServer_.connections());
 				}
-				if (wrapperFromServer_.has_create_game()) {
-					handleCreateGame(wrapperFromServer_.create_game());
+				if (network->wrapperFromServer_.has_create_game()) {
+					network->handleCreateGame(network->wrapperFromServer_.create_game());
 					break;
 				}
-			} while (gameRoomId_);
+			} while (network->gameRoomId_);
 
-			spdlog::debug("[Network] Game started GameRoomId {}", gameRoomId_);
+			spdlog::debug("[Network] Game started GameRoomId {}", network->gameRoomId_);
 
 			// Game loop
-			while (gameRoomId_) {
-				co_await nextMessage();
-				if (wrapperFromServer_.has_game_command()) {
-					handleGameCommand(wrapperFromServer_.game_command());
+			while (network->gameRoomId_) {
+				co_await network->nextMessage(network);
+				if (network->wrapperFromServer_.has_game_command()) {
+					network->handleGameCommand(network->wrapperFromServer_.game_command());
 				}
-				if (wrapperFromServer_.has_request_game_restart()) {
-					handleRequestGameRestart(wrapperFromServer_.request_game_restart());
+				if (network->wrapperFromServer_.has_request_game_restart()) {
+					network->handleRequestGameRestart(network->wrapperFromServer_.request_game_restart());
 				}
-				if (wrapperFromServer_.has_game_restart()) {
-					handleGameRestart(wrapperFromServer_.game_restart());
+				if (network->wrapperFromServer_.has_game_restart()) {
+					network->handleGameRestart(network->wrapperFromServer_.game_restart());
 				}
-				if (wrapperFromServer_.has_board_move()) {
-					handleBoardMove(wrapperFromServer_.board_move());
+				if (network->wrapperFromServer_.has_board_move()) {
+					network->handleBoardMove(network->wrapperFromServer_.board_move());
 				}
-				if (wrapperFromServer_.has_next_block()) {
-					handleBoardNextBlock(wrapperFromServer_.next_block());
+				if (network->wrapperFromServer_.has_next_block()) {
+					network->handleBoardNextBlock(network->wrapperFromServer_.next_block());
 				}
-				if (wrapperFromServer_.has_board_external_squares()) {
-					handleBoardExternalSquares(wrapperFromServer_.board_external_squares());
+				if (network->wrapperFromServer_.has_board_external_squares()) {
+					network->handleBoardExternalSquares(network->wrapperFromServer_.board_external_squares());
 				}
 			}
-			leaveGameRoomEvent(LeaveGameRoomEvent{});
+			network->leaveGameRoomEvent(LeaveGameRoomEvent{});
 		}
+		co_return;
+	} catch (const std::exception& e) {
+		spdlog::error("[Network] run Exception: {}", e.what());
 		co_return;
 	}
 
-	asio::awaitable<void> Network::nextMessage() {
+	asio::awaitable<void> Network::nextMessage(std::shared_ptr<Network> network) try {
 		bool valid = false;
 		do {
-			ProtobufMessage message = co_await client_->receive();
+			ProtobufMessage message = co_await network->client_->receive();
 			valid = message.getSize() > 0;
 			if (valid) {
-				wrapperFromServer_.Clear();
-				valid = message.parseBodyInto(wrapperFromServer_);
-				if (message.getSize() != 0) {
+				network->wrapperFromServer_.Clear();
+				valid = message.parseBodyInto(network->wrapperFromServer_);
+				if (message.getSize() == 0) {
 					spdlog::warn("[Network] Invalid data");
 				}
-				client_->release(std::move(message));
+				network->client_->release(std::move(message));
 			}
-		} while (!valid || leaveRoom_ || !running_);
-		leaveRoom_ = false;
+			if (!network->running_) {
+				break;
+			}
+		} while (!valid || network->leaveRoom_);
+		network->leaveRoom_ = false;
+		co_return;
+	} catch (const std::exception& e) {
+		spdlog::error("[Network] nextMessage Exception: {}", e.what());
 		co_return;
 	}
 
@@ -503,7 +532,7 @@ namespace mwetris::network {
 	}
 
 	void Network::handlePlayerBoardUpdate(const NetworkPlayer& player, const game::TetrisBoardEvent& tetrisBoardEvent) {
-		spdlog::info("[Network] handle TetrisBoardEvent");
+		//spdlog::info("[Network] handle TetrisBoardEvent");
 	}
 
 	void Network::send(const tp_c2s::Wrapper& wrapper) {

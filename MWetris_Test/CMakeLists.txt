@@ -14,6 +14,7 @@ set(SOURCES_TEST
 	src/mwetristest.cpp
 	src/network/gameroomtest.cpp
 	src/network/networktest.cpp
+	src/network/protobufmessagetest.cpp
 	src/network/testutil.cpp
 	src/network/testutil.h
 	src/main.cpp

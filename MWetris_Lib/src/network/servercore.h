@@ -33,17 +33,10 @@ namespace mwetris::network {
 
 		~ServerCore() override;
 
+		void stop();
+
+		/// @brief Start the server. Spawns a coroutine run().
 		void start();
-
-		asio::awaitable<void> receivedFromClient(Remote remote);
-
-		void receivedFromRemote(Remote& fromRemote, const tp_c2s::Wrapper& wrapper);
-
-		void handleCreateGameRoom(Remote& remote, const tp_c2s::CreateGameRoom& createGameRoom);
-
-		void handleJoinGameRoom(Remote& remote, const tp_c2s::JoinGameRoom& joinGameRoom);
-
-		void handleLeaveGameRoom(Remote& remote, const tp_c2s::LeaveGameRoom& leaveGameRoom);
 
 		void release(ProtobufMessage&& message);
 
@@ -61,20 +54,30 @@ namespace mwetris::network {
 
 		std::vector<ConnectedClient> getConnectedClients() const;
 
-		void sendToClient(const ClientId& clientId, const google::protobuf::MessageLite& message) override;
-
-		void triggerConnectedClientEvent(const ConnectedClient& connectedClient) override;
-
-		void triggerPlayerSlotEvent(const std::vector<Slot>& slots) override;
-
 		asio::io_context& getIoContext() {
 			return ioContext_;
 		}
 
 	protected:
+		explicit ServerCore(asio::io_context& ioContext);
+
 		virtual asio::awaitable<void> run() = 0;
 
-		explicit ServerCore(asio::io_context& ioContext);
+		asio::awaitable<void> receivedFromClient(Remote remote);
+
+		void receivedFromRemote(Remote& fromRemote, const tp_c2s::Wrapper& wrapper);
+
+		void handleCreateGameRoom(Remote& remote, const tp_c2s::CreateGameRoom& createGameRoom);
+
+		void handleJoinGameRoom(Remote& remote, const tp_c2s::JoinGameRoom& joinGameRoom);
+
+		void handleLeaveGameRoom(Remote& remote, const tp_c2s::LeaveGameRoom& leaveGameRoom);
+
+		void sendToClient(const ClientId& clientId, const google::protobuf::MessageLite& message) override;
+
+		void triggerConnectedClientEvent(const ConnectedClient& connectedClient) override;
+
+		void triggerPlayerSlotEvent(const std::vector<Slot>& slots) override;
 
 		ConnectedClient convertToConnectedClient(const Remote& remote) const;
 
@@ -92,6 +95,7 @@ namespace mwetris::network {
 		tp_s2c::Wrapper wrapperToClient_;
 		ProtobufMessageQueue messageQueue_;
 		std::vector<Remote> remotes_;
+		bool isStopped_ = false;
 	};
 
 }

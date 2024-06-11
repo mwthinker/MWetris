@@ -14,7 +14,6 @@
 
 #include <mw/signal.h>
 
-
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
 #include <asio.hpp>
@@ -23,7 +22,7 @@
 
 namespace mwetris::network {
 
-	class Network {
+	class Network : public std::enable_shared_from_this<Network> {
 	public:
 		mw::PublicSignal<Network, const PlayerSlotEvent&> playerSlotEvent;
 		mw::PublicSignal<Network, const CreateGameRoomEvent&> createGameRoomEvent;
@@ -40,6 +39,10 @@ namespace mwetris::network {
 		};
 
 		explicit Network(std::shared_ptr<Client> client);
+
+		void start();
+
+		void stop();
 
 		bool isInsideGameRoom() const;
 
@@ -64,9 +67,9 @@ namespace mwetris::network {
 		bool isInsideRoom() const;
 
 	private:
-		asio::awaitable<void> run();
+		static asio::awaitable<void> run(std::shared_ptr<Network> network);
 
-		asio::awaitable<void> nextMessage();
+		static asio::awaitable<void> nextMessage(std::shared_ptr<Network> network);
 
 		void handleRequestGameRestart(const tp_s2c::RequestGameRestart& requestGameRestart);
 
