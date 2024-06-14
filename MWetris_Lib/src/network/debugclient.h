@@ -4,11 +4,8 @@
 #include "protobufmessage.h"
 #include "protobufmessagequeue.h"
 #include "client.h"
-#include "game/playerslot.h"
+#include "asio.h"
 
-#include "game/tetrisgame.h"
-
-#include <asio.hpp>
 #include <mw/signal.h>
 
 #include <memory>
@@ -27,6 +24,8 @@ namespace mwetris::network {
 		static std::shared_ptr<DebugClientOnServer> create(std::shared_ptr<DebugServer> debugServer);
 
 		~DebugClientOnServer() override;
+
+		void stop() override;
 
 		asio::awaitable<ProtobufMessage> receive() override;
 
@@ -56,6 +55,8 @@ namespace mwetris::network {
 		static std::shared_ptr<DebugClientOnNetwork> create(std::shared_ptr<DebugClientOnServer> debugClientOnServer);
 
 		~DebugClientOnNetwork() override;
+
+		void stop() override;
 
 		asio::awaitable<ProtobufMessage> receive() override;
 

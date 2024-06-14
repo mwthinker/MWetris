@@ -4,8 +4,6 @@
 #include "protobufmessage.h"
 #include "client.h"
 #include "servercore.h"
-#include "game/playerslot.h"
-#include "game/tetrisgame.h"
 
 #include <sdl/window.h>
 #include <mw/signal.h>

@@ -64,6 +64,7 @@ namespace mwetris::network {
 		MOCK_METHOD(void, acquire, (ProtobufMessage& message), (override));
 		MOCK_METHOD(void, release, (ProtobufMessage&& message), (override));
 		MOCK_METHOD(asio::io_context&, getIoContext, (), (override));
+		MOCK_METHOD(void, stop, (), (override));
 	};
 
 	class NetworkTest : public ::testing::Test {

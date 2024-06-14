@@ -1,14 +1,14 @@
 #ifndef MWETRIS_NETWORK_TCPCLIENT_H
 #define MWETRIS_NETWORK_TCPCLIENT_H
 
+#include "client.h"
+#include "asio.h"
 #include "protobufmessage.h"
 #include "protobufmessagequeue.h"
-#include "client.h"
 
 #include "game/playerslot.h"
 #include "game/tetrisgame.h"
 
-#include <asio.hpp>
 #include <mw/signal.h>
 
 #include <memory>

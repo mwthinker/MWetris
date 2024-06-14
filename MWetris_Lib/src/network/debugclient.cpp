@@ -1,7 +1,6 @@
 #include "debugclient.h"
 #include "protobufmessagequeue.h"
 #include "util.h"
-#include "game/player.h"
 #include "debugserver.h"
 
 #include <tetris/helper.h>
@@ -24,6 +23,9 @@ namespace mwetris::network {
 	}
 
 	DebugClientOnServer::~DebugClientOnServer() {
+	}
+
+	void DebugClientOnServer::stop() {
 	}
 
 	asio::awaitable<ProtobufMessage> DebugClientOnServer::receive() {
@@ -77,6 +79,9 @@ namespace mwetris::network {
 	}
 
 	DebugClientOnNetwork::~DebugClientOnNetwork() {
+	}
+
+	void DebugClientOnNetwork::stop() {
 	}
 
 	asio::awaitable<ProtobufMessage> DebugClientOnNetwork::receive() {

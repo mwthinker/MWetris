@@ -6,7 +6,8 @@ namespace mwetris::network {
 
 	ServerCore::ServerCore(asio::io_context& ioContext)
 		: messageQueue_{100}
-		, ioContext_{ioContext} {}
+		, ioContext_{ioContext} {
+	}
 
 	void ServerCore::start() {
 		asio::co_spawn(ioContext_, run(), asio::detached);

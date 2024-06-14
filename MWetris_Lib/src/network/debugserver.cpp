@@ -3,7 +3,6 @@
 #include "protobufmessagequeue.h"
 #include "util.h"
 #include "util/uuid.h"
-#include "game/player.h"
 #include "gameroom.h"
 #include "server.h"
 #include "util/uuid.h"

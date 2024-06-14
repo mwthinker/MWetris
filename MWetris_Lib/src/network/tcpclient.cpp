@@ -1,7 +1,6 @@
 #include "tcpclient.h"
 #include "protobufmessagequeue.h"
 #include "util.h"
-#include "debugserver.h"
 
 #include "game/player.h"
 
@@ -26,7 +25,7 @@ namespace mwetris::network {
 			while (!client->isStopped_) {
 				try {
 					co_await client->socket_.async_connect(endpoint, asio::use_awaitable);
-					spdlog::error("[TcpClient] {} async_connect success", client->name_);
+					spdlog::debug("[TcpClient] {} async_connect success", client->name_);
 					break;
 				} catch (const std::exception& e) {
 					spdlog::error("[TcpClient] {} async_connect Exception: {}", client->name_, e.what());
@@ -45,7 +44,7 @@ namespace mwetris::network {
 	}
 
 	void TcpClient::stop() {
-		spdlog::warn("[TcpClient] {} Stop", name_);
+		spdlog::debug("[TcpClient] {} Stop", name_);
 		try {
 			socket_.close();
 		} catch (const std::exception& e) {
@@ -116,7 +115,7 @@ namespace mwetris::network {
 	}
 
 	void TcpClient::send(ProtobufMessage&& message) {
-		auto buffer = message.getMutableDataBuffer();
+		const auto buffer = message.getDataBuffer();
 		asio::async_write(socket_, buffer, asio::transfer_exactly(buffer.size()),
 			// message is saved in pb so buffer is not destroyed.
 			[client = shared_from_this(), pb = std::move(message)](std::error_code ec, std::size_t length) mutable {

@@ -1,21 +1,20 @@
 #ifndef MWETRIS_NETWORK_SERVERCORE_H
 #define MWETRIS_NETWORK_SERVERCORE_H
 
+#include "asio.h"
 #include "client.h"
+#include "gameroom.h"
+#include "id.h"
 #include "protobufmessage.h"
 #include "protobufmessagequeue.h"
-#include "util.h"
-#include "util/uuid.h"
-#include "game/player.h"
-#include "gameroom.h"
 #include "server.h"
+#include "util.h"
+
+#include "game/player.h"
 #include "util/uuid.h"
-#include "id.h"
 
-#include <server_to_client.pb.h>
 #include <client_to_server.pb.h>
-
-#include <asio.hpp>
+#include <server_to_client.pb.h>
 
 namespace mwetris::network {
 
@@ -33,9 +32,15 @@ namespace mwetris::network {
 
 		~ServerCore() override;
 
+		/// @brief Stop all active coroutines.
+		/// 
+		/// I.e. makes the coroutines drop the ownership of "this" object and all
+		/// connected client coroutines. But current jobs must still be run to
+		/// completion. I.e. ioContext.poll() must be called until all jobs are
+		/// done to garantee that the coroutines are finished.
 		void stop();
 
-		/// @brief Start the server. Spawns a coroutine run().
+		/// @brief Start the server. Spawns a coroutine.
 		void start();
 
 		void release(ProtobufMessage&& message);

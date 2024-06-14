@@ -2,16 +2,10 @@
 #define MWETRIS_NETWORK_TCPSERVER_H
 
 #include "servercore.h"
+#include "asio.h"
 #include "protobufmessage.h"
 #include "protobufmessagequeue.h"
-#include "client.h"
-#include "game/playerslot.h"
-#include "debugserver.h"
 #include "tcpclient.h"
-#include "asio.h"
-
-#include "game/tetrisgame.h"
-
 
 #include <mw/signal.h>
 

@@ -10,10 +10,13 @@ namespace mwetris::network {
 	class Client {
 	public:
 		virtual ~Client() = default;
-
-		// Stops any active coroutines.
-		virtual void stop() {
-		}
+		
+		/// @brief Stop any active coroutines.
+		/// 
+		/// I.e. makes the coroutine drop the ownership of this object. But current
+		/// jobs must still be run to completion. I.e. ioContext.poll() must be
+		/// called until all jobs are done to garantee that the coroutine is finished.
+		virtual void stop() = 0;
 
 		/// @brief Receive a message from the server.
 		/// @return The received message.
