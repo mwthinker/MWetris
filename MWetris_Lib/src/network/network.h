@@ -1,16 +1,15 @@
 #ifndef MWETRIS_NETWORK_NETWORK_H
 #define MWETRIS_NETWORK_NETWORK_H
 
-#include "game/playerslot.h"
-#include "network/client.h"
-#include "network/networkevent.h"
+#include "client.h"
+#include "networkevent.h"
 #include "id.h"
+
+#include "game/playerslot.h"
 
 #include <shared.pb.h>
 #include <client_to_server.pb.h>
 #include <server_to_client.pb.h>
-
-#include <net/client.h>
 
 #include <mw/signal.h>
 

@@ -1,9 +1,3 @@
-#include <net/server.h>
-#include <net/client.h>
-#include <net/timer.h>
-#include <net/lanudpsender.h>
-#include <net/lanudpreceiver.h>
-
 #include <server_to_client.pb.h>
 
 #include <functional>
@@ -12,6 +6,7 @@
 
 using namespace std::chrono_literals;
 
+/*
 constexpr int Port = 5013;
 const std::string LocalHost = "127.0.0.1";
 
@@ -177,9 +172,10 @@ void testNetwork(int argc, const char* argv[]) {
 		runServer();
 	}
 }
+*/
 
 int main(int argc, const char* argv[]) {
-	testNetwork(argc, argv);
+	//testNetwork(argc, argv);
 
 	return 0;
 }

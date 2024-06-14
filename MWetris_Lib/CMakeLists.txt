@@ -109,9 +109,9 @@ set(SOURCES_LIB
 )
 
 find_package(Threads REQUIRED)
+find_package(asio CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
-find_package(CppProtoNetwork REQUIRED)
 find_package(Signal REQUIRED)
 find_package(CppSdl2 REQUIRED)
 
@@ -137,17 +137,35 @@ target_compile_definitions(MWetris_Lib
 		MWETRIS_GUID="${GUID}"
 )
 
+# ASIO non-boost version.
+target_compile_definitions(MWetris_Lib
+	PUBLIC
+		ASIO_STANDALONE
+		ASIO_NO_DEPRECATED
+)
+target_compile_definitions(MWetris_Lib
+	PUBLIC
+		ASIO_NO_DEPRECATED
+		ASIO_NO_DYNAMIC_BUFFER_V1
+)
+
 if (MSVC)
 	target_compile_definitions(MWetris_Lib
 		PUBLIC
 			_CRT_SECURE_NO_WARNINGS
 			NOMINMAX
 	)
-
 	target_compile_options(MWetris_Lib
 		PUBLIC
 			/W3 /WX /permissive-
 			/MP
+	)
+
+	# ASIO related.
+	target_compile_definitions(MWetris_Lib
+		PUBLIC
+			_WIN32_WINNT=_WIN32_WINNT_WS03
+			_WINSOCK_DEPRECATED_NO_WARNINGS
 	)
 else ()
 	if (CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -164,7 +182,7 @@ set(nlohmann-json_IMPLICIT_CONVERSIONS OFF)
 
 target_link_libraries(MWetris_Lib
 	PUBLIC
-		CppProtoNetwork
+		asio asio::asio
 		TetrisEngineLib
 		nlohmann_json
 		nlohmann_json::nlohmann_json
@@ -176,7 +194,7 @@ target_link_libraries(MWetris_Lib
 
 set_target_properties(MWetris_Lib
 	PROPERTIES
-		CXX_STANDARD 20
+		CXX_STANDARD 23
 		CXX_STANDARD_REQUIRED YES
 		CXX_EXTENSIONS NO
 )

@@ -41,7 +41,6 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 
 find_package(CppSdl2 REQUIRED)
-find_package(CppProtoNetwork REQUIRED)
 find_package(Signal REQUIRED)
 find_package(Calculator REQUIRED)
 
@@ -54,7 +53,6 @@ message(STATUS "GUID: ${GUID}")
 
 set(ExternalDependencies
 	CppSdl2
-	CppProtoNetwork
 	Calculator
 	ImGui
 )
@@ -66,9 +64,6 @@ if (CppSdl2_Example)
 endif ()
 if (Calculator_Test)
 	set(ExternalDependencieTests "${ExternalDependencieTests};Calculator_Test")
-endif ()
-if (CppProtoNetwork_Test)
-	set(ExternalDependencieTests "${ExternalDependencieTests};CppProtoNetwork_Test")
 endif ()
 if (Signal_Test)
 	set(ExternalDependencieTests "${ExternalDependencieTests};Signal_Test")
@@ -148,7 +143,7 @@ target_compile_definitions(MWetris
 
 set_target_properties(MWetris
 	PROPERTIES
-		CXX_STANDARD 20
+		CXX_STANDARD 23
 		CXX_STANDARD_REQUIRED YES
 		CXX_EXTENSIONS NO
 )

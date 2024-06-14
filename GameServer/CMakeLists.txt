@@ -13,7 +13,7 @@ add_executable(GameServer
 
 target_link_libraries(GameServer
 	PRIVATE
-		CppProtoNetwork
+		MWetris_Lib
 		Protocol
 		fmt::fmt-header-only
 )
@@ -28,7 +28,7 @@ endif ()
 
 set_target_properties(GameServer
 	PROPERTIES
-		CXX_STANDARD 20
+		CXX_STANDARD 23
 		CXX_STANDARD_REQUIRED YES
 		CXX_EXTENSIONS NO
 )

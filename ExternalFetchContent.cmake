@@ -20,14 +20,6 @@ FetchContent_GetProperties(SDL_GameControllerDB
 		SDL_GameControllerDB_SOURCE_DIR
 )
 
-FetchContent_Declare(CppProtoNetwork
-	GIT_REPOSITORY
-		https://github.com/mwthinker/CppProtoNetwork.git
-	GIT_TAG
-		7e348d617701a1c18e9fe7100166d682c88950e8
-	OVERRIDE_FIND_PACKAGE
-)
-
 FetchContent_Declare(Signal
 	GIT_REPOSITORY
 		https://github.com/mwthinker/Signal.git
