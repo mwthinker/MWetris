@@ -4,8 +4,8 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <network/network.h>
-#include <network/networkevent.h>
+#include <mwetris/network/network.h>
+#include <mwetris/network/networkevent.h>
 
 #include <client_to_server.pb.h>
 #include <server_to_client.pb.h>

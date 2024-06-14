@@ -1,8 +1,8 @@
 #ifndef MWETRIS_NETWORK_NETWORKEVENT_H
 #define MWETRIS_NETWORK_NETWORKEVENT_H
 
-#include "game/player.h"
-#include "game/playerslot.h"
+#include "../game/player.h"
+#include "../game/playerslot.h"
 #include "id.h"
 
 #include <tetris/block.h>

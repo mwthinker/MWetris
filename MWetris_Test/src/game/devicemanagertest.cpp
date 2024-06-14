@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <game/devicemanager.h>
+#include <mwetris/game/devicemanager.h>
 
 namespace mwetris::game {
 

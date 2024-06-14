@@ -3,14 +3,14 @@
 
 #include "scene.h"
 
-#include "types.h"
-#include "configuration.h"
+#include "../../types.h"
+#include "../../configuration.h"
 
-#include "ui/imguiextra.h"
+#include "../imguiextra.h"
 
-#include "game/serialize.h"
-#include "game/device.h"
-#include "game/playerslot.h"
+#include "../../game/serialize.h"
+#include "../../game/device.h"
+#include "../../game/playerslot.h"
 
 #include <tetris/ai.h>
 

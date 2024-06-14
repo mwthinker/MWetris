@@ -3,11 +3,11 @@
 
 #include <sdl/imguiwindow.h>
 
-#include <ui/subwindow.h>
-#include <game/devicemanager.h>
+#include <mwetris/ui/subwindow.h>
+#include <mwetris/game/devicemanager.h>
+#include <mwetris/network/debugserver.h>
+#include <mwetris/network/servercore.h>
 
-#include <network/debugserver.h>
-#include <network/servercore.h>
 #include <asio.hpp>
 
 enum class Network {

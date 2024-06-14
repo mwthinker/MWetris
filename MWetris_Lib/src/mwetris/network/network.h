@@ -5,7 +5,7 @@
 #include "networkevent.h"
 #include "id.h"
 
-#include "game/playerslot.h"
+#include "../game/playerslot.h"
 
 #include <shared.pb.h>
 #include <client_to_server.pb.h>

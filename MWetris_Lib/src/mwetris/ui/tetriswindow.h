@@ -1,16 +1,16 @@
 #ifndef MWETRIS_UI_TETRISWINDOW_H
 #define MWETRIS_UI_TETRISWINDOW_H
 
-#include "timerhandler.h"
+#include "../timerhandler.h"
 #include "scene/scene.h"
 #include "scene/statemachine.h"
 #include "scene/addplayer.h"
-#include "game/serialize.h"
-#include "game/devicemanager.h"
-#include "game/tetrisgameevent.h"
-#include "network/client.h"
-#include "network/networkevent.h"
-#include "ui/subwindow.h"
+#include "../game/serialize.h"
+#include "../game/devicemanager.h"
+#include "../game/tetrisgameevent.h"
+#include "../network/client.h"
+#include "../network/networkevent.h"
+#include "../ui/subwindow.h"
 
 #include <sdl/imguiwindow.h>
 

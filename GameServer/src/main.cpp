@@ -4,7 +4,13 @@
 #include <string>
 #include <fmt/format.h>
 
+#include <argparse/argparse.hpp>
+#include <fmt/printf.h>
+#include <fmt/ostream.h>
+
 using namespace std::chrono_literals;
+
+template <> struct fmt::formatter<argparse::ArgumentParser> : fmt::ostream_formatter {};
 
 /*
 constexpr int Port = 5013;
@@ -173,9 +179,96 @@ void testNetwork(int argc, const char* argv[]) {
 	}
 }
 */
+#include <mwetris/network/tcpserver.h>
+
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+
+#include <filesystem>
+
+namespace {
+
+	const std::string LogFile = "logs/mwetrisServer.log";
+
+	void createLogFolder(const std::string& folderPath) {
+		std::string logPath = "logs";
+		if (!folderPath.empty()) {
+			logPath = folderPath + "/logs";
+		}
+		try {
+			if (std::filesystem::create_directory(logPath)) {
+				fmt::print("Log folder created: {}\n", logPath);
+			}
+		} catch (const std::filesystem::filesystem_error& ex) {
+			fmt::print("Log folder creation failed: {}\n", ex.what());
+		}
+	}
+
+	bool initLog(const std::string& folderPath = "") {
+		try {
+			createLogFolder(folderPath);
+			auto rotatingSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(folderPath + LogFile, 1024 * 1024, 10);
+			auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+
+			auto logger = std::make_shared<spdlog::logger>("tetris", spdlog::sinks_init_list({consoleSink, rotatingSink}));
+			logger->set_level(spdlog::level::trace);
+			spdlog::set_default_logger(logger);
+			return true;
+		} catch (const spdlog::spdlog_ex& ex) {
+			fmt::print("Log initialization failed: {}\n", ex.what());
+			return false;
+		}
+	}
+
+}
+
+void runServer(int port) {
+	initLog();
+	spdlog::info("Start server");
+
+	asio::io_context ioContext;
+
+	auto settings = mwetris::network::TcpServer::Settings{
+		.port = port
+	};
+
+	auto server = std::make_shared<mwetris::network::TcpServer>(ioContext, settings);
+	server->start();
+	ioContext.run();
+}
 
 int main(int argc, const char* argv[]) {
-	//testNetwork(argc, argv);
+	bool ui = false;
+	int port = 11175;
+
+	argparse::ArgumentParser program{"MWetrisServer", PROJECT_VERSION};
+	program.add_description("Server for MWetris.");
+	program.add_argument("-u", "--ui")
+		.help("run with ui")
+		.default_value(ui)
+		.flag();
+	program.add_argument("-p", "--port")
+		.help("tcp/ip port to receive connections from")
+		.default_value(port)
+		.scan<'i', int>();
+
+	try {
+		program.parse_args(argc, argv);
+	} catch (const std::exception& err) {
+		fmt::println("Error: {}", err.what());
+		fmt::println("{}", program);
+		return 1;
+	}
+
+	ui = program.get<bool>("-u");
+
+	if (ui) {
+		fmt::print("Start server with ui\n");
+	} else {
+		port = program.get<int>("-p");
+		runServer(port);
+	}
 
 	return 0;
 }

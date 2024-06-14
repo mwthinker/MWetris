@@ -2,10 +2,10 @@
 #define MWETRIS_UI_NETWORKDEBUGWINDOW_H
 
 #include "subwindow.h"
-#include "timerhandler.h"
-#include "game/playerslot.h"
+#include "../timerhandler.h"
+#include "../game/playerslot.h"
 
-#include <network/servercore.h>
+#include "../network/servercore.h"
 
 #include <sdl/imguiwindow.h>
 #include <signal.h>

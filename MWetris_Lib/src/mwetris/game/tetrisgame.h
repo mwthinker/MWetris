@@ -5,7 +5,7 @@
 #include "tetrisparameters.h"
 #include "tetrisgameevent.h"
 #include "computer.h"
-#include "timerhandler.h"
+#include "../timerhandler.h"
 #include "defaultgamerules.h"
 #include "playerslot.h"
 

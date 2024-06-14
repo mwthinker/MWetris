@@ -5,6 +5,7 @@ project(GameServer
 		CXX
 )
 
+find_package(argparse CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 
 add_executable(GameServer
@@ -13,9 +14,9 @@ add_executable(GameServer
 
 target_link_libraries(GameServer
 	PRIVATE
+		argparse::argparse
 		MWetris_Lib
-		Protocol
-		fmt::fmt-header-only
+		fmt::fmt
 )
 
 if (MSVC)

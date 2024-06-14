@@ -1,8 +1,8 @@
 #ifndef MWETRIS_IMGUIEXTRA_H
 #define MWETRIS_IMGUIEXTRA_H
 
-#include "types.h"
-#include "configuration.h"
+#include "../types.h"
+#include "../configuration.h"
 
 #include <sdl/imguiauxiliary.h>
 

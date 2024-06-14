@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <game/serialize.h>
+#include <mwetris/game/serialize.h>
 
 namespace mwetris::game {
 

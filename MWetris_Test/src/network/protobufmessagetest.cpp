@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <network/protobufmessage.h>
+#include <mwetris/network/protobufmessage.h>
 
 #include <shared.pb.h>
 #include <client_to_server.pb.h>

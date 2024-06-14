@@ -8,10 +8,10 @@
 #include "protobufmessage.h"
 #include "protobufmessagequeue.h"
 #include "server.h"
-#include "util.h"
 
-#include "game/player.h"
-#include "util/uuid.h"
+#include "../game/player.h"
+#include "../util.h"
+#include "../util/uuid.h"
 
 #include <client_to_server.pb.h>
 #include <server_to_client.pb.h>

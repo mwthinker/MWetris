@@ -6,8 +6,8 @@
 #include "protobufmessage.h"
 #include "protobufmessagequeue.h"
 
-#include "game/playerslot.h"
-#include "game/tetrisgame.h"
+#include "../game/playerslot.h"
+#include "../game/tetrisgame.h"
 
 #include <mw/signal.h>
 

@@ -1,7 +1,7 @@
 #ifndef MWETRIS_NETWORK_SERVER_H
 #define MWETRIS_NETWORK_SERVER_H
 
-#include "game/tetrisgameevent.h"
+#include "../game/tetrisgameevent.h"
 #include "id.h"
 
 #include <google/protobuf/message_lite.h>

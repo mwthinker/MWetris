@@ -1,15 +1,15 @@
 #include "mainwindow.h"
 
-#include <configuration.h>
+#include <mwetris/configuration.h>
 
-#include <ui/networkdebugwindow.h>
-#include <ui/tetriswindow.h>
-#include <network/debugclient.h>
-#include <network/tcpclient.h>
-#include <network/tcpserver.h>
-#include <network/network.h>
+#include <mwetris/ui/networkdebugwindow.h>
+#include <mwetris/ui/tetriswindow.h>
+#include <mwetris/network/debugclient.h>
+#include <mwetris/network/tcpclient.h>
+#include <mwetris/network/tcpserver.h>
+#include <mwetris/network/network.h>
 
-#include <ui/tetriswindow.h>
+#include <mwetris/ui/tetriswindow.h>
 
 MainWindow::MainWindow(const Config& config) 
 	: config_{config} {
@@ -24,7 +24,6 @@ MainWindow::MainWindow(const Config& config)
 }
 
 MainWindow::~MainWindow() {
-	//ioContext_.stop();
 	server_->stop();
 	ioContext_.stop();
 	ioContext_.run();
