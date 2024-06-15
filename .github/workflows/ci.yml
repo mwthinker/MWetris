@@ -72,7 +72,7 @@ jobs:
         run: |
           sudo apt-get install lcov
           cd build_debug
-          lcov -c -d ./MWetris_Lib -d ./TetrisEngine/ -b ../MWetris_Lib/src/ -b ../TetrisEngine/srcLib/ --no-external -o lcov.info
+          lcov -c -d ./MWetris_Lib -d ./TetrisEngine/ -b ../MWetris_Test/src/ -b ../MWetris_Lib/src/ -b ../TetrisEngine/srcLib/ --no-external -o lcov.info
           ls -ltr
         if: runner.os == 'Linux'
 

@@ -15,11 +15,6 @@
 
 namespace mwetris::network {
 
-	struct Session {
-		asio::ip::tcp::socket socket;
-		bool shutDown = false;
-	};
-
 	class TcpServer : public ServerCore, public std::enable_shared_from_this<TcpServer> {
 	public:
 		struct Settings {
@@ -36,6 +31,8 @@ namespace mwetris::network {
 		static asio::awaitable<void> run(std::shared_ptr<TcpServer> server);
 
 		void spawnCoroutine(asio::ip::tcp::socket socket);
+
+		static asio::awaitable<void> handleClientSession(std::shared_ptr<TcpServer> server, Remote remote);
 
 		asio::ip::tcp::endpoint getEndpoint() const;
 

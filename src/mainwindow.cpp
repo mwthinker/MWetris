@@ -24,7 +24,9 @@ MainWindow::MainWindow(const Config& config)
 }
 
 MainWindow::~MainWindow() {
-	server_->stop();
+	if (server_) {
+		server_->stop();
+	}
 	ioContext_.stop();
 	ioContext_.run();
 	mwetris::Configuration::getInstance().quit();

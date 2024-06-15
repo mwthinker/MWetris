@@ -78,7 +78,7 @@ namespace mwetris::network {
 		co_return message;
 	}
 
-	asio::awaitable<ProtobufMessage> TcpClient::receive(std::shared_ptr<TcpClient> client) try {
+	asio::awaitable<ProtobufMessage> TcpClient::receive(std::shared_ptr<TcpClient> client){
 		// Takes ownership of client.
 		// TODO! Catch exception if something goes wrong?
 		try {
@@ -91,12 +91,9 @@ namespace mwetris::network {
 		ProtobufMessage message = co_await client->asyncRead();
 
 		co_return message;
-	} catch (const std::exception& e) {
-		spdlog::error("[TcpClient] {} receive Exception: {}", client->name_, e.what());
-		co_return ProtobufMessage{};
 	}
 
-	asio::awaitable<ProtobufMessage> TcpClient::asyncRead() try {
+	asio::awaitable<ProtobufMessage> TcpClient::asyncRead() {
 		ProtobufMessage protobufMessage;
 		queue_.acquire(protobufMessage);
 
@@ -109,9 +106,6 @@ namespace mwetris::network {
 		size = co_await socket_.async_read_some(protobufMessage.getMutableBodyBuffer(), asio::use_awaitable);
 
 		co_return protobufMessage;
-	} catch (const std::exception& e) {
-		spdlog::error("[TcpClient] {} asyncRead Exception: {}", name_, e.what());
-		co_return ProtobufMessage{};
 	}
 
 	void TcpClient::send(ProtobufMessage&& message) {

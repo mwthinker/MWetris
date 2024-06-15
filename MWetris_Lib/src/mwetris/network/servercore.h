@@ -16,12 +16,17 @@
 #include <client_to_server.pb.h>
 #include <server_to_client.pb.h>
 
+#include <optional>
+
 namespace mwetris::network {
 
 	struct Remote {
 		std::shared_ptr<Client> client;
 		ClientId clientId;
 	};
+
+	template <typename T>
+	using OptionalRef = std::optional<std::reference_wrapper<T>>;
 
 	class ServerCore : public Server {
 	public:
@@ -92,14 +97,16 @@ namespace mwetris::network {
 
 		void sendToClient(Client& client, const google::protobuf::MessageLite& wrapper);
 
-		std::map<ClientId, GameRoomId> roomIdByClientId_;
-		std::map<GameRoomId, GameRoom> gameRoomById_;
+		OptionalRef<GameRoom> findGameRoom(const ClientId& clientId);
 
 		asio::io_context& ioContext_;
+		std::map<ClientId, GameRoomId> roomIdByClientId_;
+		std::map<GameRoomId, GameRoom> gameRoomById_;
+		std::map<ClientId, Remote> remoteByClientId_;
+
 		tp_c2s::Wrapper wrapperFromClient_;
 		tp_s2c::Wrapper wrapperToClient_;
 		ProtobufMessageQueue messageQueue_;
-		std::vector<Remote> remotes_;
 		bool isStopped_ = false;
 	};
 

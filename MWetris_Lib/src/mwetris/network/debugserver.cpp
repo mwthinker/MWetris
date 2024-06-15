@@ -30,7 +30,7 @@ namespace mwetris::network {
 	}
 
 	asio::awaitable<void> DebugServer::run() {
-		for (auto& remote : remotes_) {
+		for (const auto& [_, remote] : remoteByClientId_) {
 			asio::co_spawn(ioContext_, [this, rm = remote]() mutable -> asio::awaitable<void> {
 				//co_await remote.client->receive();
 				co_await receivedFromClient(rm);
@@ -41,10 +41,11 @@ namespace mwetris::network {
 
 	std::shared_ptr<Client> DebugServer::addClient() {
 		auto client = DebugClientOnServer::create(shared_from_this());
-		const auto& remote = remotes_.emplace_back(Remote{
+		const auto& remote = Remote{
 			.client = client,
 			.clientId = ClientId::generateUniqueId()
-		});
+		};
+		remoteByClientId_[remote.clientId] = remote;
 		triggerConnectedClient(remote);
 		return client->getDebugClientOnNetwork();
 	}

@@ -10,6 +10,8 @@
 
 #include <queue>
 
+#include <asio/error.hpp>
+
 namespace mwetris::network {
 
 	TcpServer::TcpServer(asio::io_context& ioContext, const Settings& settings)
@@ -39,11 +41,41 @@ namespace mwetris::network {
 	}
 
 	void TcpServer::spawnCoroutine(asio::ip::tcp::socket socket) {
-		auto remote = remotes_.emplace_back(Remote{
+		ClientId clientId = ClientId::generateUniqueId();
+
+		auto remote = Remote{
 			.client = TcpClient::useExistingSocket(ioContext_, std::move(socket)),
-			.clientId = ClientId::generateUniqueId()
-		});
-		asio::co_spawn(ioContext_, receivedFromClient(remote), asio::detached);
+			.clientId = clientId
+		};
+		remoteByClientId_[clientId] = remote;
+		asio::co_spawn(ioContext_, handleClientSession(shared_from_this(), std::move(remote)), asio::detached);
+	}
+
+	asio::awaitable<void> TcpServer::handleClientSession(std::shared_ptr<TcpServer> server, Remote remote) {
+		try {
+			co_await server->receivedFromClient(remote);
+		} catch (const std::system_error& e) {
+			if (e.code() == asio::error::eof) {
+				spdlog::debug("[TcpServer] handleClientSession {} : {}", e.code().message(), e.what());
+
+				auto gameRoomOptional = server->findGameRoom(remote.clientId);
+				if (gameRoomOptional.has_value()) {
+					auto& gameRoom = gameRoomOptional.value().get();
+					const auto& clientUuids = gameRoom.getConnectedClientUuids();
+					if (clientUuids.size() < 2) {
+						server->gameRoomById_.erase(gameRoom.getGameRoomId());
+						server->roomIdByClientId_.erase(remote.clientId);
+						server->remoteByClientId_.erase(remote.clientId);
+						spdlog::info("[TcpServer] Game room {} closed due to last client disconnected", gameRoom.getGameRoomId());
+					} else {
+						// TODO! Wait for reconnection?
+						spdlog::error("[TcpServer] Client disconnected from game room, waiting for reconnection");
+					}
+				}
+			} else {
+				spdlog::error("[TcpServer] System error: {}", e.what());
+			}
+		}
 	}
 
 	asio::ip::tcp::endpoint TcpServer::getEndpoint() const {

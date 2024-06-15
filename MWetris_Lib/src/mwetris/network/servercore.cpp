@@ -14,10 +14,10 @@ namespace mwetris::network {
 	}
 
 	void ServerCore::stop() {
-		for (auto& remote : remotes_) {
+		for (auto& [_, remote] : remoteByClientId_) {
 			remote.client->stop();
 		}
-		remotes_.clear();
+		remoteByClientId_.clear();
 		isStopped_ = true;
 	}
 
@@ -135,14 +135,14 @@ namespace mwetris::network {
 
 	std::vector<ConnectedClient> ServerCore::getConnectedClients() const {
 		std::vector<ConnectedClient> connectedClients;
-		for (const Remote& remote : remotes_) {
+		for (const auto& [_, remote] : remoteByClientId_) {
 			connectedClients.push_back(convertToConnectedClient(remote));
 		}
 		return connectedClients;
 	}
 
 	void ServerCore::sendToClient(const ClientId& clientId, const google::protobuf::MessageLite& message) {
-		for (auto& remote : remotes_) {
+		for (const auto& [_, remote] : remoteByClientId_) {
 			if (remote.clientId == clientId) {
 				sendToClient(*remote.client, message);
 				break;
@@ -173,7 +173,7 @@ namespace mwetris::network {
 	}
 
 	void ServerCore::sendToClients(const google::protobuf::MessageLite& wrapper) {
-		for (auto& remote : remotes_) {
+		for (const auto& [_, remote] : remoteByClientId_) {
 			sendToClient(*remote.client, wrapper);
 		}
 	}
@@ -183,6 +183,16 @@ namespace mwetris::network {
 		messageQueue_.acquire(message);
 		message.setBuffer(wrapper);
 		client.send(std::move(message));
+	}
+
+	OptionalRef<GameRoom> ServerCore::findGameRoom(const ClientId& clientId) {
+		if (auto it = roomIdByClientId_.find(clientId); it != roomIdByClientId_.end()) {
+			auto gameRoomId = it->second;
+			if (auto it = gameRoomById_.find(gameRoomId); it != gameRoomById_.end()) {
+				return it->second;
+			}
+		}
+		return std::nullopt;
 	}
 
 }
