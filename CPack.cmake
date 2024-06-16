@@ -13,10 +13,10 @@ install(DIRECTORY ${MWetrisData_SOURCE_DIR}/images/
 	COMPONENT data
 )
 
-#install(DIRECTORY ${MWetrisData_SOURCE_DIR}/package/
-#	DESTINATION .
-#	COMPONENT data
-#)
+install(DIRECTORY ${MWetrisData_SOURCE_DIR}/package/
+	DESTINATION .
+	COMPONENT data
+)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data/
 	DESTINATION .
@@ -24,15 +24,16 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data/
 )
 
 # Replace the USE_APPLICATION_JSON file, use default saving place.
-#install(FILES ${CMAKE_SOURCE_DIR}/data/package/USE_APPLICATION_JSON
-#	DESTINATION .
-#	COMPONENT data
-#)
+install(FILES ${CMAKE_SOURCE_DIR}/data/package/USE_APPLICATION_JSON
+	DESTINATION .
+	COMPONENT data
+)
 
 if (MSVC)
 	# Tell CMake to install the windows runtime libraries to the programs
 	# directory and tell CPack that they belong to the "applications" component
 	set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION ".")
+	set(CMAKE_INSTALL_SYSTEM_RUNTIME_COMPONENT true)
 
 	include(InstallRequiredSystemLibraries)
 	file(GLOB DLL_FILES_DEBUG "${CMAKE_BINARY_DIR}/Debug/*.dll")
@@ -74,7 +75,7 @@ set(CPACK_COMPONENT_RUNTIME_DISPLAY_NAME "Runtime")
 set(CPACK_COMPONENT_RUNTIME_REQUIRED true)
 
 # Text from "LICENSE.txt" is displayed in the installer's license tab.
-#set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE.txt")
+#set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGE_ICON "${CMAKE_BINARY_DIR}/images/icon.png")
 
 set(CPACK_PACKAGE_EXECUTABLES "${CMAKE_PROJECT_NAME}" "${CMAKE_PROJECT_NAME}")
@@ -95,7 +96,7 @@ if (MSVC)
 		set(CPACK_WIX_PRODUCT_ICON "${CMAKE_BINARY_DIR}/package/mwetris.ico")
 		
 		message(STATUS ${CPACK_PACKAGE_ICON})
-		#set(CPACK_WIX_PROPERTY_ARPURLINFOABOUT "https://github.com/mwthinker/MWetris")
+		set(CPACK_WIX_PROPERTY_ARPURLINFOABOUT "https://github.com/mwthinker/MWetris")
 	endif ()
 endif ()
 
