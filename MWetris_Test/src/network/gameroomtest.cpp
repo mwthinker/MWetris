@@ -168,4 +168,7 @@ namespace mwetris::network {
 		assertEqSlot(playerSlot, 3, tp_s2c::GameLooby_SlotType_OPEN_SLOT, "", false, ClientId{""});
 	}
 
+	TEST_F(GameRoomTest, receiveRemoveClient_thenSendRemoveClient) {
+	}
+
 }

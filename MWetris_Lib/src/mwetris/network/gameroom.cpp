@@ -145,6 +145,9 @@ namespace mwetris::network {
 		if (wrapperFromClient.has_request_game_restart()) {
 			handleRequestGameRestart(server, clientId, wrapperFromClient.request_game_restart());
 		}
+		if (wrapperFromClient.has_remove_client()) {
+			handleRemoveClient(server, clientId, wrapperFromClient.remove_client());
+		}
 
 		server.triggerPlayerSlotEvent(playerSlots_);
 	}
@@ -302,6 +305,24 @@ namespace mwetris::network {
 		} else {
 			spdlog::error("Client {} not found in connected clients", clientId);
 		}
+	}
+
+	void GameRoom::removeClientFromGameRoom(Server& server, const ClientId& clientId) {
+		if (auto it = std::find(connectedClientIds.begin(), connectedClientIds.end(), clientId); it != connectedClientIds.end()) {
+			connectedClientIds.erase(it);
+			
+			wrapperToClient_.Clear();
+			auto removeClient = wrapperToClient_.mutable_remove_client();
+			setTp(clientId, *removeClient->mutable_client_id());
+			sendToAllClients(server, wrapperToClient_);
+		} else {
+			spdlog::error("Client {} not found in connected clients", clientId);
+		}
+	}
+
+	void GameRoom::handleRemoveClient(Server& server, const ClientId& clientId, const tp_c2s::RemoveClient& removeClient) {
+		ClientId removeClientId = removeClient.client_id();
+		removeClientFromGameRoom(server, removeClientId);
 	}
 
 	bool GameRoom::slotBelongsToClient(const ClientId& clientId, int slotIndex) const {

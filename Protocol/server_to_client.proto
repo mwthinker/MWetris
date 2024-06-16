@@ -94,6 +94,14 @@ message LeaveGameRoom {
 message FailedToConnect {
 }
 
+message ClientDisconnected {
+	tp.ClientId client_id = 1;
+}
+
+message RemoveClient {
+	tp.ClientId client_id = 1;
+}
+
 message Wrapper {
 	GameLooby game_looby = 1;
 	CreateGame create_game = 2;
@@ -108,4 +116,6 @@ message Wrapper {
 	GameRoomJoined game_room_joined = 11;
 	RequestGameRestart request_game_restart = 12;
 	LeaveGameRoom leave_game_room = 13;
+	ClientDisconnected client_disconnected = 14;
+	RemoveClient remove_client = 15;
 }

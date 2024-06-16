@@ -74,6 +74,10 @@ message RequestGameRestart {
 message FailedToConnect {
 }
 
+message RemoveClient {
+	tp.ClientId client_id = 1;
+}
+
 message Wrapper {
 	PlayerSlot player_slot = 1;
 	StartGame start_game = 2;
@@ -88,4 +92,5 @@ message Wrapper {
 	CreateGameRoom create_game_room = 11;
 	RequestGameRestart request_game_restart = 12;
 	LeaveGameRoom leave_game_room = 13;
+	RemoveClient remove_client = 14;
 }

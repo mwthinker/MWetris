@@ -42,8 +42,7 @@ namespace mwetris::network {
 		co_return;
 	} catch (const std::exception& e) {
 		spdlog::error("[ServerCore] Exception: {}", e.what());
-		//throw;
-		co_return;
+		throw;
 	}
 
 	void ServerCore::receivedFromRemote(Remote& fromRemote, const tp_c2s::Wrapper& wrapper) {

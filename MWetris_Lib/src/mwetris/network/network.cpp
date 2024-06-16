@@ -169,6 +169,13 @@ namespace mwetris::network {
 		return !gameRoomId_.isEmpty();
 	}
 
+	void Network::removeClient(const ClientId& clientId) {
+		wrapperToServer_.Clear();
+		auto removeClient = wrapperToServer_.mutable_remove_client();
+		setTp(clientId, *removeClient->mutable_client_id());
+		send(wrapperToServer_);
+	}
+
 	asio::awaitable<void> Network::run(std::shared_ptr<Network> network) try {
 		int value = network.use_count();
 		while (network->running_) {
@@ -221,6 +228,12 @@ namespace mwetris::network {
 				}
 				if (network->wrapperFromServer_.has_board_external_squares()) {
 					network->handleBoardExternalSquares(network->wrapperFromServer_.board_external_squares());
+				}
+				if (network->wrapperFromServer_.has_client_disconnected()) {
+					network->handleClientDisconnected(network->wrapperFromServer_.client_disconnected());
+				}
+				if (network->wrapperFromServer_.has_remove_client()) {
+					network->handleRemoveClient(network->wrapperFromServer_.remove_client());
 				}
 			}
 			network->leaveGameRoomEvent(LeaveGameRoomEvent{});
@@ -479,6 +492,23 @@ namespace mwetris::network {
 				}
 			}
 		}
+	}
+
+	void Network::handleClientDisconnected(const tp_s2c::ClientDisconnected& clientDisconnected) {
+		spdlog::info("[Network] ClientDisconnected: {}", clientDisconnected.client_id());
+		int nbr = 0;
+		clientDisconnectedEvent(ClientDisconnectedEvent{
+			.clientId = clientDisconnected.client_id()
+		});
+	}
+
+	void Network::handleRemoveClient(const tp_s2c::RemoveClient& removeClient) {
+		spdlog::info("[Network] RemoveClient: {}", removeClient.client_id());
+
+		players_.erase(std::remove_if(players_.begin(), players_.end(), [removeClient](const NetworkPlayer& networkPlayer) {
+			networkPlayer.player->updateMove(tetris::Move::GameOver);
+			return networkPlayer.clientId == removeClient.client_id();
+		}), players_.end());
 	}
 
 	void Network::fillSlotsWithDevicesAndAis() {

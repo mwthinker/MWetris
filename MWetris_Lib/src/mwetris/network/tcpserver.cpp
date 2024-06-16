@@ -63,19 +63,26 @@ namespace mwetris::network {
 					auto& gameRoom = gameRoomOptional.value().get();
 					const auto& clientUuids = gameRoom.getConnectedClientUuids();
 					if (clientUuids.size() < 2) {
+						spdlog::info("[TcpServer] Game room {} closed due to last client disconnected", gameRoom.getGameRoomId());
 						server->gameRoomById_.erase(gameRoom.getGameRoomId());
 						server->roomIdByClientId_.erase(remote.clientId);
 						server->remoteByClientId_.erase(remote.clientId);
-						spdlog::info("[TcpServer] Game room {} closed due to last client disconnected", gameRoom.getGameRoomId());
 					} else {
-						// TODO! Wait for reconnection?
-						spdlog::error("[TcpServer] Client disconnected from game room, waiting for reconnection");
+						server->handleClientDisconnected(remote, gameRoom);
 					}
 				}
 			} else {
 				spdlog::error("[TcpServer] System error: {}", e.what());
 			}
 		}
+	}
+
+	void TcpServer::handleClientDisconnected(Remote& remote, GameRoom& gameRoom) {
+		spdlog::error("[TcpServer] Client disconnected from game room, waiting for reconnection");
+		gameRoom.removeClientFromGameRoom(*this, remote.clientId);
+		roomIdByClientId_.erase(remote.clientId);
+		remoteByClientId_.erase(remote.clientId);
+		// TODO! Wait for reconnection?
 	}
 
 	asio::ip::tcp::endpoint TcpServer::getEndpoint() const {

@@ -45,6 +45,10 @@ namespace mwetris::network {
 	struct LeaveGameRoomEvent {
 	};
 
+	struct ClientDisconnectedEvent {
+		ClientId clientId;
+	};
+
 }
 
 #endif

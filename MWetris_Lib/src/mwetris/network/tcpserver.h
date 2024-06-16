@@ -34,6 +34,8 @@ namespace mwetris::network {
 
 		static asio::awaitable<void> handleClientSession(std::shared_ptr<TcpServer> server, Remote remote);
 
+		void handleClientDisconnected(Remote& remote, GameRoom& gameRoom);
+
 		asio::ip::tcp::endpoint getEndpoint() const;
 
 		Settings settings_;

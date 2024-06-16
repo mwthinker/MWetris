@@ -35,12 +35,13 @@ int main(int argc, char** argv) {
 		.help("Number of windows")
 		.default_value(1)
 		.scan<'i', int>();
-	auto& group = program.add_mutually_exclusive_group(true);
+	auto& group = program.add_mutually_exclusive_group(false);
 	group.add_argument("-s", "--simulate")
 		.help("Simulate network")
 		.flag();
 	group.add_argument("-t", "--tcpclient")
-		.help("TCP client")
+		.help("TCP client (default choice)")
+		.default_value(true)
 		.flag();
 	group.add_argument("-T", "--tcpserver")
 		.help("TCP server")

@@ -30,11 +30,13 @@ namespace mwetris::network {
 		mw::PublicSignal<Network, const PauseEvent&> pauseEvent;
 		mw::PublicSignal<Network, const CreateGameEvent&> createGameEvent;
 		mw::PublicSignal<Network, const LeaveGameRoomEvent&> leaveGameRoomEvent;
+		mw::PublicSignal<Network, const ClientDisconnectedEvent&> clientDisconnectedEvent;
 
 		struct NetworkPlayer {
 			game::PlayerPtr player;
 			PlayerId playerId;
 			ClientId clientId;
+			bool connected = true;
 		};
 
 		explicit Network(std::shared_ptr<Client> client);
@@ -65,6 +67,8 @@ namespace mwetris::network {
 
 		bool isInsideRoom() const;
 
+		void removeClient(const ClientId& clientId);
+
 	private:
 		static asio::awaitable<void> run(std::shared_ptr<Network> network);
 
@@ -93,6 +97,10 @@ namespace mwetris::network {
 		void handleBoardNextBlock(const tp_s2c::BoardNextBlock& boardNextBlock);
 
 		void handleBoardExternalSquares(const tp_s2c::BoardExternalSquares& boardExternalSquares);
+
+		void handleClientDisconnected(const tp_s2c::ClientDisconnected& clientDisconnected);
+
+		void handleRemoveClient(const tp_s2c::RemoveClient& removeClient);
 
 		void fillSlotsWithDevicesAndAis();
 

@@ -35,32 +35,36 @@ namespace mwetris::network {
 
 		void requestRestartGame(Server& server);
 
-		void receiveMessage(Server& server, const ClientId& clientUuid, const tp_c2s::Wrapper& wrapperFromClient);
+		void receiveMessage(Server& server, const ClientId& clientId, const tp_c2s::Wrapper& wrapperFromClient);
+
+		void removeClientFromGameRoom(Server& server, const ClientId& clientId);
 
 	private:
-		void handlePlayerSlot(Server& server, const ClientId& clientUuid, const tp_c2s::PlayerSlot& tpPlayerSlot);
+		void handlePlayerSlot(Server& server, const ClientId& clientId, const tp_c2s::PlayerSlot& tpPlayerSlot);
 
 		void handleGameCommand(Server& server, const tp_c2s::GameCommand& gameCommand);
 
-		void handleStartGame(Server& server, const ClientId& clientUuid, const tp_c2s::StartGame& createServerGame);
+		void handleStartGame(Server& server, const ClientId& clientId, const tp_c2s::StartGame& createServerGame);
 
-		void handleBoardMove(Server& server, const ClientId& clientUuid, const tp_c2s::BoardMove& boardMove);
+		void handleBoardMove(Server& server, const ClientId& clientId, const tp_c2s::BoardMove& boardMove);
 
-		void handleBoardNextBlock(Server& server, const ClientId& clientUuid, const tp_c2s::BoardNextBlock& boardNextBlock);
+		void handleBoardNextBlock(Server& server, const ClientId& clientId, const tp_c2s::BoardNextBlock& boardNextBlock);
 
-		void handleBoardExternalSquares(Server& server, const ClientId& clientUuid, const tp_c2s::BoardExternalSquares& boardExternalSquares);
+		void handleBoardExternalSquares(Server& server, const ClientId& clientId, const tp_c2s::BoardExternalSquares& boardExternalSquares);
 
-		void handleRequestGameRestart(Server& server, const ClientId& clientUuid, const tp_c2s::RequestGameRestart& requestGameRestart);
+		void handleRequestGameRestart(Server& server, const ClientId& clientId, const tp_c2s::RequestGameRestart& requestGameRestart);
 
-		void handleGameRestart(Server& server, const ClientId& clientUuid, const tp_c2s::GameRestart& gameRestart);
+		void handleGameRestart(Server& server, const ClientId& clientId, const tp_c2s::GameRestart& gameRestart);
 
-		void handleCreateGameRoom(Server& server, const ClientId& clientUuid, const tp_c2s::CreateGameRoom& createGameRoom);
+		void handleCreateGameRoom(Server& server, const ClientId& clientId, const tp_c2s::CreateGameRoom& createGameRoom);
 
-		void handleJoinGameRoom(Server& server, const ClientId& clientUuid, const tp_c2s::JoinGameRoom& joinGameRoom);
+		void handleJoinGameRoom(Server& server, const ClientId& clientId, const tp_c2s::JoinGameRoom& joinGameRoom);
 
-		void handleLeaveGameRoom(Server& server, const ClientId& clientUuid, const tp_c2s::LeaveGameRoom& leaveGameRoom);
+		void handleLeaveGameRoom(Server& server, const ClientId& clientId, const tp_c2s::LeaveGameRoom& leaveGameRoom);
 
-		bool slotBelongsToClient(const ClientId& clientUuid, int slotIndex) const;
+		void handleRemoveClient(Server& server, const ClientId& clientId, const tp_c2s::RemoveClient& removeClient);
+
+		bool slotBelongsToClient(const ClientId& clientId, int slotIndex) const;
 
 		std::string name_;
 		GameRoomId gameRoomId_;
