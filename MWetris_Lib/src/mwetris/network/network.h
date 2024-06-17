@@ -59,7 +59,7 @@ namespace mwetris::network {
 
 		void createGameRoom(const std::string& gameRoom);
 
-		void leaveRoom();
+		void leaveGameRoom();
 
 		void setPlayerSlot(const game::PlayerSlot& playerSlot, int index);
 
@@ -116,6 +116,8 @@ namespace mwetris::network {
 
 		void handlePlayerBoardUpdate(const NetworkPlayer& player, const game::TetrisBoardEvent& tetrisBoardEvent);
 
+		void handleLeaveGameRoom(const tp_s2c::LeaveGameRoom& leaveGameRoom);
+
 		void send(const tp_c2s::Wrapper& wrapper);
 
 		std::vector<NetworkSlot> networkSlots_;
@@ -130,7 +132,6 @@ namespace mwetris::network {
 		tp_s2c::Wrapper wrapperFromServer_;
 		std::shared_ptr<Client> client_;
 		GameRoomId gameRoomId_;
-		bool leaveRoom_ = false; // To make run() to proceed
 		bool running_ = true;
 		ClientId clientId_;
 		asio::high_resolution_timer timer_;

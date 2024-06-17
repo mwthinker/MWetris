@@ -70,9 +70,13 @@ namespace mwetris {
 
 		const char* getGameRoomId() const;
 
+		bool isInsideGameRoom() const;
+
 		void createGameRoom(const std::string& name);
 
 		void joinGameRoom(const std::string& gameRoomUuid);
+
+		void leaveGameRoom();
 
 		void setPlayerSlot(const game::PlayerSlot& playerSlot, int slot);
 

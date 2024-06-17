@@ -64,7 +64,7 @@ namespace mwetris {
 
 	void TetrisController::createDefaultGame(game::DevicePtr device) {
 		if (network_->isInsideGameRoom()) {
-			network_->leaveRoom();
+			network_->leaveGameRoom();
 		}
 		tetrisGame_->createDefaultGame(device);
 		tetrisGame_->saveDefaultGame();
@@ -77,7 +77,7 @@ namespace mwetris {
 	void TetrisController::startLocalGame(std::unique_ptr<game::GameRules> gameRules, const std::vector<game::PlayerPtr>& players) {
 		if (network_->isInsideGameRoom()) {
 			spdlog::debug("[TetrisController] Leaving game room before starting local game.");
-			network_->leaveRoom();
+			network_->leaveGameRoom();
 		}
 		tetrisGame_->createGame(std::move(gameRules), players);
 		tetrisGame_->saveDefaultGame();
@@ -108,12 +108,20 @@ namespace mwetris {
 		return network_->getGameRoomId().c_str();
 	}
 
+	bool TetrisController::isInsideGameRoom() const {
+		return network_->isInsideGameRoom();
+	}
+
 	void TetrisController::createGameRoom(const std::string& name) {
 		network_->createGameRoom(name);
 	}
 
 	void TetrisController::joinGameRoom(const std::string& gameRoomUuid) {
 		network_->joinGameRoom(gameRoomUuid);
+	}
+
+	void TetrisController::leaveGameRoom() {
+		network_->leaveGameRoom();
 	}
 
 	void TetrisController::setPlayerSlot(const game::PlayerSlot& playerSlot, int slot) {

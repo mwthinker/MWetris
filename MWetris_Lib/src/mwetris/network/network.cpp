@@ -106,7 +106,7 @@ namespace mwetris::network {
 		send(wrapperToServer_);
 	}
 
-	void Network::leaveRoom() {
+	void Network::leaveGameRoom() {
 		if (!isInsideRoom()) {
 			spdlog::warn("[Network] Can't leave room, not inside a room");
 			return;
@@ -115,8 +115,6 @@ namespace mwetris::network {
 		auto leaveGameRoom = wrapperToServer_.mutable_leave_game_room();
 		setTp(gameRoomId_, *leaveGameRoom->mutable_game_room_id());
 		send(wrapperToServer_);
-		leaveRoom_ = true;
-		gameRoomId_ = GameRoomId{};
 	}
 
 	void Network::setPlayerSlot(const game::PlayerSlot& playerSlot, int index) {
@@ -200,6 +198,9 @@ namespace mwetris::network {
 				if (network->wrapperFromServer_.has_connections()) {
 					network->handleConnections(network->wrapperFromServer_.connections());
 				}
+				if (network->wrapperFromServer_.has_leave_game_room()) {
+					network->handleLeaveGameRoom(network->wrapperFromServer_.leave_game_room());
+				}
 				if (network->wrapperFromServer_.has_create_game()) {
 					network->handleCreateGame(network->wrapperFromServer_.create_game());
 					break;
@@ -236,7 +237,7 @@ namespace mwetris::network {
 					network->handleRemoveClient(network->wrapperFromServer_.remove_client());
 				}
 			}
-			network->leaveGameRoomEvent(LeaveGameRoomEvent{});
+			//network->leaveGameRoomEvent(LeaveGameRoomEvent{});
 		}
 		co_return;
 	} catch (const std::exception& e) {
@@ -260,8 +261,7 @@ namespace mwetris::network {
 			if (!network->running_) {
 				break;
 			}
-		} while (!valid || network->leaveRoom_);
-		network->leaveRoom_ = false;
+		} while (!valid);
 		co_return;
 	} catch (const std::exception& e) {
 		spdlog::error("[Network] nextMessage Exception: {}", e.what());
@@ -562,6 +562,16 @@ namespace mwetris::network {
 
 	void Network::handlePlayerBoardUpdate(const NetworkPlayer& player, const game::TetrisBoardEvent& tetrisBoardEvent) {
 		//spdlog::info("[Network] handle TetrisBoardEvent");
+	}
+
+	void Network::handleLeaveGameRoom(const tp_s2c::LeaveGameRoom& leaveGameRoom) {
+		spdlog::info("[Network] LeaveGameRoom: {}", leaveGameRoom.game_room_id());
+		if (leaveGameRoom.client_id() == clientId_) {
+			gameRoomId_ = GameRoomId{};
+			leaveGameRoomEvent(LeaveGameRoomEvent{});
+		} else {
+			// TODO! Handle other clients leaving.
+		}
 	}
 
 	void Network::send(const tp_c2s::Wrapper& wrapper) {

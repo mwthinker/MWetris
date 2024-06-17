@@ -197,7 +197,7 @@ namespace mwetris::ui {
 
 	void TetrisWindow::onTetrisEvent(const network::LeaveGameRoomEvent& leaveGameRoomEvent) {
 		spdlog::debug("[TetrisWindow] Leave game room");
-		tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
+		mainStateMachine_.switchTo<scene::EmptyScene>();
 	}
 
 	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
@@ -244,6 +244,9 @@ namespace mwetris::ui {
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 10.f);
 			ImGui::MenuBar([&]() {
 				ImGui::Menu("Game", [&]() {
+					bool insideGameRoom = tetrisController_->isInsideGameRoom();
+
+					ImGui::BeginDisabled(insideGameRoom);
 					if (ImGui::MenuItem(game::hasSavedGame() ? "Resume Single Player" : "New Single Player", "F1")) {
 						mainStateMachine_.switchTo<scene::EmptyScene>();
 						tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
@@ -256,6 +259,12 @@ namespace mwetris::ui {
 						modalStateMachine_.switchTo<scene::EmptyScene>();
 						mainStateMachine_.switchTo<scene::JoinGame>();
 					}
+					ImGui::EndDisabled();
+					ImGui::BeginDisabled(!insideGameRoom);
+					if (ImGui::MenuItem("Leave game")) {
+						tetrisController_->leaveGameRoom();
+					}
+					ImGui::EndDisabled();
 					ImGui::Separator();
 					if (ImGui::MenuItem("Highscore")) {
 						tetrisController_->pause();

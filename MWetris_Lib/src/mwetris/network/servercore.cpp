@@ -21,7 +21,7 @@ namespace mwetris::network {
 		isStopped_ = true;
 	}
 
-	asio::awaitable<void> ServerCore::receivedFromClient(Remote remote) try {
+	asio::awaitable<void> ServerCore::receivedFromClient(Remote remote) {
 		while (!isStopped_) {
 			auto client = remote.client;
 			ProtobufMessage message = co_await client->receive();
@@ -40,9 +40,6 @@ namespace mwetris::network {
 			}
 		}
 		co_return;
-	} catch (const std::exception& e) {
-		spdlog::error("[ServerCore] Exception: {}", e.what());
-		throw;
 	}
 
 	void ServerCore::receivedFromRemote(Remote& fromRemote, const tp_c2s::Wrapper& wrapper) {
@@ -64,18 +61,19 @@ namespace mwetris::network {
 
 	void ServerCore::handleCreateGameRoom(Remote& remote, const tp_c2s::CreateGameRoom& createGameRoom) {
 		if (roomIdByClientId_.contains(remote.clientId)) {
-			spdlog::warn("[DebugServer] Client with uuid {} already in a GameRoom", remote.clientId);
+			spdlog::warn("[DebugServer] Client with id {} already in a GameRoom", remote.clientId);
 			return;
 		}
 
 		GameRoom gameRoom;
 		roomIdByClientId_.emplace(remote.clientId, gameRoom.getGameRoomId());
 		gameRoomById_.emplace(gameRoom.getGameRoomId(), std::move(gameRoom));
+		spdlog::info("[DebugServer] GameRoom with id {} is created", gameRoom.getGameRoomId());
 	}
 
 	void ServerCore::handleJoinGameRoom(Remote& remote, const tp_c2s::JoinGameRoom& joinGameRoom) {
 		if (roomIdByClientId_.contains(remote.clientId)) {
-			spdlog::warn("[DebugServer] Client with uuid {} already in a GameRoom", remote.clientId);
+			spdlog::warn("[DebugServer] Client with id {} already in a GameRoom", remote.clientId);
 			return;
 		}
 
@@ -83,8 +81,9 @@ namespace mwetris::network {
 			auto& gameRoom = it->second;
 			roomIdByClientId_.emplace(remote.clientId, gameRoom.getGameRoomId());
 			gameRoomById_.emplace(gameRoom.getGameRoomId(), std::move(gameRoom));
+			spdlog::info("[DebugServer] GameRoom with id {} is joined by client {}", gameRoom.getGameRoomId(), remote.clientId);
 		} else {
-			spdlog::warn("[DebugServer] GameRoom with uuid {} not found", joinGameRoom.game_room_id());
+			spdlog::warn("[DebugServer] GameRoom with id {} not found", joinGameRoom.game_room_id());
 		}
 	}
 
@@ -93,11 +92,12 @@ namespace mwetris::network {
 			auto gameRoomId = it->second;
 			auto& gameRoom = gameRoomById_.at(gameRoomId);
 
+			spdlog::info("[DebugServer] Client with id {} left GameRoom with id {}", remote.clientId, gameRoomId);
 			roomIdByClientId_.erase(it);
 			if (gameRoom.getConnectedClientUuids().size() == 1) {
 				gameRoom.disconnect(*this);
 				gameRoomById_.erase(gameRoomId);
-				spdlog::info("[DebugServer] GameRoom with uuid {} is removed", gameRoomId);
+				spdlog::info("[DebugServer] Last client left GameRoom with id {} therefore it is closed", gameRoomId);
 			}
 		}
 	}

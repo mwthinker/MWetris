@@ -31,8 +31,6 @@ namespace mwetris::network {
 		asio::ip::tcp::acceptor acceptor{server->ioContext_, server->getEndpoint()};
 		while (!server->isStopped_) try {
 			asio::ip::tcp::socket socket = co_await acceptor.async_accept(asio::use_awaitable);
-			spdlog::info("[TcpServer] Accepted connection from {}", socket.remote_endpoint());
-
 			server->spawnCoroutine(std::move(socket));
 		} catch (const std::exception& e) {
 			spdlog::error("[TcpServer] Exception: {}", e.what());
@@ -43,6 +41,7 @@ namespace mwetris::network {
 	void TcpServer::spawnCoroutine(asio::ip::tcp::socket socket) {
 		ClientId clientId = ClientId::generateUniqueId();
 
+		spdlog::info("[TcpServer] Accepted connection from {} with ClientId {}", socket.remote_endpoint(), clientId);
 		auto remote = Remote{
 			.client = TcpClient::useExistingSocket(ioContext_, std::move(socket)),
 			.clientId = clientId
@@ -56,8 +55,6 @@ namespace mwetris::network {
 			co_await server->receivedFromClient(remote);
 		} catch (const std::system_error& e) {
 			if (e.code() == asio::error::eof) {
-				spdlog::debug("[TcpServer] handleClientSession {} : {}", e.code().message(), e.what());
-
 				auto gameRoomOptional = server->findGameRoom(remote.clientId);
 				if (gameRoomOptional.has_value()) {
 					auto& gameRoom = gameRoomOptional.value().get();
@@ -66,13 +63,15 @@ namespace mwetris::network {
 						spdlog::info("[TcpServer] Game room {} closed due to last client disconnected", gameRoom.getGameRoomId());
 						server->gameRoomById_.erase(gameRoom.getGameRoomId());
 						server->roomIdByClientId_.erase(remote.clientId);
-						server->remoteByClientId_.erase(remote.clientId);
 					} else {
 						server->handleClientDisconnected(remote, gameRoom);
 					}
+				} else {
+					spdlog::info("[TcpServer] ClientId {} disconnected from server", remote.clientId);
 				}
+				server->remoteByClientId_.erase(remote.clientId);
 			} else {
-				spdlog::error("[TcpServer] System error: {}", e.what());
+				spdlog::error("[TcpServer] handleClientSession {} : {}", e.code().message(), e.what());
 			}
 		}
 	}
