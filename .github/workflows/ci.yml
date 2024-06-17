@@ -125,13 +125,13 @@ jobs:
         run: cd build_release && cpack
 
       - name: Extract msi output
-        id: extract_msi
         shell: bash
         run: echo "msi_output=$(ls -1 build_release | grep '.msi$')" >> $GITHUB_ENV
         if: runner.os == 'Windows'
 
-      - uses: actions/upload-artifact@v3
-        if: runner.os == 'Windows' && steps.extract_msi.outputs.msi_output != ''
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        if: runner.os == 'Windows' && env.msi_output != ''
         with:
           name: installer
-          path: build_release/${{ steps.extract_msi.outputs.msi_output }}
+          path: build_release/${{ env.msi_output }}
