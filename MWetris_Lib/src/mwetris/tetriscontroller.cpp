@@ -40,6 +40,10 @@ namespace mwetris {
 				.slot = playerSlotEvent.index
 			});
 		});
+		connections_ += network_->gameRoomListEvent.connect([this](const network::GameRoomListEvent& gameRoomListEvent) {
+			tetrisEvent(gameRoomListEvent);
+		});
+
 		connections_ += network_->leaveGameRoomEvent.connect([this](const network::LeaveGameRoomEvent& leaveGameRoomEvent) {
 			setGameRoomType(GameRoomType::OutsideGameRoom);
 		});
@@ -166,6 +170,10 @@ namespace mwetris {
 
 	bool TetrisController::isDefaultGame() const {
 		return !network_->isInsideGameRoom() && tetrisGame_->isDefaultGame();
+	}
+
+	void TetrisController::refreshGameRoomList() {
+		network_->requestGameRoomList();
 	}
 
 	void TetrisController::setGameRoomType(GameRoomType gameRoomType) {

@@ -24,28 +24,20 @@ namespace mwetris::ui::scene {
 			return data->BufTextLen < 30;
 		}
 
-		constexpr auto PopUpId = "JoinPopup";
+		bool InputText(const char* label, std::string* text) {
+			return ImGui::InputText(label, text, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CallbackAlways, acceptNameInput);
+		}
 
 	}
 
-	JoinGame::JoinGame(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager)
+	JoinGame::JoinGame(std::shared_ptr<TetrisController> tetrisController)
 		: tetrisController_{tetrisController} {
 
-		for (int i = 0; i < 4; ++i) {
-			playerSlots_.push_back(game::OpenSlot{});
-		}
-
-		connections_ += tetrisController_->tetrisEvent.connect([this](const TetrisEvent& tetrisEvent) {
-			if (auto playerSlotEvent = std::get_if<PlayerSlotEvent>(&tetrisEvent)) {
-				onPlayerSlotEvent(*playerSlotEvent);
+		connections_ += tetrisController_->tetrisEvent.connect([this](const TetrisEvent& event) {
+			if (auto gameRoomListEvent = std::get_if<network::GameRoomListEvent>(&event)) {
+				gameRooms_ = gameRoomListEvent->gameRooms;
 			}
 		});
-
-		addPlayer_ = std::make_unique<AddPlayer>([this](AddPlayer& addPlayer) {
-			auto player = addPlayer.getPlayer();
-			playerSlots_[addPlayer.getSlotIndex()] = player;
-			tetrisController_->setPlayerSlot(player, addPlayer.getSlotIndex());
-		}, deviceManager);
 	}
 
 	void JoinGame::imGuiUpdate(const DeltaTime& deltaTime) {
@@ -53,115 +45,57 @@ namespace mwetris::ui::scene {
 		ImGui::Text("Custom Game");
 		ImGui::PopFont();
 
-		if (gameRoomJoined_) {
-			imGuiJoinedGameRoom(deltaTime);
-		} else {
-			ImGui::Text("Server Id");
-			if (ImGui::InputText("##ServerId", &serverId_, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CallbackAlways, acceptNameInput)) {
-
-			}
-
-			ImGui::PopupContextItem([&]() {
-				if (ImGui::MenuItem("Paste", "CTRL+V")) {
-					serverId_.assign(ImGui::GetClipboardText());
-					ImGui::CloseCurrentPopup();
-				}
-			});
-
-			if (ImGui::ConfirmationButton("Connect")) { // TODO! Handle lag and show a spinner.
-				tetrisController_->joinGameRoom(serverId_);
-			}
-		}
-	}
-
-	void JoinGame::imGuiJoinedGameRoom(const DeltaTime& deltaTime) {
-		float width = ImGui::GetWindowWidth();
-
-		if (playerSlots_.size() > 1) {
-			width = width / playerSlots_.size();
+		ImGui::Text("Server Id");
+		if (InputText("##ServerId", &serverId_)) {
 		}
 
-		auto pos = ImGui::GetCursorScreenPos();
-
-		for (int i = 0; i < playerSlots_.size(); ++i) {
-			auto& playerSlot = playerSlots_[i];
-
-			ImGui::PushID(i + 1);
-			ImGui::SetCursorScreenPos(pos);
-			pos.x += width;
-
-			ImGui::BeginGroup();
-			std::visit([&](auto&& slot) mutable {
-				using T = std::decay_t<decltype(slot)>;
-				if constexpr (std::is_same_v<T, game::Human>) {
-					ImGui::Text("game::Human");
-					ImGui::Text("Player name: %s", slot.name.c_str());
-					if (ImGui::AbortButton("Remove")) {
-						playerSlot = game::OpenSlot{};
-						tetrisController_->setPlayerSlot(playerSlot, i);
-					}
-				} else if constexpr (std::is_same_v<T, game::Ai>) {
-					ImGui::Text("game::Ai");
-					ImGui::Text("Player name: %s", slot.name.c_str());
-					if (ImGui::AbortButton("Remove")) {
-						playerSlot = game::OpenSlot{};
-						tetrisController_->setPlayerSlot(playerSlot, i);
-					}
-				} else if constexpr (std::is_same_v<T, game::Remote>) {
-					ImGui::Text("game::Remote");
-					if (ImGui::AbortButton("Remove")) {
-						playerSlot = game::OpenSlot{};
-						tetrisController_->setPlayerSlot(playerSlot, i);
-					}
-				} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
-					// Skip.
-				} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
-					if (ImGui::Button("Open Slot", {100, 100})) {
-						scene::AddPlayerData data{};
-						data.index = i;
-						addPlayer_->switchedTo(data);
-
-						ImGui::OpenPopup(PopUpId);
-						ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, {0.5f, 0.5f});
-						ImGui::SetNextWindowSize({800, 800}, ImGuiCond_Appearing);
-					}
-				} else {
-					static_assert(always_false_v<T>, "non-exhaustive visitor!");
-				}
-			}, playerSlot);
-			ImGui::EndGroup();
-
-			auto size = ImVec2{60.f, 30.f};
-			auto cursorPos = ImGui::GetWindowWidth() - size.x - 10.f;
-
-			if (!ImGui::PopupModal(PopUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
-				auto pos = ImGui::GetCursorScreenPos();
-
-				ImGui::SetCursorPosX(cursorPos); // TODO! Fix more less hard coded right alignment.
-				if (ImGui::AbortButton("Cancel", size) || ImGui::IsKeyDown(ImGuiKey_Escape)) {
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::SetCursorScreenPos(pos);
-
-				addPlayer_->imGuiUpdate(deltaTime);
-			})) {
-
+		ImGui::PopupContextItem([&]() {
+			if (ImGui::MenuItem("Paste", "CTRL+V")) {
+				serverId_.assign(ImGui::GetClipboardText());
+				ImGui::CloseCurrentPopup();
 			}
+		});
 
-			ImGui::PopID();
+		if (ImGui::ConfirmationButton("Connect")) { // TODO! Handle lag and show a spinner.
+			tetrisController_->joinGameRoom(serverId_);
 		}
+
+		if (ImGui::Button("Refresh")) {
+			tetrisController_->refreshGameRoomList();
+		}
+
+		if (InputText("Filter", &filter_)) {
+		}
+
+		ImGui::Table("Game rooms", 4, ImGuiTableFlags_Borders, {500, 0}, [&]() {
+			ImGui::TableSetupColumn("Id");// , ImGuiTableColumnFlags_WidthFixed, 70);
+			ImGui::TableSetupColumn("Name");
+			ImGui::TableSetupColumn("Players / Max");
+			ImGui::TableSetupColumn("Connect");
+			ImGui::TableHeadersRow();
+
+			for (const auto& gameRoom : gameRooms_) {
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn(); ImGui::Text("%s", gameRoom.id.c_str());
+				ImGui::TableNextColumn(); ImGui::Text("%s", gameRoom.name.c_str());
+				ImGui::TableNextColumn(); ImGui::Text("%i / %i", gameRoom.playerCount, gameRoom.maxPlayerCount);
+				
+				ImGui::TableNextColumn(); 
+				if (ImGui::Button("Connect")) {
+					tetrisController_->joinGameRoom(gameRoom.id.c_str());
+				}
+			}
+		});
 	}
 
 	void JoinGame::switchedTo(const SceneData& sceneData) {
-		reset(playerSlots_);
-		gameRoomJoined_ = false;
+		gameRooms_.clear();
+		serverId_ = "";
+		filter_ = "";
+		tetrisController_->refreshGameRoomList();
 	}
 
 	void JoinGame::switchedFrom() {
-	}
-
-	void JoinGame::onPlayerSlotEvent(const PlayerSlotEvent& playerSlotEvent) {
-		playerSlots_[playerSlotEvent.slot] = playerSlotEvent.playerSlot;
 	}
 
 }

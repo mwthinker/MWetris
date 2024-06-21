@@ -53,7 +53,7 @@ namespace mwetris {
 	struct CreateGameEvent {
 	};
 
-	using TetrisEvent = std::variant<game::GamePause, game::GameOver, PlayerSlotEvent, GameRoomEvent, CreateGameEvent>;
+	using TetrisEvent = std::variant<game::GamePause, game::GameOver, PlayerSlotEvent, GameRoomEvent, CreateGameEvent, network::GameRoomListEvent>;
 
 	class TetrisController {
 	public:
@@ -99,6 +99,8 @@ namespace mwetris {
 		void setFixTimestep(double delta);
 
 		bool isDefaultGame() const;
+
+		void refreshGameRoomList();
 
 	private:
 		void setGameRoomType(GameRoomType gameRoomType);

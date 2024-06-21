@@ -31,6 +31,7 @@ namespace mwetris::network {
 		mw::PublicSignal<Network, const CreateGameEvent&> createGameEvent;
 		mw::PublicSignal<Network, const LeaveGameRoomEvent&> leaveGameRoomEvent;
 		mw::PublicSignal<Network, const ClientDisconnectedEvent&> clientDisconnectedEvent;
+		mw::PublicSignal<Network, const GameRoomListEvent&> gameRoomListEvent;
 
 		struct NetworkPlayer {
 			game::PlayerPtr player;
@@ -70,6 +71,8 @@ namespace mwetris::network {
 		bool isInsideRoom() const;
 
 		void removeClient(const ClientId& clientId);
+
+		void requestGameRoomList();
 
 	private:
 		static asio::awaitable<void> run(std::shared_ptr<Network> network);
@@ -119,6 +122,8 @@ namespace mwetris::network {
 		void handlePlayerBoardUpdate(const NetworkPlayer& player, const game::TetrisBoardEvent& tetrisBoardEvent);
 
 		void handleLeaveGameRoom(const tp_s2c::LeaveGameRoom& leaveGameRoom);
+
+		void handleGameRoomList(const tp_s2c::GameRoomList& gameRoomList);
 
 		void send(const tp_c2s::Wrapper& wrapper);
 

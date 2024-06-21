@@ -24,6 +24,7 @@ namespace mwetris {
 	namespace network {
 
 		class Network;
+		struct GameRoomListEvent;
 
 	}
 
@@ -54,6 +55,7 @@ namespace mwetris::ui {
 		void onTetrisEvent(const PlayerSlotEvent& playerSlotEvent);
 		void onTetrisEvent(const mwetris::GameRoomEvent& gameRoomEvent);
 		void onTetrisEvent(const CreateGameEvent& createGameEvent);
+		void onTetrisEvent(const network::GameRoomListEvent& gameRoomListEvent);
 
 		void initPreLoop();
 		int getCurrentMonitorHz() const;

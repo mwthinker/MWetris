@@ -58,8 +58,7 @@ namespace mwetris::network {
 				auto gameRoomOptional = server->findGameRoom(remote.clientId);
 				if (gameRoomOptional.has_value()) {
 					auto& gameRoom = gameRoomOptional.value().get();
-					const auto& clientUuids = gameRoom.getConnectedClientUuids();
-					if (clientUuids.size() < 2) {
+					if (gameRoom.getConnectedClientSize() < 2) {
 						spdlog::info("[TcpServer] Game room {} closed due to last client disconnected", gameRoom.getGameRoomId());
 						server->gameRoomById_.erase(gameRoom.getGameRoomId());
 						server->roomIdByClientId_.erase(remote.clientId);

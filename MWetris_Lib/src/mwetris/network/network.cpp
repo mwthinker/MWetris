@@ -174,6 +174,13 @@ namespace mwetris::network {
 		send(wrapperToServer_);
 	}
 
+	void Network::requestGameRoomList() {
+		wrapperToServer_.Clear();
+		auto requestGameRoomList = wrapperToServer_.mutable_request_game_room_list();
+		requestGameRoomList->set_ranked(true);
+		send(wrapperToServer_);
+	}
+
 	asio::awaitable<void> Network::run(std::shared_ptr<Network> network) try {
 		int value = network.use_count();
 		while (network->running_) {
@@ -185,6 +192,9 @@ namespace mwetris::network {
 				network->handlGameRoomCreated(network->wrapperFromServer_.game_room_created());
 			} else if (network->wrapperFromServer_.has_game_room_joined()) {
 				network->handleGameRoomJoined(network->wrapperFromServer_.game_room_joined());
+			} else if (network->wrapperFromServer_.has_game_room_list()) {
+				network->handleGameRoomList(network->wrapperFromServer_.game_room_list());
+				continue;
 			} else {
 				continue;
 			}
@@ -574,6 +584,22 @@ namespace mwetris::network {
 		} else {
 			// TODO! Handle other clients leaving.
 		}
+	}
+
+	void Network::handleGameRoomList(const tp_s2c::GameRoomList& gameRoomList) {
+		spdlog::info("[Network] GameRoomList");
+		std::vector<GameRoomListEvent::GameRoom> gameRooms;
+		for (const auto& tpGameRoom : gameRoomList.game_rooms()) {
+			gameRooms.push_back(GameRoomListEvent::GameRoom{
+				.id = tpGameRoom.game_room_id(),
+				.name = tpGameRoom.name(),
+				.playerCount = tpGameRoom.player_count(),
+				.maxPlayerCount = tpGameRoom.max_player_count()
+			});
+		}
+		gameRoomListEvent(GameRoomListEvent{
+			.gameRooms = std::move(gameRooms)
+		});
 	}
 
 	void Network::send(const tp_c2s::Wrapper& wrapper) {

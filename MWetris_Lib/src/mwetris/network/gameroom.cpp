@@ -77,8 +77,12 @@ namespace mwetris::network {
 		return gameRoomId_;
 	}
 
-	const std::vector<ClientId>& GameRoom::getConnectedClientUuids() const {
+	const std::vector<ClientId>& GameRoom::getConnectedClientIds() const {
 		return connectedClientIds;
+	}
+
+	int GameRoom::getConnectedClientSize() const {
+		return static_cast<int>(connectedClientIds.size());
 	}
 
 	void GameRoom::disconnect(Server& server) {

@@ -83,6 +83,8 @@ namespace mwetris::network {
 
 		void handleLeaveGameRoom(Remote& remote, const tp_c2s::LeaveGameRoom& leaveGameRoom);
 
+		void handleRequestGameRoomList(Remote& server, const tp_c2s::RequestGameRoomList& requestGameRoomList);
+
 		void sendToClient(const ClientId& clientId, const google::protobuf::MessageLite& message) override;
 
 		void triggerConnectedClientEvent(const ConnectedClient& connectedClient) override;

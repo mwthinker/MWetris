@@ -79,6 +79,10 @@ message RemoveClient {
 	tp.ClientId client_id = 1;
 }
 
+message RequestGameRoomList {
+	bool ranked = 1;
+}
+
 message Wrapper {
 	PlayerSlot player_slot = 1;
 	StartGame start_game = 2;
@@ -94,4 +98,5 @@ message Wrapper {
 	RequestGameRestart request_game_restart = 12;
 	LeaveGameRoom leave_game_room = 13;
 	RemoveClient remove_client = 14;
+	RequestGameRoomList request_game_room_list = 15;
 }

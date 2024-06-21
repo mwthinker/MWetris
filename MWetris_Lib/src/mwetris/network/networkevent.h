@@ -49,6 +49,17 @@ namespace mwetris::network {
 		ClientId clientId;
 	};
 
+	struct GameRoomListEvent {
+		struct GameRoom {
+			GameRoomId id;
+			std::string name;
+			int playerCount;
+			int maxPlayerCount;
+		};
+
+		std::vector<GameRoom> gameRooms;
+	};
+
 }
 
 #endif

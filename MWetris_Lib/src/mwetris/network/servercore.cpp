@@ -51,6 +51,8 @@ namespace mwetris::network {
 			handleJoinGameRoom(fromRemote, wrapperFromClient_.join_game_room());
 		} else if (wrapperFromClient_.has_leave_game_room()) {
 			handleLeaveGameRoom(fromRemote, wrapperFromClient_.leave_game_room());
+		} else if (wrapperFromClient_.has_request_game_room_list()) {
+			handleRequestGameRoomList(fromRemote, wrapperFromClient_.request_game_room_list());
 		}
 
 		if (auto it = roomIdByClientId_.find(fromRemote.clientId); it != roomIdByClientId_.end()) {
@@ -94,12 +96,25 @@ namespace mwetris::network {
 
 			spdlog::info("[DebugServer] Client with id {} left GameRoom with id {}", remote.clientId, gameRoomId);
 			roomIdByClientId_.erase(it);
-			if (gameRoom.getConnectedClientUuids().size() == 1) {
+			if (gameRoom.getConnectedClientSize() == 1) {
 				gameRoom.disconnect(*this);
 				gameRoomById_.erase(gameRoomId);
 				spdlog::info("[DebugServer] Last client left GameRoom with id {} therefore it is closed", gameRoomId);
 			}
 		}
+	}
+
+	void ServerCore::handleRequestGameRoomList(Remote& server, const tp_c2s::RequestGameRoomList& requestGameRoomList) {
+		wrapperToClient_.Clear();
+		auto gameRoomList = wrapperToClient_.mutable_game_room_list();
+		for (const auto& [gameRoomId, gameRoom] : gameRoomById_) {
+			auto gameRoomInfo = gameRoomList->add_game_rooms();
+			setTp(gameRoomId, *gameRoomInfo->mutable_game_room_id());
+			gameRoomInfo->set_name(gameRoom.getName());
+			gameRoomInfo->set_max_player_count(4);
+			gameRoomInfo->set_player_count(gameRoom.getConnectedClientSize());
+		}
+		sendToClient(*server.client, wrapperToClient_);
 	}
 
 	void ServerCore::release(ProtobufMessage&& message) {

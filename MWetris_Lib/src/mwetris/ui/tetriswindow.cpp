@@ -122,7 +122,7 @@ namespace mwetris::ui {
 
 		mainStateMachine_.emplace<scene::EmptyScene>();
 		mainStateMachine_.emplace<scene::CreateGame>(tetrisController_, deviceManager_);
-		mainStateMachine_.emplace<scene::JoinGame>(tetrisController_, deviceManager_);
+		modalStateMachine_.emplace<scene::JoinGame>(tetrisController_);
 
 		modalStateMachine_.emplace<scene::EmptyScene>();
 		modalStateMachine_.emplace<scene::Settings>();
@@ -176,6 +176,7 @@ namespace mwetris::ui {
 	}
 
 	void TetrisWindow::onTetrisEvent(const mwetris::GameRoomEvent& createGameRoomEvent) {
+		ImGui::CloseCurrentPopup();
 		scene::CreateGameData data;
 		switch (createGameRoomEvent.type) {
 			case GameRoomType::LocalInsideGameRoom:
@@ -200,6 +201,10 @@ namespace mwetris::ui {
 	void TetrisWindow::onTetrisEvent(const CreateGameEvent& createGameEvent) {
 		modalStateMachine_.switchTo<scene::EmptyScene>();
 		mainStateMachine_.switchTo<scene::EmptyScene>();
+	}
+
+	void TetrisWindow::onTetrisEvent(const network::GameRoomListEvent& gameRoomListEvent) {
+		// Do nothing here.
 	}
 
 	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
@@ -261,8 +266,7 @@ namespace mwetris::ui {
 						tetrisController_->createNetworkGameRoom("MW Room");
 					}
 					if (ImGui::MenuItem("Join Network Game")) {
-						modalStateMachine_.switchTo<scene::EmptyScene>();
-						mainStateMachine_.switchTo<scene::JoinGame>();
+						openPopUp<mwetris::ui::scene::JoinGame>();
 					}
 					ImGui::EndDisabled();
 					ImGui::BeginDisabled(!insideGameRoom);
