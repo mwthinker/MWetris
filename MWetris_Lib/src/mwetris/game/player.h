@@ -5,6 +5,7 @@
 #include "tetrisboardcontroller.h"
 #include "device.h"
 #include "playerboardevent.h"
+#include "tetrisparameters.h"
 
 #include <tetris/tetrisboard.h>
 
@@ -30,11 +31,11 @@ namespace mwetris::game {
 
 	class TetrisBoardMoveController;
 	
-	PlayerPtr createAiPlayer(const tetris::Ai& ai, const PlayerData& playerData = DefaultPlayerData{}, tetris::TetrisBoard&& tetrisBoard = tetris::TetrisBoard{10, 10, tetris::BlockType::L, tetris::BlockType::L});
+	PlayerPtr createAiPlayer(const tetris::Ai& ai, const PlayerData& playerData = DefaultPlayerData{}, tetris::TetrisBoard&& tetrisBoard = tetris::TetrisBoard{game::TetrisWidth, game::TetrisHeight, tetris::BlockType::L, tetris::BlockType::L});
 	
-	PlayerPtr createHumanPlayer(DevicePtr device, const PlayerData& playerData = DefaultPlayerData{}, tetris::TetrisBoard&& tetrisBoard = tetris::TetrisBoard{10, 10, tetris::BlockType::L, tetris::BlockType::L});
+	PlayerPtr createHumanPlayer(DevicePtr device, const PlayerData& playerData = DefaultPlayerData{}, tetris::TetrisBoard&& tetrisBoard = tetris::TetrisBoard{game::TetrisWidth, game::TetrisHeight, tetris::BlockType::L, tetris::BlockType::L});
 
-	PlayerPtr createRemotePlayer(const PlayerData& playerData = DefaultPlayerData{}, tetris::TetrisBoard&& tetrisBoard = tetris::TetrisBoard{10, 10, tetris::BlockType::L, tetris::BlockType::L});
+	PlayerPtr createRemotePlayer(const PlayerData& playerData = DefaultPlayerData{}, tetris::TetrisBoard&& tetrisBoard = tetris::TetrisBoard{game::TetrisWidth, game::TetrisHeight, tetris::BlockType::L, tetris::BlockType::L});
 
 	class Player : public PlayerBoardEventInvoker {
 	public:

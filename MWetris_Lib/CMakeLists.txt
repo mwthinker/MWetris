@@ -42,6 +42,7 @@ set(SOURCES_LIB
 	src/mwetris/game/serialize.h
 	src/mwetris/game/serializehighscore.cpp
 	src/mwetris/game/serializehighscore.h
+	src/mwetris/game/tetrisparameters.h
 
 	src/mwetris/network/asio.h
 	src/mwetris/network/client.h

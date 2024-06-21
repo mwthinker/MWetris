@@ -1,7 +1,7 @@
 #ifndef MWETRIS_GAME_TETRISPARAMETERS_H
 #define MWETRIS_GAME_TETRISPARAMETERS_H
 
-namespace mwetris {
+namespace mwetris::game {
 
 	constexpr int TetrisMaxLevel = 40;
 

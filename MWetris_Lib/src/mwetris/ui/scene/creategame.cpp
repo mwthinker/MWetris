@@ -137,8 +137,7 @@ namespace mwetris::ui::scene {
 
 			ImGui::PopID();
 		}
-		ImGui::Checkbox("Network Game", &networkGame_);
-		if (networkGame_) {
+		if (createGameData_.type == CreateGameData::Type::Network) {
 			gameRoomId_ = tetrisController_->getGameRoomId();
 			if (!gameRoomId_.empty()) {
 				ImGui::SetCursorPosY(200);
@@ -157,9 +156,9 @@ namespace mwetris::ui::scene {
 		ImGui::SetCursorPosY(y);
 
 		if (ImGui::ConfirmationButton("Create Game", {width, height})) {
-			if (!gameRoomId_.empty() && networkGame_) {
+			if (!gameRoomId_.empty() && createGameData_.type == CreateGameData::Type::Network) {
 				spdlog::info("[CreateGame] Starting network game.");
-				tetrisController_->startNetworkGame(TetrisWidth, TetrisHeight);
+				tetrisController_->startNetworkGame(game::TetrisWidth, game::TetrisHeight);
 			} else {
 				spdlog::info("[CreateGame] Starting local game.");
 				tetrisController_->startLocalGame(
@@ -172,6 +171,12 @@ namespace mwetris::ui::scene {
 	}
 
 	void CreateGame::switchedTo(const SceneData& sceneData) {
+		try {
+			createGameData_ = dynamic_cast<const CreateGameData&>(sceneData);
+		} catch (const std::bad_cast& exp) {
+			createGameData_ = {};
+			spdlog::error("Bug, should be type CreateGameData: {}", exp.what());
+		}
 		reset(playerSlots_);
 	}
 

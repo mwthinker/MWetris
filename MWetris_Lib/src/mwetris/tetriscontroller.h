@@ -39,10 +39,21 @@ namespace mwetris {
 		int slot;
 	};
 
+	enum class GameRoomType {
+		OutsideGameRoom,
+		LocalInsideGameRoom,
+		NetworkWaitingCreateGameRoom,
+		NetworkInsideGameRoom
+	};
+	
+	struct GameRoomEvent {
+		GameRoomType type;
+	};
+
 	struct CreateGameEvent {
 	};
 
-	using TetrisEvent = std::variant<game::GamePause, game::GameOver, PlayerSlotEvent, network::JoinGameRoomEvent, network::CreateGameRoomEvent, CreateGameEvent, network::LeaveGameRoomEvent>;
+	using TetrisEvent = std::variant<game::GamePause, game::GameOver, PlayerSlotEvent, GameRoomEvent, CreateGameEvent>;
 
 	class TetrisController {
 	public:
@@ -72,7 +83,8 @@ namespace mwetris {
 
 		bool isInsideGameRoom() const;
 
-		void createGameRoom(const std::string& name);
+		void createLocalGameRoom();
+		void createNetworkGameRoom(const std::string& name);
 
 		void joinGameRoom(const std::string& gameRoomUuid);
 
@@ -89,10 +101,13 @@ namespace mwetris {
 		bool isDefaultGame() const;
 
 	private:
+		void setGameRoomType(GameRoomType gameRoomType);
+
 		std::shared_ptr<network::Network> network_;
 		std::shared_ptr<game::TetrisGame> tetrisGame_;
 		std::shared_ptr<graphic::GameComponent> gameComponent_;
 		mw::signals::ScopedConnections connections_;
+		GameRoomType gameRoomType_ = GameRoomType::OutsideGameRoom;
 	};
 
 }

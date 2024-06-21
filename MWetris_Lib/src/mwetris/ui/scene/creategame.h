@@ -41,12 +41,18 @@ namespace mwetris::ui::scene {
 
 	class AddPlayer;
 
+	struct CreateGameData : public scene::SceneData {
+		enum class Type {
+			Local,
+			Network
+		};
+
+		Type type = Type::Local;
+	};
+
 	class CreateGame : public Scene {
 	public:
-		CreateGame(
-			std::shared_ptr<TetrisController> tetrisController,
-			std::shared_ptr<game::DeviceManager> deviceManager
-		);
+		CreateGame(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager);
 
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
 
@@ -64,7 +70,7 @@ namespace mwetris::ui::scene {
 		bool openPopUp_ = false;
 		std::unique_ptr<AddPlayer> addPlayer_;
 		std::string gameRoomId_;
-		bool networkGame_ = false;
+		CreateGameData createGameData_;
 	};
 
 }

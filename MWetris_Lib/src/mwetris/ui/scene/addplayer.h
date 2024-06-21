@@ -45,6 +45,7 @@ namespace mwetris::ui::scene {
 		}
 
 		void switchedTo(const SceneData& sceneData) override;
+	
 	private:
 		void deviceConnected(game::DevicePtr device);
 

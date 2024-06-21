@@ -36,13 +36,7 @@ namespace mwetris::ui::scene {
 		}
 
 		connections_ += tetrisController_->tetrisEvent.connect([this](const TetrisEvent& tetrisEvent) {
-			if (auto joinGameRoomEvent = std::get_if<network::JoinGameRoomEvent>(&tetrisEvent)) {
-				if (joinGameRoomEvent->join) {
-					gameRoomJoined_ = true;
-				} else {
-					// TODO: If the server id is invalid, show a message.
-				}
-			} else if (auto playerSlotEvent = std::get_if<PlayerSlotEvent>(&tetrisEvent)) {
+			if (auto playerSlotEvent = std::get_if<PlayerSlotEvent>(&tetrisEvent)) {
 				onPlayerSlotEvent(*playerSlotEvent);
 			}
 		});

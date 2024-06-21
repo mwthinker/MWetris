@@ -175,28 +175,30 @@ namespace mwetris::ui {
 		spdlog::debug("[TetrisWindow] Player slot event");
 	}
 
-	void TetrisWindow::onTetrisEvent(const network::JoinGameRoomEvent& joinGameRoomEvent) {
-		spdlog::debug("[TetrisWindow] Join game room");
-
-		if (modalStateMachine_.isCurrentScene<scene::CreateGame>() || modalStateMachine_.isCurrentScene<scene::JoinGame>()) {
-			modalStateMachine_.switchTo<scene::EmptyScene>();
-		}
-	}
-
-	void TetrisWindow::onTetrisEvent(const network::CreateGameRoomEvent& createGameRoomEvent) {
-		if (createGameRoomEvent.join) {
-			modalStateMachine_.switchTo<scene::EmptyScene>();
-			mainStateMachine_.switchTo<scene::CreateGame>();
+	void TetrisWindow::onTetrisEvent(const mwetris::GameRoomEvent& createGameRoomEvent) {
+		scene::CreateGameData data;
+		switch (createGameRoomEvent.type) {
+			case GameRoomType::LocalInsideGameRoom:
+				data.type = scene::CreateGameData::Type::Network;
+				modalStateMachine_.switchTo<scene::EmptyScene>();
+				mainStateMachine_.switchTo<scene::CreateGame>(data);
+				break;
+			case GameRoomType::NetworkInsideGameRoom:
+				data.type = scene::CreateGameData::Type::Network;
+				modalStateMachine_.switchTo<scene::EmptyScene>();
+				mainStateMachine_.switchTo<scene::CreateGame>(data);
+				break;
+			case GameRoomType::OutsideGameRoom:
+				modalStateMachine_.switchTo<scene::EmptyScene>();
+				mainStateMachine_.switchTo<scene::EmptyScene>();
+				break;
+			case GameRoomType::NetworkWaitingCreateGameRoom:
+				break;
 		}
 	}
 
 	void TetrisWindow::onTetrisEvent(const CreateGameEvent& createGameEvent) {
 		modalStateMachine_.switchTo<scene::EmptyScene>();
-		mainStateMachine_.switchTo<scene::EmptyScene>();
-	}
-
-	void TetrisWindow::onTetrisEvent(const network::LeaveGameRoomEvent& leaveGameRoomEvent) {
-		spdlog::debug("[TetrisWindow] Leave game room");
 		mainStateMachine_.switchTo<scene::EmptyScene>();
 	}
 
@@ -252,10 +254,13 @@ namespace mwetris::ui {
 						tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
 					}
 					ImGui::Separator();
-					if (ImGui::MenuItem("Create Game")) {
-						tetrisController_->createGameRoom("MW Room");
+					if (ImGui::MenuItem("Create Local Game")) {
+						tetrisController_->createLocalGameRoom();
 					}
-					if (ImGui::MenuItem("Join Game")) {
+					if (ImGui::MenuItem("Create Network Game")) {
+						tetrisController_->createNetworkGameRoom("MW Room");
+					}
+					if (ImGui::MenuItem("Join Network Game")) {
 						modalStateMachine_.switchTo<scene::EmptyScene>();
 						mainStateMachine_.switchTo<scene::JoinGame>();
 					}

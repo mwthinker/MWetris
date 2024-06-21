@@ -23,13 +23,13 @@ public:
 	std::queue<std::string> outputOrder_;
 	
 	std::chrono::milliseconds delay_{0};
-	bool printHelp_{false};
-	bool play_{false};
-	bool useRandomFile_{false};
-	int width_{10};
-	int height_{24};
-	bool verbose_{false};
-	int depth_{1};
+	bool printHelp_ = false;
+	bool play_ = false;
+	bool useRandomFile_ = false;
+	int width_ = 10;
+	int height_ = 24;
+	bool verbose_ = false;
+	int depth_ = 1;
 };
 
-#endif	// FLAGS_H
+#endif

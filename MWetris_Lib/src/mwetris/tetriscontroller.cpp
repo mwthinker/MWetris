@@ -29,10 +29,10 @@ namespace mwetris {
 			tetrisEvent(CreateGameEvent{});
 		});
 		connections_ += network_->createGameRoomEvent.connect([this](const network::CreateGameRoomEvent& createGameRoomEvent) {
-			tetrisEvent(createGameRoomEvent);
+			setGameRoomType(GameRoomType::NetworkInsideGameRoom);
 		});
 		connections_ += network_->joinGameRoomEvent.connect([this](const network::JoinGameRoomEvent& joinGameRoomEvent) {
-			tetrisEvent(joinGameRoomEvent);
+			setGameRoomType(GameRoomType::NetworkInsideGameRoom);
 		});
 		connections_ += network_->playerSlotEvent.connect([this](const network::PlayerSlotEvent& playerSlotEvent) {
 			tetrisEvent(PlayerSlotEvent{
@@ -41,9 +41,9 @@ namespace mwetris {
 			});
 		});
 		connections_ += network_->leaveGameRoomEvent.connect([this](const network::LeaveGameRoomEvent& leaveGameRoomEvent) {
-			tetrisEvent(leaveGameRoomEvent);
+			setGameRoomType(GameRoomType::OutsideGameRoom);
 		});
-		
+
 		connections_ += tetrisGame_->initGameEvent.connect([this](const game::InitGameEvent& initGameEvent) {
 			gameComponent_->initGame(initGameEvent);
 		});
@@ -109,10 +109,21 @@ namespace mwetris {
 	}
 
 	bool TetrisController::isInsideGameRoom() const {
-		return network_->isInsideGameRoom();
+		switch (gameRoomType_) {
+			case GameRoomType::LocalInsideGameRoom: return true;
+			case GameRoomType::OutsideGameRoom: return false;
+			case GameRoomType::NetworkWaitingCreateGameRoom: return false;
+			case GameRoomType::NetworkInsideGameRoom: return true;
+		}
+		return false;
 	}
 
-	void TetrisController::createGameRoom(const std::string& name) {
+	void TetrisController::createLocalGameRoom() {
+		setGameRoomType(GameRoomType::LocalInsideGameRoom);
+	}
+
+	void TetrisController::createNetworkGameRoom(const std::string& name) {
+		setGameRoomType(GameRoomType::NetworkWaitingCreateGameRoom);
 		network_->createGameRoom(name);
 	}
 
@@ -121,7 +132,11 @@ namespace mwetris {
 	}
 
 	void TetrisController::leaveGameRoom() {
-		network_->leaveGameRoom();
+		if (network_->isInsideGameRoom()) {
+			network_->leaveGameRoom();
+		} else {
+			setGameRoomType(GameRoomType::OutsideGameRoom);
+		}
 	}
 
 	void TetrisController::setPlayerSlot(const game::PlayerSlot& playerSlot, int slot) {
@@ -151,6 +166,13 @@ namespace mwetris {
 
 	bool TetrisController::isDefaultGame() const {
 		return !network_->isInsideGameRoom() && tetrisGame_->isDefaultGame();
+	}
+
+	void TetrisController::setGameRoomType(GameRoomType gameRoomType) {
+		gameRoomType_ = gameRoomType;
+		tetrisEvent(GameRoomEvent{
+			.type = gameRoomType_
+		});
 	}
 
 }

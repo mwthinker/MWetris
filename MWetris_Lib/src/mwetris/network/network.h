@@ -45,6 +45,8 @@ namespace mwetris::network {
 
 		void stop();
 
+		bool isPublic() const;
+
 		bool isInsideGameRoom() const;
 
 		~Network();
@@ -135,6 +137,7 @@ namespace mwetris::network {
 		bool running_ = true;
 		ClientId clientId_;
 		asio::high_resolution_timer timer_;
+		bool public_ = false;
 	};
 
 }

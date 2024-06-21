@@ -178,7 +178,7 @@ namespace mwetris::network {
 		int value = network.use_count();
 		while (network->running_) {
 			// Connect to server
-			co_await network->nextMessage(network);
+			co_await nextMessage(network);
 			if (network->wrapperFromServer_.has_failed_to_connect()) {
 				continue;
 			} else if (network->wrapperFromServer_.has_game_room_created()) {
@@ -191,7 +191,7 @@ namespace mwetris::network {
 
 			// Wait for game to start
 			do {
-				co_await network->nextMessage(network);
+				co_await nextMessage(network);
 				if (network->wrapperFromServer_.has_game_looby()) {
 					network->handleGameLooby(network->wrapperFromServer_.game_looby());
 				}
@@ -211,7 +211,7 @@ namespace mwetris::network {
 
 			// Game loop
 			while (network->gameRoomId_) {
-				co_await network->nextMessage(network);
+				co_await nextMessage(network);
 				if (network->wrapperFromServer_.has_game_command()) {
 					network->handleGameCommand(network->wrapperFromServer_.game_command());
 				}
@@ -236,8 +236,10 @@ namespace mwetris::network {
 				if (network->wrapperFromServer_.has_remove_client()) {
 					network->handleRemoveClient(network->wrapperFromServer_.remove_client());
 				}
+				if (network->wrapperFromServer_.has_leave_game_room()) {
+					network->handleLeaveGameRoom(network->wrapperFromServer_.leave_game_room());
+				}
 			}
-			//network->leaveGameRoomEvent(LeaveGameRoomEvent{});
 		}
 		co_return;
 	} catch (const std::exception& e) {
