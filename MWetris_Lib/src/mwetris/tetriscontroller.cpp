@@ -142,9 +142,9 @@ namespace mwetris {
 		setGameRoomType(GameRoomType::LocalInsideGameRoom);
 	}
 
-	void TetrisController::createNetworkGameRoom(const std::string& name) {
+	void TetrisController::createNetworkGameRoom(const std::string& name, bool isPublic) {
 		setGameRoomType(GameRoomType::NetworkWaitingCreateGameRoom);
-		network_->createGameRoom(name);
+		network_->createGameRoom(name, isPublic);
 	}
 
 	void TetrisController::joinGameRoom(const std::string& gameRoomId) {

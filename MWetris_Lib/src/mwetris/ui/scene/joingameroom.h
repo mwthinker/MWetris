@@ -1,5 +1,5 @@
-#ifndef MWETRIS_UI_SCENE_JOINGAME_H
-#define MWETRIS_UI_SCENE_JOINGAME_H
+#ifndef MWETRIS_UI_SCENE_JOINGAMEROOM_H
+#define MWETRIS_UI_SCENE_JOINGAMEROOM_H
 
 #include "scene.h"
 
@@ -38,9 +38,9 @@ namespace mwetris::ui::scene {
 
 	class AddPlayer;
 
-	class JoinGame : public Scene {
+	class JoinGameRoom : public Scene {
 	public:
-		JoinGame(std::shared_ptr<TetrisController> tetrisController);
+		JoinGameRoom(std::shared_ptr<TetrisController> tetrisController);
 
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
 

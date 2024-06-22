@@ -66,8 +66,8 @@ namespace mwetris::network {
 			spdlog::warn("[DebugServer] Client with id {} already in a GameRoom", remote.clientId);
 			return;
 		}
-
-		GameRoom gameRoom;
+		
+		GameRoom gameRoom{createGameRoom.name(), createGameRoom.is_public()};
 		roomIdByClientId_.emplace(remote.clientId, gameRoom.getGameRoomId());
 		gameRoomById_.emplace(gameRoom.getGameRoomId(), std::move(gameRoom));
 		spdlog::info("[DebugServer] GameRoom with id {} is created", gameRoom.getGameRoomId());
@@ -109,6 +109,10 @@ namespace mwetris::network {
 		wrapperToClient_.Clear();
 		auto gameRoomList = wrapperToClient_.mutable_game_room_list();
 		for (const auto& [gameRoomId, gameRoom] : gameRoomById_) {
+			if (!gameRoom.isPublic()) {
+				continue;
+			}
+
 			auto gameRoomInfo = gameRoomList->add_game_rooms();
 			setTp(gameRoomId, *gameRoomInfo->mutable_game_room_id());
 			gameRoomInfo->set_name(gameRoom.getName());

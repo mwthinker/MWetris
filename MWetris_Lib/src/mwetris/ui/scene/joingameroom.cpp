@@ -1,4 +1,4 @@
-#include "joingame.h"
+#include "joingameroom.h"
 #include "addplayer.h"
 #include "tetriscontroller.h"
 #include "util.h"
@@ -30,7 +30,7 @@ namespace mwetris::ui::scene {
 
 	}
 
-	JoinGame::JoinGame(std::shared_ptr<TetrisController> tetrisController)
+	JoinGameRoom::JoinGameRoom(std::shared_ptr<TetrisController> tetrisController)
 		: tetrisController_{tetrisController} {
 
 		connections_ += tetrisController_->tetrisEvent.connect([this](const TetrisEvent& event) {
@@ -40,7 +40,7 @@ namespace mwetris::ui::scene {
 		});
 	}
 
-	void JoinGame::imGuiUpdate(const DeltaTime& deltaTime) {
+	void JoinGameRoom::imGuiUpdate(const DeltaTime& deltaTime) {
 		ImGui::PushFont(mwetris::Configuration::getInstance().getImGuiHeaderFont());
 		ImGui::Text("Custom Game");
 		ImGui::PopFont();
@@ -79,8 +79,8 @@ namespace mwetris::ui::scene {
 				ImGui::TableNextColumn(); ImGui::Text("%s", gameRoom.id.c_str());
 				ImGui::TableNextColumn(); ImGui::Text("%s", gameRoom.name.c_str());
 				ImGui::TableNextColumn(); ImGui::Text("%i / %i", gameRoom.playerCount, gameRoom.maxPlayerCount);
-				
-				ImGui::TableNextColumn(); 
+
+				ImGui::TableNextColumn();
 				if (ImGui::Button("Connect")) {
 					tetrisController_->joinGameRoom(gameRoom.id.c_str());
 				}
@@ -88,14 +88,14 @@ namespace mwetris::ui::scene {
 		});
 	}
 
-	void JoinGame::switchedTo(const SceneData& sceneData) {
+	void JoinGameRoom::switchedTo(const SceneData& sceneData) {
 		gameRooms_.clear();
 		serverId_ = "";
 		filter_ = "";
 		tetrisController_->refreshGameRoomList();
 	}
 
-	void JoinGame::switchedFrom() {
+	void JoinGameRoom::switchedFrom() {
 	}
 
 }

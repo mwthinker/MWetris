@@ -5,11 +5,12 @@
 #include "util.h"
 
 #include "scene/about.h"
+#include "scene/creategameroom.h"
 #include "scene/settings.h"
 #include "scene/highscore.h"
 #include "scene/newhighscore.h"
 #include "scene/addplayer.h"
-#include "scene/joingame.h"
+#include "scene/joingameroom.h"
 #include "scene/gameroomscene.h"
 #include "game/serialize.h"
 #include "game/tetrisgame.h"
@@ -122,9 +123,10 @@ namespace mwetris::ui {
 
 		mainStateMachine_.emplace<scene::EmptyScene>();
 		mainStateMachine_.emplace<scene::GameRoomScene>(tetrisController_, deviceManager_);
-		modalStateMachine_.emplace<scene::JoinGame>(tetrisController_);
-
+		
 		modalStateMachine_.emplace<scene::EmptyScene>();
+		modalStateMachine_.emplace<scene::JoinGameRoom>(tetrisController_);
+		modalStateMachine_.emplace<scene::CreateGameRoom>(tetrisController_);
 		modalStateMachine_.emplace<scene::Settings>();
 		modalStateMachine_.emplace<scene::HighScore>();
 		modalStateMachine_.emplace<scene::NewHighScore>([this]() {
@@ -264,10 +266,10 @@ namespace mwetris::ui {
 						tetrisController_->createLocalGameRoom();
 					}
 					if (ImGui::MenuItem("Create Network Game")) {
-						tetrisController_->createNetworkGameRoom("MW Room");
+						openPopUp<mwetris::ui::scene::CreateGameRoom>();
 					}
 					if (ImGui::MenuItem("Join Network Game")) {
-						openPopUp<mwetris::ui::scene::JoinGame>();
+						openPopUp<mwetris::ui::scene::JoinGameRoom>();
 					}
 					ImGui::EndDisabled();
 					ImGui::BeginDisabled(!insideGameRoom);

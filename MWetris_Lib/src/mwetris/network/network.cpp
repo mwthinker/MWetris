@@ -96,13 +96,15 @@ namespace mwetris::network {
 		send(wrapperToServer_);
 	}
 
-	void Network::createGameRoom(const std::string& gameRoom) {
+	void Network::createGameRoom(const std::string& gameRoom, bool isPublic) {
 		if (isInsideRoom()) {
 			spdlog::warn("[Network] Can't create room, already inside a room");
 			return;
 		}
 		wrapperToServer_.Clear();
-		wrapperToServer_.mutable_create_game_room()->set_name(gameRoom);
+		auto createGameRoom = wrapperToServer_.mutable_create_game_room();
+		createGameRoom->set_name(gameRoom);
+		createGameRoom->set_is_public(isPublic);
 		send(wrapperToServer_);
 	}
 

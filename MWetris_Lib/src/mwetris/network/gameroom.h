@@ -17,11 +17,15 @@ namespace mwetris::network {
 	public:
 		GameRoom();
 
+		GameRoom(const std::string& name, bool isPublic);
+
 		~GameRoom();
 
 		void sendToAllClients(Server& server, const tp_s2c::Wrapper& message, const ClientId& exceptClientId = ClientId{std::string{}});
 
 		const std::string& getName() const;
+
+		bool isPublic() const;
 
 		const GameRoomId& getGameRoomId() const;
 
@@ -73,6 +77,7 @@ namespace mwetris::network {
 		std::vector<Slot> playerSlots_;
 		std::vector<ClientId> connectedClientIds;
 		bool paused_ = false;
+		bool isPublic_ = false;
 
 		tp_s2c::Wrapper wrapperToClient_;
 	};

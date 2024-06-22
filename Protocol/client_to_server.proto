@@ -15,7 +15,7 @@ message ConnectedToRoom {
 
 message CreateGameRoom {
 	string name = 1;
-	bool public = 2;
+	bool is_public = 2;
 }
 
 message PlayerSlot {

@@ -52,7 +52,7 @@ namespace mwetris::network {
 
 		void sendRestart();
 
-		void createGameRoom(const std::string& gameRoom);
+		void createGameRoom(const std::string& gameRoom, bool isPublic);
 
 		void leaveGameRoom();
 

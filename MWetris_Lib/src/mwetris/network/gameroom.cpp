@@ -52,7 +52,14 @@ namespace mwetris::network {
 
 	}
 
-	GameRoom::GameRoom() {
+	GameRoom::GameRoom()
+		: GameRoom{"", false} {
+	}
+
+	GameRoom::GameRoom(const std::string& name, bool isPublic)
+		: name_{name}
+		, isPublic_{isPublic} {
+		
 		gameRoomId_ = GameRoomId::generateUniqueId();
 		playerSlots_.resize(4, Slot{.type = SlotType::Open});
 	}
@@ -70,6 +77,10 @@ namespace mwetris::network {
 
 	const std::string& GameRoom::getName() const {
 		return name_;
+	}
+
+	bool GameRoom::isPublic() const {
+		return isPublic_;
 	}
 
 	const GameRoomId& GameRoom::getGameRoomId() const {
