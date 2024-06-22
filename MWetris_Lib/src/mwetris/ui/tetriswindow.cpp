@@ -10,7 +10,7 @@
 #include "scene/newhighscore.h"
 #include "scene/addplayer.h"
 #include "scene/joingame.h"
-#include "scene/creategame.h"
+#include "scene/gameroomscene.h"
 #include "game/serialize.h"
 #include "game/tetrisgame.h"
 #include "graphic/gamecomponent.h"
@@ -121,7 +121,7 @@ namespace mwetris::ui {
 		background_ = Configuration::getInstance().getBackgroundSprite();
 
 		mainStateMachine_.emplace<scene::EmptyScene>();
-		mainStateMachine_.emplace<scene::CreateGame>(tetrisController_, deviceManager_);
+		mainStateMachine_.emplace<scene::GameRoomScene>(tetrisController_, deviceManager_);
 		modalStateMachine_.emplace<scene::JoinGame>(tetrisController_);
 
 		modalStateMachine_.emplace<scene::EmptyScene>();
@@ -177,17 +177,17 @@ namespace mwetris::ui {
 
 	void TetrisWindow::onTetrisEvent(const mwetris::GameRoomEvent& createGameRoomEvent) {
 		ImGui::CloseCurrentPopup();
-		scene::CreateGameData data;
+		scene::GameRoomSceneData data;
 		switch (createGameRoomEvent.type) {
 			case GameRoomType::LocalInsideGameRoom:
-				data.type = scene::CreateGameData::Type::Network;
+				data.type = scene::GameRoomSceneData::Type::Network;
 				modalStateMachine_.switchTo<scene::EmptyScene>();
-				mainStateMachine_.switchTo<scene::CreateGame>(data);
+				mainStateMachine_.switchTo<scene::GameRoomScene>(data);
 				break;
 			case GameRoomType::NetworkInsideGameRoom:
-				data.type = scene::CreateGameData::Type::Network;
+				data.type = scene::GameRoomSceneData::Type::Network;
 				modalStateMachine_.switchTo<scene::EmptyScene>();
-				mainStateMachine_.switchTo<scene::CreateGame>(data);
+				mainStateMachine_.switchTo<scene::GameRoomScene>(data);
 				break;
 			case GameRoomType::OutsideGameRoom:
 				modalStateMachine_.switchTo<scene::EmptyScene>();
@@ -304,7 +304,7 @@ namespace mwetris::ui {
 			ImGui::PopStyleVar(2);
 
 			auto h = ImGui::GetCursorPosY();
-			auto lowerBar = mainStateMachine_.isCurrentScene<scene::CreateGame>() ? 100 : 0;
+			auto lowerBar = mainStateMachine_.isCurrentScene<scene::GameRoomScene>() ? 100 : 0;
 			auto size = ImGui::GetWindowSize();
 			
 			if (!mainStateMachine_.isCurrentScene<scene::EmptyScene>()) {

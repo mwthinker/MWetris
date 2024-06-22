@@ -1,5 +1,5 @@
-#ifndef MWETRIS_UI_SCENE_CREATEGAME_H
-#define MWETRIS_UI_SCENE_CREATEGAME_H
+#ifndef MWETRIS_UI_SCENE_GAMEROOMSCENE_H
+#define MWETRIS_UI_SCENE_GAMEROOMSCENE_H
 
 #include "scene.h"
 
@@ -41,7 +41,7 @@ namespace mwetris::ui::scene {
 
 	class AddPlayer;
 
-	struct CreateGameData : public scene::SceneData {
+	struct GameRoomSceneData : public scene::SceneData {
 		enum class Type {
 			Local,
 			Network
@@ -50,9 +50,9 @@ namespace mwetris::ui::scene {
 		Type type = Type::Local;
 	};
 
-	class CreateGame : public Scene {
+	class GameRoomScene : public Scene {
 	public:
-		CreateGame(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager);
+		GameRoomScene(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager);
 
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
 
@@ -70,7 +70,7 @@ namespace mwetris::ui::scene {
 		bool openPopUp_ = false;
 		std::unique_ptr<AddPlayer> addPlayer_;
 		std::string gameRoomId_;
-		CreateGameData createGameData_;
+		GameRoomSceneData gameRoomSceneData_;
 	};
 
 }

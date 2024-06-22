@@ -1,4 +1,4 @@
-#include "creategame.h"
+#include "gameroomscene.h"
 #include "addplayer.h"
 #include "util.h"
 #include "tetriscontroller.h"
@@ -38,7 +38,7 @@ namespace mwetris::ui::scene {
 
 	}
 
-	CreateGame::CreateGame(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager)
+	GameRoomScene::GameRoomScene(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager)
 		: tetrisController_{tetrisController} {
 
 		for (int i = 0; i < 4; ++i) {
@@ -58,11 +58,11 @@ namespace mwetris::ui::scene {
 		}, deviceManager);
 	}
 
-	void CreateGame::onPlayerSlotEvent(const PlayerSlotEvent& playerSlotEvent) {
+	void GameRoomScene::onPlayerSlotEvent(const PlayerSlotEvent& playerSlotEvent) {
 		playerSlots_[playerSlotEvent.slot] = playerSlotEvent.playerSlot;
 	}
 
-	void CreateGame::imGuiUpdate(const DeltaTime& deltaTime) {
+	void GameRoomScene::imGuiUpdate(const DeltaTime& deltaTime) {
 		float width = ImGui::GetWindowWidth();
 
 		if (playerSlots_.size() > 1) {
@@ -137,7 +137,7 @@ namespace mwetris::ui::scene {
 
 			ImGui::PopID();
 		}
-		if (createGameData_.type == CreateGameData::Type::Network) {
+		if (gameRoomSceneData_.type == GameRoomSceneData::Type::Network) {
 			gameRoomId_ = tetrisController_->getGameRoomId();
 			if (!gameRoomId_.empty()) {
 				ImGui::SetCursorPosY(200);
@@ -156,7 +156,7 @@ namespace mwetris::ui::scene {
 		ImGui::SetCursorPosY(y);
 
 		if (ImGui::ConfirmationButton("Create Game", {width, height})) {
-			if (!gameRoomId_.empty() && createGameData_.type == CreateGameData::Type::Network) {
+			if (!gameRoomId_.empty() && gameRoomSceneData_.type == GameRoomSceneData::Type::Network) {
 				spdlog::info("[CreateGame] Starting network game.");
 				tetrisController_->startNetworkGame(game::TetrisWidth, game::TetrisHeight);
 			} else {
@@ -170,17 +170,17 @@ namespace mwetris::ui::scene {
 		ImGui::EndDisabled();
 	}
 
-	void CreateGame::switchedTo(const SceneData& sceneData) {
+	void GameRoomScene::switchedTo(const SceneData& sceneData) {
 		try {
-			createGameData_ = dynamic_cast<const CreateGameData&>(sceneData);
+			gameRoomSceneData_ = dynamic_cast<const GameRoomSceneData&>(sceneData);
 		} catch (const std::bad_cast& exp) {
-			createGameData_ = {};
+			gameRoomSceneData_ = {};
 			spdlog::error("Bug, should be type CreateGameData: {}", exp.what());
 		}
 		reset(playerSlots_);
 	}
 
-	void CreateGame::switchedFrom() {
+	void GameRoomScene::switchedFrom() {
 	}
 
 }
