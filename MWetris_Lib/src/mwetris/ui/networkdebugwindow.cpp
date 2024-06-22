@@ -69,7 +69,7 @@ namespace mwetris::ui {
 		}
 
 		if (ImGui::Checkbox("Connected", &connect)) {
-			static const std::string& uuid = "REMOTE_UUID";
+			static const std::string& id = "REMOTE_ID";
 			if (connect) {
 				// TODO!
 			} else {

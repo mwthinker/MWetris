@@ -86,7 +86,7 @@ namespace mwetris {
 		void createLocalGameRoom();
 		void createNetworkGameRoom(const std::string& name);
 
-		void joinGameRoom(const std::string& gameRoomUuid);
+		void joinGameRoom(const std::string& gameRoomId);
 
 		void leaveGameRoom();
 

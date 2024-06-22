@@ -131,8 +131,8 @@ namespace mwetris {
 		network_->createGameRoom(name);
 	}
 
-	void TetrisController::joinGameRoom(const std::string& gameRoomUuid) {
-		network_->joinGameRoom(gameRoomUuid);
+	void TetrisController::joinGameRoom(const std::string& gameRoomId) {
+		network_->joinGameRoom(network::GameRoomId{gameRoomId});
 	}
 
 	void TetrisController::leaveGameRoom() {
@@ -147,7 +147,7 @@ namespace mwetris {
 		if (network_->isInsideGameRoom()) {
 			network_->setPlayerSlot(playerSlot, slot);
 		} else {
-			tetrisEvent(PlayerSlotEvent{playerSlot, slot}); // TODO! Does this work?
+			tetrisEvent(PlayerSlotEvent{playerSlot, slot});
 		}
 	}
 

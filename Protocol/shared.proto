@@ -44,14 +44,6 @@ message Game {
 	PlayerBoard player_board = 2;
 }
 
-message LocalPlayer {
-	string uuid = 1;
-	string name = 2;
-	int32 level = 3;
-	int32 points = 4;
-	bool ai = 5;
-}
-
 enum Move {
 	UNSPECIFIED_MOVE = 0;
 	ROTATELEFT = 1;

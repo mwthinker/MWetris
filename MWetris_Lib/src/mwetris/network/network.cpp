@@ -149,7 +149,7 @@ namespace mwetris::network {
 		}
 	}
 
-	void Network::joinGameRoom(const std::string& uuid) {
+	void Network::joinGameRoom(const GameRoomId& gameRoomId) {
 		if (isInsideRoom()) {
 			spdlog::warn("[Network] Can't join room, already inside a room");
 			return;
@@ -159,7 +159,7 @@ namespace mwetris::network {
 
 		wrapperToServer_.Clear();
 		auto joinGameRoom = wrapperToServer_.mutable_join_game_room();
-		setTp(GameRoomId{uuid}, *joinGameRoom->mutable_game_room_id());
+		setTp(gameRoomId, *joinGameRoom->mutable_game_room_id());
 		send(wrapperToServer_);
 	}
 
@@ -329,7 +329,7 @@ namespace mwetris::network {
 	void Network::handlGameRoomCreated(const tp_s2c::GameRoomCreated& gameRoomCreated) {
 		gameRoomId_ = gameRoomCreated.game_room_id();
 		clientId_ = gameRoomCreated.client_id();
-		spdlog::info("[Network] GameRoomCreated: {}, client uuid: {}", gameRoomId_, clientId_);
+		spdlog::info("[Network] GameRoomCreated: {}, client id: {}", gameRoomId_, clientId_);
 		createGameRoomEvent(CreateGameRoomEvent{
 			.join = true
 		});
@@ -337,7 +337,7 @@ namespace mwetris::network {
 	}
 
 	void Network::handleGameRoomJoined(const tp_s2c::GameRoomJoined& gameRoomJoined) {
-		spdlog::info("[Network] GameRoomJoined: {}, client uuid: {}", gameRoomJoined.game_room_id(), gameRoomJoined.client_id());
+		spdlog::info("[Network] GameRoomJoined: {}, client id: {}", gameRoomJoined.game_room_id(), gameRoomJoined.client_id());
 		gameRoomId_ = gameRoomJoined.game_room_id();
 		clientId_ = gameRoomJoined.client_id();
 		joinGameRoomEvent(JoinGameRoomEvent{
@@ -384,8 +384,8 @@ namespace mwetris::network {
 	}
 
 	void Network::handleConnections(const tp_s2c::Connections& connections) {
-		for (const auto& uuid : connections.client_ids()) {
-			spdlog::info("[Network] Connected uuid: {}", uuid);
+		for (const auto& clientId : connections.client_ids()) {
+			spdlog::info("[Network] Connected ClientId: {}", clientId);
 		}
 	}
 
@@ -424,7 +424,7 @@ namespace mwetris::network {
 				}
 			);
 		}
-		if (networkPlayer.player) {
+		if (networkPlayer.player && networkPlayer.player->isLocal()) {
 			connections_ += networkPlayer.player->playerBoardUpdate.connect([this, index = players_.size() - 1](game::PlayerBoardEvent playerBoardEvent) {
 				if (index < 0 || index >= players_.size()) {
 					spdlog::error("[Network] Invalid index: {}", index);

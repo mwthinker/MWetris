@@ -94,12 +94,13 @@ namespace mwetris::network {
 			auto gameRoomId = it->second;
 			auto& gameRoom = gameRoomById_.at(gameRoomId);
 
-			spdlog::info("[DebugServer] Client with id {} left GameRoom with id {}", remote.clientId, gameRoomId);
 			roomIdByClientId_.erase(it);
-			if (gameRoom.getConnectedClientSize() == 1) {
-				gameRoom.disconnect(*this);
+			gameRoom.disconnect(*this, remote.clientId);
+			if (gameRoom.getConnectedClientSize() == 0) {
 				gameRoomById_.erase(gameRoomId);
-				spdlog::info("[DebugServer] Last client left GameRoom with id {} therefore it is closed", gameRoomId);
+				spdlog::info("[DebugServer] Last client {} left GameRoom {} therefore it is closed", remote.clientId, gameRoomId);
+			} else {
+				spdlog::info("[DebugServer] Client {} left GameRoom {}", remote.clientId, gameRoomId);
 			}
 		}
 	}

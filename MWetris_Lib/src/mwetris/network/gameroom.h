@@ -19,7 +19,7 @@ namespace mwetris::network {
 
 		~GameRoom();
 
-		void sendToAllClients(Server& server, const tp_s2c::Wrapper& message, const ClientId& exceptClientUuid = ClientId{std::string{}});
+		void sendToAllClients(Server& server, const tp_s2c::Wrapper& message, const ClientId& exceptClientId = ClientId{std::string{}});
 
 		const std::string& getName() const;
 
@@ -28,7 +28,7 @@ namespace mwetris::network {
 		const std::vector<ClientId>& getConnectedClientIds() const;
 		int getConnectedClientSize() const;
 
-		void disconnect(Server& server);
+		void disconnect(Server& server, const ClientId& clientId);
 
 		void sendPause(Server& server, bool pause);
 

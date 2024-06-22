@@ -66,7 +66,7 @@ namespace mwetris::network {
 
 		void setPlayerSlot(const game::PlayerSlot& playerSlot, int index);
 
-		void joinGameRoom(const std::string& uuid);
+		void joinGameRoom(const GameRoomId& gameRoomId);
 
 		bool isInsideRoom() const;
 

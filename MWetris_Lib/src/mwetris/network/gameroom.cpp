@@ -52,7 +52,6 @@ namespace mwetris::network {
 
 	}
 
-
 	GameRoom::GameRoom() {
 		gameRoomId_ = GameRoomId::generateUniqueId();
 		playerSlots_.resize(4, Slot{.type = SlotType::Open});
@@ -60,9 +59,9 @@ namespace mwetris::network {
 
 	GameRoom::~GameRoom() {}
 
-	void GameRoom::sendToAllClients(Server& server, const tp_s2c::Wrapper& message, const ClientId& exceptClientUuid) {
+	void GameRoom::sendToAllClients(Server& server, const tp_s2c::Wrapper& message, const ClientId& exceptClientId) {
 		for (const auto& clientId : connectedClientIds) {
-			if (clientId == exceptClientUuid) {
+			if (clientId == exceptClientId) {
 				continue;
 			}
 			server.sendToClient(clientId, message);
@@ -85,15 +84,13 @@ namespace mwetris::network {
 		return static_cast<int>(connectedClientIds.size());
 	}
 
-	void GameRoom::disconnect(Server& server) {
+	void GameRoom::disconnect(Server& server, const ClientId& clientId) {
 		wrapperToClient_.Clear();
-		for (const auto& clientId : connectedClientIds) {
-			wrapperToClient_.Clear();
-			auto leaveGameRoom = wrapperToClient_.mutable_leave_game_room();
-			setTp(gameRoomId_, *leaveGameRoom->mutable_game_room_id());
-			setTp(clientId, *leaveGameRoom->mutable_client_id());
-			sendToAllClients(server, wrapperToClient_);
-		}
+		auto leaveGameRoom = wrapperToClient_.mutable_leave_game_room();
+		setTp(gameRoomId_, *leaveGameRoom->mutable_game_room_id());
+		setTp(clientId, *leaveGameRoom->mutable_client_id());
+		sendToAllClients(server, wrapperToClient_);
+		connectedClientIds.erase(std::remove(connectedClientIds.begin(), connectedClientIds.end(), clientId), connectedClientIds.end());
 	}
 
 	void GameRoom::sendPause(Server& server, bool pause) {
@@ -218,7 +215,7 @@ namespace mwetris::network {
 
 	void GameRoom::handleBoardMove(Server& server, const ClientId& clientId, const tp_c2s::BoardMove& boardMove) {
 		auto move = static_cast<tetris::Move>(boardMove.move());
-		// TODO! Confirm player uuid belongs to correct client
+		// TODO! Confirm player id belongs to correct client
 		PlayerId playerId = boardMove.player_id();
 
 		wrapperToClient_.Clear();
@@ -229,7 +226,7 @@ namespace mwetris::network {
 	}
 
 	void GameRoom::handleBoardNextBlock(Server& server, const ClientId& clientId, const tp_c2s::BoardNextBlock& boardNextBlock) {
-		// TODO! Confirm player uuid belongs to correct client
+		// TODO! Confirm player id belongs to correct client
 
 		PlayerId playerId = boardNextBlock.player_id();
 
