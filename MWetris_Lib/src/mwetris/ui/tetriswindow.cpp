@@ -192,6 +192,7 @@ namespace mwetris::ui {
 			case GameRoomType::OutsideGameRoom:
 				modalStateMachine_.switchTo<scene::EmptyScene>();
 				mainStateMachine_.switchTo<scene::EmptyScene>();
+				tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
 				break;
 			case GameRoomType::NetworkWaitingCreateGameRoom:
 				break;

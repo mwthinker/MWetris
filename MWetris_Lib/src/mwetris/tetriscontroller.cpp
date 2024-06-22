@@ -17,35 +17,11 @@ namespace mwetris {
 		: network_{network}
 		, tetrisGame_{tetrisGame}
 		, gameComponent_{gameComponent} {
-		
-		connections_ += network_->pauseEvent.connect([this](const network::PauseEvent& pauseEvent) {
-			tetrisGame_->setPause(pauseEvent.pause);
-		});
-		connections_ += network_->restartEvent.connect([this](const network::RestartEvent& restartEvent) {
-			tetrisGame_->restartGame(restartEvent.current, restartEvent.next);
-		});
-		connections_ += network_->createGameEvent.connect([this](const network::CreateGameEvent& createGameEvent) {
-			tetrisGame_->createGame(std::make_unique<game::SurvivalGameRules>(), createGameEvent.players);
-			tetrisEvent(CreateGameEvent{});
-		});
-		connections_ += network_->createGameRoomEvent.connect([this](const network::CreateGameRoomEvent& createGameRoomEvent) {
-			setGameRoomType(GameRoomType::NetworkInsideGameRoom);
-		});
-		connections_ += network_->joinGameRoomEvent.connect([this](const network::JoinGameRoomEvent& joinGameRoomEvent) {
-			setGameRoomType(GameRoomType::NetworkInsideGameRoom);
-		});
-		connections_ += network_->playerSlotEvent.connect([this](const network::PlayerSlotEvent& playerSlotEvent) {
-			tetrisEvent(PlayerSlotEvent{
-				.playerSlot = playerSlotEvent.playerSlot,
-				.slot = playerSlotEvent.index
-			});
-		});
-		connections_ += network_->gameRoomListEvent.connect([this](const network::GameRoomListEvent& gameRoomListEvent) {
-			tetrisEvent(gameRoomListEvent);
-		});
 
-		connections_ += network_->leaveGameRoomEvent.connect([this](const network::LeaveGameRoomEvent& leaveGameRoomEvent) {
-			setGameRoomType(GameRoomType::OutsideGameRoom);
+		connections_ += network_->networkEvent.connect([this](const network::NetworkEvent& networkEvent) {
+			std::visit([&](auto&& event) {
+				onNetworkEvent(event);
+			}, networkEvent);
 		});
 
 		connections_ += tetrisGame_->initGameEvent.connect([this](const game::InitGameEvent& initGameEvent) {
@@ -55,6 +31,46 @@ namespace mwetris {
 			tetrisEvent(gamePause);
 			gameComponent_->gamePause(gamePause);
 		});
+	}
+
+	void TetrisController::onNetworkEvent(const network::PlayerSlotEvent& playerSlotEvent) {
+		tetrisEvent(PlayerSlotEvent{
+			.playerSlot = playerSlotEvent.playerSlot,
+			.slot = playerSlotEvent.index
+		});
+	}
+
+	void TetrisController::onNetworkEvent(const network::RestartEvent& restartEvent) {
+		tetrisGame_->restartGame(restartEvent.current, restartEvent.next);
+	}
+
+	void TetrisController::onNetworkEvent(const network::JoinGameRoomEvent& joinGameRoomEvent) {
+		setGameRoomType(GameRoomType::NetworkInsideGameRoom);
+	}
+
+	void TetrisController::onNetworkEvent(const network::CreateGameRoomEvent& createGameRoomEvent) {
+		setGameRoomType(GameRoomType::NetworkInsideGameRoom);
+	}
+
+	void TetrisController::onNetworkEvent(const network::PauseEvent& pauseEvent) {
+		tetrisGame_->setPause(pauseEvent.pause);
+	}
+
+	void TetrisController::onNetworkEvent(const network::CreateGameEvent& createGameEvent) {
+		tetrisGame_->createGame(std::make_unique<game::SurvivalGameRules>(), createGameEvent.players);
+		tetrisEvent(CreateGameEvent{});
+	}
+
+	void TetrisController::onNetworkEvent(const network::LeaveGameRoomEvent& leaveGameRoomEvent) {
+		setGameRoomType(GameRoomType::OutsideGameRoom);
+	}
+
+	void TetrisController::onNetworkEvent(const network::ClientDisconnectedEvent& clientDisconnectedEvent) {
+		// TODO! Handle client disconnect from server.
+	}
+
+	void TetrisController::onNetworkEvent(const network::GameRoomListEvent& gameRoomListEvent) {
+		tetrisEvent(gameRoomListEvent);
 	}
 
 	// Updates everything. Should be called each frame.

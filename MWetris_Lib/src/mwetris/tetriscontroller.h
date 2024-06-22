@@ -57,7 +57,7 @@ namespace mwetris {
 
 	class TetrisController {
 	public:
-		mw::PublicSignal<TetrisController, TetrisEvent> tetrisEvent;
+		mw::PublicSignal<TetrisController, const TetrisEvent&> tetrisEvent;
 
 		TetrisController(std::shared_ptr<network::Network> network, std::shared_ptr<game::TetrisGame> tetrisGame, std::shared_ptr<graphic::GameComponent> gameComponent);
 
@@ -103,6 +103,16 @@ namespace mwetris {
 		void refreshGameRoomList();
 
 	private:
+		void onNetworkEvent(const network::PlayerSlotEvent& playerSlotEvent);
+		void onNetworkEvent(const network::RestartEvent& restartEvent);
+		void onNetworkEvent(const network::JoinGameRoomEvent& joinGameRoomEvent);
+		void onNetworkEvent(const network::CreateGameRoomEvent& createGameRoomEvent);
+		void onNetworkEvent(const network::PauseEvent& pauseEvent);
+		void onNetworkEvent(const network::CreateGameEvent& createGameEvent);
+		void onNetworkEvent(const network::LeaveGameRoomEvent& leaveGameRoomEvent);
+		void onNetworkEvent(const network::ClientDisconnectedEvent& clientDisconnectedEvent);
+		void onNetworkEvent(const network::GameRoomListEvent& gameRoomListEvent);
+
 		void setGameRoomType(GameRoomType gameRoomType);
 
 		std::shared_ptr<network::Network> network_;

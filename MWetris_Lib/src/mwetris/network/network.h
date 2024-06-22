@@ -23,15 +23,7 @@ namespace mwetris::network {
 
 	class Network : public std::enable_shared_from_this<Network> {
 	public:
-		mw::PublicSignal<Network, const PlayerSlotEvent&> playerSlotEvent;
-		mw::PublicSignal<Network, const CreateGameRoomEvent&> createGameRoomEvent;
-		mw::PublicSignal<Network, const JoinGameRoomEvent&> joinGameRoomEvent;
-		mw::PublicSignal<Network, const RestartEvent&> restartEvent;
-		mw::PublicSignal<Network, const PauseEvent&> pauseEvent;
-		mw::PublicSignal<Network, const CreateGameEvent&> createGameEvent;
-		mw::PublicSignal<Network, const LeaveGameRoomEvent&> leaveGameRoomEvent;
-		mw::PublicSignal<Network, const ClientDisconnectedEvent&> clientDisconnectedEvent;
-		mw::PublicSignal<Network, const GameRoomListEvent&> gameRoomListEvent;
+		mw::PublicSignal<Network, const NetworkEvent&> networkEvent;
 
 		struct NetworkPlayer {
 			game::PlayerPtr player;

@@ -321,7 +321,7 @@ namespace mwetris::network {
 
 	void Network::handleGameCommand(const tp_s2c::GameCommand& gameCommand) {
 		spdlog::info("[Network] Paused: {}", gameCommand.pause() ? "true" : "false");
-		pauseEvent(PauseEvent{
+		networkEvent(PauseEvent{
 			.pause = gameCommand.pause()
 		});
 	}
@@ -330,7 +330,7 @@ namespace mwetris::network {
 		gameRoomId_ = gameRoomCreated.game_room_id();
 		clientId_ = gameRoomCreated.client_id();
 		spdlog::info("[Network] GameRoomCreated: {}, client id: {}", gameRoomId_, clientId_);
-		createGameRoomEvent(CreateGameRoomEvent{
+		networkEvent(CreateGameRoomEvent{
 			.join = true
 		});
 		handleGameLooby(gameRoomCreated.game_looby());
@@ -340,7 +340,7 @@ namespace mwetris::network {
 		spdlog::info("[Network] GameRoomJoined: {}, client id: {}", gameRoomJoined.game_room_id(), gameRoomJoined.client_id());
 		gameRoomId_ = gameRoomJoined.game_room_id();
 		clientId_ = gameRoomJoined.client_id();
-		joinGameRoomEvent(JoinGameRoomEvent{
+		networkEvent(JoinGameRoomEvent{
 			.join = true
 		});
 		handleGameLooby(gameRoomJoined.game_looby());
@@ -374,7 +374,7 @@ namespace mwetris::network {
 				default:
 					continue;
 			}
-			playerSlotEvent(PlayerSlotEvent{
+			networkEvent(PlayerSlotEvent{
 				.playerSlot = networkSlots_[index].playerSlot,
 				.index = index
 			});
@@ -459,7 +459,7 @@ namespace mwetris::network {
 		for (auto& player : players_) {
 			players.push_back(player.player);
 		}
-		createGameEvent(CreateGameEvent{
+		networkEvent(CreateGameEvent{
 			.players = std::move(players)
 		});
 	}
@@ -509,7 +509,7 @@ namespace mwetris::network {
 	void Network::handleClientDisconnected(const tp_s2c::ClientDisconnected& clientDisconnected) {
 		spdlog::info("[Network] ClientDisconnected: {}", clientDisconnected.client_id());
 		int nbr = 0;
-		clientDisconnectedEvent(ClientDisconnectedEvent{
+		networkEvent(ClientDisconnectedEvent{
 			.clientId = clientDisconnected.client_id()
 		});
 	}
@@ -580,7 +580,7 @@ namespace mwetris::network {
 		spdlog::info("[Network] LeaveGameRoom: {}", leaveGameRoom.game_room_id());
 		if (leaveGameRoom.client_id() == clientId_) {
 			gameRoomId_ = GameRoomId{};
-			leaveGameRoomEvent(LeaveGameRoomEvent{});
+			networkEvent(LeaveGameRoomEvent{});
 		} else {
 			// TODO! Handle other clients leaving.
 		}
@@ -597,7 +597,7 @@ namespace mwetris::network {
 				.maxPlayerCount = tpGameRoom.max_player_count()
 			});
 		}
-		gameRoomListEvent(GameRoomListEvent{
+		networkEvent(GameRoomListEvent{
 			.gameRooms = std::move(gameRooms)
 		});
 	}

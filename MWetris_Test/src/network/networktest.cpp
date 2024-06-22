@@ -142,8 +142,10 @@ namespace mwetris::network {
 	TEST_F(NetworkTest, network_createGameRoom) {
 		// Given
 		bool createGameRoomEventCalled = false;
-		mw::signals::ScopedConnection connection = network_->createGameRoomEvent.connect([&](const CreateGameRoomEvent& createGameRoomEvent) {
-			createGameRoomEventCalled = true;
+		mw::signals::ScopedConnection connection = network_->networkEvent.connect([&](const NetworkEvent& networkEvent) {
+			if (auto createGameRoomEvent = std::get_if<CreateGameRoomEvent>(&networkEvent)) {
+				createGameRoomEventCalled = true;
+			}
 		});
 
 		mockReceiveGameRoomCreated(GameRoomId{"server id"}, ClientId{"client id"});
@@ -165,8 +167,10 @@ namespace mwetris::network {
 	TEST_F(NetworkTest, network_joinGameRoom) {
 		// Given
 		bool joinGameRoomEventCalled = false;
-		mw::signals::ScopedConnection connection = network_->joinGameRoomEvent.connect([&](const JoinGameRoomEvent& joinGameRoomEvent) {
-			joinGameRoomEventCalled = true;
+		mw::signals::ScopedConnection connection = network_->networkEvent.connect([&](const NetworkEvent& networkEvent) {
+			if (auto joinGameRoomEvent = std::get_if<JoinGameRoomEvent>(&networkEvent)) {
+				joinGameRoomEventCalled = true;
+			}
 		});
 
 		mockReceiveGameRoomJoined(GameRoomId{"server id"}, ClientId{"client id"});
@@ -189,8 +193,10 @@ namespace mwetris::network {
 		pollOne();
 
 		std::vector<PlayerSlotEvent> actualPlayerSlotEvents;
-		mw::signals::ScopedConnection connection = network_->playerSlotEvent.connect([&](const PlayerSlotEvent& playerSlotEvent) {
-			actualPlayerSlotEvents.push_back(playerSlotEvent);
+		mw::signals::ScopedConnection connection = network_->networkEvent.connect([&](const NetworkEvent& networkEvent) {
+			if (auto playerSlotEvent = std::get_if<PlayerSlotEvent>(&networkEvent)) {
+				actualPlayerSlotEvents.push_back(*playerSlotEvent);
+			}
 		});
 
 		auto gameLooby = wrapperFromServer.mutable_game_looby();
@@ -349,8 +355,10 @@ namespace mwetris::network {
 		wrapperFromServer.Clear();
 
 		CreateGameEvent actualCreateGameEvent;
-		mw::signals::ScopedConnection connection = network_->createGameEvent.connect([&](const CreateGameEvent& createGameEvent) {
-			actualCreateGameEvent = createGameEvent;
+		mw::signals::ScopedConnection connection = network_->networkEvent.connect([&](const NetworkEvent& networkEvent) {
+			if (auto createGameEvent = std::get_if<CreateGameEvent>(&networkEvent)) {
+				actualCreateGameEvent = *createGameEvent;
+			}
 		});
 
 		// When

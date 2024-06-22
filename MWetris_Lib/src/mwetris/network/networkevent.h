@@ -60,6 +60,18 @@ namespace mwetris::network {
 		std::vector<GameRoom> gameRooms;
 	};
 
+	using NetworkEvent = std::variant<
+		PlayerSlotEvent,
+		RestartEvent,
+		JoinGameRoomEvent,
+		CreateGameRoomEvent,
+		PauseEvent,
+		CreateGameEvent,
+		LeaveGameRoomEvent,
+		ClientDisconnectedEvent,
+		GameRoomListEvent
+	>;
+
 }
 
 #endif
