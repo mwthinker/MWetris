@@ -319,6 +319,7 @@ namespace mwetris::network {
 				networkPlayer.player->updateRestart(current, next);
 			}
 		}
+		networkEvent(RestartEvent{});
 	}
 
 	void Network::handleGameCommand(const tp_s2c::GameCommand& gameCommand) {

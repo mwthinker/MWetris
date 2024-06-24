@@ -20,10 +20,8 @@ namespace mwetris::game {
 
 	class TetrisGame {
 	public:
-		mw::PublicSignal<TetrisGame, InitGameEvent> initGameEvent;
 		mw::PublicSignal<TetrisGame, GameOver> gameOverEvent;
 		mw::PublicSignal<TetrisGame, GamePause> gamePauseEvent;
-		mw::PublicSignal<TetrisGame, GameRestart> gameRestartEvent;
 
 		TetrisGame();
 		~TetrisGame();
@@ -31,9 +29,7 @@ namespace mwetris::game {
 		// Updates everything. Should be called each frame.
 		void update(double deltaTime);
 
-		void createDefaultGame(DevicePtr device);
-
-		void createGame(std::unique_ptr<GameRules> gameRules, const std::vector<PlayerPtr>& players);
+		void createGame(const std::vector<PlayerPtr>& players);
 
 		bool isPaused() const;
 
@@ -42,24 +38,17 @@ namespace mwetris::game {
 		// Pause/Unpause the game depending on the current state of the game.
 		void pause();
 
-		// Restart the active game.
-		void restartGame();
-
-		// Restart the active game.
-		void restartGame(tetris::BlockType current, tetris::BlockType next);
-
 		int getNbrOfPlayers() const;
-
-		void saveDefaultGame();
 
 		void setFixTimestep(double delta) {
 			fixedTimestep = delta;
 		}
 
-		bool isDefaultGame() const;
+		const std::vector<PlayerPtr>& getPlayers() const {
+			return players_;
+		}
 
 	private:
-		void initGame();
 		void updateGame(double deltaTime);
 
 		std::vector<PlayerPtr> players_;
@@ -71,7 +60,6 @@ namespace mwetris::game {
 		mw::signals::ScopedConnections connections_;
 		TimeHandler timeHandler_;
 		TimeHandler::Key pauseKey_;
-		std::unique_ptr<GameRules> rules_;
 	};
 
 }

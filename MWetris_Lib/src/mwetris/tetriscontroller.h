@@ -7,6 +7,7 @@
 #include "game/playerslot.h"
 #include "network/networkevent.h"
 #include "game/tetrisgameevent.h"
+#include "game/tetrisgame.h"
 
 #include <spdlog/spdlog.h>
 
@@ -59,7 +60,7 @@ namespace mwetris {
 	public:
 		mw::PublicSignal<TetrisController, const TetrisEvent&> tetrisEvent;
 
-		TetrisController(std::shared_ptr<network::Network> network, std::shared_ptr<game::TetrisGame> tetrisGame, std::shared_ptr<graphic::GameComponent> gameComponent);
+		TetrisController(std::shared_ptr<network::Network> network, std::shared_ptr<graphic::GameComponent> gameComponent);
 
 		// Updates everything. Should be called each frame.
 		void update(double deltaTime);
@@ -98,9 +99,9 @@ namespace mwetris {
 
 		void setFixTimestep(double delta);
 
-		bool isDefaultGame() const;
-
 		void refreshGameRoomList();
+
+		bool isDefaultGame() const;
 
 	private:
 		void onNetworkEvent(const network::PlayerSlotEvent& playerSlotEvent);
@@ -115,10 +116,11 @@ namespace mwetris {
 
 		void setGameRoomType(GameRoomType gameRoomType);
 
-		std::shared_ptr<network::Network> network_;
-		std::shared_ptr<game::TetrisGame> tetrisGame_;
-		std::shared_ptr<graphic::GameComponent> gameComponent_;
 		mw::signals::ScopedConnections connections_;
+		std::unique_ptr<game::GameRules> rules_;
+		std::shared_ptr<network::Network> network_;
+		game::TetrisGame tetrisGame_;
+		std::shared_ptr<graphic::GameComponent> gameComponent_;
 		GameRoomType gameRoomType_ = GameRoomType::OutsideGameRoom;
 	};
 

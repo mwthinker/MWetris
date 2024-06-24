@@ -82,9 +82,9 @@ namespace mwetris::graphic {
 		ImGui::Dummy({static_cast<float>(windowWidth), static_cast<float>(windowHeight)});
 	}
 
-	void GameComponent::initGame(const game::InitGameEvent& event) {
+	void GameComponent::initGame(const std::vector<game::PlayerPtr>& players) {
 		imguiBoards_.clear();
-		for (auto& player : event.players) {
+		for (auto& player : players) {
 			imguiBoards_.emplace_back(player);
 		}
 	}

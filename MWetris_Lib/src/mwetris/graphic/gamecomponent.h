@@ -5,6 +5,7 @@
 #include "types.h"
 
 #include "game/tetrisgameevent.h"
+#include "game/player.h"
 
 #include <sdl/graphic.h>
 
@@ -29,7 +30,7 @@ namespace mwetris::graphic {
 
 		void draw(int width, int height, double deltaTime);
 
-		void initGame(const game::InitGameEvent& event);
+		void initGame(const std::vector<game::PlayerPtr>& players);
 
 		void gamePause(const game::GamePause& event);
 

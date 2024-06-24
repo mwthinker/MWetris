@@ -22,9 +22,7 @@ namespace mwetris::ui {
 		connections_ += server_->playerSlotsUpdated.connect([this](const std::vector<network::Slot>& playerSlots) {
 			playerSlots_ = playerSlots;
 		});
-		connections_ += server_->initGameEvent.connect([this](const game::InitGameEvent& initGameEvent) {
-			gameComponent_->initGame(initGameEvent);
-		});
+		//gameComponent_->initGame(initGameEvent); TODO!
 		connections_ += server_->connectedClientListener.connect([this](const network::ConnectedClient& client) {
 			if (std::any_of(connectedClients_.begin(), connectedClients_.end(), [&client](const auto& connected) {
 				return connected.clientId == client.clientId;

@@ -21,10 +21,7 @@ namespace mwetris::network {
 		int index;
 	};
 
-	struct RestartEvent {
-		tetris::BlockType current;
-		tetris::BlockType next;
-	};
+	struct RestartEvent {};
 
 	struct JoinGameRoomEvent {
 		bool join;

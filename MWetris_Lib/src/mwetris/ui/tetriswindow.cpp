@@ -81,10 +81,7 @@ namespace mwetris::ui {
 		, type_{type}
 		, windowName_{windowName} {
 
-		auto game = std::make_shared<game::TetrisGame>();
-		auto gameComponent = std::make_shared<graphic::GameComponent>();
-
-		tetrisController_ = std::make_shared<TetrisController>(network, game, gameComponent);
+		tetrisController_ = std::make_shared<TetrisController>(network, std::make_shared<graphic::GameComponent>());
 
 		connections_ += deviceManager_->deviceConnected.connect([](game::DevicePtr device) {
 			spdlog::info("Device found: {}", device->getName());

@@ -1,4 +1,5 @@
 #include "tetriscontroller.h"
+#include "game/serialize.h"
 #include "game/tetrisgame.h"
 #include "game/device.h"
 #include "game/gamerules.h"
@@ -11,11 +12,8 @@
 
 namespace mwetris {
 
-	TetrisController::TetrisController(std::shared_ptr<network::Network> network,
-		std::shared_ptr<game::TetrisGame> tetrisGame,
-		std::shared_ptr<graphic::GameComponent> gameComponent)
+	TetrisController::TetrisController(std::shared_ptr<network::Network> network, std::shared_ptr<graphic::GameComponent> gameComponent)
 		: network_{network}
-		, tetrisGame_{tetrisGame}
 		, gameComponent_{gameComponent} {
 
 		connections_ += network_->networkEvent.connect([this](const network::NetworkEvent& networkEvent) {
@@ -23,11 +21,7 @@ namespace mwetris {
 				onNetworkEvent(event);
 			}, networkEvent);
 		});
-
-		connections_ += tetrisGame_->initGameEvent.connect([this](const game::InitGameEvent& initGameEvent) {
-			gameComponent_->initGame(initGameEvent);
-		});
-		connections_ += tetrisGame_->gamePauseEvent.connect([this](const game::GamePause& gamePause) {
+		connections_ += tetrisGame_.gamePauseEvent.connect([this](const game::GamePause& gamePause) {
 			tetrisEvent(gamePause);
 			gameComponent_->gamePause(gamePause);
 		});
@@ -41,7 +35,7 @@ namespace mwetris {
 	}
 
 	void TetrisController::onNetworkEvent(const network::RestartEvent& restartEvent) {
-		tetrisGame_->restartGame(restartEvent.current, restartEvent.next);
+		rules_->restart();
 	}
 
 	void TetrisController::onNetworkEvent(const network::JoinGameRoomEvent& joinGameRoomEvent) {
@@ -53,11 +47,15 @@ namespace mwetris {
 	}
 
 	void TetrisController::onNetworkEvent(const network::PauseEvent& pauseEvent) {
-		tetrisGame_->setPause(pauseEvent.pause);
+		tetrisGame_.setPause(pauseEvent.pause);
 	}
 
 	void TetrisController::onNetworkEvent(const network::CreateGameEvent& createGameEvent) {
-		tetrisGame_->createGame(std::make_unique<game::SurvivalGameRules>(), createGameEvent.players);
+		rules_ = std::make_unique<game::SurvivalGameRules>();
+		auto players = createGameEvent.players;
+		rules_->createGame(players);
+		tetrisGame_.createGame(players);
+		gameComponent_->initGame(players);
 		tetrisEvent(CreateGameEvent{});
 	}
 
@@ -75,7 +73,7 @@ namespace mwetris {
 
 	// Updates everything. Should be called each frame.
 	void TetrisController::update(double deltaTime) {
-		tetrisGame_->update(deltaTime);
+		tetrisGame_.update(deltaTime);
 	}
 
 	void TetrisController::draw(int width, int height, double deltaTime) {
@@ -86,8 +84,24 @@ namespace mwetris {
 		if (network_->isInsideGameRoom()) {
 			network_->leaveGameRoom();
 		}
-		tetrisGame_->createDefaultGame(device);
-		tetrisGame_->saveDefaultGame();
+		game::PlayerPtr player = loadGame(device);
+		if (!player) {
+			game::DefaultPlayerData playerData{
+				.level = 1,
+				.points = 0
+			};
+			tetris::TetrisBoard tetrisBoard{game::TetrisWidth, game::TetrisHeight, tetris::randomBlockType(), tetris::randomBlockType()};
+			player = createHumanPlayer(device, playerData, std::move(tetrisBoard));
+		}
+		connections_ += player->playerBoardUpdate.connect([](const game::PlayerBoardEvent& playerBoardEvent) {
+			game::clearSavedGame();
+		});
+		rules_ = std::make_unique<game::DefaultGameRules>();
+		tetrisGame_.createGame({player});
+		auto players = tetrisGame_.getPlayers();
+		rules_->createGame(players);
+		gameComponent_->initGame(players);
+		saveDefaultGame();
 	}
 
 	void TetrisController::startNetworkGame(int w, int h) {
@@ -99,20 +113,22 @@ namespace mwetris {
 			spdlog::debug("[TetrisController] Leaving game room before starting local game.");
 			network_->leaveGameRoom();
 		}
-		tetrisGame_->createGame(std::move(gameRules), players);
-		tetrisGame_->saveDefaultGame();
+		rules_ = std::move(gameRules);
+		tetrisGame_.createGame(players);
+		gameComponent_->initGame(players);
+		saveDefaultGame();
 		tetrisEvent(CreateGameEvent{});
 	}
 
 	bool TetrisController::isPaused() const {
-		return tetrisGame_->isPaused();
+		return tetrisGame_.isPaused();
 	}
 
 	void TetrisController::pause() {
 		if (network_->isInsideGameRoom()) {
-			network_->sendPause(!tetrisGame_->isPaused()); // TODO! May need to handle delays, to avoid multiple pause events.
+			network_->sendPause(!tetrisGame_.isPaused()); // TODO! May need to handle delays, to avoid multiple pause events.
 		} else {
-			tetrisGame_->pause();
+			tetrisGame_.pause();
 		}
 	}
 
@@ -120,7 +136,14 @@ namespace mwetris {
 		if (network_->isInsideGameRoom()) {
 			network_->sendRestart();
 		} else {
-			tetrisGame_->restartGame(tetris::randomBlockType(), tetris::randomBlockType());
+			auto current = tetris::randomBlockType();
+			auto next = tetris::randomBlockType();
+
+			for (auto& player : tetrisGame_.getPlayers()) {
+				player->updateRestart(current, next);
+			}
+			//initGame();
+			rules_->restart();
 		}
 	}
 
@@ -168,7 +191,7 @@ namespace mwetris {
 	}
 
 	int TetrisController::getNbrOfPlayers() const {
-		return tetrisGame_->getNbrOfPlayers();
+		return tetrisGame_.getNbrOfPlayers();
 	}
 
 	void TetrisController::saveDefaultGame() {
@@ -177,15 +200,18 @@ namespace mwetris {
 			return;
 		}
 
-		tetrisGame_->saveDefaultGame();
+		if (!isDefaultGame()) {
+			return;
+		}
+
+		const auto& player = *(tetrisGame_.getPlayers().front());
+		if (!player.isGameOver()) {
+			saveGame(player);
+		}
 	}
 
 	void TetrisController::setFixTimestep(double delta) {
-		tetrisGame_->setFixTimestep(delta);
-	}
-
-	bool TetrisController::isDefaultGame() const {
-		return !network_->isInsideGameRoom() && tetrisGame_->isDefaultGame();
+		tetrisGame_.setFixTimestep(delta);
 	}
 
 	void TetrisController::refreshGameRoomList() {
@@ -197,6 +223,38 @@ namespace mwetris {
 		tetrisEvent(GameRoomEvent{
 			.type = gameRoomType_
 		});
+	}
+
+	bool TetrisController::isDefaultGame() const {
+		if (network_->isInsideGameRoom()) {
+			return false;
+		}
+
+		const auto& players = tetrisGame_.getPlayers();
+
+		if (players.size() != 1) {
+			return false;
+		}
+
+		const auto& player = *players.front();
+
+		if (player.isLocal()) {
+			return player.isLocal();
+		}
+
+		if (player.getRows() != game::TetrisHeight) {
+			return false;
+		}
+
+		if (player.getColumns() != game::TetrisWidth) {
+			return false;
+		}
+
+		if (!dynamic_cast<game::DefaultGameRules*>(rules_.get())) {
+			return false;
+		}
+
+		return player.isHuman();
 	}
 
 }

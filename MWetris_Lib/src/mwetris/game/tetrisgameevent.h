@@ -35,12 +35,6 @@ namespace mwetris::game {
 		bool pause;
 	};
 
-	class GameRestart {
-	public:
-		tetris::BlockType current;
-		tetris::BlockType next;
-	};
-
 	class GameOver {
 	public:
 		GameOver(PlayerPtr player)
@@ -48,15 +42,6 @@ namespace mwetris::game {
 		}
 
 		PlayerPtr player;
-	};
-
-	class InitGameEvent {
-	public:
-		InitGameEvent(std::input_iterator auto begin, std::input_iterator auto end)
-			: players(begin, end) {
-		}
-
-		std::vector<PlayerPtr> players;
 	};
 
 	class LevelChange {
