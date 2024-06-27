@@ -71,6 +71,8 @@ namespace mwetris::network {
 
 		bool slotBelongsToClient(const ClientId& clientId, int slotIndex) const;
 
+		void sendJoinGameRoom(Server& server, const ClientId& clientId);
+
 		std::string name_;
 		GameRoomId gameRoomId_;
 

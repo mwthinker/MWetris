@@ -77,8 +77,6 @@ namespace mwetris::network {
 
 		void handleGameCommand(const tp_s2c::GameCommand& gameCommand);
 
-		void handlGameRoomCreated(const tp_s2c::GameRoomCreated& gameRoomCreated);
-
 		void handleGameRoomJoined(const tp_s2c::GameRoomJoined& gameRoomJoined);
 
 		void handleGameLooby(const tp_s2c::GameLooby& gameLooby);

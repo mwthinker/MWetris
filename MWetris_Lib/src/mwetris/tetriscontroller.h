@@ -109,7 +109,6 @@ namespace mwetris {
 		void onNetworkEvent(const network::PlayerSlotEvent& playerSlotEvent);
 		void onNetworkEvent(const network::RestartEvent& restartEvent);
 		void onNetworkEvent(const network::JoinGameRoomEvent& joinGameRoomEvent);
-		void onNetworkEvent(const network::CreateGameRoomEvent& createGameRoomEvent);
 		void onNetworkEvent(const network::PauseEvent& pauseEvent);
 		void onNetworkEvent(const network::CreateGameEvent& createGameEvent);
 		void onNetworkEvent(const network::LeaveGameRoomEvent& leaveGameRoomEvent);

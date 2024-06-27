@@ -190,8 +190,6 @@ namespace mwetris::network {
 			co_await nextMessage(network);
 			if (network->wrapperFromServer_.has_failed_to_connect()) {
 				continue;
-			} else if (network->wrapperFromServer_.has_game_room_created()) {
-				network->handlGameRoomCreated(network->wrapperFromServer_.game_room_created());
 			} else if (network->wrapperFromServer_.has_game_room_joined()) {
 				network->handleGameRoomJoined(network->wrapperFromServer_.game_room_joined());
 			} else if (network->wrapperFromServer_.has_game_room_list()) {
@@ -327,16 +325,6 @@ namespace mwetris::network {
 		networkEvent(PauseEvent{
 			.pause = gameCommand.pause()
 		});
-	}
-
-	void Network::handlGameRoomCreated(const tp_s2c::GameRoomCreated& gameRoomCreated) {
-		gameRoomId_ = gameRoomCreated.game_room_id();
-		clientId_ = gameRoomCreated.client_id();
-		spdlog::info("[Network] GameRoomCreated: {}, client id: {}", gameRoomId_, clientId_);
-		networkEvent(CreateGameRoomEvent{
-			.join = true
-		});
-		handleGameLooby(gameRoomCreated.game_looby());
 	}
 
 	void Network::handleGameRoomJoined(const tp_s2c::GameRoomJoined& gameRoomJoined) {

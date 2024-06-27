@@ -42,10 +42,6 @@ namespace mwetris {
 		setGameRoomType(GameRoomType::NetworkInsideGameRoom);
 	}
 
-	void TetrisController::onNetworkEvent(const network::CreateGameRoomEvent& createGameRoomEvent) {
-		setGameRoomType(GameRoomType::NetworkInsideGameRoom);
-	}
-
 	void TetrisController::onNetworkEvent(const network::PauseEvent& pauseEvent) {
 		tetrisGame_.setPause(pauseEvent.pause);
 	}

@@ -105,16 +105,6 @@ namespace mwetris::network {
 			ioContext_.poll_one();
 		}
 
-		void mockReceiveGameRoomCreated(const GameRoomId& gameRoomId, const ClientId& clientId) {
-			tp_s2c::Wrapper wrapperFromServer;
-			auto gameRoomCreated = wrapperFromServer.mutable_game_room_created();
-			setTp(clientId, *gameRoomCreated->mutable_client_id());
-			setTp(gameRoomId, *gameRoomCreated->mutable_game_room_id());
-
-			expectCallClientReceive(wrapperFromServer);
-			wrapperFromServer.Clear();
-		}
-
 		void mockReceiveGameRoomJoined(const GameRoomId& gameRoomId, const ClientId& clientId) {
 			tp_s2c::Wrapper wrapperFromServer;
 			auto gameRoomJoined = wrapperFromServer.mutable_game_room_joined();
@@ -143,12 +133,12 @@ namespace mwetris::network {
 		// Given
 		bool createGameRoomEventCalled = false;
 		mw::signals::ScopedConnection connection = network_->networkEvent.connect([&](const NetworkEvent& networkEvent) {
-			if (auto createGameRoomEvent = std::get_if<CreateGameRoomEvent>(&networkEvent)) {
+			if (auto createGameRoomEvent = std::get_if<JoinGameRoomEvent>(&networkEvent)) {
 				createGameRoomEventCalled = true;
 			}
 		});
 
-		mockReceiveGameRoomCreated(GameRoomId{"server id"}, ClientId{"client id"});
+		mockReceiveGameRoomJoined(GameRoomId{"server id"}, ClientId{"client id"});
 
 		// When
 		EXPECT_FALSE(network_->isInsideRoom());
@@ -189,7 +179,7 @@ namespace mwetris::network {
 
 	TEST_F(NetworkTest, receiveGameLoobyContainingAllSlotTypes_thenEventsAreTriggered) {
 		// Given
-		mockReceiveGameRoomCreated(GameRoomId{"server id"}, ClientId{"client id 0"});
+		mockReceiveGameRoomJoined(GameRoomId{"server id"}, ClientId{"client id 0"});
 		pollOne();
 
 		std::vector<PlayerSlotEvent> actualPlayerSlotEvents;
@@ -235,7 +225,7 @@ namespace mwetris::network {
 
 	TEST_F(NetworkTest, receiveGameLoobyAndSetSlot) {
 		// Given
-		mockReceiveGameRoomCreated(GameRoomId{"server id"}, ClientId{"client id 0"});
+		mockReceiveGameRoomJoined(GameRoomId{"server id"}, ClientId{"client id 0"});
 		pollOne();
 
 		wrapperFromServer.Clear();
@@ -266,7 +256,7 @@ namespace mwetris::network {
 
 	TEST_F(NetworkTest, receiveGameLoobyAndSetSlotOutsideRange_thenIgnoreSlot) {
 		// Given
-		mockReceiveGameRoomCreated(GameRoomId{"server id"}, ClientId{"client id 0"});
+		mockReceiveGameRoomJoined(GameRoomId{"server id"}, ClientId{"client id 0"});
 		pollOne();
 
 		auto gameLooby = wrapperFromServer.mutable_game_looby();
@@ -287,7 +277,7 @@ namespace mwetris::network {
 
 	TEST_F(NetworkTest, receiveGameLoobyWithMultipleClientsAndSetSlot) {
 		// Given
-		mockReceiveGameRoomCreated(GameRoomId{"server id"}, ClientId{"client id 0"});
+		mockReceiveGameRoomJoined(GameRoomId{"server id"}, ClientId{"client id 0"});
 		pollOne();
 
 		wrapperFromServer.Clear();
@@ -335,7 +325,7 @@ namespace mwetris::network {
 	// TODO! Maybe CreateGame does not need to contain the same players as GameLooby??
 	TEST_F(NetworkTest, receiveCreateGame) {
 		// Given
-		mockReceiveGameRoomCreated(GameRoomId{"server id"}, ClientId{"client id 0"});
+		mockReceiveGameRoomJoined(GameRoomId{"server id"}, ClientId{"client id 0"});
 		pollOne();
 
 		wrapperFromServer.Clear();

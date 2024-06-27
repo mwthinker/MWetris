@@ -281,18 +281,16 @@ namespace mwetris::network {
 	}
 
 	void GameRoom::handleCreateGameRoom(Server& server, const ClientId& clientId, const tp_c2s::CreateGameRoom& createGameRoom) {
-		connectedClientIds.push_back(clientId);
 		name_ = createGameRoom.name();
 
-		auto gameRomeCreated = wrapperToClient_.mutable_game_room_created();
-		setTp(gameRoomId_, *gameRomeCreated->mutable_game_room_id());
-		setTp(clientId, *gameRomeCreated->mutable_client_id());
-		addPlayerSlotsToGameLooby(*gameRomeCreated->mutable_game_looby(), playerSlots_);
-
-		server.sendToClient(clientId, wrapperToClient_);
+		sendJoinGameRoom(server, clientId);
 	}
 
 	void GameRoom::handleJoinGameRoom(Server& server, const ClientId& clientId, const tp_c2s::JoinGameRoom& joinGameRoom) {
+		sendJoinGameRoom(server, clientId);
+	}
+
+	void GameRoom::sendJoinGameRoom(Server& server, const ClientId& clientId) {
 		connectedClientIds.push_back(clientId);
 
 		auto gameRoomJoined = wrapperToClient_.mutable_game_room_joined();

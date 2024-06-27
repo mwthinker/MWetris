@@ -27,10 +27,6 @@ namespace mwetris::network {
 		bool join;
 	};
 
-	struct CreateGameRoomEvent {
-		bool join;
-	};
-
 	struct PauseEvent {
 		bool pause;
 	};
@@ -61,7 +57,6 @@ namespace mwetris::network {
 		PlayerSlotEvent,
 		RestartEvent,
 		JoinGameRoomEvent,
-		CreateGameRoomEvent,
 		PauseEvent,
 		CreateGameEvent,
 		LeaveGameRoomEvent,

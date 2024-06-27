@@ -74,16 +74,14 @@ message RequestGameRestart {
 	tp.BlockType next = 3;
 }
 
-message GameRoomCreated {
+// Received by all clients in a game room and by the client that joins.
+// Triggered for a client when join or create a game room.
+message GameRoomJoined {
 	tp.GameRoomId game_room_id = 1;
 	tp.ClientId client_id = 2;
 	GameLooby game_looby = 3;
 }
 
-message GameRoomJoined {
-	tp.GameRoomId game_room_id = 1;
-	tp.ClientId client_id = 2;
-	GameLooby game_looby = 3;
 }
 
 message LeaveGameRoom {
@@ -123,7 +121,6 @@ message Wrapper {
 	BoardNextBlock next_block = 7;
 	GameRestart game_restart = 8;
 	FailedToConnect failed_to_connect = 9;
-	GameRoomCreated game_room_created = 10;
 	GameRoomJoined game_room_joined = 11;
 	RequestGameRestart request_game_restart = 12;
 	LeaveGameRoom leave_game_room = 13;
