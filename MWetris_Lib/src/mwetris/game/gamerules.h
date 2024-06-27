@@ -3,7 +3,7 @@
 
 #include "player.h"
 
-#include <span>
+#include <vector>
 
 namespace mwetris::game {
 
@@ -15,7 +15,7 @@ namespace mwetris::game {
 
 		virtual void restart() = 0;
 
-		virtual void createGame(std::span<PlayerPtr> players) = 0;
+		virtual void createGame(const std::vector<PlayerPtr>& players) = 0;
 	};
 
 }

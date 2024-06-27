@@ -10,7 +10,6 @@
 #include <spdlog/spdlog.h>
 
 #include <vector>
-#include <span>
 
 namespace mwetris::game {
 
@@ -29,7 +28,7 @@ namespace mwetris::game {
 
 		}
 		
-		void createGame(std::span<PlayerPtr> players) override {
+		void createGame(const std::vector<PlayerPtr>& players) override {
 			connections_.clear();
 			players_.clear();
 			for (auto& player : players) {
@@ -93,7 +92,7 @@ namespace mwetris::game {
 		void update(double timeStep) override {
 		}
 
-		void createGame(std::span<PlayerPtr> players) override {
+		void createGame(const std::vector<PlayerPtr>& players) override {
 			connections_.clear();
 			players_.clear();
 			for (auto& player : players) {

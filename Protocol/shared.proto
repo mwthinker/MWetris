@@ -26,7 +26,6 @@ message Block {
 }
 
 message PlayerBoard {
-	string name = 1;
 	int32 level = 2;
 	int32 points = 3;
 	bool ai = 4;

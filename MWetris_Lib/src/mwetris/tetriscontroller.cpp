@@ -53,10 +53,7 @@ namespace mwetris {
 	void TetrisController::onNetworkEvent(const network::CreateGameEvent& createGameEvent) {
 		rules_ = std::make_unique<game::SurvivalGameRules>();
 		auto players = createGameEvent.players;
-		rules_->createGame(players);
-		tetrisGame_.createGame(players);
-		gameComponent_->initGame(players);
-		tetrisEvent(CreateGameEvent{});
+		createGame(players);
 	}
 
 	void TetrisController::onNetworkEvent(const network::LeaveGameRoomEvent& leaveGameRoomEvent) {
@@ -97,10 +94,7 @@ namespace mwetris {
 			game::clearSavedGame();
 		});
 		rules_ = std::make_unique<game::DefaultGameRules>();
-		tetrisGame_.createGame({player});
-		auto players = tetrisGame_.getPlayers();
-		rules_->createGame(players);
-		gameComponent_->initGame(players);
+		createGame({player});
 		saveDefaultGame();
 	}
 
@@ -114,10 +108,8 @@ namespace mwetris {
 			network_->leaveGameRoom();
 		}
 		rules_ = std::move(gameRules);
-		tetrisGame_.createGame(players);
-		gameComponent_->initGame(players);
+		createGame(players);
 		saveDefaultGame();
-		tetrisEvent(CreateGameEvent{});
 	}
 
 	bool TetrisController::isPaused() const {
@@ -142,7 +134,6 @@ namespace mwetris {
 			for (auto& player : tetrisGame_.getPlayers()) {
 				player->updateRestart(current, next);
 			}
-			//initGame();
 			rules_->restart();
 		}
 	}
@@ -223,6 +214,13 @@ namespace mwetris {
 		tetrisEvent(GameRoomEvent{
 			.type = gameRoomType_
 		});
+	}
+
+	void TetrisController::createGame(const std::vector<game::PlayerPtr>& players) {
+		tetrisGame_.createGame(players);
+		gameComponent_->initGame(players);
+		rules_->createGame(players);
+		tetrisEvent(CreateGameEvent{});
 	}
 
 	bool TetrisController::isDefaultGame() const {

@@ -76,7 +76,6 @@ namespace mwetris::game {
 			tpPlayerBoard.set_level(playerData.level);
 			tpPlayerBoard.set_points(playerData.points);
 
-			//tpPlayerBoard.set_name(player.getName());
 			tpPlayerBoard.set_next(static_cast<tp::BlockType>(player.getNextBlockType()));
 			tpPlayerBoard.set_cleared_rows(player.getClearedRows());
 			tpPlayerBoard.set_width(player.getColumns());

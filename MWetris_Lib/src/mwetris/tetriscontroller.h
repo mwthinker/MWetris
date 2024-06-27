@@ -104,6 +104,8 @@ namespace mwetris {
 		bool isDefaultGame() const;
 
 	private:
+		void createGame(const std::vector<game::PlayerPtr>& players);
+
 		void onNetworkEvent(const network::PlayerSlotEvent& playerSlotEvent);
 		void onNetworkEvent(const network::RestartEvent& restartEvent);
 		void onNetworkEvent(const network::JoinGameRoomEvent& joinGameRoomEvent);
