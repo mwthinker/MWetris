@@ -66,3 +66,19 @@ message GameRoomId {
 message PlayerId {
 	string id = 1;
 }
+
+message GameRules {
+	message DefaultGameRules {
+		int32 start_level = 1;
+		int32 max_level = 3;
+		int32 lines_per_level = 4;
+	}
+	message SurvivalGameRules {
+		int32 start_level = 1;
+		int32 max_level = 2;
+		int32 lines_per_level = 3;
+	}
+
+	DefaultGameRules default_game_rules = 1;
+	SurvivalGameRules survival_game_rules = 2;
+}

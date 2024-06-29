@@ -29,8 +29,8 @@ namespace mwetris::network {
 						tpSlot->set_slot_type(tp_s2c::GameLooby_SlotType_REMOTE);
 						tpSlot->set_ai(slot.ai);
 						tpSlot->set_name(slot.name);
-						setTp(slot.playerId, *tpSlot->mutable_player_id());
-						setTp(slot.clientId, *tpSlot->mutable_client_id());
+						fromCppToProto(slot.playerId, *tpSlot->mutable_player_id());
+						fromCppToProto(slot.clientId, *tpSlot->mutable_client_id());
 						break;
 					case SlotType::Closed:
 						tpSlot->set_slot_type(tp_s2c::GameLooby_SlotType_CLOSED_SLOT);
@@ -62,6 +62,9 @@ namespace mwetris::network {
 		
 		gameRoomId_ = GameRoomId::generateUniqueId();
 		playerSlots_.resize(4, Slot{.type = SlotType::Open});
+		gameRules_.mutable_default_game_rules()->set_start_level(0);
+		gameRules_.mutable_default_game_rules()->set_lines_per_level(10);
+		gameRules_.mutable_default_game_rules()->set_max_level(40);
 	}
 
 	GameRoom::~GameRoom() {}
@@ -98,8 +101,8 @@ namespace mwetris::network {
 	void GameRoom::disconnect(Server& server, const ClientId& clientId) {
 		wrapperToClient_.Clear();
 		auto leaveGameRoom = wrapperToClient_.mutable_leave_game_room();
-		setTp(gameRoomId_, *leaveGameRoom->mutable_game_room_id());
-		setTp(clientId, *leaveGameRoom->mutable_client_id());
+		fromCppToProto(gameRoomId_, *leaveGameRoom->mutable_game_room_id());
+		fromCppToProto(clientId, *leaveGameRoom->mutable_client_id());
 		sendToAllClients(server, wrapperToClient_);
 		connectedClientIds.erase(std::remove(connectedClientIds.begin(), connectedClientIds.end(), clientId), connectedClientIds.end());
 	}
@@ -199,20 +202,21 @@ namespace mwetris::network {
 		sendToAllClients(server, wrapperToClient_);
 	}
 
-	void GameRoom::handleStartGame(Server& server, const ClientId& clientId, const tp_c2s::StartGame& createServerGame) {
+	void GameRoom::handleStartGame(Server& server, const ClientId& clientId, const tp_c2s::StartGame& startGame) {
 		auto createGame = wrapperToClient_.mutable_create_game();
 		createGame->set_width(10);
 		createGame->set_height(24);
+		gameRules_.CopyFrom(startGame.game_rules());
+		createGame->mutable_game_rules()->CopyFrom(gameRules_);
 
 		auto current = tetris::randomBlockType();
 		auto next = tetris::randomBlockType();
 
-		std::vector<game::PlayerPtr> playerBoards;
 		for (const auto& slot : playerSlots_) {
 			if (slot.type == SlotType::Remote) {
 				auto tpRemotePlayer = createGame->add_players();
-				setTp(slot.clientId, *tpRemotePlayer->mutable_client_id());
-				setTp(slot.playerId, *tpRemotePlayer->mutable_player_id());
+				fromCppToProto(slot.clientId, *tpRemotePlayer->mutable_client_id());
+				fromCppToProto(slot.playerId, *tpRemotePlayer->mutable_player_id());
 				tpRemotePlayer->set_name(slot.name);
 				tpRemotePlayer->set_level(0);
 				tpRemotePlayer->set_points(0);
@@ -232,7 +236,7 @@ namespace mwetris::network {
 		wrapperToClient_.Clear();
 		auto boardMoveToClient = wrapperToClient_.mutable_board_move();
 		boardMoveToClient->set_move(boardMove.move());
-		setTp(playerId, *boardMoveToClient->mutable_player_id());
+		fromCppToProto(playerId, *boardMoveToClient->mutable_player_id());
 		sendToAllClients(server, wrapperToClient_, clientId);
 	}
 
@@ -244,7 +248,7 @@ namespace mwetris::network {
 		wrapperToClient_.Clear();
 		auto boardNextBlockToClient = wrapperToClient_.mutable_next_block();
 		boardNextBlockToClient->set_next(boardNextBlock.next());
-		setTp(playerId, *boardNextBlockToClient->mutable_player_id());
+		fromCppToProto(playerId, *boardNextBlockToClient->mutable_player_id());
 
 		sendToAllClients(server, wrapperToClient_, clientId);
 	}
@@ -256,7 +260,7 @@ namespace mwetris::network {
 			boardExternalSquaresToClient->add_block_types(static_cast<tp::BlockType>(blockType));
 		}
 		PlayerId playerId = boardExternalSquares.player_id();
-		setTp(playerId, *boardExternalSquaresToClient->mutable_player_id());
+		fromCppToProto(playerId, *boardExternalSquaresToClient->mutable_player_id());
 		sendToAllClients(server, wrapperToClient_, clientId);
 	}
 
@@ -274,7 +278,7 @@ namespace mwetris::network {
 		auto gameRestartToClient = wrapperToClient_.mutable_game_restart();
 		gameRestartToClient->set_current(static_cast<tp::BlockType>(gameRestart.current()));
 		gameRestartToClient->set_next(static_cast<tp::BlockType>(gameRestart.next()));
-		setTp(clientId, *gameRestartToClient->mutable_client_id());
+		fromCppToProto(clientId, *gameRestartToClient->mutable_client_id());
 
 		sendToAllClients(server, wrapperToClient_, clientId);
 		wrapperToClient_.Clear();
@@ -294,8 +298,8 @@ namespace mwetris::network {
 		connectedClientIds.push_back(clientId);
 
 		auto gameRoomJoined = wrapperToClient_.mutable_game_room_joined();
-		setTp(gameRoomId_, *gameRoomJoined->mutable_game_room_id());
-		setTp(clientId, *gameRoomJoined->mutable_client_id());
+		fromCppToProto(gameRoomId_, *gameRoomJoined->mutable_game_room_id());
+		fromCppToProto(clientId, *gameRoomJoined->mutable_client_id());
 		addPlayerSlotsToGameLooby(*gameRoomJoined->mutable_game_looby(), playerSlots_);
 
 		server.sendToClient(clientId, wrapperToClient_);
@@ -309,8 +313,8 @@ namespace mwetris::network {
 
 			wrapperToClient_.Clear();
 			auto leaveGameRoom = wrapperToClient_.mutable_leave_game_room();
-			setTp(gameRoomId_, *leaveGameRoom->mutable_game_room_id());
-			setTp(clientId, *leaveGameRoom->mutable_client_id());
+			fromCppToProto(gameRoomId_, *leaveGameRoom->mutable_game_room_id());
+			fromCppToProto(clientId, *leaveGameRoom->mutable_client_id());
 			sendToAllClients(server, wrapperToClient_);
 		} else {
 			spdlog::error("Client {} not found in connected clients", clientId);
@@ -323,7 +327,7 @@ namespace mwetris::network {
 			
 			wrapperToClient_.Clear();
 			auto removeClient = wrapperToClient_.mutable_remove_client();
-			setTp(clientId, *removeClient->mutable_client_id());
+			fromCppToProto(clientId, *removeClient->mutable_client_id());
 			sendToAllClients(server, wrapperToClient_);
 		} else {
 			spdlog::error("Client {} not found in connected clients", clientId);

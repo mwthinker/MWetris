@@ -12,6 +12,29 @@
 
 namespace mwetris {
 
+	namespace {
+
+		std::unique_ptr<game::GameRules> createGameRulesInstance(const game::DefaultGameRules::Config& config) {
+			return std::make_unique<game::DefaultGameRules>();
+		}
+
+		std::unique_ptr<game::GameRules> createGameRulesInstance(const game::SurvivalGameRules::Config& config) {
+			return std::make_unique<game::SurvivalGameRules>();
+		}
+
+		std::unique_ptr<game::GameRules> createGameRules(const game::GameRulesConfig& gameRulesConfig) {
+			std::unique_ptr<game::GameRules> rules;
+			
+			std::visit([&](auto&& config) {
+				rules = createGameRulesInstance(config);
+			}, gameRulesConfig);
+
+			return rules;
+		}
+
+	}
+		
+
 	TetrisController::TetrisController(std::shared_ptr<network::Network> network, std::shared_ptr<graphic::GameComponent> gameComponent)
 		: network_{network}
 		, gameComponent_{gameComponent} {
@@ -47,9 +70,7 @@ namespace mwetris {
 	}
 
 	void TetrisController::onNetworkEvent(const network::CreateGameEvent& createGameEvent) {
-		rules_ = std::make_unique<game::SurvivalGameRules>();
-		auto players = createGameEvent.players;
-		createGame(players);
+		createGame(createGameEvent.players, createGameEvent.gameRulesConfig);
 	}
 
 	void TetrisController::onNetworkEvent(const network::LeaveGameRoomEvent& leaveGameRoomEvent) {
@@ -62,6 +83,11 @@ namespace mwetris {
 
 	void TetrisController::onNetworkEvent(const network::GameRoomListEvent& gameRoomListEvent) {
 		tetrisEvent(gameRoomListEvent);
+	}
+
+	void TetrisController::onNetworkEvent(const game::GameRoomConfigEvent& gameRoomConfigEvent) {
+		gameRulesConfig_ = gameRoomConfigEvent.gameRulesConfig;
+		tetrisEvent(gameRoomConfigEvent);
 	}
 
 	// Updates everything. Should be called each frame.
@@ -89,22 +115,20 @@ namespace mwetris {
 		connections_ += player->playerBoardUpdate.connect([](const game::PlayerBoardEvent& playerBoardEvent) {
 			game::clearSavedGame();
 		});
-		rules_ = std::make_unique<game::DefaultGameRules>();
-		createGame({player});
+		createGame({player}, game::DefaultGameRules::Config{});
 		saveDefaultGame();
 	}
 
-	void TetrisController::startNetworkGame(int w, int h) {
-		network_->startGame(w, h);
+	void TetrisController::startNetworkGame(const game::GameRulesConfig& gameRulesConfig, int w, int h) {
+		network_->startGame(gameRulesConfig);
 	}
 
-	void TetrisController::startLocalGame(std::unique_ptr<game::GameRules> gameRules, const std::vector<game::PlayerPtr>& players) {
+	void TetrisController::startLocalGame(const game::GameRulesConfig& gameRulesConfig, const std::vector<game::PlayerPtr>& players) {
 		if (network_->isInsideGameRoom()) {
 			spdlog::debug("[TetrisController] Leaving game room before starting local game.");
 			network_->leaveGameRoom();
 		}
-		rules_ = std::move(gameRules);
-		createGame(players);
+		createGame(players, gameRulesConfig);
 		saveDefaultGame();
 	}
 
@@ -131,6 +155,14 @@ namespace mwetris {
 				player->updateRestart(current, next);
 			}
 			rules_->restart();
+		}
+	}
+
+	void TetrisController::updateGameRulesConfig(const game::GameRulesConfig& gameRulesConfig) {
+		if (network_->isInsideGameRoom()) {
+			// TODO! Send game rules config to server.
+		} else {
+			// TODO! Update game rules config.
 		}
 	}
 
@@ -212,7 +244,9 @@ namespace mwetris {
 		});
 	}
 
-	void TetrisController::createGame(const std::vector<game::PlayerPtr>& players) {
+	void TetrisController::createGame(const std::vector<game::PlayerPtr>& players, const game::GameRulesConfig& gameRulesConfig) {
+		gameRulesConfig_ = gameRulesConfig;
+		rules_ = createGameRules(gameRulesConfig);
 		tetrisGame_.createGame(players);
 		gameComponent_->initGame(players);
 		rules_->createGame(players);

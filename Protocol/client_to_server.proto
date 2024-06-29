@@ -34,6 +34,7 @@ message PlayerSlot {
 
 message StartGame {
 	bool ready = 1;
+	tp.GameRules game_rules = 2;
 }
 
 message JoinGameRoom {

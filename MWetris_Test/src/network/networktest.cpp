@@ -108,8 +108,8 @@ namespace mwetris::network {
 		void mockReceiveGameRoomJoined(const GameRoomId& gameRoomId, const ClientId& clientId) {
 			tp_s2c::Wrapper wrapperFromServer;
 			auto gameRoomJoined = wrapperFromServer.mutable_game_room_joined();
-			setTp(clientId, *gameRoomJoined->mutable_client_id());
-			setTp(gameRoomId, *gameRoomJoined->mutable_game_room_id());
+			fromCppToProto(clientId, *gameRoomJoined->mutable_client_id());
+			fromCppToProto(gameRoomId, *gameRoomJoined->mutable_game_room_id());
 
 			expectCallClientReceive(wrapperFromServer);
 			wrapperFromServer.Clear();
@@ -315,7 +315,7 @@ namespace mwetris::network {
 		player->set_current(tp::BlockType::J);
 		player->set_next(tp::BlockType::L);
 		player->set_points(2);
-		setTp(ClientId{"client id 0"}, *player->mutable_client_id());
+		fromCppToProto(ClientId{"client id 0"}, *player->mutable_client_id());
 	}
 
 	// Assumes that the following events are received in order:

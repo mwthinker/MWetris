@@ -7,7 +7,7 @@ namespace mwetris::network {
 	void addPlayerSlot(tp_s2c::GameLooby& gameLooby, const tp_s2c::GameLooby_SlotType slotType, const ClientId& clientUuid, const std::string& name, bool ai) {
 		auto slot = gameLooby.add_slots();
 		slot->set_ai(ai);
-		setTp(clientUuid, *slot->mutable_client_id());
+		fromCppToProto(clientUuid, *slot->mutable_client_id());
 		slot->set_name(name);
 		slot->set_slot_type(slotType);
 	}

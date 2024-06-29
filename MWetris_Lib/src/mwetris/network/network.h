@@ -46,7 +46,7 @@ namespace mwetris::network {
 
 		const GameRoomId& getGameRoomId() const;
 
-		void startGame(int w, int h);
+		void startGame(const game::GameRulesConfig& gameRulesConfig);
 
 		void sendPause(bool pause);
 

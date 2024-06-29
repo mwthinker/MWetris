@@ -207,6 +207,10 @@ namespace mwetris::ui {
 		// Do nothing here.
 	}
 
+	void TetrisWindow::onTetrisEvent(const game::GameRoomConfigEvent& gameRoomConfigEvent) {
+		// Do nothing here.
+	}
+
 	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
 		auto deltaTimeSeconds = toSeconds(deltaTime);
 		tetrisController_->update(deltaTimeSeconds);

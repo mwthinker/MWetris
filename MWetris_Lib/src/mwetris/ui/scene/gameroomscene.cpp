@@ -36,6 +36,15 @@ namespace mwetris::ui::scene {
 			return players;
 		}
 
+		void imGuiGameRulesConfigUpdate(game::DefaultGameRules::Config& config) {
+			ImGui::Text("DefaultGameRules");
+			//ImGui::InputInt("Level Up Nbr", &gameRulesConfig.levelUpNbr);
+		}
+
+		void imGuiGameRulesConfigUpdate(game::SurvivalGameRules::Config& config) {
+			ImGui::Text("SurvivalGameRules");
+		}
+
 	}
 
 	GameRoomScene::GameRoomScene(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager)
@@ -119,6 +128,18 @@ namespace mwetris::ui::scene {
 			}, playerSlot);
 			ImGui::EndGroup();
 
+			ImGui::SetCursorPosY(150);
+			
+			static int gameRulesConfigIndex = 0;
+			if (ImGui::RadioButton("Default Game rules", &gameRulesConfigIndex, 0)) {
+				gameRulesConfig_ = game::DefaultGameRules::Config{};
+			}
+			if (ImGui::RadioButton("Survival Game rules", &gameRulesConfigIndex, 1)) {
+				gameRulesConfig_ = game::SurvivalGameRules::Config{};
+			}
+			std::visit([&](auto&& config) mutable {
+				imGuiGameRulesConfigUpdate(config);
+			}, gameRulesConfig_);
 			
 			if (!ImGui::PopupModal(PopUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
 				auto pos = ImGui::GetCursorScreenPos();
@@ -140,7 +161,7 @@ namespace mwetris::ui::scene {
 		if (gameRoomSceneData_.type == GameRoomSceneData::Type::Network) {
 			gameRoomId_ = tetrisController_->getGameRoomId();
 			if (!gameRoomId_.empty()) {
-				ImGui::SetCursorPosY(200);
+				ImGui::SetCursorPosY(250);
 				ImGui::Separator();
 				ImGui::Text("Server Id: ");
 				ImGui::SameLine();
@@ -158,19 +179,17 @@ namespace mwetris::ui::scene {
 		if (ImGui::ConfirmationButton("Create Game", {width, height})) {
 			if (!gameRoomId_.empty() && gameRoomSceneData_.type == GameRoomSceneData::Type::Network) {
 				spdlog::info("[CreateGame] Starting network game.");
-				tetrisController_->startNetworkGame(game::TetrisWidth, game::TetrisHeight);
+				tetrisController_->startNetworkGame(gameRulesConfig_, game::TetrisWidth, game::TetrisHeight);
 			} else {
 				spdlog::info("[CreateGame] Starting local game.");
-				tetrisController_->startLocalGame(
-					std::make_unique<game::SurvivalGameRules>(),
-					createPlayersFromSlots(playerSlots_)
-				);
+				tetrisController_->startLocalGame(gameRulesConfig_, createPlayersFromSlots(playerSlots_));
 			}
 		}
 		ImGui::EndDisabled();
 	}
 
 	void GameRoomScene::switchedTo(const SceneData& sceneData) {
+		gameRulesConfig_ = game::DefaultGameRules::Config{};
 		try {
 			gameRoomSceneData_ = dynamic_cast<const GameRoomSceneData&>(sceneData);
 		} catch (const std::bad_cast& exp) {

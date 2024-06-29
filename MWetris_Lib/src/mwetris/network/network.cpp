@@ -19,6 +19,40 @@
 
 namespace mwetris::network {
 
+	namespace {
+
+		game::GameRulesConfig createGameRulesConfig(const tp_s2c::CreateGame& createGame) {
+			game::GameRulesConfig gameRoomConfig;
+			if (createGame.has_game_rules()) {
+				if (createGame.game_rules().has_default_game_rules()) {
+					gameRoomConfig = game::DefaultGameRules::Config{};
+				} else if (createGame.game_rules().has_survival_game_rules()) {
+					gameRoomConfig = game::SurvivalGameRules::Config{};
+				}
+			}
+			return gameRoomConfig;
+		}
+
+		void fromCppToProto(const game::GameRulesConfig& gameRoomConfig, tp::GameRules& tpGameRules) {
+			std::visit([&](auto&& config) {
+				using T = std::decay_t<decltype(config)>;
+				if constexpr (std::is_same_v<T, game::DefaultGameRules::Config>) {
+					tpGameRules.mutable_default_game_rules()->set_lines_per_level(10);
+					tpGameRules.mutable_default_game_rules()->set_start_level(1);
+					tpGameRules.mutable_default_game_rules()->set_max_level(10);
+				} else if constexpr (std::is_same_v<T, game::SurvivalGameRules::Config>) {
+					tpGameRules.mutable_survival_game_rules()->set_lines_per_level(10);
+					tpGameRules.mutable_survival_game_rules()->set_start_level(1);
+					tpGameRules.mutable_survival_game_rules()->set_max_level(10);
+				} else {
+					static_assert(always_false_v<T>, "non-exhaustive visitor!");
+				}
+			}, gameRoomConfig);
+		}
+
+	}
+		
+
 	Network::Network(std::shared_ptr<Client> client)
 		: client_{client}
 		, timer_{client->getIoContext()} {
@@ -63,14 +97,16 @@ namespace mwetris::network {
 		return gameRoomId_;
 	}
 
-	void Network::startGame(int w, int h) {
+	void Network::startGame(const game::GameRulesConfig& gameRulesConfig) {
 		if (!isInsideGameRoom()) {
 			spdlog::warn("[Network] Can't start game, not inside a room");
 			return;
 		}
 
 		wrapperToServer_.Clear();
-		wrapperToServer_.mutable_start_game()->set_ready(true);
+		auto startGame = wrapperToServer_.mutable_start_game();
+		startGame->set_ready(true);
+		fromCppToProto(gameRulesConfig, *startGame->mutable_game_rules());
 		send(wrapperToServer_);
 	}
 
@@ -115,7 +151,7 @@ namespace mwetris::network {
 		}
 		wrapperToServer_.Clear();
 		auto leaveGameRoom = wrapperToServer_.mutable_leave_game_room();
-		setTp(gameRoomId_, *leaveGameRoom->mutable_game_room_id());
+		fromCppToProto(gameRoomId_, *leaveGameRoom->mutable_game_room_id());
 		send(wrapperToServer_);
 	}
 
@@ -161,7 +197,7 @@ namespace mwetris::network {
 
 		wrapperToServer_.Clear();
 		auto joinGameRoom = wrapperToServer_.mutable_join_game_room();
-		setTp(gameRoomId, *joinGameRoom->mutable_game_room_id());
+		fromCppToProto(gameRoomId, *joinGameRoom->mutable_game_room_id());
 		send(wrapperToServer_);
 	}
 
@@ -172,7 +208,7 @@ namespace mwetris::network {
 	void Network::removeClient(const ClientId& clientId) {
 		wrapperToServer_.Clear();
 		auto removeClient = wrapperToServer_.mutable_remove_client();
-		setTp(clientId, *removeClient->mutable_client_id());
+		fromCppToProto(clientId, *removeClient->mutable_client_id());
 		send(wrapperToServer_);
 	}
 
@@ -445,13 +481,21 @@ namespace mwetris::network {
 			handleCreateGame(createGame.width(), createGame.height(), tpPlayer, networkSlots_[index]);
 			++index;
 		}
-
+		game::GameRoomConfigEvent gameRoomConfigEvent;
+		if (createGame.has_game_rules()) {
+			if (createGame.game_rules().has_default_game_rules()) {
+				gameRoomConfigEvent.gameRulesConfig = game::DefaultGameRules::Config{};
+			} else if (createGame.game_rules().has_survival_game_rules()) {
+				gameRoomConfigEvent.gameRulesConfig = game::SurvivalGameRules::Config{};
+			}
+		}
 		std::vector<game::PlayerPtr> players;
 		for (auto& player : players_) {
 			players.push_back(player.player);
 		}
 		networkEvent(CreateGameEvent{
-			.players = std::move(players)
+			.players = std::move(players),
+			.gameRulesConfig = createGameRulesConfig(createGame)
 		});
 	}
 
@@ -541,7 +585,7 @@ namespace mwetris::network {
 			for (const auto& blockType : externalRows.blockTypes) {
 				boardExternalSquares->add_block_types(static_cast<tp::BlockType>(blockType));
 			}
-			setTp(player.playerId, *boardExternalSquares->mutable_player_id());
+			fromCppToProto(player.playerId, *boardExternalSquares->mutable_player_id());
 			send(wrapperToServer_);
 		}
 	}
@@ -550,14 +594,14 @@ namespace mwetris::network {
 		wrapperToServer_.Clear();
 		auto boardMove = wrapperToServer_.mutable_board_move();
 		boardMove->set_move(static_cast<tp::Move>(updateMove.move));
-		setTp(player.playerId, *boardMove->mutable_player_id());
+		fromCppToProto(player.playerId, *boardMove->mutable_player_id());
 		send(wrapperToServer_);
 	}
 
 	void Network::handlePlayerBoardUpdate(const NetworkPlayer& player, const game::UpdateNextBlock& updateNextBlock) {
 		wrapperToServer_.Clear();
 		auto nextBlock = wrapperToServer_.mutable_next_block();
-		setTp(player.playerId, *nextBlock->mutable_player_id());
+		fromCppToProto(player.playerId, *nextBlock->mutable_player_id());
 		nextBlock->set_next(static_cast<tp::BlockType>(updateNextBlock.next));
 
 		send(wrapperToServer_);

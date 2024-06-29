@@ -22,7 +22,7 @@ namespace mwetris::network {
 		friend struct std::hash<mwetris::network::ClientId>;
 		friend struct std::less<mwetris::network::ClientId>;
 		friend struct fmt::formatter<mwetris::network::ClientId>;
-		friend void setTp(const ClientId& clientId, tp::ClientId& tpClientId);
+		friend void fromCppToProto(const ClientId& clientId, tp::ClientId& tpClientId);
 
 		static ClientId generateUniqueId();
 
@@ -66,7 +66,7 @@ namespace mwetris::network {
 		friend struct std::hash<mwetris::network::GameRoomId>;
 		friend struct std::less<mwetris::network::GameRoomId>;
 		friend struct fmt::formatter<mwetris::network::GameRoomId>;
-		friend void setTp(const GameRoomId& gameRoomId, tp::GameRoomId& tpGameRoomId);
+		friend void fromCppToProto(const GameRoomId& gameRoomId, tp::GameRoomId& tpGameRoomId);
 
 		static GameRoomId generateUniqueId();
 
@@ -115,7 +115,7 @@ namespace mwetris::network {
 		friend struct std::hash<mwetris::network::PlayerId>;
 		friend struct std::less<mwetris::network::PlayerId>;
 		friend struct fmt::formatter<mwetris::network::PlayerId>;
-		friend void setTp(const PlayerId& gameRoomId, tp::PlayerId& tpPlayerId);
+		friend void fromCppToProto(const PlayerId& gameRoomId, tp::PlayerId& tpPlayerId);
 
 		static PlayerId generateUniqueId();
 

@@ -8,6 +8,7 @@
 #include "network/networkevent.h"
 #include "game/tetrisgameevent.h"
 #include "game/tetrisgame.h"
+#include "game/tetrisgameevent.h"
 
 #include <spdlog/spdlog.h>
 
@@ -54,7 +55,7 @@ namespace mwetris {
 	struct CreateGameEvent {
 	};
 
-	using TetrisEvent = std::variant<game::GamePause, game::GameOver, PlayerSlotEvent, GameRoomEvent, CreateGameEvent, network::GameRoomListEvent>;
+	using TetrisEvent = std::variant<game::GamePause, game::GameOver, game::GameRoomConfigEvent, PlayerSlotEvent, GameRoomEvent, CreateGameEvent, network::GameRoomListEvent>;
 
 	class TetrisController {
 	public:
@@ -69,9 +70,9 @@ namespace mwetris {
 
 		void createDefaultGame(game::DevicePtr device);
 
-		void startNetworkGame(int w, int h);
+		void startNetworkGame(const game::GameRulesConfig& gameRulesConfig, int w, int h);
 
-		void startLocalGame(std::unique_ptr<game::GameRules> gameRules, const std::vector<game::PlayerPtr>& players);
+		void startLocalGame(const game::GameRulesConfig& gameRulesConfig, const std::vector<game::PlayerPtr>& players);
 		bool isPaused() const;
 
 		// Pause/Unpause the game depending on the current state of the game.
@@ -79,6 +80,8 @@ namespace mwetris {
 
 		// Restart the active game.
 		void restartGame();
+
+		void updateGameRulesConfig(const game::GameRulesConfig& gameRulesConfig);
 
 		const char* getGameRoomId() const;
 
@@ -104,7 +107,7 @@ namespace mwetris {
 		bool isDefaultGame() const;
 
 	private:
-		void createGame(const std::vector<game::PlayerPtr>& players);
+		void createGame(const std::vector<game::PlayerPtr>& players, const game::GameRulesConfig& gameRulesConfig);
 
 		void onNetworkEvent(const network::PlayerSlotEvent& playerSlotEvent);
 		void onNetworkEvent(const network::RestartEvent& restartEvent);
@@ -114,6 +117,7 @@ namespace mwetris {
 		void onNetworkEvent(const network::LeaveGameRoomEvent& leaveGameRoomEvent);
 		void onNetworkEvent(const network::ClientDisconnectedEvent& clientDisconnectedEvent);
 		void onNetworkEvent(const network::GameRoomListEvent& gameRoomListEvent);
+		void onNetworkEvent(const game::GameRoomConfigEvent& gameRoomConfigEvent);
 
 		void setGameRoomType(GameRoomType gameRoomType);
 
@@ -123,6 +127,7 @@ namespace mwetris {
 		game::TetrisGame tetrisGame_;
 		std::shared_ptr<graphic::GameComponent> gameComponent_;
 		GameRoomType gameRoomType_ = GameRoomType::OutsideGameRoom;
+		game::GameRulesConfig gameRulesConfig_;
 	};
 
 }

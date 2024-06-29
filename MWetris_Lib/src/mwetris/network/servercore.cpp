@@ -114,7 +114,7 @@ namespace mwetris::network {
 			}
 
 			auto gameRoomInfo = gameRoomList->add_game_rooms();
-			setTp(gameRoomId, *gameRoomInfo->mutable_game_room_id());
+			fromCppToProto(gameRoomId, *gameRoomInfo->mutable_game_room_id());
 			gameRoomInfo->set_name(gameRoom.getName());
 			gameRoomInfo->set_max_player_count(4);
 			gameRoomInfo->set_player_count(gameRoom.getConnectedClientSize());

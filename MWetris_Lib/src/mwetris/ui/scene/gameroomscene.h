@@ -11,6 +11,7 @@
 #include "game/serialize.h"
 #include "game/playerslot.h"
 #include "game/devicemanager.h"
+#include "game/defaultgamerules.h"
 
 #include <tetris/ai.h>
 
@@ -71,6 +72,7 @@ namespace mwetris::ui::scene {
 		std::unique_ptr<AddPlayer> addPlayer_;
 		std::string gameRoomId_;
 		GameRoomSceneData gameRoomSceneData_;
+		game::GameRulesConfig gameRulesConfig_;
 	};
 
 }

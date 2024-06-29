@@ -82,6 +82,7 @@ namespace mwetris::network {
 		bool isPublic_ = false;
 
 		tp_s2c::Wrapper wrapperToClient_;
+		tp::GameRules gameRules_;
 	};
 
 }

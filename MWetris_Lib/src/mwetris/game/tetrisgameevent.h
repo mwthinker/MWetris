@@ -1,7 +1,10 @@
 #ifndef MWETRIS_GAME_TETRISGAMEEVENT_H
 #define MWETRIS_GAME_TETRISGAMEEVENT_H
 
+#include "defaultgamerules.h"
+
 #include <memory>
+#include <variant>
 
 namespace mwetris::game {
 
@@ -16,6 +19,10 @@ namespace mwetris::game {
 
 	struct GameOver {
 		PlayerPtr player;
+	};
+
+	struct GameRoomConfigEvent {
+		game::GameRulesConfig gameRulesConfig;
 	};
 
 }

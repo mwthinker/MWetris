@@ -3,6 +3,7 @@
 
 #include "../game/player.h"
 #include "../game/playerslot.h"
+#include "../game/tetrisgameevent.h"
 #include "id.h"
 
 #include <tetris/block.h>
@@ -33,6 +34,7 @@ namespace mwetris::network {
 
 	struct CreateGameEvent {
 		std::vector<game::PlayerPtr> players;
+		game::GameRulesConfig gameRulesConfig;
 	};
 
 	struct LeaveGameRoomEvent {
@@ -61,7 +63,8 @@ namespace mwetris::network {
 		CreateGameEvent,
 		LeaveGameRoomEvent,
 		ClientDisconnectedEvent,
-		GameRoomListEvent
+		GameRoomListEvent,
+		game::GameRoomConfigEvent
 	>;
 
 }

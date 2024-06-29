@@ -42,6 +42,7 @@ message CreateGame {
 	repeated Player players = 1;
 	int32 width = 2;
 	int32 height = 3;
+	tp.GameRules game_rules = 4;
 }
 
 message GameCommand {
@@ -82,6 +83,11 @@ message GameRoomJoined {
 	GameLooby game_looby = 3;
 }
 
+// Sent when ever game room settings are changed to all clients in game room.
+// Or is sent to the client that joins the game room.
+message GameRomeSettings {
+	int32 max_player_count = 1;
+	tp.GameRules game_rules = 2;
 }
 
 message LeaveGameRoom {

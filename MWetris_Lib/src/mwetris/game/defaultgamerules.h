@@ -10,6 +10,7 @@
 #include <spdlog/spdlog.h>
 
 #include <vector>
+#include <variant>
 
 namespace mwetris::game {
 
@@ -21,13 +22,14 @@ namespace mwetris::game {
 
 	class DefaultGameRules : public GameRules {
 	public:
-		DefaultGameRules() {
-		}
+		struct Config {};
+
+		DefaultGameRules() {}
 
 		void update(double deltaTime) override {
 
 		}
-		
+
 		void createGame(const std::vector<PlayerPtr>& players) override {
 			connections_.clear();
 			players_.clear();
@@ -86,18 +88,18 @@ namespace mwetris::game {
 
 	class SurvivalGameRules : public GameRules {
 	public:
-		SurvivalGameRules() {
-		}
+		struct Config {};
 
-		void update(double timeStep) override {
-		}
+		SurvivalGameRules() {}
+
+		void update(double timeStep) override {}
 
 		void createGame(const std::vector<PlayerPtr>& players) override {
 			connections_.clear();
 			players_.clear();
 			for (auto& player : players) {
 				auto& info = players_.emplace_back(player, SurvivalPlayerData{
-					.opponentRows = 0	
+					.opponentRows = 0
 				});
 				info.player->updatePlayerData(info.data);
 				connections_ += player->playerBoardUpdate.connect([this, index = players_.size() - 1](const PlayerBoardEvent& playerBoardEvent) {
@@ -162,6 +164,14 @@ namespace mwetris::game {
 		std::vector<Info> players_;
 		mw::signals::ScopedConnections connections_;
 	};
+
+	enum class GameRoomType {
+		Default,
+		Survival
+	};
+
+	using GameRulesConfig = std::variant<DefaultGameRules::Config, SurvivalGameRules::Config>;
+
 }
 
 #endif
