@@ -2,6 +2,9 @@
 #define MWETRIS_PROTOFILE_H
 
 #include <google/protobuf/util/time_util.h>
+#ifdef GetCurrentTime
+#undef GetCurrentTime
+#endif
 #include <google/protobuf/message_lite.h>
 #include <fstream>
 
