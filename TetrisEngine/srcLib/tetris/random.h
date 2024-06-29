@@ -1,5 +1,5 @@
-#ifndef RANDOM_H
-#define RANDOM_H
+#ifndef TETRIS_RANDOM_H
+#define TETRIS_RANDOM_H
 
 #include <random>
 

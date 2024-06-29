@@ -1,5 +1,5 @@
-#ifndef TETRISBOARD_H
-#define TETRISBOARD_H
+#ifndef TETRIS_TETRISBOARD_H
+#define TETRIS_TETRISBOARD_H
 
 #include "block.h"
 

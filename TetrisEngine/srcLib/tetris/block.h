@@ -1,5 +1,5 @@
-#ifndef BLOCK_H
-#define BLOCK_H
+#ifndef TETRIS_BLOCK_H
+#define TETRIS_BLOCK_H
 
 #include <array>
 #include <algorithm>

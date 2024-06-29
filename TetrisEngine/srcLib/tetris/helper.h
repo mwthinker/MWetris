@@ -1,5 +1,5 @@
-#ifndef HELPER_H
-#define HELPER_H
+#ifndef TETRIS_HELPER_H
+#define TETRIS_HELPER_H
 
 #include "tetrisboard.h"
 #include "block.h"
