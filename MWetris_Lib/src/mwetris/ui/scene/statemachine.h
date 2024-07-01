@@ -21,7 +21,12 @@ namespace mwetris::ui::scene {
 
 	class StateMachine {
 	public:
-		StateMachine();
+		enum class StateType {
+			Fullscreen,
+			Modal
+		};
+
+		explicit StateMachine(StateType type = StateType::Fullscreen);
 
 		~StateMachine();
 
@@ -53,6 +58,8 @@ namespace mwetris::ui::scene {
 
 		std::map<Key, std::shared_ptr<Scene>> scenes_;
 		Key currentKey_{};
+		StateType stateType_;
+		bool openPopUp_ = false;
 	};
 
 	template <typename Type> requires DerivedFromScene<Type>
@@ -93,6 +100,9 @@ namespace mwetris::ui::scene {
 	void StateMachine::switchTo() {
 		SceneData sceneData;
 		switchTo<Type>(sceneData);
+		if (!isCurrentScene<EmptyScene>()) {
+			openPopUp_ = true;
+		}
 	}
 
 	template <typename Type> requires DerivedFromScene<Type>

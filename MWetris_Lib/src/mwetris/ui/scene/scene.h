@@ -7,6 +7,7 @@
 #include <spdlog/spdlog.h>
 
 #include <chrono>
+#include <imgui.h>
 
 namespace mwetris::ui::scene {
 
@@ -26,6 +27,10 @@ namespace mwetris::ui::scene {
 		virtual ~Scene() = default;
 
 		virtual void imGuiUpdate(const DeltaTime& deltaTime) = 0;
+		
+		virtual ImVec2 getSize() const {
+			return {};
+		}
 
 	protected:
 		class StateMachineWrapper {

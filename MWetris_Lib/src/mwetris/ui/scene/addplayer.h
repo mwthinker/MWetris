@@ -46,6 +46,10 @@ namespace mwetris::ui::scene {
 		}
 
 		void switchedTo(const SceneData& sceneData) override;
+
+		ImVec2 getSize() const override {
+			return {800, 200};
+		}
 	
 	private:
 		void deviceConnected(game::DevicePtr device);

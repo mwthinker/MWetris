@@ -70,8 +70,8 @@ message PlayerId {
 message GameRules {
 	message DefaultGameRules {
 		int32 start_level = 1;
-		int32 max_level = 3;
-		int32 lines_per_level = 4;
+		int32 max_level = 2;
+		int32 lines_per_level = 3;
 	}
 	message SurvivalGameRules {
 		int32 start_level = 1;

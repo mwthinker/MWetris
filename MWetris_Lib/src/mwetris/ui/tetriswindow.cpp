@@ -74,12 +74,12 @@ namespace mwetris::ui {
 
 	TetrisWindow::TetrisWindow(const std::string& windowName, Type type, sdl::Window& window,
 		std::shared_ptr<game::DeviceManager> deviceManager,
-		std::shared_ptr<network::Network> network
-	)
+		std::shared_ptr<network::Network> network)
 		: window_{window}
 		, deviceManager_{deviceManager}
 		, type_{type}
-		, windowName_{windowName} {
+		, windowName_{windowName}
+		, modalStateMachine_{ui::scene::StateMachine::StateType::Modal} {
 
 		tetrisController_ = std::make_shared<TetrisController>(network, std::make_shared<graphic::GameComponent>());
 
@@ -118,16 +118,14 @@ namespace mwetris::ui {
 		Configuration::getInstance().bindTextureFromAtlas();
 		background_ = Configuration::getInstance().getBackgroundSprite();
 
-		mainStateMachine_.emplace<scene::EmptyScene>();
 		mainStateMachine_.emplace<scene::GameRoomScene>(tetrisController_, deviceManager_);
 		
-		modalStateMachine_.emplace<scene::EmptyScene>();
 		modalStateMachine_.emplace<scene::JoinGameRoom>(tetrisController_);
 		modalStateMachine_.emplace<scene::CreateGameRoom>(tetrisController_);
 		modalStateMachine_.emplace<scene::Settings>();
 		modalStateMachine_.emplace<scene::HighScore>();
 		modalStateMachine_.emplace<scene::NewHighScore>([this]() {
-			openPopUp<scene::HighScore>();
+			modalStateMachine_.switchTo<scene::HighScore>();
 		});
 		modalStateMachine_.emplace<scene::About>();
 
@@ -166,7 +164,7 @@ namespace mwetris::ui {
 			data.points = data.points;
 			data.clearedRows = player->getClearedRows();
 			data.level = data.level;
-			openPopUp<scene::NewHighScore>(data);
+			modalStateMachine_.switchTo<scene::NewHighScore>(data);
 		}
 	}
 
@@ -219,30 +217,7 @@ namespace mwetris::ui {
 		ImGui::PushFont(Configuration::getInstance().getImGuiDefaultFont());
 		imGuiMainWindow(deltaTime);
 
-		ImGui::PushID(this);
-		constexpr auto popUpId = "Popup";
-		if (openPopUp_) {
-			openPopUp_ = false;
-			ImGui::OpenPopup(popUpId);
-			ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, {0.5f, 0.5f});
-			ImGui::SetNextWindowSize({800, 800}, ImGuiCond_Appearing);
-		}
-		if (!ImGui::PopupModal(popUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
-			auto pos = ImGui::GetCursorScreenPos();
-			auto size = ImVec2{60.f, 30.f};
-
-			ImGui::SetCursorPosX(ImGui::GetWindowWidth() - size.x - 10.f); // TODO! Fix more less hard coded right alignment.
-			if (ImGui::AbortButton("Cancel", size) || ImGui::IsKeyDown(ImGuiKey_Escape)) {
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::SetCursorScreenPos(pos);
-
-			modalStateMachine_.imGuiUpdate(deltaTime);
-		})) {
-			modalStateMachine_.switchTo<scene::EmptyScene>();
-		}
-		mainStateMachine_.imGuiUpdate(deltaTime);
-		ImGui::PopID();
+		modalStateMachine_.imGuiUpdate(deltaTime);
 
 		ImGui::PopFont();
 	}
@@ -267,10 +242,10 @@ namespace mwetris::ui {
 						tetrisController_->createLocalGameRoom();
 					}
 					if (ImGui::MenuItem("Create Network Game")) {
-						openPopUp<mwetris::ui::scene::CreateGameRoom>();
+						modalStateMachine_.switchTo<scene::CreateGameRoom>();
 					}
 					if (ImGui::MenuItem("Join Network Game")) {
-						openPopUp<mwetris::ui::scene::JoinGameRoom>();
+						modalStateMachine_.switchTo<scene::JoinGameRoom>();
 					}
 					ImGui::EndDisabled();
 					ImGui::BeginDisabled(!insideGameRoom);
@@ -281,10 +256,10 @@ namespace mwetris::ui {
 					ImGui::Separator();
 					if (ImGui::MenuItem("Highscore")) {
 						tetrisController_->pause();
-						openPopUp<mwetris::ui::scene::HighScore>();
+						modalStateMachine_.switchTo<scene::HighScore>();
 					}
 					if (ImGui::MenuItem("Preferences")) {
-						openPopUp<mwetris::ui::scene::Settings>();
+						modalStateMachine_.switchTo<scene::Settings>();
 					}
 					if (ImGui::MenuItem("Quit", "ESQ")) {
 						window_.quit();
@@ -300,7 +275,7 @@ namespace mwetris::ui {
 				});
 				ImGui::Menu("Help", [&]() {
 					if (ImGui::MenuItem("About")) {
-						openPopUp<mwetris::ui::scene::About>();
+						modalStateMachine_.switchTo<scene::About>();
 					}
 				});
 			});

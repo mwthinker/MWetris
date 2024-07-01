@@ -61,18 +61,6 @@ namespace mwetris::ui {
 		void initPreLoop();
 		int getCurrentMonitorHz() const;
 
-		template <typename Scene>
-		void openPopUp() {
-			scene::SceneData data;
-			openPopUp<Scene>(data);
-		}
-
-		template <typename Scene>
-		void openPopUp(const scene::SceneData& data) {
-			openPopUp_ = true;
-			modalStateMachine_.switchTo<Scene>(data);
-		}
-
 		void imGuiMainWindow(const sdl::DeltaTime& deltaTime);
 
 		void startNewGame();
@@ -86,14 +74,11 @@ namespace mwetris::ui {
 		mw::signals::ScopedConnections connections_;
 		std::shared_ptr<TetrisController> tetrisController_;
 
-		bool openPopUp_ = false;
-
 		TimeHandler timeHandler_;
 		std::string pauseMenuText_;
 
 		Type type_ = Type::MainWindow;
 		std::string windowName_;
-		std::string popUpId_;
 	};
 
 }
