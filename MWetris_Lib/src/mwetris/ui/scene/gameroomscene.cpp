@@ -45,6 +45,16 @@ namespace mwetris::ui::scene {
 			ImGui::Text("SurvivalGameRules");
 		}
 
+		std::vector<game::DevicePtr> getUsedDevices(const std::vector<game::PlayerSlot>& playerSlots) {
+			std::vector<game::DevicePtr> usedDevices;
+			for (const auto& playerSlot : playerSlots) {
+				if (auto human = std::get_if<game::Human>(&playerSlot)) {
+					usedDevices.push_back(human->device);
+				}
+			}
+			return usedDevices;
+		}
+
 	}
 
 	GameRoomScene::GameRoomScene(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager)
@@ -116,11 +126,17 @@ namespace mwetris::ui::scene {
 					if (ImGui::Button("Open Slot", {100, 100})) {
 						scene::AddPlayerData data{};
 						data.index = i;
+						data.usedDevices = getUsedDevices(playerSlots_);
 						addPlayer_->switchedTo(data);
 						
 						ImGui::OpenPopup(PopUpId);
 						ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, {0.5f, 0.5f});
-						ImGui::SetNextWindowSize({800, 800}, ImGuiCond_Appearing);
+						auto size = addPlayer_->getSize();
+						if (size.x > 0 && size.y > 0) {
+							ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
+						} else {
+							ImGui::SetNextWindowSize({800, 800}, ImGuiCond_Appearing);
+						}
 					}
 				} else {
 					static_assert(always_false_v<T>, "non-exhaustive visitor!");

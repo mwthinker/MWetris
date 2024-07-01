@@ -28,6 +28,7 @@ namespace mwetris::ui::scene {
 
 	struct AddPlayerData : public scene::SceneData {
 		int index;
+		std::vector<game::DevicePtr> usedDevices;
 	};
 
 	class AddPlayer : public Scene {

@@ -23,8 +23,8 @@ namespace mwetris::ui::scene {
 			std::string name;
 		};
 
-		std::vector<PlayerType> getPlayerTypes() {
-			return {
+		const std::vector<PlayerType>& getPlayerTypes(bool onlyAi) {
+			static const std::vector<PlayerType> playerTypes = {
 				PlayerType{
 					.player = Player::Human,
 					.name = "Human"
@@ -34,6 +34,18 @@ namespace mwetris::ui::scene {
 					.name = "AI"
 				}
 			};
+
+			static const std::vector<PlayerType> onlyAiType = {
+				PlayerType{
+					.player = Player::Ai,
+					.name = "AI"
+				}
+			};
+
+			if (onlyAi) {
+				return onlyAiType;
+			}
+			return playerTypes;
 		}
 
 		struct GameMode {
@@ -51,10 +63,12 @@ namespace mwetris::ui::scene {
 			};
 		}
 
-		std::vector<game::Human> getDeviceTypes(const std::vector<game::DevicePtr>& devices) {
+		std::vector<game::Human> getDeviceTypes(const std::vector<game::DevicePtr>& devices, const std::vector<game::DevicePtr>& excludes) {
 			std::vector<game::Human> types;
 
 			for (const auto& device : devices) {
+				if (std::find(excludes.begin(), excludes.end(), device) != excludes.end()) continue;
+				
 				types.emplace_back(device->getName(), device);
 			}
 			return types;
@@ -109,11 +123,12 @@ namespace mwetris::ui::scene {
 		ImGui::Text("Add Player");
 		ImGui::PopFont();
 
-		static auto playerTypes = getPlayerTypes();
+		bool onlyAi = allDevices_.empty();
+		const auto& playerTypes = getPlayerTypes(onlyAi);
 		ImGui::SetNextItemWidth(150.f);
 		auto playerType = ImGui::ComboUniqueType<PlayerType>("##Player Type", playerTypes);
 		
-		if (playerType.player == Player::Human) {
+		if (playerType.player == Player::Human && !onlyAi) {
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(150.f);
 			auto result = ImGui::ComboUniqueType<game::Human>("##Players", allDevices_);
@@ -154,7 +169,7 @@ namespace mwetris::ui::scene {
 			.name = playerName_,
 			.device = deviceManager_->getDefaultDevice1()
 		};
-		allDevices_ = getDeviceTypes(deviceManager_->getAllDevicesAvailable());
+		allDevices_ = getDeviceTypes(deviceManager_->getAllDevicesAvailable(), data_.usedDevices);
 	}
 
 	void AddPlayer::switchedFrom() {

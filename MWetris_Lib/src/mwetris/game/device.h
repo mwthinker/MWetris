@@ -23,14 +23,19 @@ namespace mwetris::game {
 			return input_;
 		}
 
+		/// @brief Get the implementation-dependent name for an game controller.
 		const std::string& getName() const {
 			return name_;
 		}
 
+		/// @brief Return the GUID of the device. A stable unique id for the device, i.e. attached to the hardware.
+		/// @return the GUID of the device.
 		const std::string& getGuid() const {
 			return guid_;
 		}
 
+		/// @brief Is the device connected? I.e. the physical device is connected to the computer.
+		/// @return true if the device is connected else false.
 		bool isConnected() const {
 			return connected_;
 		}
