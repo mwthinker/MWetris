@@ -74,7 +74,7 @@ namespace mwetris::network {
 
 		// Then
 		ASSERT_EQ(gameRoom_->getConnectedClientIds().size(), 1);
-		ASSERT_EQ(gameRoom_->getConnectedClientIds()[0], ClientId{"client uuid 0"});
+		ASSERT_EQ(gameRoom_->getConnectedClientIds()[0].clientId, ClientId{"client uuid 0"});
 	}
 
 	TEST_F(GameRoomTest, receiveGameRoomCreated) {
@@ -87,7 +87,7 @@ namespace mwetris::network {
 
 		// Then
 		ASSERT_EQ(gameRoom_->getConnectedClientIds().size(), 1);
-		ASSERT_EQ(gameRoom_->getConnectedClientIds()[0], ClientId{"client uuid 0"});
+		ASSERT_EQ(gameRoom_->getConnectedClientIds()[0].clientId, ClientId{"client uuid 0"});
 	}
 
 	TEST_F(GameRoomTest, receivePlayerSlot_thenSendGameLooby) {

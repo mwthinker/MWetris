@@ -79,7 +79,6 @@ namespace mwetris::network {
 		spdlog::error("[TcpServer] Client disconnected from game room, waiting for reconnection");
 		gameRoom.removeClientFromGameRoom(*this, remote.clientId);
 		roomIdByClientId_.erase(remote.clientId);
-		remoteByClientId_.erase(remote.clientId);
 		// TODO! Wait for reconnection?
 	}
 

@@ -3,6 +3,7 @@
 
 #include "server.h"
 #include "id.h"
+#include "networkevent.h"
 
 #include <server_to_client.pb.h>
 #include <client_to_server.pb.h>
@@ -29,7 +30,9 @@ namespace mwetris::network {
 
 		const GameRoomId& getGameRoomId() const;
 
-		const std::vector<ClientId>& getConnectedClientIds() const;
+		bool isFull() const;
+
+		const std::vector<GameRoomClient>& getConnectedClientIds() const;
 		int getConnectedClientSize() const;
 
 		void disconnect(Server& server, const ClientId& clientId);
@@ -77,12 +80,13 @@ namespace mwetris::network {
 		GameRoomId gameRoomId_;
 
 		std::vector<Slot> playerSlots_;
-		std::vector<ClientId> connectedClientIds;
+		std::vector<GameRoomClient> connectedClients_;
 		bool paused_ = false;
 		bool isPublic_ = false;
 
 		tp_s2c::Wrapper wrapperToClient_;
 		tp::GameRules gameRules_;
+		std::list<int> connectionIds_;
 	};
 
 }

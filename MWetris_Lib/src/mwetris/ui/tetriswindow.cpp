@@ -196,6 +196,10 @@ namespace mwetris::ui {
 		}
 	}
 
+	void TetrisWindow::onTetrisEvent(const network::GameRoomEvent& gameRoomEvent) {
+		// Do nothing here.
+	}
+
 	void TetrisWindow::onTetrisEvent(const CreateGameEvent& createGameEvent) {
 		modalStateMachine_.switchTo<scene::EmptyScene>();
 		mainStateMachine_.switchTo<scene::EmptyScene>();
@@ -207,6 +211,9 @@ namespace mwetris::ui {
 
 	void TetrisWindow::onTetrisEvent(const game::GameRoomConfigEvent& gameRoomConfigEvent) {
 		// Do nothing here.
+	}
+
+	void TetrisWindow::onTetrisEvent(const network::JoinGameRoomEvent& joinGameRoomEvent) {
 	}
 
 	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {

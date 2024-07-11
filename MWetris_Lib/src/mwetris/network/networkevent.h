@@ -24,8 +24,17 @@ namespace mwetris::network {
 
 	struct RestartEvent {};
 
+	struct GameRoomClient {
+		ClientId clientId;
+		int connectionId;
+	};
+
+	struct GameRoomEvent {
+		std::vector<GameRoomClient> gameRoomClients;
+	};
+
 	struct JoinGameRoomEvent {
-		bool join;
+		ClientId clientId;
 	};
 
 	struct PauseEvent {
@@ -38,6 +47,7 @@ namespace mwetris::network {
 	};
 
 	struct LeaveGameRoomEvent {
+		ClientId clientId;
 	};
 
 	struct ClientDisconnectedEvent {
@@ -59,6 +69,7 @@ namespace mwetris::network {
 		PlayerSlotEvent,
 		RestartEvent,
 		JoinGameRoomEvent,
+		GameRoomEvent,
 		PauseEvent,
 		CreateGameEvent,
 		LeaveGameRoomEvent,

@@ -81,6 +81,10 @@ namespace mwetris::network {
 
 		if (auto it = gameRoomById_.find(joinGameRoom.game_room_id()); it != gameRoomById_.end()) {
 			auto& gameRoom = it->second;
+			if (gameRoom.isFull()) {
+				spdlog::warn("[DebugServer] GameRoom with id {} is full", joinGameRoom.game_room_id());
+				return;
+			}
 			roomIdByClientId_.emplace(remote.clientId, gameRoom.getGameRoomId());
 			gameRoomById_.emplace(gameRoom.getGameRoomId(), std::move(gameRoom));
 			spdlog::info("[DebugServer] GameRoom with id {} is joined by client {}", gameRoom.getGameRoomId(), remote.clientId);

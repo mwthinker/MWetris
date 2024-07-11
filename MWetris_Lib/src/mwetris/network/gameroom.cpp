@@ -50,6 +50,31 @@ namespace mwetris::network {
 			return false;
 		}
 
+		std::list<int> createIds(int nbr) {
+			std::list<int> ids;
+			for (int i = 0; i < nbr; ++i) {
+				ids.push_back(i);
+			}
+			return ids;
+		}
+
+		std::vector<GameRoomClient>::iterator findClient(std::vector<GameRoomClient>& connectedClients, const ClientId& clientId) {
+			if (auto it = std::find_if(connectedClients.begin(), connectedClients.end(), [&clientId](const auto& client) {
+				return client.clientId == clientId;
+			}); it != connectedClients.end()) {
+				return it;
+			}
+			return connectedClients.end();
+		}
+
+		void fromCppToProto(const std::vector<GameRoomClient>& connectedClients, tp_s2c::GameRoomClients& tpGameRoomClients) {
+			for (const auto& client : connectedClients) {
+				auto tpClient = tpGameRoomClients.add_clients();
+				tpClient->set_connection_id(client.connectionId);
+				fromCppToProto(client.clientId, *tpClient->mutable_client_id());
+			}
+		}
+
 	}
 
 	GameRoom::GameRoom()
@@ -58,7 +83,8 @@ namespace mwetris::network {
 
 	GameRoom::GameRoom(const std::string& name, bool isPublic)
 		: name_{name}
-		, isPublic_{isPublic} {
+		, isPublic_{isPublic}
+		, connectionIds_{createIds(7)} {
 		
 		gameRoomId_ = GameRoomId::generateUniqueId();
 		playerSlots_.resize(4, Slot{.type = SlotType::Open});
@@ -70,7 +96,7 @@ namespace mwetris::network {
 	GameRoom::~GameRoom() {}
 
 	void GameRoom::sendToAllClients(Server& server, const tp_s2c::Wrapper& message, const ClientId& exceptClientId) {
-		for (const auto& clientId : connectedClientIds) {
+		for (const auto& [clientId, _] : connectedClients_) {
 			if (clientId == exceptClientId) {
 				continue;
 			}
@@ -90,21 +116,38 @@ namespace mwetris::network {
 		return gameRoomId_;
 	}
 
-	const std::vector<ClientId>& GameRoom::getConnectedClientIds() const {
-		return connectedClientIds;
+	bool GameRoom::isFull() const {
+		return connectedClients_.size() >= 4;
+	}
+
+	const std::vector<GameRoomClient>& GameRoom::getConnectedClientIds() const {
+		return connectedClients_;
 	}
 
 	int GameRoom::getConnectedClientSize() const {
-		return static_cast<int>(connectedClientIds.size());
+		return static_cast<int>(connectedClients_.size());
 	}
 
 	void GameRoom::disconnect(Server& server, const ClientId& clientId) {
+		auto connectedClients = connectedClients_;
+		std::erase_if(connectedClients, [&](const auto& client) {
+			if (client.clientId == clientId) {
+				// Return connection id to be reused for new client connections
+				connectionIds_.push_back(client.connectionId);
+				return true;
+			}
+
+			return false;
+		});
+		
 		wrapperToClient_.Clear();
 		auto leaveGameRoom = wrapperToClient_.mutable_leave_game_room();
 		fromCppToProto(gameRoomId_, *leaveGameRoom->mutable_game_room_id());
 		fromCppToProto(clientId, *leaveGameRoom->mutable_client_id());
+		fromCppToProto(connectedClients, *leaveGameRoom->mutable_game_room_clients());
 		sendToAllClients(server, wrapperToClient_);
-		connectedClientIds.erase(std::remove(connectedClientIds.begin(), connectedClientIds.end(), clientId), connectedClientIds.end());
+
+		connectedClients_ = connectedClients;
 	}
 
 	void GameRoom::sendPause(Server& server, bool pause) {
@@ -295,21 +338,25 @@ namespace mwetris::network {
 	}
 
 	void GameRoom::sendJoinGameRoom(Server& server, const ClientId& clientId) {
-		connectedClientIds.push_back(clientId);
+		const auto& newClient = connectedClients_.emplace_back(GameRoomClient{
+			.clientId = clientId,
+			.connectionId = connectionIds_.front()
+		});
+		connectionIds_.pop_front();
 
 		auto gameRoomJoined = wrapperToClient_.mutable_game_room_joined();
 		fromCppToProto(gameRoomId_, *gameRoomJoined->mutable_game_room_id());
-		fromCppToProto(clientId, *gameRoomJoined->mutable_client_id());
+		fromCppToProto(newClient.clientId, *gameRoomJoined->mutable_client_id());
+		fromCppToProto(connectedClients_ , *gameRoomJoined->mutable_game_room_clients());
+		
 		addPlayerSlotsToGameLooby(*gameRoomJoined->mutable_game_looby(), playerSlots_);
 
-		server.sendToClient(clientId, wrapperToClient_);
+		sendToAllClients(server, wrapperToClient_);
 	}
 
 	void GameRoom::handleLeaveGameRoom(Server& server, const ClientId& clientId, const tp_c2s::LeaveGameRoom& leaveGameRoom) {
-		if (auto it = std::find(connectedClientIds.begin(), connectedClientIds.end(), clientId);
-			it != connectedClientIds.end()) {
-
-			connectedClientIds.erase(it);
+		if (auto it = findClient(connectedClients_, clientId); it != connectedClients_.end()) {
+			connectedClients_.erase(it);
 
 			wrapperToClient_.Clear();
 			auto leaveGameRoom = wrapperToClient_.mutable_leave_game_room();
@@ -322,8 +369,8 @@ namespace mwetris::network {
 	}
 
 	void GameRoom::removeClientFromGameRoom(Server& server, const ClientId& clientId) {
-		if (auto it = std::find(connectedClientIds.begin(), connectedClientIds.end(), clientId); it != connectedClientIds.end()) {
-			connectedClientIds.erase(it);
+		if (auto it = findClient(connectedClients_, clientId); it != connectedClients_.end()) {
+			connectedClients_.erase(it);
 			
 			wrapperToClient_.Clear();
 			auto removeClient = wrapperToClient_.mutable_remove_client();

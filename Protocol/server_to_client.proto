@@ -75,12 +75,27 @@ message RequestGameRestart {
 	tp.BlockType next = 3;
 }
 
+message GameRoomClients {
+	message Client {
+		tp.ClientId client_id = 1;
+		int32 connection_id = 2;
+	}
+
+	repeated Client clients = 1;
+}
+
 // Received by all clients in a game room and by the client that joins.
 // Triggered for a client when join or create a game room.
 message GameRoomJoined {
+	message Client {
+		tp.ClientId client_id = 2;
+		int32 connection_id = 3;
+	}
+
 	tp.GameRoomId game_room_id = 1;
 	tp.ClientId client_id = 2;
-	GameLooby game_looby = 3;
+	GameRoomClients game_room_clients = 3;
+	GameLooby game_looby = 4;
 }
 
 // Sent when ever game room settings are changed to all clients in game room.
@@ -90,9 +105,11 @@ message GameRomeSettings {
 	tp.GameRules game_rules = 2;
 }
 
+// Sent to all clients in a game room when a client leaves.
 message LeaveGameRoom {
 	tp.GameRoomId game_room_id = 1;
 	tp.ClientId client_id = 2;
+	GameRoomClients game_room_clients = 3;
 }
 
 message FailedToConnect {

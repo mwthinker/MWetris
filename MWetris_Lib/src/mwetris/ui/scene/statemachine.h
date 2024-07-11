@@ -60,6 +60,7 @@ namespace mwetris::ui::scene {
 		Key currentKey_{};
 		StateType stateType_;
 		bool openPopUp_ = false;
+		bool closePopUp_ = false;
 	};
 
 	template <typename Type> requires DerivedFromScene<Type>
@@ -100,8 +101,12 @@ namespace mwetris::ui::scene {
 	void StateMachine::switchTo() {
 		SceneData sceneData;
 		switchTo<Type>(sceneData);
-		if (!isCurrentScene<EmptyScene>()) {
+		if (isCurrentScene<EmptyScene>()) {
+			openPopUp_ = false;
+			closePopUp_ = true;
+		} else {
 			openPopUp_ = true;
+			closePopUp_ = false;
 		}
 	}
 

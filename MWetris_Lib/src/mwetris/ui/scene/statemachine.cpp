@@ -38,8 +38,13 @@ namespace mwetris::ui::scene {
 
 				ImGui::SetCursorPosX(ImGui::GetWindowWidth() - size.x - 10.f); // TODO! Fix more less hard coded right alignment.
 				if (ImGui::AbortButton("Cancel", size) || ImGui::IsKeyDown(ImGuiKey_Escape)) {
+					closePopUp_ = true;
+				}
+				if (closePopUp_) {
+					closePopUp_ = false;
 					ImGui::CloseCurrentPopup();
 				}
+
 				ImGui::SetCursorScreenPos(pos);
 
 				if (currentKey_) {

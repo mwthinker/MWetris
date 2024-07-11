@@ -50,6 +50,17 @@ namespace mwetris::network {
 			}, gameRoomConfig);
 		}
 
+		std::vector<GameRoomClient> extractGameRoomClients(const tp_s2c::GameRoomClients& tpGameRoomClients) {
+			std::vector<GameRoomClient> gameRoomClients;
+			for (const auto& client : tpGameRoomClients.clients()) {
+				gameRoomClients.push_back(GameRoomClient{
+					.clientId = client.client_id(),
+					.connectionId = client.connection_id()
+				});
+			}
+			return gameRoomClients;
+		}
+
 	}
 		
 
@@ -241,6 +252,9 @@ namespace mwetris::network {
 				if (network->wrapperFromServer_.has_game_looby()) {
 					network->handleGameLooby(network->wrapperFromServer_.game_looby());
 				}
+				if (network->wrapperFromServer_.has_game_room_joined()) {
+					network->handleGameRoomJoined(network->wrapperFromServer_.game_room_joined());
+				}
 				if (network->wrapperFromServer_.has_connections()) {
 					network->handleConnections(network->wrapperFromServer_.connections());
 				}
@@ -366,10 +380,19 @@ namespace mwetris::network {
 	void Network::handleGameRoomJoined(const tp_s2c::GameRoomJoined& gameRoomJoined) {
 		spdlog::info("[Network] GameRoomJoined: {}, client id: {}", gameRoomJoined.game_room_id(), gameRoomJoined.client_id());
 		gameRoomId_ = gameRoomJoined.game_room_id();
-		clientId_ = gameRoomJoined.client_id();
-		networkEvent(JoinGameRoomEvent{
-			.join = true
+		auto clientId = gameRoomJoined.client_id();
+		if (!clientId_) {
+			clientId_ = gameRoomJoined.client_id();
+		}
+		if (clientId_ == clientId) {
+			networkEvent(JoinGameRoomEvent{
+				.clientId = clientId_,
+			});
+		}
+		networkEvent(GameRoomEvent{
+			.gameRoomClients = extractGameRoomClients(gameRoomJoined.game_room_clients())
 		});
+
 		handleGameLooby(gameRoomJoined.game_looby());
 	}
 
@@ -615,10 +638,13 @@ namespace mwetris::network {
 		spdlog::info("[Network] LeaveGameRoom: {}", leaveGameRoom.game_room_id());
 		if (leaveGameRoom.client_id() == clientId_) {
 			gameRoomId_ = GameRoomId{};
-			networkEvent(LeaveGameRoomEvent{});
-		} else {
-			// TODO! Handle other clients leaving.
+			networkEvent(LeaveGameRoomEvent{
+				.clientId = leaveGameRoom.client_id(),
+			});
 		}
+		networkEvent(GameRoomEvent{
+			.gameRoomClients = extractGameRoomClients(leaveGameRoom.game_room_clients())
+		});
 	}
 
 	void Network::handleGameRoomList(const tp_s2c::GameRoomList& gameRoomList) {

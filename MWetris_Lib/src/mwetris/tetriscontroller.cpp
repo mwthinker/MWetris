@@ -57,12 +57,17 @@ namespace mwetris {
 		});
 	}
 
+	void TetrisController::onNetworkEvent(const network::GameRoomEvent& gameRoomEvent) {
+		tetrisEvent(gameRoomEvent);
+	}
+
 	void TetrisController::onNetworkEvent(const network::RestartEvent& restartEvent) {
 		rules_->restart();
 	}
 
 	void TetrisController::onNetworkEvent(const network::JoinGameRoomEvent& joinGameRoomEvent) {
 		setGameRoomType(GameRoomType::NetworkInsideGameRoom);
+		tetrisEvent(joinGameRoomEvent);
 	}
 
 	void TetrisController::onNetworkEvent(const network::PauseEvent& pauseEvent) {

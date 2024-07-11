@@ -8,6 +8,8 @@
 #include "network/network.h"
 #include "ui/imguiextra.h"
 
+#include <sdl/color.h>
+
 #include <array>
 #include <string>
 #include <map>
@@ -55,6 +57,19 @@ namespace mwetris::ui::scene {
 			return usedDevices;
 		}
 
+		sdl::Color getColor(int connectionId) {
+			switch (connectionId) {
+				case 0: return sdl::color::html::Cyan;
+				case 1: return sdl::color::html::Blue;
+				case 2: return sdl::color::html::Orange;
+				case 3: return sdl::color::html::Yellow;
+				case 4: return sdl::color::html::Green;
+				case 5: return sdl::color::html::Purple;
+				case 6: return sdl::color::html::Red;
+			}
+			return sdl::color::Red;
+		}
+
 	}
 
 	GameRoomScene::GameRoomScene(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager)
@@ -67,6 +82,8 @@ namespace mwetris::ui::scene {
 		connections_ += tetrisController_->tetrisEvent.connect([this](const TetrisEvent& tetrisEvent) {
 			if (auto playerSlotEvent = std::get_if<PlayerSlotEvent>(&tetrisEvent)) {
 				onPlayerSlotEvent(*playerSlotEvent);
+			} else if (auto gameRoomEvent = std::get_if<network::GameRoomEvent>(&tetrisEvent)) {
+				onGameRoomEvent(*gameRoomEvent);
 			}
 		});
 
@@ -79,6 +96,10 @@ namespace mwetris::ui::scene {
 
 	void GameRoomScene::onPlayerSlotEvent(const PlayerSlotEvent& playerSlotEvent) {
 		playerSlots_[playerSlotEvent.slot] = playerSlotEvent.playerSlot;
+	}
+
+	void GameRoomScene::onGameRoomEvent(const network::GameRoomEvent& gameRoomEvent) {
+		gameRoomClients_ = gameRoomEvent.gameRoomClients;
 	}
 
 	void GameRoomScene::imGuiUpdate(const DeltaTime& deltaTime) {
@@ -145,6 +166,18 @@ namespace mwetris::ui::scene {
 			ImGui::EndGroup();
 
 			ImGui::SetCursorPosY(150);
+
+			ImGui::Table("Highscore", 2, ImGuiTableFlags_Borders, {500, 0}, [&]() {
+				ImGui::TableSetupColumn("Connection", ImGuiTableColumnFlags_WidthFixed, 90);
+				ImGui::TableSetupColumn("Id");
+
+				ImGui::TableHeadersRow();
+				for (const auto& client : gameRoomClients_) {
+					ImGui::TableNextRow();
+					ImGui::TableNextColumn(); ImGui::TextWithBackgroundColor(client.connectionId, getColor(client.connectionId));
+					ImGui::TableNextColumn(); ImGui::Text("%s", client.clientId.c_str());
+				}
+			});
 			
 			static int gameRulesConfigIndex = 0;
 			if (ImGui::RadioButton("Default Game rules", &gameRulesConfigIndex, 0)) {
