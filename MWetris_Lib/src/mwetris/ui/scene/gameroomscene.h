@@ -60,7 +60,6 @@ namespace mwetris::ui::scene {
 
 	private:
 		void onPlayerSlotEvent(const PlayerSlotEvent& playerSlotEvent);
-		void onGameRoomEvent(const network::GameRoomEvent& gameRoomEvent);
 
 		void switchedTo(const SceneData& sceneData) override;
 		void switchedFrom() override;
@@ -70,7 +69,6 @@ namespace mwetris::ui::scene {
 		mw::signals::ScopedConnections connections_;
 
 		std::vector<game::PlayerSlot> playerSlots_;
-		std::vector<network::GameRoomClient> gameRoomClients_;
 		bool openPopUp_ = false;
 		std::unique_ptr<AddPlayer> addPlayer_;
 		std::string gameRoomId_;

@@ -58,7 +58,7 @@ namespace mwetris {
 	}
 
 	void TetrisController::onNetworkEvent(const network::GameRoomEvent& gameRoomEvent) {
-		tetrisEvent(gameRoomEvent);
+		gameRoomClients_ = gameRoomEvent.gameRoomClients;
 	}
 
 	void TetrisController::onNetworkEvent(const network::RestartEvent& restartEvent) {
@@ -67,7 +67,6 @@ namespace mwetris {
 
 	void TetrisController::onNetworkEvent(const network::JoinGameRoomEvent& joinGameRoomEvent) {
 		setGameRoomType(GameRoomType::NetworkInsideGameRoom);
-		tetrisEvent(joinGameRoomEvent);
 	}
 
 	void TetrisController::onNetworkEvent(const network::PauseEvent& pauseEvent) {
@@ -243,6 +242,10 @@ namespace mwetris {
 	}
 
 	void TetrisController::setGameRoomType(GameRoomType gameRoomType) {
+		if (gameRoomType != GameRoomType::NetworkInsideGameRoom) {
+			gameRoomClients_.clear();
+		}
+
 		gameRoomType_ = gameRoomType;
 		tetrisEvent(GameRoomEvent{
 			.type = gameRoomType_
@@ -288,6 +291,10 @@ namespace mwetris {
 		}
 
 		return player.isHuman();
+	}
+
+	const std::vector<network::GameRoomClient>& TetrisController::getGameRoomClients() const {
+		return gameRoomClients_;
 	}
 
 }

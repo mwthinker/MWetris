@@ -55,8 +55,7 @@ namespace mwetris {
 	struct CreateGameEvent {
 	};
 
-	// TODO! Not good to use name network::GameRoomEven and game::GameRoomEvent
-	using TetrisEvent = std::variant<game::GamePause, game::GameOver, game::GameRoomConfigEvent, PlayerSlotEvent, GameRoomEvent, CreateGameEvent, network::GameRoomListEvent, network::JoinGameRoomEvent, network::GameRoomEvent>;
+	using TetrisEvent = std::variant<game::GamePause, game::GameOver, game::GameRoomConfigEvent, PlayerSlotEvent, GameRoomEvent, CreateGameEvent, network::GameRoomListEvent>;
 
 	class TetrisController {
 	public:
@@ -107,6 +106,8 @@ namespace mwetris {
 
 		bool isDefaultGame() const;
 
+		const std::vector<network::GameRoomClient>& getGameRoomClients() const;
+
 	private:
 		void createGame(const std::vector<game::PlayerPtr>& players, const game::GameRulesConfig& gameRulesConfig);
 
@@ -130,6 +131,7 @@ namespace mwetris {
 		std::shared_ptr<graphic::GameComponent> gameComponent_;
 		GameRoomType gameRoomType_ = GameRoomType::OutsideGameRoom;
 		game::GameRulesConfig gameRulesConfig_;
+		std::vector<network::GameRoomClient> gameRoomClients_;
 	};
 
 }

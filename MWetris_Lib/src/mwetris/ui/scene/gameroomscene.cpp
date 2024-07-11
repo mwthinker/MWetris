@@ -82,8 +82,6 @@ namespace mwetris::ui::scene {
 		connections_ += tetrisController_->tetrisEvent.connect([this](const TetrisEvent& tetrisEvent) {
 			if (auto playerSlotEvent = std::get_if<PlayerSlotEvent>(&tetrisEvent)) {
 				onPlayerSlotEvent(*playerSlotEvent);
-			} else if (auto gameRoomEvent = std::get_if<network::GameRoomEvent>(&tetrisEvent)) {
-				onGameRoomEvent(*gameRoomEvent);
 			}
 		});
 
@@ -96,10 +94,6 @@ namespace mwetris::ui::scene {
 
 	void GameRoomScene::onPlayerSlotEvent(const PlayerSlotEvent& playerSlotEvent) {
 		playerSlots_[playerSlotEvent.slot] = playerSlotEvent.playerSlot;
-	}
-
-	void GameRoomScene::onGameRoomEvent(const network::GameRoomEvent& gameRoomEvent) {
-		gameRoomClients_ = gameRoomEvent.gameRoomClients;
 	}
 
 	void GameRoomScene::imGuiUpdate(const DeltaTime& deltaTime) {
@@ -172,7 +166,7 @@ namespace mwetris::ui::scene {
 				ImGui::TableSetupColumn("Id");
 
 				ImGui::TableHeadersRow();
-				for (const auto& client : gameRoomClients_) {
+				for (const auto& client : tetrisController_->getGameRoomClients()) {
 					ImGui::TableNextRow();
 					ImGui::TableNextColumn(); ImGui::TextWithBackgroundColor(client.connectionId, getColor(client.connectionId));
 					ImGui::TableNextColumn(); ImGui::Text("%s", client.clientId.c_str());

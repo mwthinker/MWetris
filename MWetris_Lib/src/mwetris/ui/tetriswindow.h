@@ -54,10 +54,8 @@ namespace mwetris::ui {
 		void onTetrisEvent(const game::GameOver& gameOver);
 		void onTetrisEvent(const PlayerSlotEvent& playerSlotEvent);
 		void onTetrisEvent(const mwetris::GameRoomEvent& gameRoomEvent);
-		void onTetrisEvent(const network::GameRoomEvent& gameRoomEvent);
 		void onTetrisEvent(const CreateGameEvent& createGameEvent);
 		void onTetrisEvent(const network::GameRoomListEvent& gameRoomListEvent);
-		void onTetrisEvent(const network::JoinGameRoomEvent& joinGameRoomEvent);
 		void onTetrisEvent(const game::GameRoomConfigEvent& gameRoomConfigEvent);
 
 		void initPreLoop();
