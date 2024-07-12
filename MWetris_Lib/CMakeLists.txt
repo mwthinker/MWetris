@@ -75,14 +75,18 @@ set(SOURCES_LIB
 	src/mwetris/ui/scene/addplayer.h
 	src/mwetris/ui/scene/creategameroom.cpp
 	src/mwetris/ui/scene/creategameroom.h
-	src/mwetris/ui/scene/gameroomscene.cpp
-	src/mwetris/ui/scene/gameroomscene.h
+	src/mwetris/ui/scene/gameroomlobby.cpp
+	src/mwetris/ui/scene/gameroomlobby.h
 	src/mwetris/ui/scene/highscore.cpp
 	src/mwetris/ui/scene/highscore.h
 	src/mwetris/ui/scene/joingameroom.cpp
 	src/mwetris/ui/scene/joingameroom.h
 	src/mwetris/ui/scene/newhighscore.cpp
 	src/mwetris/ui/scene/newhighscore.h
+	src/mwetris/ui/scene/play.cpp
+	src/mwetris/ui/scene/play.h
+	src/mwetris/ui/scene/resume.cpp
+	src/mwetris/ui/scene/resume.h
 	src/mwetris/ui/scene/scene.h
 	src/mwetris/ui/scene/settings.cpp
 	src/mwetris/ui/scene/settings.h

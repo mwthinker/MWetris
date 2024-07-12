@@ -35,8 +35,9 @@ namespace mwetris {
 	}
 		
 
-	TetrisController::TetrisController(std::shared_ptr<network::Network> network, std::shared_ptr<graphic::GameComponent> gameComponent)
-		: network_{network}
+	TetrisController::TetrisController(std::shared_ptr<game::DeviceManager> deviceManager, std::shared_ptr<network::Network> network, std::shared_ptr<graphic::GameComponent> gameComponent)
+		: deviceManager_{deviceManager}
+		, network_{network}
 		, gameComponent_{gameComponent} {
 
 		connections_ += network_->networkEvent.connect([this](const network::NetworkEvent& networkEvent) {
@@ -66,7 +67,7 @@ namespace mwetris {
 	}
 
 	void TetrisController::onNetworkEvent(const network::JoinGameRoomEvent& joinGameRoomEvent) {
-		setGameRoomType(GameRoomType::NetworkInsideGameRoom);
+		setGameRoomType(GameRoomType::NetworkGameRoomLooby);
 	}
 
 	void TetrisController::onNetworkEvent(const network::PauseEvent& pauseEvent) {
@@ -74,11 +75,13 @@ namespace mwetris {
 	}
 
 	void TetrisController::onNetworkEvent(const network::CreateGameEvent& createGameEvent) {
+		gameRoomType_ = GameRoomType::GameSession;
 		createGame(createGameEvent.players, createGameEvent.gameRulesConfig);
 	}
 
 	void TetrisController::onNetworkEvent(const network::LeaveGameRoomEvent& leaveGameRoomEvent) {
-		setGameRoomType(GameRoomType::OutsideGameRoom);
+		gameRoomType_ = GameRoomType::OutsideGameRoom;
+		//createDefaultGame(deviceManager_->getDefaultDevice1());
 	}
 
 	void TetrisController::onNetworkEvent(const network::ClientDisconnectedEvent& clientDisconnectedEvent) {
@@ -119,6 +122,7 @@ namespace mwetris {
 		connections_ += player->playerBoardUpdate.connect([](const game::PlayerBoardEvent& playerBoardEvent) {
 			game::clearSavedGame();
 		});
+		gameRoomType_ = GameRoomType::GameSession;
 		createGame({player}, game::DefaultGameRules::Config{});
 		saveDefaultGame();
 	}
@@ -132,6 +136,7 @@ namespace mwetris {
 			spdlog::debug("[TetrisController] Leaving game room before starting local game.");
 			network_->leaveGameRoom();
 		}
+		gameRoomType_ = GameRoomType::GameSession;
 		createGame(players, gameRulesConfig);
 		saveDefaultGame();
 	}
@@ -174,18 +179,12 @@ namespace mwetris {
 		return network_->getGameRoomId().c_str();
 	}
 
-	bool TetrisController::isInsideGameRoom() const {
-		switch (gameRoomType_) {
-			case GameRoomType::LocalInsideGameRoom: return true;
-			case GameRoomType::OutsideGameRoom: return false;
-			case GameRoomType::NetworkWaitingCreateGameRoom: return false;
-			case GameRoomType::NetworkInsideGameRoom: return true;
-		}
-		return false;
+	bool TetrisController::isGameRoomSession() const {
+		return network_->isInsideGameRoom() || gameRoomType_ == GameRoomType::LocalGameRoomLooby;
 	}
 
 	void TetrisController::createLocalGameRoom() {
-		setGameRoomType(GameRoomType::LocalInsideGameRoom);
+		setGameRoomType(GameRoomType::LocalGameRoomLooby);
 	}
 
 	void TetrisController::createNetworkGameRoom(const std::string& name, bool isPublic) {
@@ -242,7 +241,7 @@ namespace mwetris {
 	}
 
 	void TetrisController::setGameRoomType(GameRoomType gameRoomType) {
-		if (gameRoomType != GameRoomType::NetworkInsideGameRoom) {
+		if (gameRoomType != GameRoomType::NetworkGameRoomLooby) {
 			gameRoomClients_.clear();
 		}
 
@@ -258,7 +257,7 @@ namespace mwetris {
 		tetrisGame_.createGame(players);
 		gameComponent_->initGame(players);
 		rules_->createGame(players);
-		tetrisEvent(CreateGameEvent{});
+		setGameRoomType(gameRoomType_);
 	}
 
 	bool TetrisController::isDefaultGame() const {

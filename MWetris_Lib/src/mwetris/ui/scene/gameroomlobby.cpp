@@ -1,4 +1,4 @@
-#include "gameroomscene.h"
+#include "gameroomlobby.h"
 #include "addplayer.h"
 #include "util.h"
 #include "tetriscontroller.h"
@@ -72,7 +72,7 @@ namespace mwetris::ui::scene {
 
 	}
 
-	GameRoomScene::GameRoomScene(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager)
+	GameRoomLooby::GameRoomLooby(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager)
 		: tetrisController_{tetrisController} {
 
 		for (int i = 0; i < 4; ++i) {
@@ -92,11 +92,11 @@ namespace mwetris::ui::scene {
 		}, deviceManager);
 	}
 
-	void GameRoomScene::onPlayerSlotEvent(const PlayerSlotEvent& playerSlotEvent) {
+	void GameRoomLooby::onPlayerSlotEvent(const PlayerSlotEvent& playerSlotEvent) {
 		playerSlots_[playerSlotEvent.slot] = playerSlotEvent.playerSlot;
 	}
 
-	void GameRoomScene::imGuiUpdate(const DeltaTime& deltaTime) {
+	void GameRoomLooby::imGuiUpdate(const DeltaTime& deltaTime) {
 		float width = ImGui::GetWindowWidth();
 
 		if (playerSlots_.size() > 1) {
@@ -143,7 +143,7 @@ namespace mwetris::ui::scene {
 						data.index = i;
 						data.usedDevices = getUsedDevices(playerSlots_);
 						addPlayer_->switchedTo(data);
-						
+
 						ImGui::OpenPopup(PopUpId);
 						ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, {0.5f, 0.5f});
 						auto size = addPlayer_->getSize();
@@ -172,7 +172,7 @@ namespace mwetris::ui::scene {
 					ImGui::TableNextColumn(); ImGui::Text("%s", client.clientId.c_str());
 				}
 			});
-			
+
 			static int gameRulesConfigIndex = 0;
 			if (ImGui::RadioButton("Default Game rules", &gameRulesConfigIndex, 0)) {
 				gameRulesConfig_ = game::DefaultGameRules::Config{};
@@ -183,7 +183,7 @@ namespace mwetris::ui::scene {
 			std::visit([&](auto&& config) mutable {
 				imGuiGameRulesConfigUpdate(config);
 			}, gameRulesConfig_);
-			
+
 			if (!ImGui::PopupModal(PopUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
 				auto pos = ImGui::GetCursorScreenPos();
 				auto size = ImVec2{60.f, 30.f};
@@ -196,12 +196,12 @@ namespace mwetris::ui::scene {
 
 				addPlayer_->imGuiUpdate(deltaTime);
 			})) {
-				
+
 			}
 
 			ImGui::PopID();
 		}
-		if (gameRoomSceneData_.type == GameRoomSceneData::Type::Network) {
+		if (gameRoomSceneData_.type == GameRoomLoobyData::Type::Network) {
 			gameRoomId_ = tetrisController_->getGameRoomId();
 			if (!gameRoomId_.empty()) {
 				ImGui::SetCursorPosY(250);
@@ -220,7 +220,7 @@ namespace mwetris::ui::scene {
 		ImGui::SetCursorPosY(y);
 
 		if (ImGui::ConfirmationButton("Create Game", {width, height})) {
-			if (!gameRoomId_.empty() && gameRoomSceneData_.type == GameRoomSceneData::Type::Network) {
+			if (!gameRoomId_.empty() && gameRoomSceneData_.type == GameRoomLoobyData::Type::Network) {
 				spdlog::info("[CreateGame] Starting network game.");
 				tetrisController_->startNetworkGame(gameRulesConfig_, game::TetrisWidth, game::TetrisHeight);
 			} else {
@@ -231,10 +231,10 @@ namespace mwetris::ui::scene {
 		ImGui::EndDisabled();
 	}
 
-	void GameRoomScene::switchedTo(const SceneData& sceneData) {
+	void GameRoomLooby::switchedTo(const SceneData& sceneData) {
 		gameRulesConfig_ = game::DefaultGameRules::Config{};
 		try {
-			gameRoomSceneData_ = dynamic_cast<const GameRoomSceneData&>(sceneData);
+			gameRoomSceneData_ = dynamic_cast<const GameRoomLoobyData&>(sceneData);
 		} catch (const std::bad_cast& exp) {
 			gameRoomSceneData_ = {};
 			spdlog::error("Bug, should be type CreateGameData: {}", exp.what());
@@ -242,7 +242,7 @@ namespace mwetris::ui::scene {
 		reset(playerSlots_);
 	}
 
-	void GameRoomScene::switchedFrom() {
+	void GameRoomLooby::switchedFrom() {
 	}
 
 }

@@ -9,6 +9,7 @@
 #include "game/tetrisgameevent.h"
 #include "game/tetrisgame.h"
 #include "game/tetrisgameevent.h"
+#include "game/devicemanager.h"
 
 #include <spdlog/spdlog.h>
 
@@ -43,9 +44,10 @@ namespace mwetris {
 
 	enum class GameRoomType {
 		OutsideGameRoom,
-		LocalInsideGameRoom,
+		GameSession,
+		LocalGameRoomLooby,
 		NetworkWaitingCreateGameRoom,
-		NetworkInsideGameRoom
+		NetworkGameRoomLooby
 	};
 	
 	struct GameRoomEvent {
@@ -55,20 +57,18 @@ namespace mwetris {
 	struct CreateGameEvent {
 	};
 
-	using TetrisEvent = std::variant<game::GamePause, game::GameOver, game::GameRoomConfigEvent, PlayerSlotEvent, GameRoomEvent, CreateGameEvent, network::GameRoomListEvent>;
+	using TetrisEvent = std::variant<game::GamePause, game::GameOver, game::GameRoomConfigEvent, PlayerSlotEvent, GameRoomEvent, network::GameRoomListEvent>;
 
 	class TetrisController {
 	public:
 		mw::PublicSignal<TetrisController, const TetrisEvent&> tetrisEvent;
 
-		TetrisController(std::shared_ptr<network::Network> network, std::shared_ptr<graphic::GameComponent> gameComponent);
+		TetrisController(std::shared_ptr<game::DeviceManager> deviceManager, std::shared_ptr<network::Network> network, std::shared_ptr<graphic::GameComponent> gameComponent);
 
 		// Updates everything. Should be called each frame.
 		void update(double deltaTime);
 
 		void draw(int width, int height, double deltaTime);
-
-		void createDefaultGame(game::DevicePtr device);
 
 		void startNetworkGame(const game::GameRulesConfig& gameRulesConfig, int w, int h);
 
@@ -85,8 +85,9 @@ namespace mwetris {
 
 		const char* getGameRoomId() const;
 
-		bool isInsideGameRoom() const;
+		bool isGameRoomSession() const;
 
+		void createDefaultGame(game::DevicePtr device);
 		void createLocalGameRoom();
 		void createNetworkGameRoom(const std::string& name, bool isPublic);
 
@@ -125,6 +126,7 @@ namespace mwetris {
 		void setGameRoomType(GameRoomType gameRoomType);
 
 		mw::signals::ScopedConnections connections_;
+		std::shared_ptr<game::DeviceManager> deviceManager_;
 		std::unique_ptr<game::GameRules> rules_;
 		std::shared_ptr<network::Network> network_;
 		game::TetrisGame tetrisGame_;

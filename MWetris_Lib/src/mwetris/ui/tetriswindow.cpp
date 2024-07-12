@@ -10,8 +10,10 @@
 #include "scene/highscore.h"
 #include "scene/newhighscore.h"
 #include "scene/addplayer.h"
+#include "scene/resume.h"
+#include "scene/play.h"
 #include "scene/joingameroom.h"
-#include "scene/gameroomscene.h"
+#include "scene/gameroomlobby.h"
 #include "game/serialize.h"
 #include "game/tetrisgame.h"
 #include "graphic/gamecomponent.h"
@@ -57,10 +59,6 @@ namespace mwetris::ui {
 		int acceptNameInput(ImGuiInputTextCallbackData* data) {
 			return data->BufTextLen < 30;
 		}
-		
-		constexpr double toSeconds(const auto& duration) {
-			return std::chrono::duration<double>(duration).count();
-		}
 
 		void MainWindow(const SubWindow& subWindow, std::invocable auto&& t) {
 			if (subWindow.getType() == TetrisWindow::Type::MainWindow) {
@@ -81,7 +79,7 @@ namespace mwetris::ui {
 		, windowName_{windowName}
 		, modalStateMachine_{ui::scene::StateMachine::StateType::Modal} {
 
-		tetrisController_ = std::make_shared<TetrisController>(network, std::make_shared<graphic::GameComponent>());
+		tetrisController_ = std::make_shared<TetrisController>(deviceManager_, network, std::make_shared<graphic::GameComponent>());
 
 		connections_ += deviceManager_->deviceConnected.connect([](game::DevicePtr device) {
 			spdlog::info("Device found: {}", device->getName());
@@ -118,7 +116,9 @@ namespace mwetris::ui {
 		Configuration::getInstance().bindTextureFromAtlas();
 		background_ = Configuration::getInstance().getBackgroundSprite();
 
-		mainStateMachine_.emplace<scene::GameRoomScene>(tetrisController_, deviceManager_);
+		mainStateMachine_.emplace<scene::GameRoomLooby>(tetrisController_, deviceManager_);
+		mainStateMachine_.emplace<scene::Resume>(tetrisController_, deviceManager_);
+		mainStateMachine_.emplace<scene::Play>(tetrisController_);
 		
 		modalStateMachine_.emplace<scene::JoinGameRoom>(tetrisController_);
 		modalStateMachine_.emplace<scene::CreateGameRoom>(tetrisController_);
@@ -173,32 +173,29 @@ namespace mwetris::ui {
 	}
 
 	void TetrisWindow::onTetrisEvent(const mwetris::GameRoomEvent& createGameRoomEvent) {
-		ImGui::CloseCurrentPopup();
-		scene::GameRoomSceneData data;
+		scene::GameRoomLoobyData data;
 		switch (createGameRoomEvent.type) {
-			case GameRoomType::LocalInsideGameRoom:
-				data.type = scene::GameRoomSceneData::Type::Network;
+			case GameRoomType::LocalGameRoomLooby:
+				data.type = scene::GameRoomLoobyData::Type::Network;
 				modalStateMachine_.switchTo<scene::EmptyScene>();
-				mainStateMachine_.switchTo<scene::GameRoomScene>(data);
+				mainStateMachine_.switchTo<scene::GameRoomLooby>(data);
 				break;
-			case GameRoomType::NetworkInsideGameRoom:
-				data.type = scene::GameRoomSceneData::Type::Network;
+			case GameRoomType::NetworkGameRoomLooby:
+				data.type = scene::GameRoomLoobyData::Type::Network;
 				modalStateMachine_.switchTo<scene::EmptyScene>();
-				mainStateMachine_.switchTo<scene::GameRoomScene>(data);
+				mainStateMachine_.switchTo<scene::GameRoomLooby>(data);
 				break;
 			case GameRoomType::OutsideGameRoom:
 				modalStateMachine_.switchTo<scene::EmptyScene>();
-				mainStateMachine_.switchTo<scene::EmptyScene>();
-				tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
+				mainStateMachine_.switchTo<scene::Resume>();
+				break;
+			case GameRoomType::GameSession:
+				modalStateMachine_.switchTo<scene::EmptyScene>();
+				mainStateMachine_.switchTo<scene::Play>();
 				break;
 			case GameRoomType::NetworkWaitingCreateGameRoom:
 				break;
 		}
-	}
-
-	void TetrisWindow::onTetrisEvent(const CreateGameEvent& createGameEvent) {
-		modalStateMachine_.switchTo<scene::EmptyScene>();
-		mainStateMachine_.switchTo<scene::EmptyScene>();
 	}
 
 	void TetrisWindow::onTetrisEvent(const network::GameRoomListEvent& gameRoomListEvent) {
@@ -230,11 +227,10 @@ namespace mwetris::ui {
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 10.f);
 			ImGui::MenuBar([&]() {
 				ImGui::Menu("Game", [&]() {
-					bool insideGameRoom = tetrisController_->isInsideGameRoom();
+					bool insideGameRoom = tetrisController_->isGameRoomSession();
 
 					ImGui::BeginDisabled(insideGameRoom);
 					if (ImGui::MenuItem(game::hasSavedGame() ? "Resume Single Player" : "New Single Player", "F1")) {
-						mainStateMachine_.switchTo<scene::EmptyScene>();
 						tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
 					}
 					ImGui::Separator();
@@ -280,16 +276,8 @@ namespace mwetris::ui {
 				});
 			});
 			ImGui::PopStyleVar(2);
-
-			auto h = ImGui::GetCursorPosY();
-			auto lowerBar = mainStateMachine_.isCurrentScene<scene::GameRoomScene>() ? 100 : 0;
-			auto size = ImGui::GetWindowSize();
 			
-			if (!mainStateMachine_.isCurrentScene<scene::EmptyScene>()) {
-				mainStateMachine_.imGuiUpdate(deltaTime);
-			} else {
-				tetrisController_->draw(size.x, size.y - h - lowerBar, toSeconds(deltaTime));
-			}
+			mainStateMachine_.imGuiUpdate(deltaTime);
 		});
 	}
 
