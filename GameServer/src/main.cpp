@@ -1,4 +1,4 @@
-#include <server_to_client.pb.h>
+#include <protocol/server_to_client.pb.h>
 
 #include <functional>
 #include <string>

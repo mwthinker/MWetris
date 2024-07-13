@@ -101,6 +101,7 @@ set(SOURCES_LIB
 	src/mwetris/ui/tetriswindow.cpp
 	src/mwetris/ui/tetriswindow.h
 
+	src/mwetris/util/auxiliary.h
 	src/mwetris/util/protofile.h
 	src/mwetris/util/uuid.cpp
 	src/mwetris/util/uuid.h
@@ -112,7 +113,6 @@ set(SOURCES_LIB
 	src/mwetris/timerhandler.cpp
 	src/mwetris/timerhandler.h
 	src/mwetris/types.h
-	src/mwetris/util.h
 )
 
 find_package(Threads REQUIRED)

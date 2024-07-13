@@ -1,12 +1,12 @@
 #include "gameroomlobby.h"
 #include "addplayer.h"
-#include "util.h"
 #include "tetriscontroller.h"
 
 #include "game/devicemanager.h"
 #include "game/tetrisgame.h"
 #include "network/network.h"
 #include "ui/imguiextra.h"
+#include "util/auxiliary.h"
 
 #include <sdl/color.h>
 
@@ -154,7 +154,7 @@ namespace mwetris::ui::scene {
 						}
 					}
 				} else {
-					static_assert(always_false_v<T>, "non-exhaustive visitor!");
+					static_assert(util::always_false_v<T>, "non-exhaustive visitor!");
 				}
 			}, playerSlot);
 			ImGui::EndGroup();

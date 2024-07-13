@@ -1,5 +1,5 @@
 #include "play.h"
-#include "util.h"
+#include "util/auxiliary.h"
 
 namespace mwetris::ui::scene {
 
@@ -11,7 +11,7 @@ namespace mwetris::ui::scene {
 		auto h = ImGui::GetCursorPosY();
 		auto size = ImGui::GetWindowSize();
 		
-		tetrisController_->draw(size.x, size.y - h, toSeconds(deltaTime));
+		tetrisController_->draw(size.x, size.y - h, util::toSeconds(deltaTime));
 	}
 
 }

@@ -1,14 +1,13 @@
 #include "creategameroom.h"
 #include "addplayer.h"
 #include "tetriscontroller.h"
-#include "util.h"
 
 #include "game/devicemanager.h"
 #include "game/playerslot.h"
 #include "game/tetrisgame.h"
 #include "network/network.h"
 #include "ui/imguiextra.h"
-#include "tetriscontroller.h"
+#include "util/auxiliary.h"
 
 #include <array>
 #include <string>

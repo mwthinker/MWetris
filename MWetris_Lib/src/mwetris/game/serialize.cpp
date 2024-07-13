@@ -1,10 +1,11 @@
 #include "serialize.h"
-
 #include "tetrisgame.h"
-#include "util/protofile.h"
 #include "player.h"
 
-#include <shared.pb.h>
+#include "util/protofile.h"
+
+#include <protocol/shared.pb.h>
+
 #include <spdlog/spdlog.h>
 
 #include <concepts>

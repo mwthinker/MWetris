@@ -1,9 +1,8 @@
 #include "networkdebugwindow.h"
-#include "util.h"
-
-#include "network/debugclient.h"
 
 #include "graphic/gamecomponent.h"
+#include "network/debugclient.h"
+#include "util/auxiliary.h"
 
 namespace mwetris::ui {
 

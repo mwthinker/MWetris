@@ -2,7 +2,6 @@
 #include "tetriscontroller.h"
 #include "imguiextra.h"
 #include "configuration.h"
-#include "util.h"
 
 #include "scene/about.h"
 #include "scene/creategameroom.h"
@@ -19,6 +18,7 @@
 #include "graphic/gamecomponent.h"
 #include "network/client.h"
 #include "network/network.h"
+#include "util/auxiliary.h"
 
 #include <sdl/imguiauxiliary.h>
 
@@ -139,7 +139,7 @@ namespace mwetris::ui {
 		tetrisController_->setFixTimestep(1.0 / getCurrentMonitorHz());
 		timeHandler_.scheduleRepeat([this]() {
 			tetrisController_->setFixTimestep(1.0 / getCurrentMonitorHz());
-		}, toSeconds(CheckRefreshRateInterval), std::numeric_limits<int>::max());
+		}, util::toSeconds(CheckRefreshRateInterval), std::numeric_limits<int>::max());
 
 		startNewGame();
 	}
@@ -207,7 +207,7 @@ namespace mwetris::ui {
 	}
 
 	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
-		auto deltaTimeSeconds = toSeconds(deltaTime);
+		auto deltaTimeSeconds = util::toSeconds(deltaTime);
 		tetrisController_->update(deltaTimeSeconds);
 		timeHandler_.update(deltaTimeSeconds);
 

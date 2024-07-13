@@ -1,5 +1,5 @@
 #include "util.h"
-#include "shared.pb.h"
+#include "protocol/shared.pb.h"
 
 namespace tp {
 	

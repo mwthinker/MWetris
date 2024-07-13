@@ -6,9 +6,8 @@
 #include "id.h"
 
 #include <tetris/helper.h>
-
-#include <server_to_client.pb.h>
-#include <client_to_server.pb.h>
+#include <protocol/server_to_client.pb.h>
+#include <protocol/client_to_server.pb.h>
 
 #include <spdlog/spdlog.h>
 

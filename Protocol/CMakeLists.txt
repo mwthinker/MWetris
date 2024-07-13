@@ -14,7 +14,10 @@ set(PROTO_FILES
 	"shared.proto"
 )
 
-protobuf_generate_cpp(PROTO_SRC PROTO_HDRS ${PROTO_FILES})
+protobuf_generate_cpp(
+	PROTO_SRC PROTO_HDRS ${PROTO_FILES}
+	PROTOC_OUT_DIR src/protocol
+)
 add_library(Protocol ${PROTO_UTIL} ${PROTO_HDRS} ${PROTO_SRC} ${PROTO_FILES})
 if (MSVC)
 	target_compile_options(Protocol
@@ -27,7 +30,7 @@ endif ()
 
 target_include_directories(Protocol
 	PUBLIC
-		${CMAKE_CURRENT_BINARY_DIR}
+		${CMAKE_CURRENT_BINARY_DIR}/src
 )
 
 target_link_libraries(Protocol

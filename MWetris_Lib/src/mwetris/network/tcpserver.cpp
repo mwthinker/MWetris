@@ -1,16 +1,15 @@
 #include "tcpserver.h"
 #include "protobufmessagequeue.h"
-#include "util.h"
 
 #include "game/player.h"
+#include "util/auxiliary.h"
 
 #include <tetris/helper.h>
 
 #include <spdlog/spdlog.h>
+#include <asio/error.hpp>
 
 #include <queue>
-
-#include <asio/error.hpp>
 
 namespace mwetris::network {
 

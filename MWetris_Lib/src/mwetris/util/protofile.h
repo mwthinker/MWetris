@@ -1,5 +1,5 @@
-#ifndef MWETRIS_PROTOFILE_H
-#define MWETRIS_PROTOFILE_H
+#ifndef MWETRIS_UTIL_PROTOFILE_H
+#define MWETRIS_UTIL_PROTOFILE_H
 
 #include <google/protobuf/util/time_util.h>
 #ifdef GetCurrentTime

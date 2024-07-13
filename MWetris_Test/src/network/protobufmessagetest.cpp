@@ -5,9 +5,9 @@
 
 #include <mwetris/network/protobufmessage.h>
 
-#include <shared.pb.h>
-#include <client_to_server.pb.h>
-#include <server_to_client.pb.h>
+#include <protocol/shared.pb.h>
+#include <protocol/client_to_server.pb.h>
+#include <protocol/server_to_client.pb.h>
 
 #include <algorithm>
 

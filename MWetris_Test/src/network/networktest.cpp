@@ -9,9 +9,10 @@
 #include <mwetris/network/debugclient.h>
 #include <mwetris/network/debugserver.h>
 
-#include <shared.pb.h>
-#include <client_to_server.pb.h>
-#include <server_to_client.pb.h>
+#include <protocol/shared.pb.h>
+#include <protocol/client_to_server.pb.h>
+#include <protocol/server_to_client.pb.h>
+
 #include <asio.hpp>
 
 using namespace ::testing;

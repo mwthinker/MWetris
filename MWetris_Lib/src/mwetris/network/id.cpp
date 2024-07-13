@@ -1,7 +1,8 @@
 #include "id.h"
 
 #include "util/uuid.h"
-#include "shared.pb.h"
+
+#include <protocol/shared.pb.h>
 
 namespace mwetris::network {
 

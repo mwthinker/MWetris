@@ -1,7 +1,7 @@
 #include "serializehighscore.h"
 #include "util/protofile.h"
 
-#include <high_score.pb.h>
+#include <protocol/high_score.pb.h>
 #include <spdlog/spdlog.h>
 
 #include <concepts>

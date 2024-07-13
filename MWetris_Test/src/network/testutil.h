@@ -7,8 +7,8 @@
 #include <mwetris/network/network.h>
 #include <mwetris/network/networkevent.h>
 
-#include <client_to_server.pb.h>
-#include <server_to_client.pb.h>
+#include <protocol/client_to_server.pb.h>
+#include <protocol/server_to_client.pb.h>
 
 #include <asio.hpp>
 

@@ -3,7 +3,7 @@
 	"version-string": "0.1.0",
 	"port-version": 0,
 	"homepage": "https://github.com/mwthinker/MWetris",
-	"description": "Simpe Tetris like game",
+	"description": "Simple Tetris like game",
 	"license": "MIT",
 	"dependencies": [
 		"sdl2-image",
@@ -19,7 +19,6 @@
 		"protobuf",
 		"nlohmann-json",
 		"asio",
-		"magic-enum",
 		"freetype",
 		"argparse"
 	]

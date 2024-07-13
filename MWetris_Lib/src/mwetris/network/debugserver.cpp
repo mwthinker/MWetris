@@ -1,18 +1,18 @@
 #include "debugserver.h"
 #include "debugclient.h"
 #include "protobufmessagequeue.h"
-#include "util.h"
-#include "util/uuid.h"
 #include "gameroom.h"
 #include "server.h"
-#include "util/uuid.h"
 #include "id.h"
 #include "tcpclient.h"
 
-#include <tetris/helper.h>
+#include "util/auxiliary.h"
+#include "util/uuid.h"
+#include "util/uuid.h"
 
-#include <server_to_client.pb.h>
-#include <client_to_server.pb.h>
+#include <tetris/helper.h>
+#include <protocol/server_to_client.pb.h>
+#include <protocol/client_to_server.pb.h>
 
 #include <spdlog/spdlog.h>
 #include <asio.hpp>

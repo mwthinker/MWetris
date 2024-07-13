@@ -1,13 +1,13 @@
 #include "network.h"
 #include "client.h"
 #include "protobufmessagequeue.h"
-#include "util.h"
 
 #include "game/playerslot.h"
+#include "util/auxiliary.h"
 
-#include <shared.pb.h>
-#include <client_to_server.pb.h>
-#include <server_to_client.pb.h>
+#include <protocol/shared.pb.h>
+#include <protocol/client_to_server.pb.h>
+#include <protocol/server_to_client.pb.h>
 
 #include <tetris/random.h>
 #include <tetris/helper.h>
@@ -45,7 +45,7 @@ namespace mwetris::network {
 					tpGameRules.mutable_survival_game_rules()->set_start_level(1);
 					tpGameRules.mutable_survival_game_rules()->set_max_level(10);
 				} else {
-					static_assert(always_false_v<T>, "non-exhaustive visitor!");
+					static_assert(util::always_false_v<T>, "non-exhaustive visitor!");
 				}
 			}, gameRoomConfig);
 		}

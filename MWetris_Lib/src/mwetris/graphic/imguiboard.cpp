@@ -1,11 +1,11 @@
 #include "imguiboard.h"
 #include "configuration.h"
-#include "game/player.h"
 #include "configuration.h"
-#include "util.h"
+
+#include "game/player.h"
+#include "util/auxiliary.h"
 
 #include <tetris/tetrisboard.h>
-
 #include <sdl/imguiauxiliary.h>
 
 #include <spdlog/spdlog.h>
@@ -270,7 +270,7 @@ namespace mwetris::graphic {
 					} else if constexpr (std::is_same_v<T, game::SurvivalPlayerData>) {
 						ImGui::Text("%s: %d", "OpponentRows", playerData.opponentRows);
 					} else {
-						static_assert(always_false_v<T>, "non-exhaustive visitor!");
+						static_assert(util::always_false_v<T>, "non-exhaustive visitor!");
 					}
 				}, player_->getPlayerData());
 				ImGui::Text("%s: %d", "Rows", player_->getClearedRows());
