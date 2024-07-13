@@ -33,7 +33,13 @@
                 "type": "equals",
                 "lhs": "${hostSystemName}",
                 "rhs": "Windows"
-            }
+            },
+            "cacheVariables": {
+                "X_VCPKG_APPLOCAL_DEPS_INSTALL": {
+                    "value": "true",
+                    "type": "BOOL"
+                }
+            },
         },
         {
             "name": "unix",
