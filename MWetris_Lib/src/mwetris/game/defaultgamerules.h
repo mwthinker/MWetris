@@ -14,7 +14,7 @@
 
 namespace mwetris::game {
 
-	constexpr int LevelUpNbr = 1;
+	constexpr int LevelUpNbr = 10;
 
 	inline double calculateGravity(int level) {
 		return 1 + level * 0.5f;
@@ -24,19 +24,14 @@ namespace mwetris::game {
 	public:
 		struct Config {};
 
-		DefaultGameRules() {}
-
-		void update(double deltaTime) override {
-
-		}
-
 		void createGame(const std::vector<PlayerPtr>& players) override {
 			connections_.clear();
 			players_.clear();
 			for (auto& player : players) {
 				auto& info = players_.emplace_back(player, DefaultPlayerData{
 					.level = 1,
-					.points = 0
+					.points = 0,
+					.position = 0
 				});
 				info.player->updatePlayerData(info.data);
 				info.player->setGravity(calculateGravity(info.data.level));
@@ -58,7 +53,8 @@ namespace mwetris::game {
 			for (auto& info : players_) {
 				info.data = DefaultPlayerData{
 					.level = 1,
-					.points = 0
+					.points = 0,
+					.position = 0
 				};
 				info.player->updatePlayerData(info.data);
 				info.player->setGravity(calculateGravity(info.data.level));
@@ -72,13 +68,48 @@ namespace mwetris::game {
 		};
 
 		void updateGameBoardEvent(tetris::BoardEvent gameEvent, int value, Info& info) {
-			if (info.player->isLocal() && gameEvent == tetris::BoardEvent::RowsRemoved) {
+			switch (gameEvent) {
+				case tetris::BoardEvent::RowsRemoved:
+					rowsRemove(info.player, value, info);
+					break;
+				case tetris::BoardEvent::GameOver:
+					gameOver(info.player);
+					break;
+			}
+		}
+
+		void rowsRemove(const PlayerPtr& fromPlayer, int nbr, Info& info) {
+			if (info.player->isLocal()) {
 				spdlog::info("[DefaultGameRules] Game event player: {}", static_cast<char>(info.player->getNextBlockType()));
 				info.data.level = info.player->getClearedRows() / LevelUpNbr + 1;
-				info.data.points += info.data.level * value * value;
+				info.data.points += info.data.level * nbr * nbr;
 
 				info.player->updatePlayerData(info.data);
 				info.player->setGravity(calculateGravity(info.data.level));
+			}
+
+		}
+
+		void gameOver(const PlayerPtr& player) {
+			int nbr = static_cast<int>(players_.size());
+			for (auto& info : players_) {
+				if (info.player->isGameOver()) {
+					--nbr;
+				}
+			}
+
+			if (players_.size() > 1) {
+				for (auto& info : players_) {
+					if (nbr == 1 && !info.player->isGameOver() && info.player->isLocal()) {
+						info.player->updateMove(tetris::Move::GameOver);
+						info.data.position = 1;
+						info.player->updatePlayerData(info.data);
+					}
+					if (info.player == player) {
+						info.data.position = nbr + 1;
+						info.player->updatePlayerData(info.data);
+					}
+				}
 			}
 		}
 
@@ -89,10 +120,6 @@ namespace mwetris::game {
 	class SurvivalGameRules : public GameRules {
 	public:
 		struct Config {};
-
-		SurvivalGameRules() {}
-
-		void update(double timeStep) override {}
 
 		void createGame(const std::vector<PlayerPtr>& players) override {
 			connections_.clear();
@@ -118,7 +145,8 @@ namespace mwetris::game {
 		void restart() override {
 			for (auto& info : players_) {
 				info.data = SurvivalPlayerData{
-					.opponentRows = 0
+					.opponentRows = 0,
+					.position = 0
 				};
 				info.player->updatePlayerData(info.data);
 			}
@@ -129,6 +157,9 @@ namespace mwetris::game {
 			switch (gameEvent) {
 				case tetris::BoardEvent::RowsRemoved:
 					rowsRemove(player, value);
+					break;
+				case tetris::BoardEvent::GameOver:
+					gameOver(player);
 					break;
 			}
 		}
@@ -142,7 +173,7 @@ namespace mwetris::game {
 				} else if (info.player->isLocal()) {
 					info.data.opponentRows += nbr;
 					info.player->updatePlayerData(info.data);
-					if (nbr == 1 && !info.player->isGameOver()) {
+					if (nbr == 4 && !info.player->isGameOver()) {
 						addExternalRows(*info.player, 2);
 					}
 				}
@@ -153,6 +184,29 @@ namespace mwetris::game {
 			for (int i = 0; i < rows; ++i) {
 				auto blockTypes = tetris::generateRow(player.getColumns(), 2);
 				player.addExternalRows(blockTypes);
+			}
+		}
+
+		void gameOver(const PlayerPtr& player) {
+			int nbr = static_cast<int>(players_.size());
+			for (auto& info : players_) {
+				if (info.player->isGameOver()) {
+					--nbr;
+				}
+			}
+
+			if (players_.size() > 1) {
+				for (auto& info : players_) {
+					if (nbr == 1 && !info.player->isGameOver() && info.player->isLocal()) {
+						info.player->updateMove(tetris::Move::GameOver);
+						info.data.position = 1;
+						info.player->updatePlayerData(info.data);
+					}
+					if (info.player == player) {
+						info.data.position = nbr + 1;
+						info.player->updatePlayerData(info.data);
+					}
+				}
 			}
 		}
 

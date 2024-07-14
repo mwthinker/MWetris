@@ -11,10 +11,12 @@ namespace mwetris::game {
 	struct DefaultPlayerData {
 		int level;
 		int points;
+		int position;
 	};
 
 	struct SurvivalPlayerData {
 		int opponentRows;
+		int position;
 	};
 
 	using PlayerData = std::variant<DefaultPlayerData, SurvivalPlayerData>;

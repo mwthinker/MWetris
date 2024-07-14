@@ -11,8 +11,6 @@ namespace mwetris::game {
 	public:
 		virtual ~GameRules() = default;
 
-		virtual void update(double deltaTime) = 0;
-
 		virtual void restart() = 0;
 
 		virtual void createGame(const std::vector<PlayerPtr>& players) = 0;

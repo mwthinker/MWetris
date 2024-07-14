@@ -18,23 +18,6 @@
 
 namespace mwetris::graphic {
 
-	namespace {
-
-		std::string gamePosition(int position) {
-			switch (position) {
-				case 1:
-					return fmt::format("{}:st place!", position);
-				case 2:
-					return fmt::format("{}:nd place!", position);
-				case 3:
-					return fmt::format("{}:rd place!", position);
-				default:
-					return fmt::format("{}:th place!", position);
-			}
-		}
-
-	}
-
 	GameComponent::GameComponent() {}
 
 	GameComponent::~GameComponent() {}
@@ -52,8 +35,6 @@ namespace mwetris::graphic {
 		if (imguiBoards_.size() > 1) {
 			width = windowWidth / imguiBoards_.size();
 		}
-
-		//ImGui::SetNextWindowSize({width, height}); // FIX! Will effect main menu size.
 
 		Vec2 pos = ImGui::GetCursorPos();
 		for (auto& imguiBoard : imguiBoards_) {

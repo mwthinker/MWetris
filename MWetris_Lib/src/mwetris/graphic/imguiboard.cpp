@@ -34,6 +34,19 @@ namespace mwetris::graphic {
 
 		constexpr float NormalizedPreviewSize = 5.f;
 
+		const char* gamePosition(int position) {
+			switch (position) {
+				case 1:
+					return "1:st place!";
+				case 2:
+					return "2:nd place!";
+				case 3:
+					return "3:rd place!";
+				default:
+					return "Game Over!";
+			}
+		}
+
 	}
 
 	ImGuiBoard::ImGuiBoard(game::PlayerPtr player)
@@ -285,15 +298,21 @@ namespace mwetris::graphic {
 			}
 
 			if (player_->isGameOver()) {
-				auto pos = ImGui::GetCursorPos();
+				auto cursorPos = ImGui::GetCursorPos();
 
-				const char* text = "Game Over";
+				int gameOverPosition = 0;
+				if (auto playerData = std::get_if<game::DefaultPlayerData>(&player_->getPlayerData())) {
+					gameOverPosition = playerData->position;
+				} else if (auto playerData = std::get_if<game::SurvivalPlayerData>(&player_->getPlayerData())) {
+					gameOverPosition = playerData->position;
+				}
+				const char* text = gamePosition(gameOverPosition);
 				Vec2 delta = ImGui::CalcTextSize(text);
 
 				ImGui::SetCursorPos(startPosition + Vec2{width * 0.5f, height * 0.5f} - delta * 0.5f);
 				ImGui::Text("%s", text);
 				
-				ImGui::SetCursorPos(pos);
+				ImGui::SetCursorPos(cursorPos);
 			}
 		});
 	}
