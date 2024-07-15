@@ -13,67 +13,17 @@ namespace mwetris::ui::scene {
 
 	namespace {
 
-		enum class Player{
-			Human,
-			Ai
-		};
-
-		struct PlayerType {
-			Player player;
-			std::string name;
-		};
-
-		const std::vector<PlayerType>& getPlayerTypes(bool onlyAi) {
-			static const std::vector<PlayerType> playerTypes = {
-				PlayerType{
-					.player = Player::Human,
-					.name = "Human"
-				},
-				PlayerType{
-					.player = Player::Ai,
-					.name = "AI"
-				}
-			};
-
-			static const std::vector<PlayerType> onlyAiType = {
-				PlayerType{
-					.player = Player::Ai,
-					.name = "AI"
-				}
-			};
-
-			if (onlyAi) {
-				return onlyAiType;
-			}
-			return playerTypes;
-		}
-
-		struct GameMode {
-			std::string name;
-		};
-
-		std::vector<GameMode> getGameModes() {
-			return {
-				GameMode{
-					.name = "Standard Game",
-				},
-				GameMode{
-					.name = "Something else",
-				}
-			};
-		}
-
 		std::vector<game::Human> getDeviceTypes(const std::vector<game::DevicePtr>& devices, const std::vector<game::DevicePtr>& excludes) {
 			std::vector<game::Human> types;
 
 			for (const auto& device : devices) {
 				if (std::find(excludes.begin(), excludes.end(), device) != excludes.end()) continue;
-				
+
 				types.emplace_back(device->getName(), device);
 			}
 			return types;
 		}
-		
+
 		std::vector<game::Human> extractHumans(const std::vector<std::string>& names, const std::vector<std::variant<game::DevicePtr, tetris::Ai>>& players) {
 			std::vector<game::Human> humans;
 			for (int i = 0; i < players.size(); ++i) {
@@ -104,7 +54,11 @@ namespace mwetris::ui::scene {
 
 	AddPlayer::AddPlayer(std::function<void(AddPlayer&)> addCallback, std::shared_ptr<game::DeviceManager> deviceManager)
 		: addCallback_{addCallback}
-		, deviceManager_{deviceManager} {
+		, deviceManager_{deviceManager}
+		, gameModesCombo_{getGameModes()}
+		, playerTypesCombo_{getPlayerTypes(allDevices_.empty())}
+		, humansCombo_{allDevices_}
+		, aisCombo_{allAis_} {
 
 		connections_ += deviceManager->deviceConnected.connect(this, &AddPlayer::deviceConnected);
 
@@ -122,24 +76,26 @@ namespace mwetris::ui::scene {
 		ImGui::PushFont(mwetris::Configuration::getInstance().getImGuiHeaderFont());
 		ImGui::Text("Add Player");
 		ImGui::PopFont();
-
-		bool onlyAi = allDevices_.empty();
-		const auto& playerTypes = getPlayerTypes(onlyAi);
-		ImGui::SetNextItemWidth(150.f);
-		auto playerType = ImGui::ComboUniqueType<PlayerType>("##Player Type", playerTypes);
 		
-		if (playerType.player == Player::Human && !onlyAi) {
+		ImGui::SetNextItemWidth(150.f);
+		playerTypesCombo_.imGuiCombo("##Player Type");
+		
+		if (playerTypesCombo_.getSelected().player == Player::Human) {
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(150.f);
-			auto result = ImGui::ComboUniqueType<game::Human>("##Players", allDevices_);
-			result.name = playerName_;
-			player_ = result;
-		} else if (playerType.player == Player::Ai) {
+			if (humansCombo_.imGuiCombo("##Players")) {
+				auto selected = humansCombo_.getSelected();
+				selected.name = playerName_;
+				player_ = selected;
+			}
+		} else if (playerTypesCombo_.getSelected().player == Player::Ai) {
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(150.f);
-			auto result = ImGui::ComboUniqueType<game::Ai>("##Players", allAis_);
-			result.name = playerName_;
-			player_ = result;
+			if (aisCombo_.imGuiCombo("##Players")) {
+				auto selected = aisCombo_.getSelected();
+				selected.name = playerName_;
+				player_ = selected;
+			}
 		}
 
 		ImGui::SameLine();
@@ -164,15 +120,63 @@ namespace mwetris::ui::scene {
 			data_ = {};
 			spdlog::error("Bug, should be type NewHighScoreData: {}", exp.what());
 		}
-		playerName_ = "Player 1";
-		player_ = game::Human{
-			.name = playerName_,
-			.device = deviceManager_->getDefaultDevice1()
-		};
+		playerName_ = fmt::format("Player {}", data_.index + 1);
 		allDevices_ = getDeviceTypes(deviceManager_->getAllDevicesAvailable(), data_.usedDevices);
+
+		playerTypesCombo_ = ImGui::ComboVector<PlayerType>{getPlayerTypes(allDevices_.empty())};
+		humansCombo_ = ImGui::ComboVector<game::Human>{allDevices_};
+		aisCombo_ = ImGui::ComboVector<game::Ai>{allAis_};
+
+		if (allDevices_.size() > 0) {
+			auto selected = humansCombo_.getSelected();
+			selected.name = playerName_;
+			player_ = selected;
+		} else if (allAis_.size() > 0) {
+			auto selected = aisCombo_.getSelected();
+			selected.name = playerName_;
+			player_ = selected;
+		}
 	}
 
 	void AddPlayer::switchedFrom() {
+	}
+
+	const std::vector<AddPlayer::PlayerType>& AddPlayer::getPlayerTypes(bool onlyAi) {
+		static const std::vector<PlayerType> playerTypes = {
+			PlayerType{
+				.player = Player::Human,
+				.name = "Human"
+			},
+			PlayerType{
+				.player = Player::Ai,
+				.name = "AI"
+			}
+		};
+
+		static const std::vector<PlayerType> onlyAiType = {
+			PlayerType{
+				.player = Player::Ai,
+				.name = "AI"
+			}
+		};
+
+		if (onlyAi) {
+			return onlyAiType;
+		}
+		return playerTypes;
+	}
+
+	const std::vector<AddPlayer::GameMode>& AddPlayer::getGameModes() {
+		static const std::vector<GameMode> gameModes = {
+			GameMode{
+				.name = "Standard Game",
+			},
+			GameMode{
+				.name = "Something else",
+			}
+		};
+
+		return gameModes;
 	}
 
 }

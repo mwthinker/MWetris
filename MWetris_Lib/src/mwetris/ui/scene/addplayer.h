@@ -52,6 +52,24 @@ namespace mwetris::ui::scene {
 		}
 	
 	private:
+		enum class Player {
+			Human,
+			Ai
+		};
+
+		struct PlayerType {
+			Player player;
+			std::string name;
+		};
+
+		struct GameMode {
+			std::string name;
+		};
+
+		static const std::vector<GameMode>& getGameModes();
+
+		static const std::vector<PlayerType>& getPlayerTypes(bool onlyAi);
+
 		void deviceConnected(game::DevicePtr device);
 
 		void switchedFrom() override;
@@ -66,6 +84,10 @@ namespace mwetris::ui::scene {
 		tetris::Ai ais_;
 		game::PlayerSlot player_;
 		AddPlayerData data_{};
+		ImGui::ComboVector<GameMode> gameModesCombo_;
+		ImGui::ComboVector<PlayerType> playerTypesCombo_;
+		ImGui::ComboVector<game::Human> humansCombo_;
+		ImGui::ComboVector<game::Ai> aisCombo_;
 
 		mw::signals::ScopedConnections connections_;
 	};

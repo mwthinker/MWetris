@@ -183,8 +183,6 @@ namespace mwetris {
 		sdl::Color getMiddleTextColor() const;
 		int getMiddleTextBoxSize() const;
 
-		//void setActiveLocalGame(int columns, int rows, const std::vector<PlayerData>& playerDataVector);
-		//std::vector<game::PlayerData> getActiveLocalGamePlayers();
 		int getActiveLocalGameRows() const;
 		int getActiveLocalGameColumns() const;
 
