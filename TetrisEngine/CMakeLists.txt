@@ -1,6 +1,8 @@
 project(TetrisEngine
 	DESCRIPTION
 		"A lib for tetris board rules and ai logic"
+	VERSION
+		${PROJECT_VERSION}
 	LANGUAGES
 		CXX
 )

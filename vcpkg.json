@@ -1,6 +1,6 @@
 {
 	"name": "mwetris",
-	"version-string": "0.1.0",
+	"version-string": "0.2.0",
 	"port-version": 0,
 	"homepage": "https://github.com/mwthinker/MWetris",
 	"description": "Simple Tetris like game",

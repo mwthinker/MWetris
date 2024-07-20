@@ -3,7 +3,7 @@ project(MWetris
 	DESCRIPTION
 		"A C++ Tetris Game"
 	VERSION
-		0.1.0
+		${PROJECT_VERSION}
 	LANGUAGES
 		CXX
 )

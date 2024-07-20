@@ -1,6 +1,8 @@
 project(GameServer
 	DESCRIPTION
 		"The MWetris GameServer"
+	VERSION
+		${PROJECT_VERSION}
 	LANGUAGES
 		CXX
 )

@@ -2,7 +2,7 @@
     "version": 5,
     "cmakeMinimumRequired": {
         "major": 3,
-        "minor": 24,
+        "minor": 29,
         "patch": 0
     },
     "configurePresets": [
@@ -17,9 +17,17 @@
             }
         },
         {
+            "name": "version",
+            "hidden": true,
+            "inherits": "vcpkg",
+            "cacheVariables": {
+              "PROJECT_VERSION": "0.2.0"
+            }
+        },
+        {
             "name": "windows",
             "generator": "Visual Studio 17 2022",
-            "inherits": "vcpkg",
+            "inherits": "version",
             "vendor": {
                     "microsoft.com/VisualStudioSettings/CMake/1.0": {
                     "hostOS": "Windows"
@@ -39,12 +47,12 @@
                     "value": "true",
                     "type": "BOOL"
                 }
-            },
+            }
         },
         {
             "name": "unix",
             "generator": "Unix Makefiles",
-            "inherits": "vcpkg",
+            "inherits": "version",
             "condition": {
                 "type": "inList",
                 "string": "${hostSystemName}",
