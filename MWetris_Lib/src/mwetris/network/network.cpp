@@ -91,6 +91,8 @@ namespace mwetris::network {
 
 		// To be able to stop the coroutine
 		running_ = false;
+
+		wrapperToServer_.Clear();
 	}
 
 	Network::~Network() {
@@ -321,6 +323,8 @@ namespace mwetris::network {
 				network->client_->release(std::move(message));
 			}
 			if (!network->running_) {
+				// Want to shut down without handling any more messages.
+				network->wrapperFromServer_.Clear();
 				break;
 			}
 		} while (!valid);
@@ -350,6 +354,7 @@ namespace mwetris::network {
 				networkPlayer.player->updateRestart(static_cast<tetris::BlockType>(requestGameRestart.current()), static_cast<tetris::BlockType>(requestGameRestart.next()));
 			}
 		}
+		networkEvent(RestartEvent{});
 	}
 
 	void Network::handleGameRestart(const tp_s2c::GameRestart& gameRestart) {

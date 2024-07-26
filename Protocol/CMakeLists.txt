@@ -14,9 +14,10 @@ set(PROTO_FILES
 	"shared.proto"
 )
 
+make_directory(${CMAKE_CURRENT_BINARY_DIR}/src/protocol/) # Is needed for unix systems
 protobuf_generate_cpp(
 	PROTO_SRC PROTO_HDRS ${PROTO_FILES}
-	PROTOC_OUT_DIR src/protocol
+	PROTOC_OUT_DIR src/protocol/
 )
 add_library(Protocol ${PROTO_UTIL} ${PROTO_HDRS} ${PROTO_SRC} ${PROTO_FILES})
 if (MSVC)
