@@ -21,40 +21,47 @@ namespace mwetris::game {
 	}
 
 	void TetrisGame::createGame(const std::vector<PlayerPtr>& players) {
-		connections_.clear();
+		countDown_ = players.size() > 1; // Only countdown if multiplayer.
 		players_ = players;
-		
-		setPause(true);
+		timeHandler_.reset();
+		paused_ = true;
+		setPause(false);
+	}
+
+	void TetrisGame::restart() {
+		timeHandler_.reset();
+		paused_ = true;
+		setPause(false);
 	}
 
 	bool TetrisGame::isPaused() const {
-		return pause_;
+		return paused_;
 	}
 
-	void TetrisGame::setPause(bool pause) {
-		timeHandler_.removeCallback(pauseKey_);
-		pause_ = pause;
-		gamePauseEvent(GamePause{
-			.countDown = 0,
-			.pause = pause
-		});
+	void TetrisGame::setPause(bool pauseGame) {
+		if (paused_ == pauseGame) {
+			// No change, do nothing.
+			return;
+		}
+
+		if (pauseGame) {
+			pause();
+		} else if (!timeHandler_.hasKey(pauseKey_)) {
+			// Unpause the game only if unpausing is not already scheduled.
+			unPause();
+		}
 	}
 
-	void TetrisGame::pause() {
-		if (timeHandler_.removeCallback(pauseKey_) || !pause_) {
-			gamePauseEvent(GamePause{
-				.countDown = 0,
-				.pause = true
-			});
-			pause_ = true;
-		} else {
+	void TetrisGame::unPause() {
+		if (countDown_) {
+			paused_ = true;
 			gamePauseEvent(GamePause{
 				.countDown = 3,
 				.pause = true
 			});
 			pauseKey_ = timeHandler_.scheduleRepeat([&, nbr = 2]() mutable {
 				if (nbr == 0) {
-					pause_ = false;
+					paused_ = false;
 					gamePauseEvent(GamePause{
 						.countDown = 0,
 						.pause = false
@@ -66,7 +73,22 @@ namespace mwetris::game {
 					});
 				}
 			}, 1.0, 3);
+		} else {
+			paused_ = false;
+			gamePauseEvent(GamePause{
+				.countDown = 0,
+				.pause = false
+			});
 		}
+	}
+
+	void TetrisGame::pause() {
+		paused_ = true;
+		timeHandler_.removeCallback(pauseKey_);
+		gamePauseEvent(GamePause{
+			.countDown = 0,
+			.pause = true
+		});
 	}
 
 	int TetrisGame::getNbrOfPlayers() const {
@@ -76,7 +98,7 @@ namespace mwetris::game {
 	void TetrisGame::update(double deltaTime) {
 		timeHandler_.update(deltaTime);
 
-		if (!pause_) {
+		if (!isPaused()) {
 			updateGame(deltaTime);
 		}
 	}

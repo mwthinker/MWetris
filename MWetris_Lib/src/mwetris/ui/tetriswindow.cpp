@@ -141,7 +141,8 @@ namespace mwetris::ui {
 			tetrisController_->setFixTimestep(1.0 / getCurrentMonitorHz());
 		}, util::toSeconds(CheckRefreshRateInterval), std::numeric_limits<int>::max());
 
-		startNewGame();
+		tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
+		tetrisController_->pause();
 	}
 
 	void TetrisWindow::onTetrisEvent(const game::GamePause& gamePause) {
@@ -310,10 +311,6 @@ namespace mwetris::ui {
 
 	SubWindow::Type TetrisWindow::getType() const {
 		return type_;
-	}
-
-	void TetrisWindow::startNewGame() {
-		tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
 	}
 
 }

@@ -43,14 +43,14 @@ TetrisEngine -a "-2*rowHoles - 5*columnHoles - 1*rowSumHeight / (1 + rowHoles) -
 
 ## Things to fix
 
-- [] GameRules should be performed on the server with game time to make all players in sync. Will simplfy game logic. Current logic is a mess.
-- [] Fix game board graphic to look nicer. Avoid using texture atlas because of ugly lines between squares.
-- [] Make all unit tests to be run on codecov.
-- [] Add file for theme settings for ImGui. To make the interface nicer.
-- [] Make the network code compilable without graphic (make it possible to compile in raspberry pi).
-- [] Add github action to add git tag version and create releases for windows and linux.
-- [] Overuse of std::varient and to big objects (e.g. > 250 byte size). Maybe use shared_ptr or minimize the size of the objects.
-- [] Maybe remove Calculator dependency in TetrisEngine and use a more simple way and faster way to calculate the value function.
+- GameRules should be performed on the server with game time to make all players in sync. Will simplfy game logic. Current logic is a mess.
+- Fix game board graphic to look nicer. Avoid using texture atlas because of ugly lines between squares.
+- Make all unit tests to be run on codecov.
+- Add file for theme settings for ImGui. To make the interface nicer.
+- Make the network code compilable without graphic (make it possible to compile in raspberry pi).
+- Add github action to add git tag version and create releases for windows and linux.
+- Overuse of std::varient and to big objects (e.g. > 250 byte size). Maybe use shared_ptr or minimize the size of the objects.
+- Maybe remove Calculator dependency in TetrisEngine and use a more simple way and faster way to calculate the value function.
 
 ## License
 The project is under the MIT license (see LICENSE).

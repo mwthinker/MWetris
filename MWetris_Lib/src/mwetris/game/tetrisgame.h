@@ -31,12 +31,11 @@ namespace mwetris::game {
 
 		void createGame(const std::vector<PlayerPtr>& players);
 
+		void restart();
+
 		bool isPaused() const;
 
 		void setPause(bool pause);
-
-		// Pause/Unpause the game depending on the current state of the game.
-		void pause();
 
 		int getNbrOfPlayers() const;
 
@@ -51,13 +50,17 @@ namespace mwetris::game {
 	private:
 		void updateGame(double deltaTime);
 
+		// Pause/Unpause the game depending on the current state of the game.
+		void pause();
+		void unPause();
+
 		std::vector<PlayerPtr> players_;
 
 		double accumulator_ = 0.0;
-		bool pause_ = false;
 		double fixedTimestep = 1.0 / 60.0;
 
-		mw::signals::ScopedConnections connections_;
+		bool paused_ = false;
+		bool countDown_ = false;
 		TimeHandler timeHandler_;
 		TimeHandler::Key pauseKey_;
 	};

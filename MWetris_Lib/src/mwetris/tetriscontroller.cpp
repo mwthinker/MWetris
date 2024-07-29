@@ -33,7 +33,6 @@ namespace mwetris {
 		}
 
 	}
-		
 
 	TetrisController::TetrisController(std::shared_ptr<game::DeviceManager> deviceManager, std::shared_ptr<network::Network> network, std::shared_ptr<graphic::GameComponent> gameComponent)
 		: deviceManager_{deviceManager}
@@ -64,6 +63,7 @@ namespace mwetris {
 
 	void TetrisController::onNetworkEvent(const network::RestartEvent& restartEvent) {
 		rules_->restart();
+		tetrisGame_.restart();
 	}
 
 	void TetrisController::onNetworkEvent(const network::JoinGameRoomEvent& joinGameRoomEvent) {
@@ -80,8 +80,7 @@ namespace mwetris {
 	}
 
 	void TetrisController::onNetworkEvent(const network::LeaveGameRoomEvent& leaveGameRoomEvent) {
-		gameRoomType_ = GameRoomType::OutsideGameRoom;
-		//createDefaultGame(deviceManager_->getDefaultDevice1());
+		setGameRoomType(GameRoomType::OutsideGameRoom);
 	}
 
 	void TetrisController::onNetworkEvent(const network::ClientDisconnectedEvent& clientDisconnectedEvent) {
@@ -118,6 +117,10 @@ namespace mwetris {
 			};
 			tetris::TetrisBoard tetrisBoard{game::TetrisWidth, game::TetrisHeight, tetris::randomBlockType(), tetris::randomBlockType()};
 			player = createHumanPlayer(device, playerData, std::move(tetrisBoard));
+			tetrisGame_.setPause(true);
+		} else {
+			// Only restart game if is not a new game.
+			tetrisGame_.restart();
 		}
 		connections_ += player->playerBoardUpdate.connect([](const game::PlayerBoardEvent& playerBoardEvent) {
 			game::clearSavedGame();
@@ -149,7 +152,7 @@ namespace mwetris {
 		if (network_->isInsideGameRoom()) {
 			network_->sendPause(!tetrisGame_.isPaused()); // TODO! May need to handle delays, to avoid multiple pause events.
 		} else {
-			tetrisGame_.pause();
+			tetrisGame_.setPause(!tetrisGame_.isPaused());
 		}
 	}
 
@@ -163,6 +166,7 @@ namespace mwetris {
 			for (auto& player : tetrisGame_.getPlayers()) {
 				player->updateRestart(current, next);
 			}
+			tetrisGame_.restart();
 			rules_->restart();
 		}
 	}

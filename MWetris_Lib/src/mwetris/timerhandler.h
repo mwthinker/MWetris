@@ -44,6 +44,10 @@ namespace mwetris {
 		/// Clear all scheduled callbacks and reset the internal clock.
 		void reset();
 
+		/// @brief Has registered callback with the provided key.
+		/// @return true if the callback is registered else false.
+		bool hasKey(Key key) const;
+
 	private:
 		static int id_;
 

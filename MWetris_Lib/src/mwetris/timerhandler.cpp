@@ -60,4 +60,10 @@ namespace mwetris {
 		scheduledCallbacks_.clear();
 	}
 
+	bool TimeHandler::hasKey(Key key) const {
+		return std::any_of(scheduledCallbacks_.begin(), scheduledCallbacks_.end(), [key](const TimeEvent& timeEvent) {
+			return timeEvent.id == key.id_;
+		});
+	}
+
 }

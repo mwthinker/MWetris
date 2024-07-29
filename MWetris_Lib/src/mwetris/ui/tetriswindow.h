@@ -62,8 +62,6 @@ namespace mwetris::ui {
 
 		void imGuiMainWindow(const sdl::DeltaTime& deltaTime);
 
-		void startNewGame();
-
 		sdl::Window& window_;
 		std::shared_ptr<game::DeviceManager> deviceManager_;
 		sdl::TextureView background_;
