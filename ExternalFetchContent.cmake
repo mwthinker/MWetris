@@ -54,7 +54,7 @@ FetchContent_Declare(MWetrisData
 	GIT_REPOSITORY
 		https://github.com/mwthinker/MWetrisData.git
 	GIT_TAG
-		92673fbc7aa4b7778ab5643c2a190eb575fe33a4
+		9848627f990de2a570bc560e99fe5ab0b55a43c5
 )
 FetchContent_MakeAvailable(MWetrisData)
 FetchContent_GetProperties(MWetrisData

@@ -143,6 +143,12 @@ namespace mwetris::ui {
 
 		tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
 		tetrisController_->pause();
+
+
+		ImGui::GetStyle().Colors[ImGuiCol_Button] = Color{"#000000"};
+		ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered] = Color{"#4D4D4D"};
+		ImGui::GetStyle().Colors[ImGuiCol_ButtonActive] = Color{"#292929"};
+		ImGui::GetStyle().Colors[ImGuiCol_CheckMark] = Color{"#1FFF00"};
 	}
 
 	void TetrisWindow::onTetrisEvent(const game::GamePause& gamePause) {
@@ -222,6 +228,10 @@ namespace mwetris::ui {
 
 	void TetrisWindow::imGuiMainWindow(const sdl::DeltaTime& deltaTime) {
 		MainWindow(*this, [&]() {
+			ImGui::Window("Style Editor", [&]() {
+				ImGui::ShowStyleEditor();
+			});
+
 			ImGui::ImageBackground(background_);
 
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {10.0, 10.0});

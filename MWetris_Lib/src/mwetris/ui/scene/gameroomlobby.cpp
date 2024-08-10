@@ -99,18 +99,25 @@ namespace mwetris::ui::scene {
 	void GameRoomLooby::imGuiUpdate(const DeltaTime& deltaTime) {
 		float width = ImGui::GetWindowWidth();
 
+		float sideX = 10.f;
+
+		float slotSize = 100.f;
+		float deltaX = 10.f;
 		if (playerSlots_.size() > 1) {
-			width = width / playerSlots_.size();
+			width = (width - playerSlots_.size() * slotSize) / (playerSlots_.size() + 1);
 		}
 
 		auto pos = ImGui::GetCursorScreenPos();
+		pos.y += 10.f;
+		pos.x += deltaX;
 
 		for (int i = 0; i < playerSlots_.size(); ++i) {
 			auto& playerSlot = playerSlots_[i];
 
 			ImGui::PushID(i + 1);
-			ImGui::SetCursorScreenPos(pos);
 			pos.x += width;
+			ImGui::SetCursorScreenPos(pos);
+			pos.x += slotSize;
 
 			ImGui::BeginGroup();
 			std::visit([&](auto&& slot) mutable {
@@ -138,7 +145,7 @@ namespace mwetris::ui::scene {
 				} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
 					// Skip.
 				} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
-					if (ImGui::Button("Open Slot", {100, 100})) {
+					if (ImGui::Button("Open Slot", {slotSize, slotSize})) {
 						scene::AddPlayerData data{};
 						data.index = i;
 						data.usedDevices = getUsedDevices(playerSlots_);
@@ -184,7 +191,7 @@ namespace mwetris::ui::scene {
 				imGuiGameRulesConfigUpdate(config);
 			}, gameRulesConfig_);
 
-			if (!ImGui::PopupModal(PopUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
+			ImGui::PopupModal(PopUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
 				auto pos = ImGui::GetCursorScreenPos();
 				auto size = ImVec2{60.f, 30.f};
 
@@ -195,9 +202,7 @@ namespace mwetris::ui::scene {
 				ImGui::SetCursorScreenPos(pos);
 
 				addPlayer_->imGuiUpdate(deltaTime);
-			})) {
-
-			}
+			});
 
 			ImGui::PopID();
 		}
