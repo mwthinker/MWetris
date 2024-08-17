@@ -10,6 +10,8 @@
 #include <queue>
 #include <spdlog/spdlog.h>
 
+using namespace std::chrono_literals;
+
 namespace mwetris::network {
 
 	std::shared_ptr<TcpClient> TcpClient::connectToServer(asio::io_context& ioContext, const std::string& ip, int port) {
@@ -18,6 +20,7 @@ namespace mwetris::network {
 
 		asio::co_spawn(ioContext, [tmp = client, ip = ip, port = port]() -> asio::awaitable<void> {
 			auto client = tmp;
+			
 			// Must use ip and port before first co_await to guarantee lifetime.
 			auto endpoint = asio::ip::tcp::endpoint{asio::ip::make_address_v4(ip), static_cast<asio::ip::port_type>(port)};
 
@@ -25,13 +28,15 @@ namespace mwetris::network {
 				try {
 					co_await client->socket_.async_connect(endpoint, asio::use_awaitable);
 					spdlog::debug("[TcpClient] {} async_connect success", client->name_);
+					client->connected_ = true;
 					break;
 				} catch (const std::exception& e) {
 					spdlog::error("[TcpClient] {} async_connect Exception: {}", client->name_, e.what());
 					// TODO! Make exponential backoff?
-					client->timer_.expires_after(std::chrono::seconds{3});
+					client->tryToConnectTimer_.expires_after(3s);
+					client->connected_ = false;
 				}
-				co_await client->timer_.async_wait(asio::use_awaitable);
+				co_await client->tryToConnectTimer_.async_wait(asio::use_awaitable);
 			}
 		}, asio::detached);
 
@@ -50,18 +55,20 @@ namespace mwetris::network {
 			spdlog::error("[TcpClient] {} Stop Exception: {}", name_, e.what());
 		}
 		isStopped_ = true;
+		connected_ = false;
 	}
 
 	TcpClient::TcpClient(asio::io_context& ioContext, const std::string& ip, int port)
 		: ioContext_{ioContext}
-		, timer_{ioContext}
+		, tryToConnectTimer_{ioContext}
+		, waitingToConnect_{ioContext}
 		, socket_{ioContext}
-		, name_{"TcpClient_Network"} {
-	}
+		, name_{"TcpClient_Network"} {}
 
 	TcpClient::TcpClient(asio::io_context& ioContext, asio::ip::tcp::socket socket)
 		: ioContext_{ioContext}
-		, timer_{ioContext}
+		, tryToConnectTimer_{ioContext}
+		, waitingToConnect_{ioContext}
 		, socket_{std::move(socket)}
 		, name_{"TcpClient_TcpServer"} {
 
@@ -77,22 +84,18 @@ namespace mwetris::network {
 		co_return message;
 	}
 
-	asio::awaitable<ProtobufMessage> TcpClient::receive(std::shared_ptr<TcpClient> client){
-		// Takes ownership of client.
-		// TODO! Catch exception if something goes wrong?
-		try {
-			co_await client->socket_.async_wait(asio::ip::tcp::socket::wait_read, asio::use_awaitable);
-		} catch (const std::exception& e) {
-			spdlog::error("[TcpClient] {} async_wait Exception: {}", client->name_, e.what());
-			throw;
-		}
+	asio::awaitable<ProtobufMessage> TcpClient::receive(std::shared_ptr<TcpClient> client) {
+		co_await client->waitForConnection();
 
 		ProtobufMessage message = co_await client->asyncRead();
-
 		co_return message;
 	}
 
 	asio::awaitable<ProtobufMessage> TcpClient::asyncRead() {
+		if (!connected_) {
+			throw std::runtime_error("Not connected");
+		}
+
 		ProtobufMessage protobufMessage;
 		queue_.acquire(protobufMessage);
 
@@ -107,8 +110,21 @@ namespace mwetris::network {
 		co_return protobufMessage;
 	}
 
+	asio::awaitable<void> TcpClient::waitForConnection() {
+		if (connected_) {
+			co_return;
+		}
+
+		waitingToConnect_.expires_after(0s);
+		while (!connected_) {
+			co_await waitingToConnect_.async_wait(asio::use_awaitable);
+			waitingToConnect_.expires_after(0s);
+		}
+	}
+
 	void TcpClient::send(ProtobufMessage&& message) {
 		const auto buffer = message.getDataBuffer();
+		
 		asio::async_write(socket_, buffer, asio::transfer_exactly(buffer.size()),
 			// message is saved in pb so buffer is not destroyed.
 			[client = shared_from_this(), pb = std::move(message)](std::error_code ec, std::size_t length) mutable {

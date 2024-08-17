@@ -8,7 +8,7 @@ namespace mwetris {
 
 	class TimeHandler {
 	public:
-		// Type definition for the callback function to be triggered by TimeHandler.
+		/// Type definition for the callback function to be triggered by TimeHandler.
 		using Callback = std::function<void()>;
 
 		class Key {
@@ -26,19 +26,19 @@ namespace mwetris {
 			int id_ = 0;
 		};
 
-		// Advance the internal time and trigger scheduled callbacks.
+		/// Advance the internal time and trigger scheduled callbacks.
 		void update(double duration);
 
-		// Schedule a callback function to be triggered after a given duration.
+		/// Schedule a callback function to be triggered after a given duration.
 		Key schedule(Callback callback, double delay);
 
-		// Schedule a callback function to be repeatedly triggered at a specified interval.
+		/// Schedule a callback function to be repeatedly triggered at a specified interval.
 		Key scheduleRepeat(Callback callback, double interval, int maxNbr);
 
 		/// Remove the callback associated with the provided key.
 		bool removeCallback(Key connection);
 
-		// Get the internal time in seconds.
+		/// Get the internal time in seconds.
 		double getCurrentTime() const;
 
 		/// Clear all scheduled callbacks and reset the internal clock.

@@ -51,17 +51,20 @@ namespace mwetris::network {
 
 		asio::awaitable<ProtobufMessage> asyncRead();
 
+		asio::awaitable<void> waitForConnection();
+
 		/// @brief Keeps this tcp client alive until the async operation is done.
 		/// @param client to act on
 		/// @return coroutine handle.
 		static asio::awaitable<ProtobufMessage> receive(std::shared_ptr<TcpClient> client);
 
 		asio::io_context& ioContext_;
-		asio::high_resolution_timer timer_;
+		asio::high_resolution_timer tryToConnectTimer_, waitingToConnect_;
 		asio::ip::tcp::socket socket_;
 		ProtobufMessageQueue queue_;
 		std::string name_;
 		bool isStopped_ = false;
+		bool connected_ = false;
 	};
 
 }
