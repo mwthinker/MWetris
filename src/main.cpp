@@ -16,7 +16,8 @@ template <> struct fmt::formatter<argparse::ArgumentParser> : fmt::ostream_forma
 void startApplication(MainWindow::Config& config) {
 	mwetris::logger::init();
 	spdlog::info("[main] MWetris Version:  {}", PROJECT_VERSION);
-	spdlog::info("[main] MWetris git hash:  {}", GIT_VERSION);
+	spdlog::info("[main] MWetris git hash:  {}  date: {}", GIT_VERSION, GIT_DATE);
+	spdlog::info("[main] MWetris vcpkg hash:  {}  date: {}", VCPKG_HASH, VCPKG_DATE);
 	spdlog::info("[main] MWetris GUI:  {}", MWETRIS_GUID);
 
 	const sdl::InitSdl SDL{SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER};

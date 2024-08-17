@@ -142,18 +142,14 @@ target_include_directories(MWetris_Lib
 target_compile_definitions(MWetris_Lib
 	PUBLIC
 		GIT_VERSION="${GIT_HASH}"
+		GIT_DATE="${GIT_DATE}"
+		VCPKG_HASH="${VCPKG_HASH}"
+		VCPKG_DATE="${VCPKG_DATE}"
 		PROJECT_VERSION="${CMAKE_PROJECT_VERSION}"
 		MWETRIS_GUID="${GUID}"
-)
 
-# ASIO non-boost version.
-target_compile_definitions(MWetris_Lib
-	PUBLIC
+		# ASIO non-boost version.
 		ASIO_STANDALONE
-		ASIO_NO_DEPRECATED
-)
-target_compile_definitions(MWetris_Lib
-	PUBLIC
 		ASIO_NO_DEPRECATED
 		ASIO_NO_DYNAMIC_BUFFER_V1
 )

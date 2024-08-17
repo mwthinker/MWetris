@@ -36,18 +36,18 @@ FetchContent_Declare(Calculator
 	OVERRIDE_FIND_PACKAGE
 )
 
-FetchContent_Declare(CmakeAuxiliary
+FetchContent_Declare(CMakeHelper
 	GIT_REPOSITORY
-		https://gist.github.com/mwthinker/e0539b200e3f0ac6da545af4843a6ff6
+		https://github.com/mwthinker/CMakeHelper.git
 	GIT_TAG
-		0f0aaa9201a5a4c11749cd5adfc496a3960014de
+		a321588de57895a85e642810b6eedc5cbf89c0ea
 )
-FetchContent_MakeAvailable(CmakeAuxiliary)
-FetchContent_GetProperties(CmakeAuxiliary
+FetchContent_MakeAvailable(CMakeHelper)
+FetchContent_GetProperties(CMakeHelper
 	SOURCE_DIR
-		CmakeAuxiliary_SOURCE_DIR
+		CMakeHelper_SOURCE_DIR
 )
-include(${CmakeAuxiliary_SOURCE_DIR}/auxiliary.cmake)
+include(${CMakeHelper_SOURCE_DIR}/auxiliary.cmake)
 
 # Load data.
 FetchContent_Declare(MWetrisData

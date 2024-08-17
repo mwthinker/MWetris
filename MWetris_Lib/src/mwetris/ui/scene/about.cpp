@@ -26,8 +26,9 @@ namespace mwetris::ui::scene {
 			}
 		}
 		ImGui::NewLine();
-		ImGui::Text("Version: v%s", PROJECT_VERSION);
-		ImGui::Text("Git Hash: %s", GIT_VERSION);
+		ImGui::Text("Version:  v%s", PROJECT_VERSION);
+		ImGui::Text("Git hash: %s  date:  %s", GIT_VERSION, GIT_DATE);
+		ImGui::Text("Vcpkg hash: %s  date:  %s", VCPKG_HASH, VCPKG_DATE);
 		ImGui::NewLine();
 		ImGui::Text("GUID: %s", MWETRIS_GUID);
 

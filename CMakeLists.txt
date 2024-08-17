@@ -44,10 +44,23 @@ find_package(CppSdl2 REQUIRED)
 find_package(Signal REQUIRED)
 find_package(Calculator REQUIRED)
 
-extract_git_hash()
-create_guid()
+extract_git_hash(
+	${CMAKE_CURRENT_SOURCE_DIR}
+	GIT_HASH
+	GIT_DATE
+)
+extract_git_hash(
+	$ENV{VCPKG_ROOT}
+	VCPKG_HASH
+	VCPKG_DATE
+)
+create_guid_from_source(
+	${CMAKE_CURRENT_SOURCE_DIR}
+	GUID
+)
 
-message(STATUS "GIT_HASH: ${GIT_HASH}")
+message(STATUS "VCPKG_HASH: ${VCPKG_HASH} ${VCPKG_DATE}")
+message(STATUS "GIT_HASH: ${GIT_HASH} ${GIT_DATE}")
 message(STATUS "CMAKE_PROJECT_VERSION: ${CMAKE_PROJECT_VERSION}")
 message(STATUS "GUID: ${GUID}")
 
@@ -138,7 +151,10 @@ target_link_libraries(MWetris
 target_compile_definitions(MWetris
 	PRIVATE
 		GIT_VERSION="${GIT_HASH}"
+		GIT_DATE="${GIT_DATE}"
 		PROJECT_VERSION="${PROJECT_VERSION}"
+		VCPKG_HASH="${VCPKG_HASH}"
+		VCPKG_DATE="${VCPKG_DATE}"
 )
 
 set_target_properties(MWetris
