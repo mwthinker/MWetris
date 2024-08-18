@@ -65,6 +65,10 @@ namespace mwetris::network {
 		receivedMessages_.push(std::move(message));
 	}
 
+	bool DebugClientOnServer::isConnected() const {
+		return true;
+	}
+
 	// ------------------------------------------------------------------------
 
 	std::shared_ptr<DebugClientOnNetwork> DebugClientOnNetwork::create(std::shared_ptr<DebugClientOnServer> debugClientOnServer) {
@@ -119,6 +123,10 @@ namespace mwetris::network {
 
 	void DebugClientOnNetwork::setSentToServerCallback(const std::function<void(const ProtobufMessage&)>& callback) {
 		sendToServerCallback_ = callback;
+	}
+
+	bool DebugClientOnNetwork::isConnected() const {
+		return true;
 	}
 
 }

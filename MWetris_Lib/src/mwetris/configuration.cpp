@@ -2,6 +2,7 @@
 
 #include <sdl/textureatlas.h>
 
+#include <IconsFontAwesome6.h>
 #include <nlohmann/json.hpp>
 
 #include <map>
@@ -265,7 +266,21 @@ namespace mwetris {
 
 	ImFont* Configuration::getImGuiDefaultFont() const {
 		if (!impl_->defaultFont) {
-			impl_->defaultFont = ImGui::GetIO().Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 16);
+			auto& io = ImGui::GetIO();
+
+			impl_->defaultFont = io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 16);
+			
+			float baseFontSize = 13.0f; // 13.0f is the size of the default font. Change to the font size you use.
+			float iconFontSize = baseFontSize * 3.0f / 3.0f;
+
+			static const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
+			ImFontConfig icons_config;
+			icons_config.MergeMode = true;
+			icons_config.PixelSnapH = true;
+			icons_config.GlyphMinAdvanceX = iconFontSize;
+
+			auto file = fmt::format("fonts/{}", FONT_ICON_FILE_NAME_FAS);
+			io.Fonts->AddFontFromFileTTF(file.c_str(), iconFontSize, &icons_config, icons_ranges);
 		}
 
 		return impl_->defaultFont;

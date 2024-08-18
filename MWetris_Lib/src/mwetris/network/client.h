@@ -38,6 +38,10 @@ namespace mwetris::network {
 
 		/// @brief Get the io_context.
 		virtual asio::io_context& getIoContext() = 0;
+
+
+		/// @brief Is the client connected to the server.
+		virtual bool isConnected() const = 0;
 	};
 
 }

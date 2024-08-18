@@ -66,7 +66,10 @@ namespace mwetris::network {
 
 		void requestGameRoomList();
 
+		bool isConnected() const;
+
 	private:
+
 		static asio::awaitable<void> run(std::shared_ptr<Network> network);
 
 		static asio::awaitable<void> nextMessage(std::shared_ptr<Network> network);

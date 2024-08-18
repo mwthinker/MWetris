@@ -41,6 +41,8 @@ namespace mwetris::network {
 
 		void pushReceivedMessage(ProtobufMessage&& message);
 
+		bool isConnected() const override;
+
 	private:
 		explicit DebugClientOnServer(std::shared_ptr<DebugServer> debugServer);
 
@@ -71,6 +73,8 @@ namespace mwetris::network {
 		asio::io_context& getIoContext() override;
 
 		void setSentToServerCallback(const std::function<void(const ProtobufMessage&)>& callback);
+
+		bool isConnected() const override;
 
 	private:
 		friend class DebugClientOnServer;

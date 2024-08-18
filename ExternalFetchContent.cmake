@@ -20,6 +20,18 @@ FetchContent_GetProperties(SDL_GameControllerDB
 		SDL_GameControllerDB_SOURCE_DIR
 )
 
+FetchContent_Declare(IconFontCppHeaders
+	GIT_REPOSITORY
+		https://github.com/juliettef/IconFontCppHeaders.git
+	GIT_TAG
+		173c9b99be9a9980d2eeaf4b627d8c14b344bc68
+)
+FetchContent_Populate(IconFontCppHeaders)
+FetchContent_GetProperties(IconFontCppHeaders
+	SOURCE_DIR
+		IconFontCppHeaders_SOURCE_DIR
+)
+
 FetchContent_Declare(Signal
 	GIT_REPOSITORY
 		https://github.com/mwthinker/Signal.git
@@ -54,7 +66,7 @@ FetchContent_Declare(MWetrisData
 	GIT_REPOSITORY
 		https://github.com/mwthinker/MWetrisData.git
 	GIT_TAG
-		9848627f990de2a570bc560e99fe5ab0b55a43c5
+		a68929105254ec3fab8ebe8a4279b9763b83d007
 )
 FetchContent_MakeAvailable(MWetrisData)
 FetchContent_GetProperties(MWetrisData

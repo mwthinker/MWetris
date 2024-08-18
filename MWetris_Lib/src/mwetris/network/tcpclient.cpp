@@ -58,6 +58,10 @@ namespace mwetris::network {
 		connected_ = false;
 	}
 
+	bool TcpClient::isConnected() const {
+		return connected_;
+	}
+
 	TcpClient::TcpClient(asio::io_context& ioContext, const std::string& ip, int port)
 		: ioContext_{ioContext}
 		, tryToConnectTimer_{ioContext}

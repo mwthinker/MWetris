@@ -22,6 +22,7 @@
 
 #include <sdl/imguiauxiliary.h>
 
+#include <IconsFontAwesome6.h>
 #include <spdlog/spdlog.h>
 
 #include <chrono>
@@ -228,9 +229,11 @@ namespace mwetris::ui {
 
 	void TetrisWindow::imGuiMainWindow(const sdl::DeltaTime& deltaTime) {
 		MainWindow(*this, [&]() {
+			/*
 			ImGui::Window("Style Editor", [&]() {
 				ImGui::ShowStyleEditor();
 			});
+			*/
 
 			ImGui::ImageBackground(background_);
 
@@ -239,7 +242,6 @@ namespace mwetris::ui {
 			ImGui::MenuBar([&]() {
 				ImGui::Menu("Game", [&]() {
 					bool insideGameRoom = tetrisController_->isGameRoomSession();
-
 					ImGui::BeginDisabled(insideGameRoom);
 					if (ImGui::MenuItem(game::hasSavedGame() ? "Resume Single Player" : "New Single Player", "F1")) {
 						tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
@@ -285,6 +287,9 @@ namespace mwetris::ui {
 						modalStateMachine_.switchTo<scene::About>();
 					}
 				});
+				ImGui::PushStyleColor(ImGuiCol_Text, tetrisController_->isConnectedToServer() ? sdl::color::Green : sdl::color::Red);
+				ImGui::Button(ICON_FA_GLOBE);
+				ImGui::PopStyleColor();
 			});
 			ImGui::PopStyleVar(2);
 			

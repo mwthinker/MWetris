@@ -184,7 +184,7 @@ namespace mwetris {
 	}
 
 	bool TetrisController::isGameRoomSession() const {
-		return network_->isInsideGameRoom() || gameRoomType_ == GameRoomType::LocalGameRoomLooby;
+		return network_->isInsideGameRoom() || gameRoomType_ == GameRoomType::LocalGameRoomLooby || gameRoomType_ == GameRoomType::GameSession;
 	}
 
 	void TetrisController::createLocalGameRoom() {
@@ -298,6 +298,10 @@ namespace mwetris {
 
 	const std::vector<network::GameRoomClient>& TetrisController::getGameRoomClients() const {
 		return gameRoomClients_;
+	}
+
+	bool TetrisController::isConnectedToServer() const {
+		return network_->isConnected();
 	}
 
 }

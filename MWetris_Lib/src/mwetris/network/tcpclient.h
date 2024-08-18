@@ -44,6 +44,8 @@ namespace mwetris::network {
 
 		void stop() override;
 
+		bool isConnected() const override;
+
 	private:
 		TcpClient(asio::io_context& ioContext, const std::string& ip, int port);
 

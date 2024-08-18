@@ -109,6 +109,8 @@ namespace mwetris {
 
 		const std::vector<network::GameRoomClient>& getGameRoomClients() const;
 
+		bool isConnectedToServer() const;
+
 	private:
 		void createGame(const std::vector<game::PlayerPtr>& players, const game::GameRulesConfig& gameRulesConfig);
 
