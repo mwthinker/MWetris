@@ -29,8 +29,6 @@ namespace ImGui {
 
 	bool AbortButton(const char* label, const ImVec2& size = {});
 
-	void DebugDrawForeground();
-
 	template<typename T>
 	concept ComboType = requires(T t) {
 		{ t.name } -> std::convertible_to<std::string>;
