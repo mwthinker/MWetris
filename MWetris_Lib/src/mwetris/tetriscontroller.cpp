@@ -96,6 +96,14 @@ namespace mwetris {
 		tetrisEvent(gameRoomConfigEvent);
 	}
 
+	void TetrisController::onNetworkEvent(const network::NetworkErrorEvent& networkErrorEvent) {
+		if (network_->isInsideGameRoom()) {
+			// Only for network games.
+			setGameRoomType(GameRoomType::OutsideGameRoom);
+		}
+		tetrisEvent(networkErrorEvent);
+	}
+
 	// Updates everything. Should be called each frame.
 	void TetrisController::update(double deltaTime) {
 		tetrisGame_.update(deltaTime);
@@ -185,6 +193,10 @@ namespace mwetris {
 
 	bool TetrisController::isGameRoomSession() const {
 		return network_->isInsideGameRoom() || gameRoomType_ == GameRoomType::LocalGameRoomLooby || gameRoomType_ == GameRoomType::GameSession;
+	}
+
+	bool TetrisController::isNetworkGame() const {
+		return network_->isInsideGameRoom();
 	}
 
 	void TetrisController::createLocalGameRoom() {

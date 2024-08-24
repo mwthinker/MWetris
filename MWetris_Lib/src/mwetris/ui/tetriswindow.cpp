@@ -13,6 +13,7 @@
 #include "scene/play.h"
 #include "scene/joingameroom.h"
 #include "scene/gameroomlobby.h"
+#include "scene/networkerror.h"
 #include "game/serialize.h"
 #include "game/tetrisgame.h"
 #include "graphic/gamecomponent.h"
@@ -129,6 +130,7 @@ namespace mwetris::ui {
 			modalStateMachine_.switchTo<scene::HighScore>();
 		});
 		modalStateMachine_.emplace<scene::About>();
+		modalStateMachine_.emplace<scene::NetworkError>();
 
 		connections_ += tetrisController_->tetrisEvent.connect([this](const TetrisEvent& tetrisEvent) {
 			std::visit([&](auto&& event) {
@@ -214,6 +216,16 @@ namespace mwetris::ui {
 		// Do nothing here.
 	}
 
+	void TetrisWindow::onTetrisEvent(const network::NetworkErrorEvent& networkErrorEvent) {
+		if (modalStateMachine_.isCurrentScene<scene::JoinGameRoom>() ||
+			modalStateMachine_.isCurrentScene<scene::CreateGameRoom>() ||
+			networkErrorEvent.insideGameRoom) {
+			
+			// Show only error popup when it is of importance for the user.
+			modalStateMachine_.switchTo<scene::NetworkError>();
+		}
+	}
+
 	void TetrisWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
 		auto deltaTimeSeconds = util::toSeconds(deltaTime);
 		tetrisController_->update(deltaTimeSeconds);
@@ -250,12 +262,14 @@ namespace mwetris::ui {
 					if (ImGui::MenuItem("Create Local Game")) {
 						tetrisController_->createLocalGameRoom();
 					}
+					ImGui::BeginDisabled(!tetrisController_->isConnectedToServer());
 					if (ImGui::MenuItem("Create Network Game")) {
 						modalStateMachine_.switchTo<scene::CreateGameRoom>();
 					}
 					if (ImGui::MenuItem("Join Network Game")) {
 						modalStateMachine_.switchTo<scene::JoinGameRoom>();
 					}
+					ImGui::EndDisabled();
 					ImGui::EndDisabled();
 					ImGui::BeginDisabled(!insideGameRoom);
 					if (ImGui::MenuItem("Leave game")) {
@@ -288,8 +302,16 @@ namespace mwetris::ui {
 					}
 				});
 				ImGui::PushStyleColor(ImGuiCol_Text, tetrisController_->isConnectedToServer() ? sdl::color::Green : sdl::color::Red);
-				ImGui::Button(ICON_FA_GLOBE);
+				ImGui::Text(ICON_FA_GLOBE);
 				ImGui::PopStyleColor();
+				if (ImGui::IsItemHovered()) {
+					ImGui::Tooltip([&]() {
+						ImGui::Text(tetrisController_->isConnectedToServer()
+							? "Connected to game server"
+							: "Not connected to game server"
+						);
+					});
+				}
 			});
 			ImGui::PopStyleVar(2);
 			

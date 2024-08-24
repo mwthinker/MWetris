@@ -46,7 +46,16 @@ namespace mwetris::network {
 
 		bool isConnected() const override;
 
+		/// @brief Reconnect a existing client. The client must have been stopped or never started.
+		void reconnect() override;
+
 	private:
+		asio::ip::tcp::endpoint getEndpoint() const;
+
+		asio::awaitable<void> connect();
+		
+		static void spawnCoroutine(std::shared_ptr<TcpClient> client);
+
 		TcpClient(asio::io_context& ioContext, const std::string& ip, int port);
 
 		TcpClient(asio::io_context& ioContext, asio::ip::tcp::socket socket);
@@ -61,11 +70,12 @@ namespace mwetris::network {
 		static asio::awaitable<ProtobufMessage> receive(std::shared_ptr<TcpClient> client);
 
 		asio::io_context& ioContext_;
+		asio::ip::tcp::endpoint endpoint_;
 		asio::high_resolution_timer tryToConnectTimer_, waitingToConnect_;
 		asio::ip::tcp::socket socket_;
 		ProtobufMessageQueue queue_;
 		std::string name_;
-		bool isStopped_ = false;
+		bool isStopped_ = true;
 		bool connected_ = false;
 	};
 

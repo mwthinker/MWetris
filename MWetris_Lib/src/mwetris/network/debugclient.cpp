@@ -69,6 +69,9 @@ namespace mwetris::network {
 		return true;
 	}
 
+	void DebugClientOnServer::reconnect() {
+	}
+
 	// ------------------------------------------------------------------------
 
 	std::shared_ptr<DebugClientOnNetwork> DebugClientOnNetwork::create(std::shared_ptr<DebugClientOnServer> debugClientOnServer) {
@@ -128,5 +131,7 @@ namespace mwetris::network {
 	bool DebugClientOnNetwork::isConnected() const {
 		return true;
 	}
+
+	void DebugClientOnNetwork::reconnect() {}
 
 }

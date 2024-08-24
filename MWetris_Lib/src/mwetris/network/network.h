@@ -69,6 +69,7 @@ namespace mwetris::network {
 		bool isConnected() const;
 
 	private:
+		void reconnect();
 
 		static asio::awaitable<void> run(std::shared_ptr<Network> network);
 

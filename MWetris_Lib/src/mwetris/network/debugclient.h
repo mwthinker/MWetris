@@ -43,6 +43,8 @@ namespace mwetris::network {
 
 		bool isConnected() const override;
 
+		void reconnect() override;
+
 	private:
 		explicit DebugClientOnServer(std::shared_ptr<DebugServer> debugServer);
 
@@ -75,6 +77,8 @@ namespace mwetris::network {
 		void setSentToServerCallback(const std::function<void(const ProtobufMessage&)>& callback);
 
 		bool isConnected() const override;
+
+		void reconnect() override;
 
 	private:
 		friend class DebugClientOnServer;

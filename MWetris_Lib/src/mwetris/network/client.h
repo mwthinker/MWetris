@@ -40,8 +40,12 @@ namespace mwetris::network {
 		virtual asio::io_context& getIoContext() = 0;
 
 
-		/// @brief Is the client connected to the server.
+		/// @brief Is the client connected.
 		virtual bool isConnected() const = 0;
+
+		/// @brief Reconnect the client. Only affects sockets connecting to the server 
+		/// (not the other way around).
+		virtual void reconnect() = 0;
 	};
 
 }

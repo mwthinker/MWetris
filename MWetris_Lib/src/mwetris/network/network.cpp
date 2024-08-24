@@ -99,9 +99,6 @@ namespace mwetris::network {
 		spdlog::info("[Network] Destructor");
 		stop();
 
-		// To avoid getting stuck
-		gameRoomId_ = GameRoomId{};
-
 		// To be able to stop the coroutine
 		running_ = false;
 	}
@@ -308,12 +305,29 @@ namespace mwetris::network {
 			}
 		}
 		co_return;
-	} catch (const std::exception& e) {
-		spdlog::error("[Network] run Exception: {}", e.what());
-		co_return;
+	} catch (const std::system_error& e) {
+		spdlog::warn("[Network] Lost connection: {}", e.what());
+		
+		if (network->running_) {
+			network->reconnect();
+		}
+		network->networkEvent(NetworkErrorEvent{
+			.insideGameRoom = network->isInsideGameRoom()
+		});
+		network->gameRoomId_ = GameRoomId{}; // Room destroyed.
+		network->networkSlots_.clear();
+		network->aiBySlotIndex_.clear();
+		network->connections_.clear();
+		network->players_.clear();
 	}
 
-	asio::awaitable<void> Network::nextMessage(std::shared_ptr<Network> network) try {
+	void Network::reconnect() {
+		spdlog::info("[Network] Reconnect");
+		client_->reconnect();
+		start();
+	}
+
+	asio::awaitable<void> Network::nextMessage(std::shared_ptr<Network> network) {
 		bool valid = false;
 		do {
 			ProtobufMessage message = co_await network->client_->receive();
@@ -332,9 +346,6 @@ namespace mwetris::network {
 				break;
 			}
 		} while (!valid);
-		co_return;
-	} catch (const std::exception& e) {
-		spdlog::error("[Network] nextMessage Exception: {}", e.what());
 		co_return;
 	}
 

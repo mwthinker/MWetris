@@ -65,6 +65,10 @@ namespace mwetris::network {
 		std::vector<GameRoom> gameRooms;
 	};
 
+	struct NetworkErrorEvent {
+		bool insideGameRoom;
+	};
+
 	using NetworkEvent = std::variant<
 		PlayerSlotEvent,
 		RestartEvent,
@@ -75,7 +79,8 @@ namespace mwetris::network {
 		LeaveGameRoomEvent,
 		ClientDisconnectedEvent,
 		GameRoomListEvent,
-		game::GameRoomConfigEvent
+		game::GameRoomConfigEvent,
+		NetworkErrorEvent
 	>;
 
 }

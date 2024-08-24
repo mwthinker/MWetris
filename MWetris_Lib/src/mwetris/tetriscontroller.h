@@ -57,7 +57,7 @@ namespace mwetris {
 	struct CreateGameEvent {
 	};
 
-	using TetrisEvent = std::variant<game::GamePause, game::GameOver, game::GameRoomConfigEvent, PlayerSlotEvent, GameRoomEvent, network::GameRoomListEvent>;
+	using TetrisEvent = std::variant<game::GamePause, game::GameOver, game::GameRoomConfigEvent, PlayerSlotEvent, GameRoomEvent, network::GameRoomListEvent, network::NetworkErrorEvent>;
 
 	class TetrisController {
 	public:
@@ -86,6 +86,8 @@ namespace mwetris {
 		const char* getGameRoomId() const;
 
 		bool isGameRoomSession() const;
+
+		bool isNetworkGame() const;
 
 		void createDefaultGame(game::DevicePtr device);
 		void createLocalGameRoom();
@@ -124,6 +126,7 @@ namespace mwetris {
 		void onNetworkEvent(const network::ClientDisconnectedEvent& clientDisconnectedEvent);
 		void onNetworkEvent(const network::GameRoomListEvent& gameRoomListEvent);
 		void onNetworkEvent(const game::GameRoomConfigEvent& gameRoomConfigEvent);
+		void onNetworkEvent(const network::NetworkErrorEvent& networkErrorEvent);
 
 		void setGameRoomType(GameRoomType gameRoomType);
 

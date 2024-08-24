@@ -67,6 +67,7 @@ namespace mwetris::network {
 		MOCK_METHOD(asio::io_context&, getIoContext, (), (override));
 		MOCK_METHOD(void, stop, (), (override));
 		MOCK_METHOD(bool, isConnected, (), (const, override));
+		MOCK_METHOD(void, reconnect, (), (override));
 	};
 
 	class NetworkTest : public ::testing::Test {

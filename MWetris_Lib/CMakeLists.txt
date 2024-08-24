@@ -81,6 +81,8 @@ set(SOURCES_LIB
 	src/mwetris/ui/scene/highscore.h
 	src/mwetris/ui/scene/joingameroom.cpp
 	src/mwetris/ui/scene/joingameroom.h
+	src/mwetris/ui/scene/networkerror.cpp
+	src/mwetris/ui/scene/networkerror.h
 	src/mwetris/ui/scene/newhighscore.cpp
 	src/mwetris/ui/scene/newhighscore.h
 	src/mwetris/ui/scene/play.cpp
@@ -161,18 +163,15 @@ if (MSVC)
 		PUBLIC
 			_CRT_SECURE_NO_WARNINGS
 			NOMINMAX
+
+			# ASIO related.
+			_WIN32_WINNT=_WIN32_WINNT_WS03
+			_WINSOCK_DEPRECATED_NO_WARNINGS
 	)
 	target_compile_options(MWetris_Lib
 		PUBLIC
 			/W3 /WX /permissive-
 			/MP
-	)
-
-	# ASIO related.
-	target_compile_definitions(MWetris_Lib
-		PUBLIC
-			_WIN32_WINNT=_WIN32_WINNT_WS03
-			_WINSOCK_DEPRECATED_NO_WARNINGS
 	)
 else ()
 	if (CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
