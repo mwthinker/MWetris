@@ -13,7 +13,7 @@ namespace mwetris::network {
 	}
 
 	ClientId::ClientId(const tp::ClientId& tpClientId)
-		: id_(tpClientId.id()) {
+		: id_{tpClientId.id()} {
 	}
 
 	void fromCppToProto(const ClientId& clientId, tp::ClientId& tpClientId) {
@@ -43,7 +43,7 @@ namespace mwetris::network {
 	}
 
 	GameRoomId::GameRoomId(const tp::GameRoomId& tpGameRoomId)
-		: id_(tpGameRoomId.id()) {}
+		: id_{tpGameRoomId.id()} {}
 
 	GameRoomId& GameRoomId::operator=(const tp::GameRoomId& tpGameRoomId) {
 		id_ = tpGameRoomId.id();
@@ -77,7 +77,7 @@ namespace mwetris::network {
 	}
 
 	PlayerId::PlayerId(const tp::PlayerId& tpPlayerId)
-		: id_(tpPlayerId.id()) {}
+		: id_{tpPlayerId.id()} {}
 
 	PlayerId& PlayerId::operator=(const tp::PlayerId& tpPlayerId) {
 		id_ = tpPlayerId.id();

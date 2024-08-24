@@ -1,12 +1,6 @@
 #include "tcpclient.h"
 #include "protobufmessagequeue.h"
 
-#include "game/player.h"
-#include "util/auxiliary.h"
-
-#include <tetris/helper.h>
-#include <spdlog/spdlog.h>
-
 #include <queue>
 #include <spdlog/spdlog.h>
 

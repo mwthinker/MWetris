@@ -31,7 +31,6 @@ namespace mwetris::network {
 	class ServerCore : public Server {
 	public:
 		mw::PublicSignal<ServerCore, const std::vector<Slot>&> playerSlotsUpdated;
-		mw::PublicSignal<ServerCore, const std::vector<game::PlayerPtr>&> gameCreated;
 		mw::PublicSignal<ServerCore, const ConnectedClient&> connectedClientListener;
 
 		~ServerCore() override;

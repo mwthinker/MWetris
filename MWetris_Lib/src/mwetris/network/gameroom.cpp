@@ -1,11 +1,7 @@
 #include "gameroom.h"
 #include "util/uuid.h"
-
-#include "debugserver.h"
-#include "util/uuid.h"
 #include "id.h"
 
-#include <tetris/helper.h>
 #include <protocol/server_to_client.pb.h>
 #include <protocol/client_to_server.pb.h>
 
