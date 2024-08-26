@@ -1,10 +1,9 @@
 #include "debugclient.h"
-#include "protobufmessagequeue.h"
 #include "debugserver.h"
 
-#include "util/auxiliary.h"
-
+#include <network/protobufmessagequeue.h>
 #include <tetris/helper.h>
+
 #include <spdlog/spdlog.h>
 
 #include <queue>

@@ -60,6 +60,11 @@ namespace mwetris::network {
 		std::string id_;
 	};
 
+	struct GameRoomClient {
+		ClientId clientId;
+		int connectionId;
+	};
+
 	class GameRoomId {
 	public:
 		friend struct fmt::formatter<GameRoomId>;

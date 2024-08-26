@@ -5,7 +5,7 @@
 #include "../timerhandler.h"
 #include "../game/playerslot.h"
 
-#include "../network/servercore.h"
+#include <network/servercore.h>
 
 #include <sdl/imguiwindow.h>
 #include <signal.h>

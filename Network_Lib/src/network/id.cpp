@@ -1,15 +1,33 @@
 #include "id.h"
 
-#include "util/uuid.h"
-
 #include <protocol/shared.pb.h>
 
 namespace mwetris::network {
 
+	namespace {
+
+		constexpr std::string_view Characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+		std::string generateUuid() {
+			static std::mt19937 generator{std::random_device{}()};
+			static std::uniform_int_distribution<> distribution{0, static_cast<int>(Characters.size() - 1)};
+
+			constexpr int UniqueIdSize = 16;
+			std::string unique(UniqueIdSize, 'X');
+
+			for (auto& key : unique) {
+				key = Characters[distribution(generator)];
+			}
+
+			return unique;
+		}
+
+	}
+
 	// GameRoomId
 
 	ClientId ClientId::generateUniqueId() {
-		return ClientId{util::generateUuid()};
+		return ClientId{generateUuid()};
 	}
 
 	ClientId::ClientId(const tp::ClientId& tpClientId)
@@ -39,7 +57,7 @@ namespace mwetris::network {
 	// GameRoomId
 
 	GameRoomId GameRoomId::generateUniqueId() {
-		return GameRoomId{util::generateUuid()};
+		return GameRoomId{generateUuid()};
 	}
 
 	GameRoomId::GameRoomId(const tp::GameRoomId& tpGameRoomId)
@@ -73,7 +91,7 @@ namespace mwetris::network {
 	// PlayerId
 
 	PlayerId PlayerId::generateUniqueId() {
-		return PlayerId{util::generateUuid()};
+		return PlayerId{generateUuid()};
 	}
 
 	PlayerId::PlayerId(const tp::PlayerId& tpPlayerId)

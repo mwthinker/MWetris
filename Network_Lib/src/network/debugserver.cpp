@@ -1,14 +1,11 @@
 #include "debugserver.h"
 #include "debugclient.h"
-#include "protobufmessagequeue.h"
-#include "gameroom.h"
-#include "server.h"
-#include "id.h"
-#include "tcpclient.h"
 
-#include "util/auxiliary.h"
-#include "util/uuid.h"
-#include "util/uuid.h"
+#include <network/protobufmessagequeue.h>
+#include <network/gameroom.h>
+#include <network/server.h>
+#include <network/id.h>
+#include <network/tcpclient.h>
 
 #include <tetris/helper.h>
 #include <protocol/server_to_client.pb.h>

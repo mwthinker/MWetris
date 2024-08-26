@@ -1,10 +1,10 @@
 #ifndef MWETRIS_NETWORK_DEBUGCLIENT_H
 #define MWETRIS_NETWORK_DEBUGCLIENT_H
 
-#include "protobufmessage.h"
-#include "protobufmessagequeue.h"
-#include "client.h"
-#include "asio.h"
+#include <network/client.h>
+#include <network/protobufmessage.h>
+#include <network/protobufmessagequeue.h>
+#include <network/asio.h>
 
 #include <mw/signal.h>
 

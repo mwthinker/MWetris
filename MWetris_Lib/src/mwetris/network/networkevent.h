@@ -4,7 +4,8 @@
 #include "../game/player.h"
 #include "../game/playerslot.h"
 #include "../game/tetrisgameevent.h"
-#include "id.h"
+
+#include <network/id.h>
 
 #include <tetris/block.h>
 
@@ -23,11 +24,6 @@ namespace mwetris::network {
 	};
 
 	struct RestartEvent {};
-
-	struct GameRoomClient {
-		ClientId clientId;
-		int connectionId;
-	};
 
 	struct GameRoomEvent {
 		std::vector<GameRoomClient> gameRoomClients;

@@ -44,30 +44,9 @@ set(SOURCES_LIB
 	src/mwetris/game/serializehighscore.h
 	src/mwetris/game/tetrisparameters.h
 
-	src/mwetris/network/asio.h
-	src/mwetris/network/client.h
-	src/mwetris/network/debugclient.cpp
-	src/mwetris/network/debugclient.h
-	src/mwetris/network/debugserver.cpp
-	src/mwetris/network/debugserver.h
-	src/mwetris/network/gameroom.cpp
-	src/mwetris/network/gameroom.h
-	src/mwetris/network/id.cpp
-	src/mwetris/network/id.h
 	src/mwetris/network/network.cpp
 	src/mwetris/network/network.h
 	src/mwetris/network/networkevent.h
-	src/mwetris/network/protobufmessage.cpp
-	src/mwetris/network/protobufmessage.h
-	src/mwetris/network/protobufmessagequeue.cpp
-	src/mwetris/network/protobufmessagequeue.h
-	src/mwetris/network/server.h
-	src/mwetris/network/servercore.cpp
-	src/mwetris/network/servercore.h
-	src/mwetris/network/tcpclient.cpp
-	src/mwetris/network/tcpclient.h
-	src/mwetris/network/tcpserver.cpp
-	src/mwetris/network/tcpserver.h
 	
 	src/mwetris/ui/scene/about.cpp
 	src/mwetris/ui/scene/about.h
@@ -123,6 +102,7 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(Signal REQUIRED)
 find_package(CppSdl2 REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT MWetris_Lib)
@@ -151,11 +131,6 @@ target_compile_definitions(MWetris_Lib
 		VCPKG_DATE="${VCPKG_DATE}"
 		PROJECT_VERSION="${CMAKE_PROJECT_VERSION}"
 		MWETRIS_GUID="${GUID}"
-
-		# ASIO non-boost version.
-		ASIO_STANDALONE
-		ASIO_NO_DEPRECATED
-		ASIO_NO_DYNAMIC_BUFFER_V1
 )
 
 if (MSVC)
@@ -163,10 +138,6 @@ if (MSVC)
 		PUBLIC
 			_CRT_SECURE_NO_WARNINGS
 			NOMINMAX
-
-			# ASIO related.
-			_WIN32_WINNT=_WIN32_WINNT_WS03
-			_WINSOCK_DEPRECATED_NO_WARNINGS
 	)
 	target_compile_options(MWetris_Lib
 		PUBLIC
@@ -188,14 +159,15 @@ set(nlohmann-json_IMPLICIT_CONVERSIONS OFF)
 
 target_link_libraries(MWetris_Lib
 	PUBLIC
-		asio asio::asio
 		TetrisEngineLib
+		Network_Lib
 		nlohmann_json
 		nlohmann_json::nlohmann_json
 		fmt::fmt
 		Protocol
 		Signal
 		${ExternalDependencies}
+		#spdlog::spdlog spdlog::spdlog_header_only
 )
 
 set_target_properties(MWetris_Lib

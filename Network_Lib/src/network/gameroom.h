@@ -3,7 +3,6 @@
 
 #include "server.h"
 #include "id.h"
-#include "networkevent.h"
 
 #include <protocol/server_to_client.pb.h>
 #include <protocol/client_to_server.pb.h>

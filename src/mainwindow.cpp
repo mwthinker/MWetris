@@ -5,9 +5,10 @@
 #include <mwetris/ui/networkdebugwindow.h>
 #include <mwetris/ui/tetriswindow.h>
 #include <mwetris/network/debugclient.h>
-#include <mwetris/network/tcpclient.h>
-#include <mwetris/network/tcpserver.h>
 #include <mwetris/network/network.h>
+
+#include <network/tcpclient.h>
+#include <network/tcpserver.h>
 
 #include <mwetris/ui/tetriswindow.h>
 

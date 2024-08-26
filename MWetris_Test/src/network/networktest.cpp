@@ -3,11 +3,12 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <mwetris/network/client.h>
 #include <mwetris/network/network.h>
-#include <mwetris/network/id.h>
-#include <mwetris/network/debugclient.h>
-#include <mwetris/network/debugserver.h>
+
+#include <network/client.h>
+#include <network/debugclient.h>
+#include <network/debugserver.h>
+#include <network/id.h>
 
 #include <protocol/shared.pb.h>
 #include <protocol/client_to_server.pb.h>

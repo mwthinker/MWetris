@@ -9,6 +9,7 @@ project(GameServer
 
 find_package(argparse CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 
 add_executable(GameServer
 	src/main.cpp
@@ -17,8 +18,14 @@ add_executable(GameServer
 target_link_libraries(GameServer
 	PRIVATE
 		argparse::argparse
-		MWetris_Lib
+		Network_Lib
 		fmt::fmt
+		spdlog::spdlog_header_only
+)
+
+target_compile_definitions(GameServer
+	PUBLIC
+		PROJECT_VERSION="${CMAKE_PROJECT_VERSION}"
 )
 
 if (MSVC)

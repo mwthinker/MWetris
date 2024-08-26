@@ -1,7 +1,7 @@
 #include "testutil.h"
 
-#include <mwetris/network/gameroom.h>
-#include <mwetris/network/server.h>
+#include <network/gameroom.h>
+#include <network/server.h>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>

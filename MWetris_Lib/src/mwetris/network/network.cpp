@@ -1,9 +1,10 @@
 #include "network.h"
-#include "client.h"
-#include "protobufmessagequeue.h"
 
 #include "game/playerslot.h"
 #include "util/auxiliary.h"
+
+#include <network/client.h>
+#include <network/protobufmessagequeue.h>
 
 #include <protocol/shared.pb.h>
 #include <protocol/client_to_server.pb.h>

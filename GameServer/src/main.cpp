@@ -179,7 +179,7 @@ void testNetwork(int argc, const char* argv[]) {
 	}
 }
 */
-#include <mwetris/network/tcpserver.h>
+#include <network/tcpserver.h>
 
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>

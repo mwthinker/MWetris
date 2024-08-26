@@ -21,7 +21,7 @@
             "hidden": true,
             "inherits": "vcpkg",
             "cacheVariables": {
-              "PROJECT_VERSION": "0.2.0"
+              "PROJECT_VERSION": "0.3.0"
             }
         },
         {

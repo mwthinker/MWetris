@@ -9,12 +9,10 @@
 #include "protobufmessagequeue.h"
 #include "server.h"
 
-#include "../game/player.h"
-#include "../util/auxiliary.h"
-#include "../util/uuid.h"
-
 #include <protocol/client_to_server.pb.h>
 #include <protocol/server_to_client.pb.h>
+
+#include <mw/signal.h>
 
 #include <optional>
 

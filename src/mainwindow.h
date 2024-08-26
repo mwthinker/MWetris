@@ -6,9 +6,8 @@
 #include <mwetris/ui/subwindow.h>
 #include <mwetris/game/devicemanager.h>
 #include <mwetris/network/debugserver.h>
-#include <mwetris/network/servercore.h>
 
-#include <asio.hpp>
+#include <network/servercore.h>
 
 enum class Network {
 	SingleTcpClient,

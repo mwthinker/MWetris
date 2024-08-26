@@ -89,7 +89,7 @@ endif ()
 target_link_libraries(TetrisEngine
 	PRIVATE
 		TetrisEngineLib
-		fmt::fmt-header-only
+		fmt::fmt
 )
 
 set_target_properties(TetrisEngine

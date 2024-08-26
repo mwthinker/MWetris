@@ -8,9 +8,10 @@
 #include "../game/serialize.h"
 #include "../game/devicemanager.h"
 #include "../game/tetrisgameevent.h"
-#include "../network/client.h"
-#include "../network/networkevent.h"
 #include "../ui/subwindow.h"
+#include "../network/networkevent.h"
+
+#include <network/client.h>
 
 #include <sdl/imguiwindow.h>
 
