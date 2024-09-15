@@ -11,11 +11,11 @@
 
 #include <vector>
 
-namespace mwetris::network {
+namespace mwetris::cnetwork {
 
 	struct NetworkSlot {
 		game::PlayerSlot playerSlot;
-		ClientId clientId;
+		network::ClientId clientId;
 	};
 
 	struct PlayerSlotEvent {
@@ -26,11 +26,11 @@ namespace mwetris::network {
 	struct RestartEvent {};
 
 	struct GameRoomEvent {
-		std::vector<GameRoomClient> gameRoomClients;
+		std::vector<network::GameRoomClient> gameRoomClients;
 	};
 
 	struct JoinGameRoomEvent {
-		ClientId clientId;
+		network::ClientId clientId;
 	};
 
 	struct PauseEvent {
@@ -43,16 +43,16 @@ namespace mwetris::network {
 	};
 
 	struct LeaveGameRoomEvent {
-		ClientId clientId;
+		network::ClientId clientId;
 	};
 
 	struct ClientDisconnectedEvent {
-		ClientId clientId;
+		network::ClientId clientId;
 	};
 
 	struct GameRoomListEvent {
 		struct GameRoom {
-			GameRoomId id;
+			network::GameRoomId id;
 			std::string name;
 			int playerCount;
 			int maxPlayerCount;

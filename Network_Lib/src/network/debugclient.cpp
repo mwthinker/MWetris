@@ -8,7 +8,7 @@
 
 #include <queue>
 
-namespace mwetris::network {
+namespace network {
 
 	DebugClientOnServer::DebugClientOnServer(std::shared_ptr<DebugServer> debugServer)
 		: timer_{debugServer->getIoContext()}
@@ -18,7 +18,8 @@ namespace mwetris::network {
 	}
 
 	std::shared_ptr<DebugClientOnServer> DebugClientOnServer::create(std::shared_ptr<DebugServer> debugServer) {
-		return std::shared_ptr<DebugClientOnServer>(new DebugClientOnServer{debugServer});
+		auto debugClientOnServer = new DebugClientOnServer{debugServer};
+		return std::shared_ptr<DebugClientOnServer>(debugClientOnServer);
 	}
 
 	DebugClientOnServer::~DebugClientOnServer() {

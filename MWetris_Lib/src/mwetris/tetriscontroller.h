@@ -5,7 +5,7 @@
 #include "game/gamerules.h"
 #include "game/player.h"
 #include "game/playerslot.h"
-#include "network/networkevent.h"
+#include "cnetwork/networkevent.h"
 #include "game/tetrisgameevent.h"
 #include "game/tetrisgame.h"
 #include "game/tetrisgameevent.h"
@@ -19,7 +19,7 @@
 
 namespace mwetris {
 
-	namespace network {
+	namespace cnetwork {
 
 		class Network;
 
@@ -57,13 +57,13 @@ namespace mwetris {
 	struct CreateGameEvent {
 	};
 
-	using TetrisEvent = std::variant<game::GamePause, game::GameOver, game::GameRoomConfigEvent, PlayerSlotEvent, GameRoomEvent, network::GameRoomListEvent, network::NetworkErrorEvent>;
+	using TetrisEvent = std::variant<game::GamePause, game::GameOver, game::GameRoomConfigEvent, PlayerSlotEvent, GameRoomEvent, cnetwork::GameRoomListEvent, cnetwork::NetworkErrorEvent>;
 
 	class TetrisController {
 	public:
 		mw::PublicSignal<TetrisController, const TetrisEvent&> tetrisEvent;
 
-		TetrisController(std::shared_ptr<game::DeviceManager> deviceManager, std::shared_ptr<network::Network> network, std::shared_ptr<graphic::GameComponent> gameComponent);
+		TetrisController(std::shared_ptr<game::DeviceManager> deviceManager, std::shared_ptr<cnetwork::Network> network, std::shared_ptr<graphic::GameComponent> gameComponent);
 
 		// Updates everything. Should be called each frame.
 		void update(double deltaTime);
@@ -116,24 +116,24 @@ namespace mwetris {
 	private:
 		void createGame(const std::vector<game::PlayerPtr>& players, const game::GameRulesConfig& gameRulesConfig);
 
-		void onNetworkEvent(const network::PlayerSlotEvent& playerSlotEvent);
-		void onNetworkEvent(const network::RestartEvent& restartEvent);
-		void onNetworkEvent(const network::JoinGameRoomEvent& joinGameRoomEvent);
-		void onNetworkEvent(const network::GameRoomEvent& gameRoomEvent);
-		void onNetworkEvent(const network::PauseEvent& pauseEvent);
-		void onNetworkEvent(const network::CreateGameEvent& createGameEvent);
-		void onNetworkEvent(const network::LeaveGameRoomEvent& leaveGameRoomEvent);
-		void onNetworkEvent(const network::ClientDisconnectedEvent& clientDisconnectedEvent);
-		void onNetworkEvent(const network::GameRoomListEvent& gameRoomListEvent);
+		void onNetworkEvent(const cnetwork::PlayerSlotEvent& playerSlotEvent);
+		void onNetworkEvent(const cnetwork::RestartEvent& restartEvent);
+		void onNetworkEvent(const cnetwork::JoinGameRoomEvent& joinGameRoomEvent);
+		void onNetworkEvent(const cnetwork::GameRoomEvent& gameRoomEvent);
+		void onNetworkEvent(const cnetwork::PauseEvent& pauseEvent);
+		void onNetworkEvent(const cnetwork::CreateGameEvent& createGameEvent);
+		void onNetworkEvent(const cnetwork::LeaveGameRoomEvent& leaveGameRoomEvent);
+		void onNetworkEvent(const cnetwork::ClientDisconnectedEvent& clientDisconnectedEvent);
+		void onNetworkEvent(const cnetwork::GameRoomListEvent& gameRoomListEvent);
 		void onNetworkEvent(const game::GameRoomConfigEvent& gameRoomConfigEvent);
-		void onNetworkEvent(const network::NetworkErrorEvent& networkErrorEvent);
+		void onNetworkEvent(const cnetwork::NetworkErrorEvent& networkErrorEvent);
 
 		void setGameRoomType(GameRoomType gameRoomType);
 
 		mw::signals::ScopedConnections connections_;
 		std::shared_ptr<game::DeviceManager> deviceManager_;
 		std::unique_ptr<game::GameRules> rules_;
-		std::shared_ptr<network::Network> network_;
+		std::shared_ptr<cnetwork::Network> network_;
 		game::TetrisGame tetrisGame_;
 		std::shared_ptr<graphic::GameComponent> gameComponent_;
 		GameRoomType gameRoomType_ = GameRoomType::OutsideGameRoom;

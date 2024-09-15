@@ -11,7 +11,7 @@
 
 using namespace ::testing;
 
-namespace mwetris::network {
+namespace network {
 
 	namespace {
 

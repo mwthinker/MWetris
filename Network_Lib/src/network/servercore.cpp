@@ -2,7 +2,7 @@
 
 #include <spdlog/spdlog.h>
 
-namespace mwetris::network {
+namespace network {
 
 	ServerCore::ServerCore(asio::io_context& ioContext)
 		: messageQueue_{100}

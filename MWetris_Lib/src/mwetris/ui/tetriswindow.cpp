@@ -17,9 +17,10 @@
 #include "game/serialize.h"
 #include "game/tetrisgame.h"
 #include "graphic/gamecomponent.h"
-#include "network/client.h"
-#include "network/network.h"
+#include "cnetwork/network.h"
 #include "util/auxiliary.h"
+
+#include <network/client.h>
 
 #include <sdl/imguiauxiliary.h>
 
@@ -74,7 +75,7 @@ namespace mwetris::ui {
 
 	TetrisWindow::TetrisWindow(const std::string& windowName, Type type, sdl::Window& window,
 		std::shared_ptr<game::DeviceManager> deviceManager,
-		std::shared_ptr<network::Network> network)
+		std::shared_ptr<cnetwork::Network> network)
 		: window_{window}
 		, deviceManager_{deviceManager}
 		, type_{type}
@@ -208,7 +209,7 @@ namespace mwetris::ui {
 		}
 	}
 
-	void TetrisWindow::onTetrisEvent(const network::GameRoomListEvent& gameRoomListEvent) {
+	void TetrisWindow::onTetrisEvent(const cnetwork::GameRoomListEvent& gameRoomListEvent) {
 		// Do nothing here.
 	}
 
@@ -216,7 +217,7 @@ namespace mwetris::ui {
 		// Do nothing here.
 	}
 
-	void TetrisWindow::onTetrisEvent(const network::NetworkErrorEvent& networkErrorEvent) {
+	void TetrisWindow::onTetrisEvent(const cnetwork::NetworkErrorEvent& networkErrorEvent) {
 		if (modalStateMachine_.isCurrentScene<scene::JoinGameRoom>() ||
 			modalStateMachine_.isCurrentScene<scene::CreateGameRoom>() ||
 			networkErrorEvent.insideGameRoom) {

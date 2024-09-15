@@ -4,7 +4,7 @@
 
 #include "game/devicemanager.h"
 #include "game/tetrisgame.h"
-#include "network/network.h"
+#include "cnetwork/network.h"
 #include "ui/imguiextra.h"
 #include "util/auxiliary.h"
 

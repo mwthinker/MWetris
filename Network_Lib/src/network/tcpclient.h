@@ -12,7 +12,7 @@
 #include <string>
 #include <queue>
 
-namespace mwetris::network {
+namespace network {
 
 	class TcpClient : public Client, public std::enable_shared_from_this<TcpClient> {
 	public:
@@ -51,7 +51,7 @@ namespace mwetris::network {
 
 		asio::awaitable<void> connect();
 		
-		static void spawnCoroutine(std::shared_ptr<TcpClient> client);
+		void spawnCoroutine();
 
 		TcpClient(asio::io_context& ioContext, const std::string& ip, int port);
 

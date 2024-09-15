@@ -6,7 +6,7 @@
 #include <mutex>
 #include <queue>
 
-namespace mwetris::network {
+namespace network {
 	
 	class ProtobufMessageQueue {
 	public:

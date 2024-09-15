@@ -13,7 +13,7 @@
 #include <queue>
 #include <functional>
 
-namespace mwetris::network {
+namespace network {
 
 	class DebugServer;
 	class DebugClient;

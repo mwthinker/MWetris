@@ -19,12 +19,6 @@ namespace mwetris {
 
 	class TetrisController;
 
-	namespace network {
-
-		class Network;
-
-	}
-
 }
 
 namespace mwetris::ui::scene {

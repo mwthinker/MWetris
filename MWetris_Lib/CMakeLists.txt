@@ -44,9 +44,9 @@ set(SOURCES_LIB
 	src/mwetris/game/serializehighscore.h
 	src/mwetris/game/tetrisparameters.h
 
-	src/mwetris/network/network.cpp
-	src/mwetris/network/network.h
-	src/mwetris/network/networkevent.h
+	src/mwetris/cnetwork/network.cpp
+	src/mwetris/cnetwork/network.h
+	src/mwetris/cnetwork/networkevent.h
 	
 	src/mwetris/ui/scene/about.cpp
 	src/mwetris/ui/scene/about.h
@@ -136,7 +136,6 @@ target_compile_definitions(MWetris_Lib
 if (MSVC)
 	target_compile_definitions(MWetris_Lib
 		PUBLIC
-			_CRT_SECURE_NO_WARNINGS
 			NOMINMAX
 	)
 	target_compile_options(MWetris_Lib
@@ -167,7 +166,6 @@ target_link_libraries(MWetris_Lib
 		Protocol
 		Signal
 		${ExternalDependencies}
-		#spdlog::spdlog spdlog::spdlog_header_only
 )
 
 set_target_properties(MWetris_Lib

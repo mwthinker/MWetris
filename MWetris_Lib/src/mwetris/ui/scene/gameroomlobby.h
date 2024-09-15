@@ -12,7 +12,7 @@
 #include "game/playerslot.h"
 #include "game/devicemanager.h"
 #include "game/defaultgamerules.h"
-#include "network/networkevent.h"
+#include "cnetwork/networkevent.h"
 
 #include <tetris/ai.h>
 
@@ -28,12 +28,6 @@ namespace mwetris {
 
 		class Network;
 		class DeviceManager;
-
-	}
-
-	namespace network {
-
-		class Network;
 
 	}
 

@@ -5,7 +5,7 @@
 
 #include <asio.hpp>
 
-namespace mwetris::network {
+namespace network {
 
 	class Client {
 	public:

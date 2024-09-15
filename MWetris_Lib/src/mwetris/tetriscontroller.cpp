@@ -4,7 +4,7 @@
 #include "game/device.h"
 #include "game/gamerules.h"
 #include "graphic/gamecomponent.h"
-#include "network/network.h"
+#include "cnetwork/network.h"
 
 #include <tetris/helper.h>
 
@@ -34,12 +34,12 @@ namespace mwetris {
 
 	}
 
-	TetrisController::TetrisController(std::shared_ptr<game::DeviceManager> deviceManager, std::shared_ptr<network::Network> network, std::shared_ptr<graphic::GameComponent> gameComponent)
+	TetrisController::TetrisController(std::shared_ptr<game::DeviceManager> deviceManager, std::shared_ptr<cnetwork::Network> network, std::shared_ptr<graphic::GameComponent> gameComponent)
 		: deviceManager_{deviceManager}
 		, network_{network}
 		, gameComponent_{gameComponent} {
 
-		connections_ += network_->networkEvent.connect([this](const network::NetworkEvent& networkEvent) {
+		connections_ += network_->networkEvent.connect([this](const cnetwork::NetworkEvent& networkEvent) {
 			std::visit([&](auto&& event) {
 				onNetworkEvent(event);
 			}, networkEvent);
@@ -50,44 +50,44 @@ namespace mwetris {
 		});
 	}
 
-	void TetrisController::onNetworkEvent(const network::PlayerSlotEvent& playerSlotEvent) {
+	void TetrisController::onNetworkEvent(const cnetwork::PlayerSlotEvent& playerSlotEvent) {
 		tetrisEvent(PlayerSlotEvent{
 			.playerSlot = playerSlotEvent.playerSlot,
 			.slot = playerSlotEvent.index
 		});
 	}
 
-	void TetrisController::onNetworkEvent(const network::GameRoomEvent& gameRoomEvent) {
+	void TetrisController::onNetworkEvent(const cnetwork::GameRoomEvent& gameRoomEvent) {
 		gameRoomClients_ = gameRoomEvent.gameRoomClients;
 	}
 
-	void TetrisController::onNetworkEvent(const network::RestartEvent& restartEvent) {
+	void TetrisController::onNetworkEvent(const cnetwork::RestartEvent& restartEvent) {
 		rules_->restart();
 		tetrisGame_.restart();
 	}
 
-	void TetrisController::onNetworkEvent(const network::JoinGameRoomEvent& joinGameRoomEvent) {
+	void TetrisController::onNetworkEvent(const cnetwork::JoinGameRoomEvent& joinGameRoomEvent) {
 		setGameRoomType(GameRoomType::NetworkGameRoomLooby);
 	}
 
-	void TetrisController::onNetworkEvent(const network::PauseEvent& pauseEvent) {
+	void TetrisController::onNetworkEvent(const cnetwork::PauseEvent& pauseEvent) {
 		tetrisGame_.setPause(pauseEvent.pause);
 	}
 
-	void TetrisController::onNetworkEvent(const network::CreateGameEvent& createGameEvent) {
+	void TetrisController::onNetworkEvent(const cnetwork::CreateGameEvent& createGameEvent) {
 		gameRoomType_ = GameRoomType::GameSession;
 		createGame(createGameEvent.players, createGameEvent.gameRulesConfig);
 	}
 
-	void TetrisController::onNetworkEvent(const network::LeaveGameRoomEvent& leaveGameRoomEvent) {
+	void TetrisController::onNetworkEvent(const cnetwork::LeaveGameRoomEvent& leaveGameRoomEvent) {
 		setGameRoomType(GameRoomType::OutsideGameRoom);
 	}
 
-	void TetrisController::onNetworkEvent(const network::ClientDisconnectedEvent& clientDisconnectedEvent) {
+	void TetrisController::onNetworkEvent(const cnetwork::ClientDisconnectedEvent& clientDisconnectedEvent) {
 		// TODO! Handle client disconnect from server.
 	}
 
-	void TetrisController::onNetworkEvent(const network::GameRoomListEvent& gameRoomListEvent) {
+	void TetrisController::onNetworkEvent(const cnetwork::GameRoomListEvent& gameRoomListEvent) {
 		tetrisEvent(gameRoomListEvent);
 	}
 
@@ -96,7 +96,7 @@ namespace mwetris {
 		tetrisEvent(gameRoomConfigEvent);
 	}
 
-	void TetrisController::onNetworkEvent(const network::NetworkErrorEvent& networkErrorEvent) {
+	void TetrisController::onNetworkEvent(const cnetwork::NetworkErrorEvent& networkErrorEvent) {
 		if (network_->isInsideGameRoom()) {
 			// Only for network games.
 			setGameRoomType(GameRoomType::OutsideGameRoom);

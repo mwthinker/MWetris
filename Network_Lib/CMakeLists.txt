@@ -61,17 +61,15 @@ target_compile_definitions(Network_Lib
 		# ASIO non-boost version.
 		ASIO_STANDALONE
 		ASIO_NO_DEPRECATED
-		ASIO_NO_DYNAMIC_BUFFER_V1
 )
 
 if (MSVC)
 	target_compile_definitions(Network_Lib
 		PUBLIC
 			_CRT_SECURE_NO_WARNINGS
-			NOMINMAX
 
 			# ASIO related.
-			_WIN32_WINNT=_WIN32_WINNT_WS03
+			_WIN32_WINNT=0x0A00 # _WIN32_WINNT_WIN10
 			_WINSOCK_DEPRECATED_NO_WARNINGS
 	)
 	target_compile_options(Network_Lib

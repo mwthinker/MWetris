@@ -9,7 +9,7 @@
 #include "../game/devicemanager.h"
 #include "../game/tetrisgameevent.h"
 #include "../ui/subwindow.h"
-#include "../network/networkevent.h"
+#include "../cnetwork/networkevent.h"
 
 #include <network/client.h>
 
@@ -22,7 +22,7 @@ namespace mwetris {
 	struct CreateGameEvent;
 	struct GameRoomEvent;
 
-	namespace network {
+	namespace cnetwork {
 
 		class Network;
 		struct GameRoomListEvent;
@@ -37,7 +37,7 @@ namespace mwetris::ui {
 	public:
 		TetrisWindow(const std::string& windowName, Type type, sdl::Window& window,
 			std::shared_ptr<game::DeviceManager> deviceManager,
-			std::shared_ptr<network::Network> network
+			std::shared_ptr<cnetwork::Network> network
 		);
 
 		~TetrisWindow();
@@ -55,9 +55,9 @@ namespace mwetris::ui {
 		void onTetrisEvent(const game::GameOver& gameOver);
 		void onTetrisEvent(const PlayerSlotEvent& playerSlotEvent);
 		void onTetrisEvent(const mwetris::GameRoomEvent& gameRoomEvent);
-		void onTetrisEvent(const network::GameRoomListEvent& gameRoomListEvent);
+		void onTetrisEvent(const cnetwork::GameRoomListEvent& gameRoomListEvent);
 		void onTetrisEvent(const game::GameRoomConfigEvent& gameRoomConfigEvent);
-		void onTetrisEvent(const network::NetworkErrorEvent& networkErrorEvent);
+		void onTetrisEvent(const cnetwork::NetworkErrorEvent& networkErrorEvent);
 
 		void initPreLoop();
 		int getCurrentMonitorHz() const;

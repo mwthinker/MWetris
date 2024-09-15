@@ -5,7 +5,7 @@
 
 #include <google/protobuf/message_lite.h>
 
-namespace mwetris::network {
+namespace network {
 
 	struct ConnectedClient {
 		ClientId clientId;

@@ -7,7 +7,7 @@
 #include <concepts>
 #include <vector>
 
-namespace mwetris::network {
+namespace network {
 
 	template <typename Message>
 	concept MessageLite = std::derived_from<Message, google::protobuf::MessageLite>;

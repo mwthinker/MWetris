@@ -3,7 +3,7 @@
 
 #include <chrono>
 
-namespace mwetris::util {
+namespace network {
 	
 	template<class>
 	inline constexpr bool always_false_v = false;

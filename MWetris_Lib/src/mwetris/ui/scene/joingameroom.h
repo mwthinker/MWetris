@@ -26,7 +26,7 @@ namespace mwetris {
 
 	}
 
-	namespace network {
+	namespace cnetwork {
 
 		class Network;
 
@@ -52,7 +52,7 @@ namespace mwetris::ui::scene {
 		std::string serverId_ = "";
 		std::string filter_ = "";
 		mw::signals::ScopedConnections connections_;
-		std::vector<network::GameRoomListEvent::GameRoom> gameRooms_;
+		std::vector<cnetwork::GameRoomListEvent::GameRoom> gameRooms_;
 	};
 
 }

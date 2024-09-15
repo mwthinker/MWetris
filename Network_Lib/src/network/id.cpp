@@ -2,7 +2,7 @@
 
 #include <protocol/shared.pb.h>
 
-namespace mwetris::network {
+namespace network {
 
 	namespace {
 

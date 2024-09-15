@@ -13,7 +13,7 @@
 #include <string>
 #include <queue>
 
-namespace mwetris::network {
+namespace network {
 
 	class TcpServer : public ServerCore, public std::enable_shared_from_this<TcpServer> {
 	public:

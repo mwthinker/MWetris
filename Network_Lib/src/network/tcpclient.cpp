@@ -6,12 +6,12 @@
 
 using namespace std::chrono_literals;
 
-namespace mwetris::network {
+namespace network {
 
 	std::shared_ptr<TcpClient> TcpClient::connectToServer(asio::io_context& ioContext, const std::string& ip, int port) {
 		auto client = std::shared_ptr<TcpClient>{new TcpClient{ioContext, ip, port}};
 
-		spawnCoroutine(client);
+		client->spawnCoroutine();
 		return client;
 	}
 
@@ -41,7 +41,7 @@ namespace mwetris::network {
 		}
 
 		try {
-			spawnCoroutine(shared_from_this());
+			spawnCoroutine();
 		} catch (const asio::system_error& e) {
 			spdlog::error("[TcpClient] {} Reconnect Exception: {}", name_, e.what());
 		}
@@ -72,20 +72,20 @@ namespace mwetris::network {
 		}
 	}
 
-	void TcpClient::spawnCoroutine(std::shared_ptr<TcpClient> client) {
-		if (client->connected_) {
+	void TcpClient::spawnCoroutine() {
+		if (connected_) {
 			spdlog::debug("[TcpClient] Can't reconnect, already connected.");
 			return;
 		}
-		if (!client->isStopped_) {
+		if (!isStopped_) {
 			spdlog::debug("[TcpClient] Can't reconnect, must be stopped first.");
 			return;
 		}
 
-		asio::co_spawn(client->getIoContext(), [client]() -> asio::awaitable<void> {
-			auto coClient = client; // To keep shared_ptr alive in coroutine.
-
-			co_await coClient->connect();
+		asio::co_spawn(ioContext_, [tmp = shared_from_this()]() -> asio::awaitable<void> {
+			auto client = std::move(tmp); // To keep shared_ptr alive in coroutine.
+			
+			co_await client->connect();
 		}, asio::detached);
 	}
 
@@ -97,7 +97,7 @@ namespace mwetris::network {
 		, name_{"TcpClient_Network"} {
 	
 		assert(port > 0 && port < 65536);
-		endpoint_ = asio::ip::tcp::endpoint{asio::ip::make_address_v4(ip), static_cast<asio::ip::port_type>(port)};	
+		endpoint_ = asio::ip::tcp::endpoint{asio::ip::make_address_v4(ip), static_cast<asio::ip::port_type>(port)};
 	}
 
 	TcpClient::TcpClient(asio::io_context& ioContext, asio::ip::tcp::socket socket)
@@ -116,7 +116,9 @@ namespace mwetris::network {
 	}
 
 	asio::awaitable<ProtobufMessage> TcpClient::receive() {
-		auto message = co_await receive(shared_from_this());
+		auto shared = shared_from_this();
+
+		auto message = co_await receive(shared);
 		co_return message;
 	}
 
@@ -128,10 +130,6 @@ namespace mwetris::network {
 	}
 
 	asio::awaitable<ProtobufMessage> TcpClient::asyncRead() {
-		if (!connected_) {
-			throw std::runtime_error("Not connected");
-		}
-
 		ProtobufMessage protobufMessage;
 		queue_.acquire(protobufMessage);
 
@@ -143,9 +141,9 @@ namespace mwetris::network {
 			// Read body.
 			protobufMessage.reserveBodySize();
 			size = co_await socket_.async_read_some(protobufMessage.getMutableBodyBuffer(), asio::use_awaitable);
-		} catch (const asio::system_error& e) {
+		} catch (const std::exception& e) {
 			spdlog::error("[TcpClient] {} async_read Exception: {}", name_, e.what());
-			// TODO! When to stop?
+			
 			stop();
 			throw e;
 		}
@@ -158,11 +156,12 @@ namespace mwetris::network {
 			co_return;
 		}
 
-		waitingToConnect_.expires_after(0s);
+		waitingToConnect_.expires_after(5s);
 		while (!connected_) {
 			co_await waitingToConnect_.async_wait(asio::use_awaitable);
 			waitingToConnect_.expires_after(0s);
 		}
+		co_return;
 	}
 
 	void TcpClient::send(ProtobufMessage&& message) {

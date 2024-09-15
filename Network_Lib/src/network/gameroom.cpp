@@ -8,7 +8,7 @@
 
 #include <spdlog/spdlog.h>
 
-namespace mwetris::network {
+namespace network {
 
 	namespace {
 

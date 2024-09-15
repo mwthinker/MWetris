@@ -19,7 +19,7 @@
 
 #include <chrono>
 
-namespace mwetris::network {
+namespace mwetris::cnetwork {
 
 	class Network : public std::enable_shared_from_this<Network> {
 	public:
@@ -27,12 +27,12 @@ namespace mwetris::network {
 
 		struct NetworkPlayer {
 			game::PlayerPtr player;
-			PlayerId playerId;
-			ClientId clientId;
+			network::PlayerId playerId;
+			network::ClientId clientId;
 			bool connected = true;
 		};
 
-		explicit Network(std::shared_ptr<Client> client);
+		explicit Network(std::shared_ptr<network::Client> client);
 
 		void start();
 
@@ -44,7 +44,7 @@ namespace mwetris::network {
 
 		~Network();
 
-		const GameRoomId& getGameRoomId() const;
+		const network::GameRoomId& getGameRoomId() const;
 
 		void startGame(const game::GameRulesConfig& gameRulesConfig);
 
@@ -58,11 +58,11 @@ namespace mwetris::network {
 
 		void setPlayerSlot(const game::PlayerSlot& playerSlot, int index);
 
-		void joinGameRoom(const GameRoomId& gameRoomId);
+		void joinGameRoom(const network::GameRoomId& gameRoomId);
 
 		bool isInsideRoom() const;
 
-		void removeClient(const ClientId& clientId);
+		void removeClient(const network::ClientId& clientId);
 
 		void requestGameRoomList();
 
@@ -131,10 +131,10 @@ namespace mwetris::network {
 		
 		tp_c2s::Wrapper wrapperToServer_;
 		tp_s2c::Wrapper wrapperFromServer_;
-		std::shared_ptr<Client> client_;
-		GameRoomId gameRoomId_;
+		std::shared_ptr<network::Client> client_;
+		network::GameRoomId gameRoomId_;
 		bool running_ = true;
-		ClientId clientId_;
+		network::ClientId clientId_;
 		asio::high_resolution_timer timer_;
 		bool public_ = false;
 	};

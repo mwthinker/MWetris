@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace mwetris::network {
+namespace network {
 
 	class GameRoom {
 	public:

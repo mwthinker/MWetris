@@ -229,11 +229,11 @@ void runServer(int port) {
 
 	asio::io_context ioContext;
 
-	auto settings = mwetris::network::TcpServer::Settings{
+	auto settings = network::TcpServer::Settings{
 		.port = port
 	};
 
-	auto server = std::make_shared<mwetris::network::TcpServer>(ioContext, settings);
+	auto server = std::make_shared<network::TcpServer>(ioContext, settings);
 	server->start();
 	ioContext.run();
 }

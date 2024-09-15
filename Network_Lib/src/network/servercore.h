@@ -16,7 +16,7 @@
 
 #include <optional>
 
-namespace mwetris::network {
+namespace network {
 
 	struct Remote {
 		std::shared_ptr<Client> client;

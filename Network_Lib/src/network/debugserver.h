@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-namespace mwetris::network {
+namespace network {
 
 	class DebugServer : public ServerCore, public std::enable_shared_from_this<DebugServer> {
 	public:

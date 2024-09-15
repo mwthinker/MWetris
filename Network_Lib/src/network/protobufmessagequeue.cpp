@@ -1,6 +1,6 @@
 #include "protobufmessagequeue.h"
 
-namespace mwetris::network {
+namespace network {
 
 	ProtobufMessageQueue::ProtobufMessageQueue(int messageSize)
 		: messageSize_{messageSize} {

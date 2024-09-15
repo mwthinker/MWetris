@@ -18,7 +18,7 @@
 
 #include <asio.hpp>
 
-namespace mwetris::network {
+namespace mwetris::cnetwork {
 
 	namespace {
 
@@ -51,10 +51,10 @@ namespace mwetris::network {
 			}, gameRoomConfig);
 		}
 
-		std::vector<GameRoomClient> extractGameRoomClients(const tp_s2c::GameRoomClients& tpGameRoomClients) {
-			std::vector<GameRoomClient> gameRoomClients;
+		std::vector<network::GameRoomClient> extractGameRoomClients(const tp_s2c::GameRoomClients& tpGameRoomClients) {
+			std::vector<network::GameRoomClient> gameRoomClients;
 			for (const auto& client : tpGameRoomClients.clients()) {
-				gameRoomClients.push_back(GameRoomClient{
+				gameRoomClients.push_back(network::GameRoomClient{
 					.clientId = client.client_id(),
 					.connectionId = client.connection_id()
 				});
@@ -65,7 +65,7 @@ namespace mwetris::network {
 	}
 		
 
-	Network::Network(std::shared_ptr<Client> client)
+	Network::Network(std::shared_ptr<network::Client> client)
 		: client_{client}
 		, timer_{client->getIoContext()} {
 
@@ -88,7 +88,7 @@ namespace mwetris::network {
 	void Network::stop() {
 		client_->stop();
 		// To avoid getting stuck
-		gameRoomId_ = GameRoomId{};
+		gameRoomId_ = network::GameRoomId{};
 
 		// To be able to stop the coroutine
 		running_ = false;
@@ -104,7 +104,7 @@ namespace mwetris::network {
 		running_ = false;
 	}
 
-	const GameRoomId& Network::getGameRoomId() const {
+	const network::GameRoomId& Network::getGameRoomId() const {
 		return gameRoomId_;
 	}
 
@@ -198,7 +198,7 @@ namespace mwetris::network {
 		}
 	}
 
-	void Network::joinGameRoom(const GameRoomId& gameRoomId) {
+	void Network::joinGameRoom(const network::GameRoomId& gameRoomId) {
 		if (isInsideRoom()) {
 			spdlog::warn("[Network] Can't join room, already inside a room");
 			return;
@@ -216,7 +216,7 @@ namespace mwetris::network {
 		return !gameRoomId_.isEmpty();
 	}
 
-	void Network::removeClient(const ClientId& clientId) {
+	void Network::removeClient(const network::ClientId& clientId) {
 		wrapperToServer_.Clear();
 		auto removeClient = wrapperToServer_.mutable_remove_client();
 		fromCppToProto(clientId, *removeClient->mutable_client_id());
@@ -315,7 +315,7 @@ namespace mwetris::network {
 		network->networkEvent(NetworkErrorEvent{
 			.insideGameRoom = network->isInsideGameRoom()
 		});
-		network->gameRoomId_ = GameRoomId{}; // Room destroyed.
+		network->gameRoomId_ = network::GameRoomId{}; // Room destroyed.
 		network->networkSlots_.clear();
 		network->aiBySlotIndex_.clear();
 		network->connections_.clear();
@@ -331,7 +331,7 @@ namespace mwetris::network {
 	asio::awaitable<void> Network::nextMessage(std::shared_ptr<Network> network) {
 		bool valid = false;
 		do {
-			ProtobufMessage message = co_await network->client_->receive();
+			network::ProtobufMessage message = co_await network->client_->receive();
 			valid = message.getSize() > 0;
 			if (valid) {
 				network->wrapperFromServer_.Clear();
@@ -437,10 +437,10 @@ namespace mwetris::network {
 					}
 					break;
 				case tp_s2c::GameLooby_SlotType_OPEN_SLOT:
-					networkSlots_.emplace_back(game::OpenSlot{}, ClientId{});
+					networkSlots_.emplace_back(game::OpenSlot{}, network::ClientId{});
 					break;
 				case tp_s2c::GameLooby_SlotType_CLOSED_SLOT:
-					networkSlots_.emplace_back(game::ClosedSlot{}, ClientId{});
+					networkSlots_.emplace_back(game::ClosedSlot{}, network::ClientId{});
 					break;
 				default:
 					continue;
@@ -658,7 +658,7 @@ namespace mwetris::network {
 	void Network::handleLeaveGameRoom(const tp_s2c::LeaveGameRoom& leaveGameRoom) {
 		spdlog::info("[Network] LeaveGameRoom: {}", leaveGameRoom.game_room_id());
 		if (leaveGameRoom.client_id() == clientId_) {
-			gameRoomId_ = GameRoomId{};
+			gameRoomId_ = network::GameRoomId{};
 			networkEvent(LeaveGameRoomEvent{
 				.clientId = leaveGameRoom.client_id(),
 			});
@@ -685,7 +685,7 @@ namespace mwetris::network {
 	}
 
 	void Network::send(const tp_c2s::Wrapper& wrapper) {
-		ProtobufMessage message;
+		network::ProtobufMessage message;
 		client_->acquire(message);
 		message.setBuffer(wrapper);
 		client_->send(std::move(message));

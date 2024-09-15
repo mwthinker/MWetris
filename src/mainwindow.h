@@ -5,7 +5,7 @@
 
 #include <mwetris/ui/subwindow.h>
 #include <mwetris/game/devicemanager.h>
-#include <mwetris/network/debugserver.h>
+#include <network/debugserver.h>
 
 #include <network/servercore.h>
 
@@ -46,7 +46,7 @@ private:
 	asio::io_context ioContext_; // Must be declared first to guarantee destruction order.
 	std::vector<std::unique_ptr<mwetris::ui::SubWindow>> subWindows_;
 	std::shared_ptr<mwetris::game::DeviceManager> deviceManager_;
-	std::shared_ptr<mwetris::network::ServerCore> server_;
+	std::shared_ptr<network::ServerCore> server_;
 	Config config_;
 };
 

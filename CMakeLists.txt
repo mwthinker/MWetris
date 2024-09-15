@@ -124,12 +124,6 @@ target_include_directories(MWetris
 )
 
 if (MSVC)
-	target_compile_definitions(MWetris
-		PUBLIC
-			_CRT_SECURE_NO_WARNINGS
-			NOMINMAX
-	)
-
 	target_compile_options(MWetris
 		PUBLIC
 			/W3 /WX /permissive-

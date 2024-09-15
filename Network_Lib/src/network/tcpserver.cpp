@@ -8,7 +8,7 @@
 
 #include <queue>
 
-namespace mwetris::network {
+namespace network {
 
 	TcpServer::TcpServer(asio::io_context& ioContext, const Settings& settings)
 		: ServerCore(ioContext)

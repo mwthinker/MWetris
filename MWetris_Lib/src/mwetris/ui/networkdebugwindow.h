@@ -10,7 +10,7 @@
 #include <sdl/imguiwindow.h>
 #include <signal.h>
 
-namespace mwetris::network {
+namespace network {
 
 	class DebugClient;
 

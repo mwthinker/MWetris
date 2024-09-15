@@ -13,7 +13,7 @@
 
 using namespace ::testing;
 
-namespace mwetris::network {
+namespace network {
 
 	class ProtobufMessageTest : public ::testing::Test {
 	protected:

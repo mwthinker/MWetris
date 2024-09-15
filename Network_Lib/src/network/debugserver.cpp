@@ -17,7 +17,7 @@
 #include <queue>
 #include <variant>
 
-namespace mwetris::network {
+namespace network {
 
 	DebugServer::DebugServer(asio::io_context& ioContext)
 		: ServerCore{ioContext} {
@@ -29,7 +29,6 @@ namespace mwetris::network {
 	asio::awaitable<void> DebugServer::run() {
 		for (const auto& [_, remote] : remoteByClientId_) {
 			asio::co_spawn(ioContext_, [this, rm = remote]() mutable -> asio::awaitable<void> {
-				//co_await remote.client->receive();
 				co_await receivedFromClient(rm);
 			}, asio::detached);
 		}

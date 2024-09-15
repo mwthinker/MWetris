@@ -5,7 +5,7 @@
 #include "game/devicemanager.h"
 #include "game/playerslot.h"
 #include "game/tetrisgame.h"
-#include "network/network.h"
+#include "cnetwork/network.h"
 #include "ui/imguiextra.h"
 #include "util/auxiliary.h"
 
@@ -34,7 +34,7 @@ namespace mwetris::ui::scene {
 		: tetrisController_{tetrisController} {
 
 		connections_ += tetrisController_->tetrisEvent.connect([this](const TetrisEvent& event) {
-			if (auto gameRoomListEvent = std::get_if<network::GameRoomListEvent>(&event)) {
+			if (auto gameRoomListEvent = std::get_if<cnetwork::GameRoomListEvent>(&event)) {
 				//gameRooms_ = gameRoomListEvent->gameRooms;
 			}
 		});

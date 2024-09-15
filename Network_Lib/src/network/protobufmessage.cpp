@@ -1,6 +1,6 @@
 #include "protobufmessage.h"
 
-namespace mwetris::network {
+namespace network {
 
 	ProtobufMessage::ProtobufMessage() {
 	}
