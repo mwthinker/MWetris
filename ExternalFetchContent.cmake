@@ -1,21 +1,23 @@
 include(FetchContent)
 # Load external github projects
-FetchContent_Declare(CppSdl2
-	GIT_REPOSITORY
-		https://github.com/mwthinker/CppSdl2.git
-	GIT_TAG
-		f2dabd127ac92b0c69d435940e716a8bfdec2656
-	OVERRIDE_FIND_PACKAGE
-)
+if (NOT GAME_SERVER_ONLY)
+	FetchContent_Declare(CppSdl2
+		GIT_REPOSITORY
+			https://github.com/mwthinker/CppSdl2.git
+		GIT_TAG
+			f2dabd127ac92b0c69d435940e716a8bfdec2656
+		OVERRIDE_FIND_PACKAGE
+	)
+endif()
 
 FetchContent_Declare(SDL_GameControllerDB
 	GIT_REPOSITORY
 		https://github.com/gabomdq/SDL_GameControllerDB.git
 	GIT_TAG
 		99c8ec90ac72eac926aab3a6ce8488d50f0226e0
-)
-FetchContent_MakeAvailable(SDL_GameControllerDB)
-FetchContent_GetProperties(SDL_GameControllerDB
+	)
+	FetchContent_MakeAvailable(SDL_GameControllerDB)
+	FetchContent_GetProperties(SDL_GameControllerDB
 	SOURCE_DIR
 		SDL_GameControllerDB_SOURCE_DIR
 )
@@ -25,9 +27,9 @@ FetchContent_Declare(IconFontCppHeaders
 		https://github.com/juliettef/IconFontCppHeaders.git
 	GIT_TAG
 		173c9b99be9a9980d2eeaf4b627d8c14b344bc68
-)
-FetchContent_Populate(IconFontCppHeaders)
-FetchContent_GetProperties(IconFontCppHeaders
+	)
+	FetchContent_Populate(IconFontCppHeaders)
+	FetchContent_GetProperties(IconFontCppHeaders
 	SOURCE_DIR
 		IconFontCppHeaders_SOURCE_DIR
 )

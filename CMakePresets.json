@@ -46,7 +46,16 @@
                 "X_VCPKG_APPLOCAL_DEPS_INSTALL": {
                     "value": "true",
                     "type": "BOOL"
-                }
+                },
+                "VCPKG_MANIFEST_DIR": "${sourceDir}/Mwetris"
+            }
+        },
+        {
+            "name": "windows-game-server-only",
+            "inherits": "windows",
+            "cacheVariables": {
+                "VCPKG_MANIFEST_DIR": "${sourceDir}/GameServer",
+                "GAME_SERVER_ONLY": "ON"
             }
         },
         {
@@ -57,6 +66,21 @@
                 "type": "inList",
                 "string": "${hostSystemName}",
                 "list": ["Linux", "Darwin"]
+            },
+            "cacheVariables": {
+                "X_VCPKG_APPLOCAL_DEPS_INSTALL": {
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                "VCPKG_MANIFEST_DIR": "${sourceDir}/Mwetris"
+            }
+        },
+        {
+            "name": "unix-game-server-only",
+            "inherits": "unix",
+            "cacheVariables": {
+                "VCPKG_MANIFEST_DIR": "${sourceDir}/GameServer",
+                "GAME_SERVER_ONLY": "ON"
             }
         }
     ]

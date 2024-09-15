@@ -1,0 +1,15 @@
+{
+	"name": "mwetris",
+	"version-string": "0.3.0",
+	"port-version": 0,
+	"homepage": "https://github.com/mwthinker/MWetris",
+	"description": "Simple Tetris like game",
+	"license": "MIT",
+	"dependencies": [
+		"spdlog",
+		"fmt",
+		"protobuf",
+		"asio",
+		"argparse"
+	]
+}

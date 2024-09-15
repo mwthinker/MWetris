@@ -1,4 +1,4 @@
-install(TARGETS ${CMAKE_PROJECT_NAME}
+install(TARGETS MWetris
 	RUNTIME DESTINATION .
 	COMPONENT application
 )
@@ -29,7 +29,6 @@ install(FILES ${CMAKE_SOURCE_DIR}/data/package/USE_APPLICATION_JSON
 	COMPONENT data
 )
 
-
 if (MSVC)
 	# Tell CMake to install the windows runtime libraries to the programs
 	# directory and tell CPack that they belong to the "application" component
@@ -44,11 +43,11 @@ if (MSVC)
 endif ()
 
 set(CPACK_PACKAGE_CONTACT "mwthinker@yahoo.com")
-set(CPACK_PACKAGE_NAME "${CMAKE_PROJECT_NAME}")
+set(CPACK_PACKAGE_NAME "MWetris")
 
 set(CPACK_PACKAGE_VENDOR "mwthinker")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installs ${CMAKE_PROJECT_NAME}")
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_PROJECT_NAME}")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installs MWetris")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "MWetris")
 
 set(CPACK_GENERATOR ZIP)
 
@@ -70,8 +69,8 @@ file(COPY_FILE "${CMAKE_SOURCE_DIR}/LICENSE" "${CMAKE_BINARY_DIR}/WIX_LICENSE.tx
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_BINARY_DIR}/WIX_LICENSE.txt")
 set(CPACK_PACKAGE_ICON "${CMAKE_BINARY_DIR}/images/icon.png")
 
-set(CPACK_PACKAGE_EXECUTABLES "${CMAKE_PROJECT_NAME}" "${CMAKE_PROJECT_NAME}")
-set(CPACK_CREATE_DESKTOP_LINKS "${CMAKE_PROJECT_NAME}")
+set(CPACK_PACKAGE_EXECUTABLES "MWetris" "MWetris")
+set(CPACK_CREATE_DESKTOP_LINKS "MWetris")
 
 # ------------------- WIX ---------------------------------------
 

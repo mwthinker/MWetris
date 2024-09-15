@@ -14,9 +14,9 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            preset: 'windows'
+            preset: windows
           - os: ubuntu-latest
-            preset: 'unix'
+            preset: unix
 
     steps:
       - name: Check out repository code
@@ -84,7 +84,7 @@ jobs:
           files: lcov.info
         if: runner.os == 'Linux'
 
-# Release build
+# Release build all
       - name: Run CMake Release with manifest mode vcpkg
         shell: bash
         run: cmake --preset=${{ matrix.preset }} -B build_release -DTetrisEngine_Test=1 -DUSE_WIX_GENERATOR=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=1
@@ -118,6 +118,11 @@ jobs:
         shell: bash
         run: ./build_release/TetrisEngine/Release/TetrisEngine -p
         if: runner.os == 'Windows'
+
+# Release build network only (just to make sure it compiles)
+      - name: Run CMake Release with manifest mode vcpkg
+        shell: bash
+        run: cmake --preset=${{ matrix.preset }}-game-server-only -B build_release_server -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=1
 
 # Create installer
       - name: Run cpack

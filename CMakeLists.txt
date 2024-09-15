@@ -1,48 +1,24 @@
-cmake_minimum_required(VERSION 3.24)
-project(MWetris
+cmake_minimum_required(VERSION 3.29)
+project(MWetrisProject
 	DESCRIPTION
-		"A C++ Tetris Game"
+		"A C++ Tetris Game project"
 	VERSION
 		${PROJECT_VERSION}
 	LANGUAGES
 		CXX
 )
 
-set(SOURCES
-	src/logger.cpp
-	src/logger.h
-	src/main.cpp
-	src/mainwindow.cpp
-	src/mainwindow.h
+#set_property(GLOBAL PROPERTY USE_FOLDERS On) 
+#set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT MWetris)
 
-	ExternalFetchContent.cmake
-	CPack.cmake
-	vcpkg.json
-)
+#source_group(TREE
+#	${CMAKE_CURRENT_SOURCE_DIR}
+#	FILES
+#		${SOURCES}
+#)
 
-if (MSVC)
-	configure_file(properties.rc ${CMAKE_CURRENT_BINARY_DIR}/properties.rc)
-endif ()
-
-set_property(GLOBAL PROPERTY USE_FOLDERS On) 
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT MWetris)
-
-source_group(TREE
-	${CMAKE_CURRENT_SOURCE_DIR}
-	FILES
-		${SOURCES}
-)
-
+option(GAME_SERVER_ONLY "Game Server only" OFF)
 include(ExternalFetchContent.cmake)
-
-find_package(argparse CONFIG REQUIRED)
-find_package(Threads REQUIRED)
-find_package(nlohmann_json CONFIG REQUIRED)
-find_package(fmt CONFIG REQUIRED)
-
-find_package(CppSdl2 REQUIRED)
-find_package(Signal REQUIRED)
-find_package(Calculator REQUIRED)
 
 extract_git_hash(
 	${CMAKE_CURRENT_SOURCE_DIR}
@@ -64,15 +40,29 @@ message(STATUS "GIT_HASH: ${GIT_HASH} ${GIT_DATE}")
 message(STATUS "CMAKE_PROJECT_VERSION: ${CMAKE_PROJECT_VERSION}")
 message(STATUS "GUID: ${GUID}")
 
-set(ExternalDependencies
-	CppSdl2
-	Calculator
-	ImGui
-)
-if (CppSdl2_Test)
+if (GAME_SERVER_ONLY)
+	set(ExternalDependencies
+		Calculator
+	)
+else ()
+	set(ExternalDependencies
+		CppSdl2
+		Calculator
+		ImGui
+	)
+endif ()
+
+# Copy data to build folder.
+file(COPY ${MWetrisData_SOURCE_DIR}/package DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${MWetrisData_SOURCE_DIR}/images DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${MWetrisData_SOURCE_DIR}/fonts DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY data/. DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${SDL_GameControllerDB_SOURCE_DIR}/gamecontrollerdb.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+if (CppSdl2_Test AND NOT GAME_SERVER_ONLY)
 	set(ExternalDependencieTests "${ExternalDependencieTests};CppSdl2_Test")
 endif ()
-if (CppSdl2_Example)
+if (CppSdl2_Example AND NOT GAME_SERVER_ONLY)
 	set(ExternalDependencieTests "${ExternalDependencieTests};CppSdl2_Example")
 endif ()
 if (Calculator_Test)
@@ -80,6 +70,17 @@ if (Calculator_Test)
 endif ()
 if (Signal_Test)
 	set(ExternalDependencieTests "${ExternalDependencieTests};Signal_Test")
+endif ()
+
+add_subdirectory(Protocol)
+add_subdirectory(Network_Lib)
+add_subdirectory(GameServer)
+add_subdirectory(TetrisEngine)
+
+if (NOT GAME_SERVER_ONLY)
+	add_subdirectory(MWetris_Lib)
+	add_subdirectory(MWetris_Test)
+	add_subdirectory(MWetris)
 endif ()
 
 set_target_properties(
@@ -90,73 +91,4 @@ set_target_properties(
 		ExternalDependencies
 )
 
-add_subdirectory(TetrisEngine)
-add_subdirectory(Protocol)
-add_subdirectory(MWetris_Lib)
-add_subdirectory(MWetris_Test)
-add_subdirectory(GameServer)
-add_subdirectory(Network_Lib)
-
-# Copy data to build folder.
-file(COPY ${MWetrisData_SOURCE_DIR}/package DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY ${MWetrisData_SOURCE_DIR}/images DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY ${MWetrisData_SOURCE_DIR}/fonts DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY data/. DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY ${SDL_GameControllerDB_SOURCE_DIR}/gamecontrollerdb.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
-if (MSVC)
-	add_executable(MWetris
-		${SOURCES}
-		${MWetrisData_SOURCE_DIR}/package/mwetris_icon.rc
-		${CMAKE_CURRENT_BINARY_DIR}/properties.rc
-	)
-else ()
-	add_executable(MWetris
-		${SOURCES}
-	)
-endif ()
-
 option(CODE_COVERAGE "Enable coverage reporting" OFF)
-
-target_include_directories(MWetris
-	PRIVATE
-		src
-)
-
-if (MSVC)
-	target_compile_options(MWetris
-		PUBLIC
-			/W3 /WX /permissive-
-			/MP
-	)
-else ()
-	target_compile_options(MWetris
-		PRIVATE
-			-Wall -pedantic -Wcast-align -Woverloaded-virtual -Wno-unused-parameter -Wno-sign-compare -Wno-unused-function
-	)
-endif ()
-
-target_link_libraries(MWetris
-	PRIVATE
-		argparse::argparse
-		fmt::fmt
-		MWetris_Lib
-)
-
-target_compile_definitions(MWetris
-	PRIVATE
-		GIT_VERSION="${GIT_HASH}"
-		GIT_DATE="${GIT_DATE}"
-		PROJECT_VERSION="${PROJECT_VERSION}"
-		VCPKG_HASH="${VCPKG_HASH}"
-		VCPKG_DATE="${VCPKG_DATE}"
-)
-
-set_target_properties(MWetris
-	PROPERTIES
-		CXX_STANDARD 23
-		CXX_STANDARD_REQUIRED YES
-		CXX_EXTENSIONS NO
-)
-
-include(${CMAKE_CURRENT_SOURCE_DIR}/CPack.cmake)
