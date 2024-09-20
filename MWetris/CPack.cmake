@@ -24,7 +24,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data/
 )
 
 # Replace the USE_APPLICATION_JSON file, use default saving place.
-install(FILES ${CMAKE_SOURCE_DIR}/data/package/USE_APPLICATION_JSON
+install(FILES ${MWetris_SOURCE_DIR}/data/package/USE_APPLICATION_JSON
 	DESTINATION .
 	COMPONENT data
 )
@@ -32,7 +32,7 @@ install(FILES ${CMAKE_SOURCE_DIR}/data/package/USE_APPLICATION_JSON
 if (MSVC)
 	# Tell CMake to install the windows runtime libraries to the programs
 	# directory and tell CPack that they belong to the "application" component
-	set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION ".")
+	set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION .) # May not work for debug dlls
 	set(CMAKE_INSTALL_SYSTEM_RUNTIME_COMPONENT true)
 	include(InstallRequiredSystemLibraries)
 	
@@ -81,10 +81,10 @@ if (MSVC)
 		set(CPACK_WIX_PRODUCT_GUID "${GUID}")
 		set(CPACK_WIX_UPGRADE_GUID "bf1ee6e4-389a-4567-ad2c-61a4d3c71d66")
 
-		set(CPACK_WIX_UI_DIALOG "${CMAKE_BINARY_DIR}/package/dialog.png")
-		set(CPACK_WIX_UI_BANNER "${CMAKE_BINARY_DIR}/package/banner.png")
+		set(CPACK_WIX_UI_DIALOG "${MWetris_BINARY_DIR}/package/dialog.png")
+		set(CPACK_WIX_UI_BANNER "${MWetris_BINARY_DIR}/package/banner.png")
 		
-		set(CPACK_WIX_PRODUCT_ICON "${CMAKE_BINARY_DIR}/package/mwetris.ico")
+		set(CPACK_WIX_PRODUCT_ICON "${MWetris_BINARY_DIR}/package/mwetris.ico")
 		
 		message(STATUS ${CPACK_PACKAGE_ICON})
 		set(CPACK_WIX_PROPERTY_ARPURLINFOABOUT "https://github.com/mwthinker/MWetris")

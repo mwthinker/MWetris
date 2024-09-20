@@ -8,14 +8,7 @@ project(MWetrisProject
 		CXX
 )
 
-#set_property(GLOBAL PROPERTY USE_FOLDERS On) 
-#set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT MWetris)
-
-#source_group(TREE
-#	${CMAKE_CURRENT_SOURCE_DIR}
-#	FILES
-#		${SOURCES}
-#)
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT MWetris)
 
 option(GAME_SERVER_ONLY "Game Server only" OFF)
 include(ExternalFetchContent.cmake)
@@ -51,13 +44,6 @@ else ()
 		ImGui
 	)
 endif ()
-
-# Copy data to build folder.
-file(COPY ${MWetrisData_SOURCE_DIR}/package DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY ${MWetrisData_SOURCE_DIR}/images DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY ${MWetrisData_SOURCE_DIR}/fonts DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY data/. DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY ${SDL_GameControllerDB_SOURCE_DIR}/gamecontrollerdb.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 if (CppSdl2_Test AND NOT GAME_SERVER_ONLY)
 	set(ExternalDependencieTests "${ExternalDependencieTests};CppSdl2_Test")

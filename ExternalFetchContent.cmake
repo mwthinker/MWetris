@@ -15,9 +15,9 @@ FetchContent_Declare(SDL_GameControllerDB
 		https://github.com/gabomdq/SDL_GameControllerDB.git
 	GIT_TAG
 		99c8ec90ac72eac926aab3a6ce8488d50f0226e0
-	)
-	FetchContent_MakeAvailable(SDL_GameControllerDB)
-	FetchContent_GetProperties(SDL_GameControllerDB
+)
+FetchContent_MakeAvailable(SDL_GameControllerDB)
+FetchContent_GetProperties(SDL_GameControllerDB
 	SOURCE_DIR
 		SDL_GameControllerDB_SOURCE_DIR
 )
@@ -27,9 +27,9 @@ FetchContent_Declare(IconFontCppHeaders
 		https://github.com/juliettef/IconFontCppHeaders.git
 	GIT_TAG
 		173c9b99be9a9980d2eeaf4b627d8c14b344bc68
-	)
-	FetchContent_Populate(IconFontCppHeaders)
-	FetchContent_GetProperties(IconFontCppHeaders
+)
+FetchContent_MakeAvailable(IconFontCppHeaders)
+FetchContent_GetProperties(IconFontCppHeaders
 	SOURCE_DIR
 		IconFontCppHeaders_SOURCE_DIR
 )
