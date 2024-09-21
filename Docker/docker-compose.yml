@@ -1,0 +1,11 @@
+services:
+  mwetris:
+    image: mcr.microsoft.com/devcontainers/cpp:debian
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mwetris
+    ports:
+      - "11175:11175"
+    #command: /bin/bash
+    #tty: true
