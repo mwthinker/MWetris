@@ -47,7 +47,7 @@
                     "value": "true",
                     "type": "BOOL"
                 },
-                "VCPKG_MANIFEST_DIR": "${sourceDir}/Mwetris"
+                "VCPKG_MANIFEST_DIR": "${sourceDir}/MWetris"
             }
         },
         {
@@ -72,7 +72,7 @@
                     "value": "true",
                     "type": "BOOL"
                 },
-                "VCPKG_MANIFEST_DIR": "${sourceDir}/Mwetris"
+                "VCPKG_MANIFEST_DIR": "${sourceDir}/MWetris"
             }
         },
         {
