@@ -7,5 +7,3 @@ services:
     container_name: mwetris
     ports:
       - "11175:11175"
-    #command: /bin/bash
-    #tty: true
