@@ -161,23 +161,6 @@ void runClientLan() {
 	ioContext.run();
 }
 
-void testNetwork(int argc, const char* argv[]) {
-	if (argc > 1) {
-		if (strcmp(argv[1], "-h") == 0|| strcmp(argv[1], "--help") == 0) {
-			fmt::print("Test\n");
-		} else if (strcmp(argv[1], "-s") == 0) {
-			runServer();
-		} else if (strcmp(argv[1], "-c") == 0) {
-			runClient();
-		} else if (strcmp(argv[1], "-ss") == 0) {
-			runServerLan();
-		} else if (strcmp(argv[1], "-cc") == 0) {
-			runClientLan();
-		}
-	} else {
-		runServer();
-	}
-}
 */
 #include <network/tcpserver.h>
 
@@ -239,15 +222,10 @@ void runServer(int port) {
 }
 
 int main(int argc, const char* argv[]) {
-	bool ui = false;
 	int port = 11175;
 
 	argparse::ArgumentParser program{"MWetrisServer", PROJECT_VERSION};
 	program.add_description("Server for MWetris.");
-	program.add_argument("-u", "--ui")
-		.help("run with ui")
-		.default_value(ui)
-		.flag();
 	program.add_argument("-p", "--port")
 		.help("tcp/ip port to receive connections from")
 		.default_value(port)
@@ -261,14 +239,9 @@ int main(int argc, const char* argv[]) {
 		return 1;
 	}
 
-	ui = program.get<bool>("-u");
+	port = program.get<int>("-p");
 
-	if (ui) {
-		fmt::print("Start server with ui\n");
-	} else {
-		port = program.get<int>("-p");
-		runServer(port);
-	}
+	runServer(port);
 
 	return 0;
 }

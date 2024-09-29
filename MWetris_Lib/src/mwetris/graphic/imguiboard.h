@@ -42,8 +42,13 @@ namespace mwetris::graphic {
 		float borderSize_ = 2.f;
 		
 		game::PlayerPtr player_;
+
+		struct Row {
+			float y;
+			float time;
+		};
 		
-		std::vector<float> rows_;
+		std::vector<Row> rows_;
 		float height_ = 0.f;
 		sdl::TextureView spriteI_, spriteJ_, spriteL_, spriteO_, spriteS_, spriteT_, spriteZ_;
 		mw::signals::ScopedConnections connections_;

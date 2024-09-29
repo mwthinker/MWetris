@@ -235,7 +235,6 @@ namespace mwetris::cnetwork {
 	}
 
 	asio::awaitable<void> Network::run(std::shared_ptr<Network> network) try {
-		int value = network.use_count();
 		while (network->running_) {
 			// Connect to server
 			co_await nextMessage(network);

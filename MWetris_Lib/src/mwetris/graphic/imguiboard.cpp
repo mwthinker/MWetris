@@ -112,8 +112,8 @@ namespace mwetris::graphic {
 	void ImGuiBoard::handleGameBoardEvent(tetris::BoardEvent boardEvent, int nbr) {
 		switch (boardEvent) {
 			case tetris::BoardEvent::RowToBeRemoved:
-				for (int y = nbr + 1; y < rows_.size(); ++y) {
-					rows_[y] += 1;
+				for (int y = nbr; y < rows_.size(); ++y) {
+					rows_[y].y += 1;
 				}
 				break;
 		}
@@ -215,13 +215,16 @@ namespace mwetris::graphic {
 		rows_.resize(player_->getRows() - 2);
 
 		for (int i = 0; i < player_->getRows() - 2; ++i) {
-			rows_[i] -= 5.0 * deltaTime;
-			if (rows_[i] < 0) {
-				rows_[i] = 0.0;
+			rows_[i].time += deltaTime;
+			float time = 2.f + rows_[i].time;
+			rows_[i].y -= deltaTime * (time * time + time + 2.f);
+			if (rows_[i].y < 0) {
+				rows_[i].y = 0.f;
+				rows_[i].time = 0.f;
 			}
 			for (int j = 0; j < player_->getColumns(); ++j) {
 				float x = squareSize_ * j + cursorPos.x;
-				float y = height_ - squareSize_ * (i + 1) + cursorPos.y - rows_[i] * squareSize_;
+				float y = height_ - squareSize_ * (i + 1) + cursorPos.y - rows_[i].y * squareSize_;
 
 				auto blockType = player_->getBlockType(j, i);
 				if (blockType != tetris::BlockType::Empty
