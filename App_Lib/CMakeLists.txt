@@ -11,89 +11,89 @@ if (MSVC)
 endif ()
 
 set(SOURCES_LIB
-	src/mwetris/graphic/gamecomponent.cpp
-	src/mwetris/graphic/gamecomponent.h
-	src/mwetris/graphic/imguiboard.cpp
-	src/mwetris/graphic/imguiboard.h
+	src/app/graphic/gamecomponent.cpp
+	src/app/graphic/gamecomponent.h
+	src/app/graphic/imguiboard.cpp
+	src/app/graphic/imguiboard.h
 	
-	src/mwetris/game/actionhandler.cpp
-	src/mwetris/game/actionhandler.h
-	src/mwetris/game/computer.cpp
-	src/mwetris/game/computer.h
-	src/mwetris/game/defaultgamerules.h
-	src/mwetris/game/devicemanager.cpp
-	src/mwetris/game/devicemanager.h
-	src/mwetris/game/device.h
-	src/mwetris/game/input.h
-	src/mwetris/game/gamepad.cpp
-	src/mwetris/game/gamepad.h
-	src/mwetris/game/gamerules.h
-	src/mwetris/game/keyboard.cpp
-	src/mwetris/game/keyboard.h
-	src/mwetris/game/player.h
-	src/mwetris/game/player.cpp
-	src/mwetris/game/playerboardevent.h
-	src/mwetris/game/playerslot.h
-	src/mwetris/game/tetrisgame.cpp
-	src/mwetris/game/tetrisgameevent.h
-	src/mwetris/game/tetrisgame.h
-	src/mwetris/game/tetrisboardcontroller.h
-	src/mwetris/game/serialize.cpp
-	src/mwetris/game/serialize.h
-	src/mwetris/game/serializehighscore.cpp
-	src/mwetris/game/serializehighscore.h
-	src/mwetris/game/tetrisparameters.h
+	src/app/game/actionhandler.cpp
+	src/app/game/actionhandler.h
+	src/app/game/computer.cpp
+	src/app/game/computer.h
+	src/app/game/defaultgamerules.h
+	src/app/game/devicemanager.cpp
+	src/app/game/devicemanager.h
+	src/app/game/device.h
+	src/app/game/input.h
+	src/app/game/gamepad.cpp
+	src/app/game/gamepad.h
+	src/app/game/gamerules.h
+	src/app/game/keyboard.cpp
+	src/app/game/keyboard.h
+	src/app/game/player.h
+	src/app/game/player.cpp
+	src/app/game/playerboardevent.h
+	src/app/game/playerslot.h
+	src/app/game/tetrisgame.cpp
+	src/app/game/tetrisgameevent.h
+	src/app/game/tetrisgame.h
+	src/app/game/tetrisboardcontroller.h
+	src/app/game/serialize.cpp
+	src/app/game/serialize.h
+	src/app/game/serializehighscore.cpp
+	src/app/game/serializehighscore.h
+	src/app/game/tetrisparameters.h
 
-	src/mwetris/cnetwork/network.cpp
-	src/mwetris/cnetwork/network.h
-	src/mwetris/cnetwork/networkevent.h
+	src/app/cnetwork/network.cpp
+	src/app/cnetwork/network.h
+	src/app/cnetwork/networkevent.h
 	
-	src/mwetris/ui/scene/about.cpp
-	src/mwetris/ui/scene/about.h
-	src/mwetris/ui/scene/addplayer.cpp
-	src/mwetris/ui/scene/addplayer.h
-	src/mwetris/ui/scene/creategameroom.cpp
-	src/mwetris/ui/scene/creategameroom.h
-	src/mwetris/ui/scene/gameroomlobby.cpp
-	src/mwetris/ui/scene/gameroomlobby.h
-	src/mwetris/ui/scene/highscore.cpp
-	src/mwetris/ui/scene/highscore.h
-	src/mwetris/ui/scene/joingameroom.cpp
-	src/mwetris/ui/scene/joingameroom.h
-	src/mwetris/ui/scene/networkerror.cpp
-	src/mwetris/ui/scene/networkerror.h
-	src/mwetris/ui/scene/newhighscore.cpp
-	src/mwetris/ui/scene/newhighscore.h
-	src/mwetris/ui/scene/play.cpp
-	src/mwetris/ui/scene/play.h
-	src/mwetris/ui/scene/resume.cpp
-	src/mwetris/ui/scene/resume.h
-	src/mwetris/ui/scene/scene.h
-	src/mwetris/ui/scene/settings.cpp
-	src/mwetris/ui/scene/settings.h
-	src/mwetris/ui/scene/statemachine.cpp
-	src/mwetris/ui/scene/statemachine.h
+	src/app/ui/scene/about.cpp
+	src/app/ui/scene/about.h
+	src/app/ui/scene/addplayer.cpp
+	src/app/ui/scene/addplayer.h
+	src/app/ui/scene/creategameroom.cpp
+	src/app/ui/scene/creategameroom.h
+	src/app/ui/scene/gameroomlobby.cpp
+	src/app/ui/scene/gameroomlobby.h
+	src/app/ui/scene/highscore.cpp
+	src/app/ui/scene/highscore.h
+	src/app/ui/scene/joingameroom.cpp
+	src/app/ui/scene/joingameroom.h
+	src/app/ui/scene/networkerror.cpp
+	src/app/ui/scene/networkerror.h
+	src/app/ui/scene/newhighscore.cpp
+	src/app/ui/scene/newhighscore.h
+	src/app/ui/scene/play.cpp
+	src/app/ui/scene/play.h
+	src/app/ui/scene/resume.cpp
+	src/app/ui/scene/resume.h
+	src/app/ui/scene/scene.h
+	src/app/ui/scene/settings.cpp
+	src/app/ui/scene/settings.h
+	src/app/ui/scene/statemachine.cpp
+	src/app/ui/scene/statemachine.h
 
-	src/mwetris/ui/imguiextra.cpp
-	src/mwetris/ui/imguiextra.h
-	src/mwetris/ui/networkdebugwindow.cpp
-	src/mwetris/ui/networkdebugwindow.h
-	src/mwetris/ui/subwindow.h
-	src/mwetris/ui/tetriswindow.cpp
-	src/mwetris/ui/tetriswindow.h
+	src/app/ui/imguiextra.cpp
+	src/app/ui/imguiextra.h
+	src/app/ui/networkdebugwindow.cpp
+	src/app/ui/networkdebugwindow.h
+	src/app/ui/subwindow.h
+	src/app/ui/tetriswindow.cpp
+	src/app/ui/tetriswindow.h
 
-	src/mwetris/util/auxiliary.h
-	src/mwetris/util/protofile.h
-	src/mwetris/util/uuid.cpp
-	src/mwetris/util/uuid.h
+	src/app/util/auxiliary.h
+	src/app/util/protofile.h
+	src/app/util/uuid.cpp
+	src/app/util/uuid.h
 	
-	src/mwetris/tetriscontroller.cpp
-	src/mwetris/tetriscontroller.h
-	src/mwetris/configuration.cpp
-	src/mwetris/configuration.h
-	src/mwetris/timerhandler.cpp
-	src/mwetris/timerhandler.h
-	src/mwetris/types.h
+	src/app/tetriscontroller.cpp
+	src/app/tetriscontroller.h
+	src/app/configuration.cpp
+	src/app/configuration.h
+	src/app/timerhandler.cpp
+	src/app/timerhandler.h
+	src/app/types.h
 )
 
 find_package(Threads REQUIRED)
@@ -117,7 +117,7 @@ target_include_directories(App_Lib
 	PUBLIC
 		src/
 	PRIVATE
-		src/mwetris/
+		src/app/
 		${IconFontCppHeaders_SOURCE_DIR}
 )
 

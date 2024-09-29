@@ -1,25 +1,25 @@
 #include "mainwindow.h"
 
-#include <mwetris/configuration.h>
+#include <app/configuration.h>
 
-#include <mwetris/ui/networkdebugwindow.h>
-#include <mwetris/ui/tetriswindow.h>
-#include <mwetris/cnetwork/network.h>
+#include <app/ui/networkdebugwindow.h>
+#include <app/ui/tetriswindow.h>
+#include <app/cnetwork/network.h>
 
 #include <network/tcpclient.h>
 #include <network/tcpserver.h>
 
-#include <mwetris/ui/tetriswindow.h>
+#include <app/ui/tetriswindow.h>
 
 MainWindow::MainWindow(const Config& config) 
 	: config_{config} {
 
-	setPosition(mwetris::Configuration::getInstance().getWindowPositionX(), mwetris::Configuration::getInstance().getWindowPositionY());
-	setSize(mwetris::Configuration::getInstance().getWindowWidth(), mwetris::Configuration::getInstance().getWindowHeight());
+	setPosition(app::Configuration::getInstance().getWindowPositionX(), app::Configuration::getInstance().getWindowPositionY());
+	setSize(app::Configuration::getInstance().getWindowWidth(), app::Configuration::getInstance().getWindowHeight());
 	setResizeable(true);
 	setTitle("MWetris");
-	setIcon(mwetris::Configuration::getInstance().getWindowIcon());
-	setBordered(mwetris::Configuration::getInstance().isWindowBordered());
+	setIcon(app::Configuration::getInstance().getWindowIcon());
+	setBordered(app::Configuration::getInstance().isWindowBordered());
 	setShowDemoWindow(config.showDemoWindow);
 }
 
@@ -29,7 +29,7 @@ MainWindow::~MainWindow() {
 	}
 	ioContext_.stop();
 	ioContext_.run();
-	mwetris::Configuration::getInstance().quit();
+	app::Configuration::getInstance().quit();
 }
 
 void MainWindow::initPreLoop() {
@@ -37,11 +37,11 @@ void MainWindow::initPreLoop() {
 
 	ImGui::GetIO().Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 12); // Used by demo window.
 	
-	mwetris::Configuration::getInstance().getImGuiButtonFont();
-	mwetris::Configuration::getInstance().getImGuiDefaultFont();
-	mwetris::Configuration::getInstance().getImGuiHeaderFont();
+	app::Configuration::getInstance().getImGuiButtonFont();
+	app::Configuration::getInstance().getImGuiDefaultFont();
+	app::Configuration::getInstance().getImGuiHeaderFont();
 
-	deviceManager_ = std::make_shared<mwetris::game::DeviceManager>();
+	deviceManager_ = std::make_shared<app::game::DeviceManager>();
 
 	switch (config_.network) {
 		case Network::SingleTcpClient:
@@ -59,36 +59,36 @@ void MainWindow::initPreLoop() {
 	}
 
 	if (config_.showDebugWindow && server_) {
-		subWindows_.push_back(std::make_unique<mwetris::ui::NetworkDebugWindow>(server_));
+		subWindows_.push_back(std::make_unique<app::ui::NetworkDebugWindow>(server_));
 	}
 }
 
 void MainWindow::initSingleTcpClient() {
-	auto [ip, port] = mwetris::Configuration::getInstance().getNetwork().server;
+	auto [ip, port] = app::Configuration::getInstance().getNetwork().server;
 	for (int i = 0; i < config_.windows; ++i) {
 		auto tcpClient = network::TcpClient::connectToServer(ioContext_, ip, port);
-		auto type = (i == 0) ? mwetris::ui::TetrisWindow::Type::MainWindow : mwetris::ui::TetrisWindow::Type::SecondaryWindow;
+		auto type = (i == 0) ? app::ui::TetrisWindow::Type::MainWindow : app::ui::TetrisWindow::Type::SecondaryWindow;
 		std::string name = (i == 0) ? "MainWindow" : fmt::format("SecondaryWindow{}", i);
-		subWindows_.push_back(std::make_unique<mwetris::ui::TetrisWindow>(name, type, *this,
+		subWindows_.push_back(std::make_unique<app::ui::TetrisWindow>(name, type, *this,
 			deviceManager_,
-			std::make_shared<mwetris::cnetwork::Network>(tcpClient)
+			std::make_shared<app::cnetwork::Network>(tcpClient)
 		));
 	}
 }
 
 void MainWindow::initTcpServer() {
-	auto [ip, port] = mwetris::Configuration::getInstance().getNetwork().server;
+	auto [ip, port] = app::Configuration::getInstance().getNetwork().server;
 	auto settings = network::TcpServer::Settings{
 		.port = port
 	};
 	auto server = std::make_shared<network::TcpServer>(ioContext_, settings);
 	for (int i = 0; i < config_.windows; ++i) {
 		auto tcpClient = network::TcpClient::connectToServer(ioContext_, ip, port);
-		auto type = (i == 0) ? mwetris::ui::TetrisWindow::Type::MainWindow : mwetris::ui::TetrisWindow::Type::SecondaryWindow;
+		auto type = (i == 0) ? app::ui::TetrisWindow::Type::MainWindow : app::ui::TetrisWindow::Type::SecondaryWindow;
 		std::string name = (i == 0) ? "MainWindow" : fmt::format("SecondaryWindow{}", i);
-		subWindows_.push_back(std::make_unique<mwetris::ui::TetrisWindow>(name, type, *this,
+		subWindows_.push_back(std::make_unique<app::ui::TetrisWindow>(name, type, *this,
 			deviceManager_,
-			std::make_shared<mwetris::cnetwork::Network>(tcpClient)
+			std::make_shared<app::cnetwork::Network>(tcpClient)
 		));
 	}
 	server_ = server;
@@ -99,11 +99,11 @@ void MainWindow::initDebugServer() {
 	auto server = std::make_shared<network::DebugServer>(ioContext_);
 	for (int i = 0; i < config_.windows; ++i) {
 		auto debugClient = server->addClient();
-		auto type = (i == 0) ? mwetris::ui::TetrisWindow::Type::MainWindow : mwetris::ui::TetrisWindow::Type::SecondaryWindow;
+		auto type = (i == 0) ? app::ui::TetrisWindow::Type::MainWindow : app::ui::TetrisWindow::Type::SecondaryWindow;
 		std::string name = (i == 0) ? "MainWindow" : fmt::format("SecondaryWindow{}", i);
-		subWindows_.push_back(std::make_unique<mwetris::ui::TetrisWindow>(name, type, *this,
+		subWindows_.push_back(std::make_unique<app::ui::TetrisWindow>(name, type, *this,
 			deviceManager_,
-			std::make_shared<mwetris::cnetwork::Network>(debugClient)
+			std::make_shared<app::cnetwork::Network>(debugClient)
 		));
 	}
 	server_ = server;

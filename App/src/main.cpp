@@ -1,8 +1,8 @@
 #include "logger.h"
 #include "mainwindow.h"
 
-#include <mwetris/ui/tetriswindow.h>
-#include <mwetris/configuration.h>
+#include <app/ui/tetriswindow.h>
+#include <app/configuration.h>
 
 #include <sdl/initsdl.h>
 #include <sdl/gamecontroller.h>

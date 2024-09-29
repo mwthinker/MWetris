@@ -2,7 +2,7 @@
 
 #include <tetris/tetrisboard.h>
 
-namespace mwetris {
+namespace app {
 
 	class MWetrisTest : public ::testing::Test {
 	protected:

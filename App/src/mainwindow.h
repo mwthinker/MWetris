@@ -3,8 +3,8 @@
 
 #include <sdl/imguiwindow.h>
 
-#include <mwetris/ui/subwindow.h>
-#include <mwetris/game/devicemanager.h>
+#include <app/ui/subwindow.h>
+#include <app/game/devicemanager.h>
 #include <network/debugserver.h>
 
 #include <network/servercore.h>
@@ -44,8 +44,8 @@ private:
 	void imGuiEventUpdate(const SDL_Event& windowEvent) override;
 		
 	asio::io_context ioContext_; // Must be declared first to guarantee destruction order.
-	std::vector<std::unique_ptr<mwetris::ui::SubWindow>> subWindows_;
-	std::shared_ptr<mwetris::game::DeviceManager> deviceManager_;
+	std::vector<std::unique_ptr<app::ui::SubWindow>> subWindows_;
+	std::shared_ptr<app::game::DeviceManager> deviceManager_;
 	std::shared_ptr<network::ServerCore> server_;
 	Config config_;
 };

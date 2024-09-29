@@ -4,10 +4,10 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <mwetris/cnetwork/network.h>
-#include <mwetris/cnetwork/networkevent.h>
+#include <app/cnetwork/network.h>
+#include <app/cnetwork/networkevent.h>
 
-#include <mwetris/game/playerslot.h>
+#include <app/game/playerslot.h>
 
 #include <protocol/client_to_server.pb.h>
 #include <protocol/server_to_client.pb.h>
@@ -18,15 +18,15 @@ namespace network {
 
 	void addPlayerSlot(tp_s2c::GameLooby& gameLooby, const tp_s2c::GameLooby_SlotType slotType, const ClientId& clientUuid, const std::string& name, bool ai = false);
 
-	void expectEqual(const mwetris::cnetwork::PlayerSlotEvent& playerSlotEvent, int index, const mwetris::game::Human& remote);
+	void expectEqual(const app::cnetwork::PlayerSlotEvent& playerSlotEvent, int index, const app::game::Human& remote);
 
-	void expectEqual(const mwetris::cnetwork::PlayerSlotEvent& playerSlotEvent, int index, const mwetris::game::Ai& ai);
+	void expectEqual(const app::cnetwork::PlayerSlotEvent& playerSlotEvent, int index, const app::game::Ai& ai);
 
-	void expectEqual(const mwetris::cnetwork::PlayerSlotEvent& playerSlotEvent, int index, const mwetris::game::Remote& remote);
+	void expectEqual(const app::cnetwork::PlayerSlotEvent& playerSlotEvent, int index, const app::game::Remote& remote);
 
-	void expectEqual(const mwetris::cnetwork::PlayerSlotEvent& playerSlotEvent, int index, const mwetris::game::OpenSlot& openSlot);
+	void expectEqual(const app::cnetwork::PlayerSlotEvent& playerSlotEvent, int index, const app::game::OpenSlot& openSlot);
 
-	void expectEqual(const mwetris::cnetwork::PlayerSlotEvent& playerSlotEvent, int index, const mwetris::game::ClosedSlot& closedSlot);
+	void expectEqual(const app::cnetwork::PlayerSlotEvent& playerSlotEvent, int index, const app::game::ClosedSlot& closedSlot);
 
 }
 

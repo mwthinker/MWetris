@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
-#include <mwetris/game/serialize.h>
+#include <app/game/serialize.h>
 
-namespace mwetris::game {
+namespace app::game {
 
 	class SerilizeTest : public ::testing::Test {
 	protected:

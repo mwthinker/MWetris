@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
-#include <mwetris/game/devicemanager.h>
+#include <app/game/devicemanager.h>
 
-namespace mwetris::game {
+namespace app::game {
 
 	class DeviceManagerTest : public ::testing::Test {
 	protected:
