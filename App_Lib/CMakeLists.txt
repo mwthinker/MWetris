@@ -1,6 +1,6 @@
-project(MWetris_Lib
+project(App_Lib
 	DESCRIPTION
-		"A lib for MWetris"
+		"A lib for App"
 	LANGUAGES
 		CXX
 )
@@ -105,16 +105,15 @@ find_package(CppSdl2 REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT MWetris_Lib)
 source_group(TREE
 	${CMAKE_CURRENT_SOURCE_DIR}
 	FILES
 		${SOURCES_LIB}
 )
 
-add_library(MWetris_Lib ${SOURCES_LIB})
+add_library(App_Lib ${SOURCES_LIB})
 
-target_include_directories(MWetris_Lib
+target_include_directories(App_Lib
 	PUBLIC
 		src/
 	PRIVATE
@@ -123,7 +122,7 @@ target_include_directories(MWetris_Lib
 )
 
 
-target_compile_definitions(MWetris_Lib
+target_compile_definitions(App_Lib
 	PUBLIC
 		GIT_VERSION="${GIT_HASH}"
 		GIT_DATE="${GIT_DATE}"
@@ -134,21 +133,21 @@ target_compile_definitions(MWetris_Lib
 )
 
 if (MSVC)
-	target_compile_definitions(MWetris_Lib
+	target_compile_definitions(App_Lib
 		PUBLIC
 			NOMINMAX
 	)
-	target_compile_options(MWetris_Lib
+	target_compile_options(App_Lib
 		PUBLIC
 			/W3 /WX /permissive-
 			/MP
 	)
 else ()
 	if (CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-		target_compile_options(MWetris_Lib PUBLIC --coverage)
-		target_link_options(MWetris_Lib PUBLIC --coverage)
+		target_compile_options(App_Lib PUBLIC --coverage)
+		target_link_options(App_Lib PUBLIC --coverage)
 	endif ()
-	target_compile_options(MWetris_Lib
+	target_compile_options(App_Lib
 		PRIVATE
 			-Wall -pedantic -Wcast-align -Woverloaded-virtual -Wno-unused-parameter -Wno-sign-compare -Wno-unused-function
 	)
@@ -156,7 +155,7 @@ endif ()
 
 set(nlohmann-json_IMPLICIT_CONVERSIONS OFF)
 
-target_link_libraries(MWetris_Lib
+target_link_libraries(App_Lib
 	PUBLIC
 		TetrisEngineLib
 		Network_Lib
@@ -168,7 +167,7 @@ target_link_libraries(MWetris_Lib
 		${ExternalDependencies}
 )
 
-set_target_properties(MWetris_Lib
+set_target_properties(App_Lib
 	PROPERTIES
 		CXX_STANDARD 23
 		CXX_STANDARD_REQUIRED YES

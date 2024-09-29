@@ -1,4 +1,4 @@
-project(MWetris_Test
+project(App_Test
 	DESCRIPTION
 		"Testing project using GTest"
 	LANGUAGES
@@ -29,24 +29,24 @@ source_group(TREE
 		${SOURCES_TEST}
 )
 
-add_executable(MWetris_Test
+add_executable(App_Test
 	${SOURCES_TEST}
 )
 
-target_link_libraries(MWetris_Test
+target_link_libraries(App_Test
 	PUBLIC
-		MWetris_Lib
+		App_Lib
 		GTest::gtest GTest::gmock
 )
 
 if (MSVC)
-	target_compile_options(MWetris_Test
+	target_compile_options(App_Test
 		PRIVATE
 			"/permissive-"
 	)
 endif ()
 
-set_target_properties(MWetris_Test
+set_target_properties(App_Test
 	PROPERTIES
 		CXX_STANDARD 23
 		CXX_STANDARD_REQUIRED YES
@@ -54,4 +54,4 @@ set_target_properties(MWetris_Test
 )
 
 include(GoogleTest)
-gtest_discover_tests(MWetris_Test)
+gtest_discover_tests(App_Test)

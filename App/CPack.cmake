@@ -1,4 +1,4 @@
-install(TARGETS MWetris
+install(TARGETS App
 	RUNTIME DESTINATION .
 	COMPONENT application
 )
@@ -13,18 +13,13 @@ install(DIRECTORY ${MWetrisData_SOURCE_DIR}/images/
 	COMPONENT data
 )
 
-install(DIRECTORY ${MWetrisData_SOURCE_DIR}/package/
-	DESTINATION .
-	COMPONENT data
-)
-
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data/
 	DESTINATION .
 	COMPONENT data
 )
 
 # Replace the USE_APPLICATION_JSON file, use default saving place.
-install(FILES ${MWetris_SOURCE_DIR}/data/package/USE_APPLICATION_JSON
+install(FILES ${App_SOURCE_DIR}/data/package/USE_APPLICATION_JSON
 	DESTINATION .
 	COMPONENT data
 )
@@ -81,10 +76,10 @@ if (MSVC)
 		set(CPACK_WIX_PRODUCT_GUID "${GUID}")
 		set(CPACK_WIX_UPGRADE_GUID "bf1ee6e4-389a-4567-ad2c-61a4d3c71d66")
 
-		set(CPACK_WIX_UI_DIALOG "${MWetris_BINARY_DIR}/package/dialog.png")
-		set(CPACK_WIX_UI_BANNER "${MWetris_BINARY_DIR}/package/banner.png")
+		set(CPACK_WIX_UI_DIALOG "${App_BINARY_DIR}/package/dialog.png")
+		set(CPACK_WIX_UI_BANNER "${App_BINARY_DIR}/package/banner.png")
 		
-		set(CPACK_WIX_PRODUCT_ICON "${MWetris_BINARY_DIR}/package/mwetris.ico")
+		set(CPACK_WIX_PRODUCT_ICON "${App_BINARY_DIR}/package/mwetris.ico")
 		
 		message(STATUS ${CPACK_PACKAGE_ICON})
 		set(CPACK_WIX_PROPERTY_ARPURLINFOABOUT "https://github.com/mwthinker/MWetris")

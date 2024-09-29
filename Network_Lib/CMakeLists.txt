@@ -41,7 +41,6 @@ find_package(fmt CONFIG REQUIRED)
 find_package(Signal REQUIRED)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Network_Lib)
 source_group(TREE
 	${CMAKE_CURRENT_SOURCE_DIR}
 	FILES

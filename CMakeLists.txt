@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(MWetrisProject
+project(MWetris
 	DESCRIPTION
 		"A C++ Tetris Game project"
 	VERSION
@@ -8,7 +8,7 @@ project(MWetrisProject
 		CXX
 )
 
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT MWetris)
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT App)
 
 option(GAME_SERVER_ONLY "Game Server only" OFF)
 include(ExternalFetchContent.cmake)
@@ -64,9 +64,9 @@ add_subdirectory(GameServer)
 add_subdirectory(TetrisEngine)
 
 if (NOT GAME_SERVER_ONLY)
-	add_subdirectory(MWetris_Lib)
-	add_subdirectory(MWetris_Test)
-	add_subdirectory(MWetris)
+	add_subdirectory(App_Lib)
+	add_subdirectory(App_Test)
+	add_subdirectory(App)
 endif ()
 
 set_target_properties(

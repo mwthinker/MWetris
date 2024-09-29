@@ -1,4 +1,4 @@
-project(MWetris
+project(App
 	DESCRIPTION
 		"A C++ Tetris Game"
 	VERSION
@@ -23,7 +23,6 @@ if (MSVC)
 endif ()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On) 
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT MWetris)
 
 source_group(TREE
 	${CMAKE_CURRENT_SOURCE_DIR}
@@ -48,45 +47,45 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data/ DESTINATION ${CMAKE_CURRENT_BINARY_D
 file(COPY ${SDL_GameControllerDB_SOURCE_DIR}/gamecontrollerdb.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 if (MSVC)
-	add_executable(MWetris
+	add_executable(App
 		${SOURCES}
 		${MWetrisData_SOURCE_DIR}/package/mwetris_icon.rc
 		${CMAKE_CURRENT_BINARY_DIR}/properties.rc
 	)
 else ()
-	add_executable(MWetris
+	add_executable(App
 		${SOURCES}
 	)
 endif ()
 
 option(CODE_COVERAGE "Enable coverage reporting" OFF)
 
-target_include_directories(MWetris
+target_include_directories(App
 	PRIVATE
 		src
 )
 
 if (MSVC)
-	target_compile_options(MWetris
+	target_compile_options(App
 		PUBLIC
 			/W3 /WX /permissive-
 			/MP
 	)
 else ()
-	target_compile_options(MWetris
+	target_compile_options(App
 		PRIVATE
 			-Wall -pedantic -Wcast-align -Woverloaded-virtual -Wno-unused-parameter -Wno-sign-compare -Wno-unused-function
 	)
 endif ()
 
-target_link_libraries(MWetris
+target_link_libraries(App
 	PRIVATE
 		argparse::argparse
 		fmt::fmt
-		MWetris_Lib
+		App_Lib
 )
 
-target_compile_definitions(MWetris
+target_compile_definitions(App
 	PRIVATE
 		GIT_VERSION="${GIT_HASH}"
 		GIT_DATE="${GIT_DATE}"
@@ -95,11 +94,13 @@ target_compile_definitions(MWetris
 		VCPKG_DATE="${VCPKG_DATE}"
 )
 
-set_target_properties(MWetris
+set_target_properties(App
 	PROPERTIES
 		CXX_STANDARD 23
 		CXX_STANDARD_REQUIRED YES
 		CXX_EXTENSIONS NO
+
+		OUTPUT_NAME MWetris
 )
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/CPack.cmake)
