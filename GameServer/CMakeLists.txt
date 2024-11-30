@@ -21,9 +21,9 @@ add_executable(GameServer
 target_link_libraries(GameServer
 	PRIVATE
 		argparse::argparse
-		Network_Lib
 		fmt::fmt
 		spdlog::spdlog_header_only
+		MWetris::Network_Lib
 )
 
 target_compile_definitions(GameServer

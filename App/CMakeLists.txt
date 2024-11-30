@@ -82,7 +82,7 @@ target_link_libraries(App
 	PRIVATE
 		argparse::argparse
 		fmt::fmt
-		App_Lib
+		MWetris::App_Lib
 )
 
 target_compile_definitions(App

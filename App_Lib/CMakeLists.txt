@@ -112,6 +112,7 @@ source_group(TREE
 )
 
 add_library(App_Lib ${SOURCES_LIB})
+add_library(MWetris::App_Lib ALIAS App_Lib)
 
 target_include_directories(App_Lib
 	PUBLIC
@@ -157,14 +158,14 @@ set(nlohmann-json_IMPLICIT_CONVERSIONS OFF)
 
 target_link_libraries(App_Lib
 	PUBLIC
-		TetrisEngineLib
-		Network_Lib
-		nlohmann_json
-		nlohmann_json::nlohmann_json
 		fmt::fmt
-		Protocol
-		Signal
-		${ExternalDependencies}
+		nlohmann_json::nlohmann_json
+		Signal::Signal
+		CppSdl2::CppSdl2
+		Calculator::Calculator
+		MWetris::TetrisEngineLib
+		MWetris::Network_Lib
+		MWetris::Protocol
 )
 
 set_target_properties(App_Lib

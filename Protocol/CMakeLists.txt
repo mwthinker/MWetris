@@ -20,6 +20,8 @@ protobuf_generate_cpp(
 	PROTOC_OUT_DIR src/protocol/
 )
 add_library(Protocol ${PROTO_UTIL} ${PROTO_HDRS} ${PROTO_SRC} ${PROTO_FILES})
+add_library(MWetris::Protocol ALIAS Protocol)
+
 if (MSVC)
 	target_compile_options(Protocol
 		PUBLIC

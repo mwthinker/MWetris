@@ -25,6 +25,7 @@ if (MSVC)
 endif ()
 
 add_library(TetrisEngineLib ${SOURCES_LIB})
+add_library(MWetris::TetrisEngineLib ALIAS TetrisEngineLib)
 
 target_include_directories(TetrisEngineLib
 	PUBLIC
@@ -46,7 +47,7 @@ target_compile_definitions(TetrisEngineLib
 
 target_link_libraries(TetrisEngineLib
 	PUBLIC
-		Calculator
+		Calculator::Calculator
 )
 
 set_target_properties(TetrisEngineLib
@@ -89,8 +90,8 @@ endif ()
 	
 target_link_libraries(TetrisEngine
 	PRIVATE
-		TetrisEngineLib
 		fmt::fmt
+		MWetris::TetrisEngineLib
 )
 
 set_target_properties(TetrisEngine

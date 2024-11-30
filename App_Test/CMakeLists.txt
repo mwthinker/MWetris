@@ -35,8 +35,8 @@ add_executable(App_Test
 
 target_link_libraries(App_Test
 	PUBLIC
-		App_Lib
 		GTest::gtest GTest::gmock
+		MWetris::App_Lib
 )
 
 if (MSVC)

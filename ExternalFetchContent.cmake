@@ -5,7 +5,7 @@ if (NOT GAME_SERVER_ONLY)
 		GIT_REPOSITORY
 			https://github.com/mwthinker/CppSdl2.git
 		GIT_TAG
-			f2dabd127ac92b0c69d435940e716a8bfdec2656
+			4dd04cbfab1fad4464a325244dcd6381684ac41e
 		OVERRIDE_FIND_PACKAGE
 	)
 endif()
@@ -38,7 +38,7 @@ FetchContent_Declare(Signal
 	GIT_REPOSITORY
 		https://github.com/mwthinker/Signal.git
 	GIT_TAG
-		7f3f8c456cfdb90ea014b335f175e6576493d48b
+		37e28bbbfcb7a6f9794af37c862f781f0df543a0
 	OVERRIDE_FIND_PACKAGE
 )
 
@@ -46,7 +46,7 @@ FetchContent_Declare(Calculator
 	GIT_REPOSITORY
 		https://github.com/mwthinker/Calculator.git
 	GIT_TAG
-		527fce2eb6ece1f653abfbc4431916addeedde5c
+		97194c77a446e975233fca1f14138cd103f2f463
 	OVERRIDE_FIND_PACKAGE
 )
 

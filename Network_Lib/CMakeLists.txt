@@ -48,6 +48,7 @@ source_group(TREE
 )
 
 add_library(Network_Lib ${SOURCES_LIB})
+add_library(MWetris::Network_Lib ALIAS Network_Lib)
 
 target_include_directories(Network_Lib
 	PUBLIC
@@ -91,9 +92,9 @@ target_link_libraries(Network_Lib
 	PUBLIC
 		asio asio::asio
 		fmt::fmt
-		Protocol
-		Signal
-		TetrisEngineLib
+		Signal::Signal
+		MWetris::Protocol
+		MWetris::TetrisEngineLib
 )
 
 set_target_properties(Network_Lib
