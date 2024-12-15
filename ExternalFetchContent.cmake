@@ -5,7 +5,7 @@ if (NOT GAME_SERVER_ONLY)
 		GIT_REPOSITORY
 			https://github.com/mwthinker/CppSdl2.git
 		GIT_TAG
-			4dd04cbfab1fad4464a325244dcd6381684ac41e
+			4fe016d31ee5b83f15ac261c8938038b0b57c5cd
 		OVERRIDE_FIND_PACKAGE
 	)
 endif()
