@@ -15,7 +15,7 @@ The project MWetris is a Tetris clone with network capabilities.
 ## Requirements
 This project is easiest used with vcpkg and CMake. Visual Studio 2022 or GCC version >= 12.0.
 
-```
+```bash
 git clone https://github.com/microsoft/vcpkg.git
 ```
 Run bootstrap-vcpkg script belonging to the platform you are on.
@@ -27,12 +27,12 @@ You can customize tetris.json, and change the ai used by the game.
 To try out different ai value functions change the ai in the json file and start the game to see the result. Or try the TetrisEngine project, optional in the cmake file.
 
 Print help.
-```
+```bash
 TetrisEngine --help
 ```
 
 Start the game and print each move by the ai with 500 ms delay.
-```
+```bash
 TetrisEngine --delay 500
 ```
 
@@ -41,16 +41,40 @@ Simulate a ai game using a custom value function and showing the end result:
 TetrisEngine -a "-2*rowHoles - 5*columnHoles - 1*rowSumHeight / (1 + rowHoles) - 2*blockMeanHeight"
 ```
 
+## Run docker for server
+Docker can run the game server on linux, windows, mac and raspberry pi.
+
+On windows install Docker Desktop and run the following commands.
+Powershell:
+```powershell
+# Inside docker folder
+docker-compose build --progress=plain --no-cache
+docker-compose up -d
+```
+
+To install on Docker on Ubuntu/Debian
+```bash
+sudo apt-get update
+sudo apt-get install docker-compose-plugin
+```
+
+```bash
+# To log in to the container for debugging maybe?
+# docker exec -it mwetris /bin/bash
+docker compose build --progress=plain --no-cache
+docker compose up -d
+```
+
 ## Things to fix
 
-- GameRules should be performed on the server with game time to make all players in sync. Will simplfy game logic. Current logic is a mess.
-- Fix game board graphic to look nicer. Avoid using texture atlas because of ugly lines between squares.
-- Make all unit tests to be run on codecov.
-- Add file for theme settings for ImGui. To make the interface nicer.
-- Make the network code compilable without graphic (make it possible to compile in raspberry pi).
-- Add github action to add git tag version and create releases for windows and linux.
-- Overuse of std::varient and to big objects (e.g. > 250 byte size). Maybe use shared_ptr or minimize the size of the objects.
-- Maybe remove Calculator dependency in TetrisEngine and use a more simple way and faster way to calculate the value function.
+- [ ] GameRules should be performed on the server with game time to make all players in sync. Will simplfy game logic. Current logic is a mess.
+- [ ] Fix game board graphic to look nicer. Avoid using texture atlas because of ugly lines between squares.
+- [ ] Make all unit tests to be run on codecov.
+- [ ] Add file for theme settings for ImGui. To make the interface nicer.
+- [x] Make the network code compilable without graphic (make it possible to compile in raspberry pi).
+- [ ] Add github action to add git tag version and create releases for windows and linux.
+- [ ] Overuse of std::varient and to big objects (e.g. > 250 byte size). Maybe use shared_ptr or minimize the size of the objects.
+- [ ] Maybe remove Calculator dependency in TetrisEngine and use a more simple way and faster way to calculate the value function.
 
 ## License
 The project is under the MIT license (see LICENSE).

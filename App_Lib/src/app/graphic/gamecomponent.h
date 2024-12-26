@@ -8,8 +8,6 @@
 #include "game/player.h"
 
 #include <sdl/graphic.h>
-
-#include <sdl/graphic.h>
 #include <mw/signal.h>
 
 #include <set>
