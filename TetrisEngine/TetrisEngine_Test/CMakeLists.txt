@@ -19,7 +19,7 @@ if (GTest_FOUND)
 	
 	target_link_libraries(TetrisEngine_Test
 		PRIVATE
-			TetrisEngineLib
+			TetrisEngine_Lib
 			GTest::gtest GTest::gtest_main
 	)
 

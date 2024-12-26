@@ -7,7 +7,7 @@ project(TetrisEngine
 		CXX
 )
 
-# ----- TetrisEngineLib -------------
+# ----- TetrisEngine_Lib -------------
 set(SOURCES_LIB
 	srcLib/tetris/ai.cpp
 	srcLib/tetris/ai.h
@@ -24,10 +24,10 @@ if (MSVC)
 	configure_file(properties.rc ${CMAKE_CURRENT_BINARY_DIR}/properties.rc)
 endif ()
 
-add_library(TetrisEngineLib ${SOURCES_LIB})
-add_library(MWetris::TetrisEngineLib ALIAS TetrisEngineLib)
+add_library(TetrisEngine_Lib ${SOURCES_LIB})
+add_library(MWetris::TetrisEngine_Lib ALIAS TetrisEngine_Lib)
 
-target_include_directories(TetrisEngineLib
+target_include_directories(TetrisEngine_Lib
 	PUBLIC
 		srcLib
 )
@@ -36,21 +36,21 @@ find_package(Calculator REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 
 if (CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-	target_compile_options(TetrisEngineLib PUBLIC --coverage)
-	target_link_options(TetrisEngineLib PUBLIC --coverage)
+	target_compile_options(TetrisEngine_Lib PUBLIC --coverage)
+	target_link_options(TetrisEngine_Lib PUBLIC --coverage)
 endif ()
 
-target_compile_definitions(TetrisEngineLib
+target_compile_definitions(TetrisEngine_Lib
 	PUBLIC
 		NOMINMAX
 )
 
-target_link_libraries(TetrisEngineLib
+target_link_libraries(TetrisEngine_Lib
 	PUBLIC
 		Calculator::Calculator
 )
 
-set_target_properties(TetrisEngineLib
+set_target_properties(TetrisEngine_Lib
 	PROPERTIES
 		CXX_STANDARD 23
 		CXX_STANDARD_REQUIRED YES
@@ -91,7 +91,7 @@ endif ()
 target_link_libraries(TetrisEngine
 	PRIVATE
 		fmt::fmt
-		MWetris::TetrisEngineLib
+		MWetris::TetrisEngine_Lib
 )
 
 set_target_properties(TetrisEngine

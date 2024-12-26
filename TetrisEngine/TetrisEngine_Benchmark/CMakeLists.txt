@@ -19,7 +19,7 @@ if (benchmark_FOUND)
 
 	target_link_libraries(TetrisEngine_Benchmark
 		PRIVATE
-			TetrisEngineLib
+			TetrisEngine_Lib
 			benchmark::benchmark benchmark::benchmark_main
 	)
 

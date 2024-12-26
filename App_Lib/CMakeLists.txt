@@ -163,7 +163,7 @@ target_link_libraries(App_Lib
 		Signal::Signal
 		CppSdl2::CppSdl2
 		Calculator::Calculator
-		MWetris::TetrisEngineLib
+		MWetris::TetrisEngine_Lib
 		MWetris::Network_Lib
 		MWetris::Protocol
 )
