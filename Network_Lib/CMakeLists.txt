@@ -94,7 +94,7 @@ target_link_libraries(Network_Lib
 		fmt::fmt
 		Signal::Signal
 		MWetris::Protocol
-		MWetris::TetrisEngineLib
+		MWetris::TetrisEngine_Lib
 )
 
 set_target_properties(Network_Lib

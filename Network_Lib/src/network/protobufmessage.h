@@ -16,7 +16,15 @@ namespace network {
 	public:
 		ProtobufMessage();
 
+		~ProtobufMessage() = default;
+
 		explicit ProtobufMessage(int size);
+
+		ProtobufMessage(const ProtobufMessage& other) = delete;
+		ProtobufMessage& operator=(const ProtobufMessage& other) = delete;
+
+		ProtobufMessage(ProtobufMessage&& other) noexcept = default;
+		ProtobufMessage& operator=(ProtobufMessage&& other) noexcept = default;
 
 		void clear();
 

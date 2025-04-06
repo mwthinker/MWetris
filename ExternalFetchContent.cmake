@@ -5,7 +5,7 @@ if (NOT GAME_SERVER_ONLY)
 		GIT_REPOSITORY
 			https://github.com/mwthinker/CppSdl2.git
 		GIT_TAG
-			4fe016d31ee5b83f15ac261c8938038b0b57c5cd
+			13c1bf0c15149c900b67a5304af11a6ab958f2b3
 		OVERRIDE_FIND_PACKAGE
 	)
 endif()
@@ -14,7 +14,7 @@ FetchContent_Declare(SDL_GameControllerDB
 	GIT_REPOSITORY
 		https://github.com/gabomdq/SDL_GameControllerDB.git
 	GIT_TAG
-		99c8ec90ac72eac926aab3a6ce8488d50f0226e0
+		8834de54ffb8e87c4b5af350dbb16eeffc1158e1
 )
 FetchContent_MakeAvailable(SDL_GameControllerDB)
 FetchContent_GetProperties(SDL_GameControllerDB
@@ -26,7 +26,7 @@ FetchContent_Declare(IconFontCppHeaders
 	GIT_REPOSITORY
 		https://github.com/juliettef/IconFontCppHeaders.git
 	GIT_TAG
-		173c9b99be9a9980d2eeaf4b627d8c14b344bc68
+		3eac3a08c43680cd8a5cef32001a75766126ef99
 )
 FetchContent_MakeAvailable(IconFontCppHeaders)
 FetchContent_GetProperties(IconFontCppHeaders
@@ -62,6 +62,19 @@ FetchContent_GetProperties(CMakeHelper
 		CMakeHelper_SOURCE_DIR
 )
 include(${CMakeHelper_SOURCE_DIR}/auxiliary.cmake)
+
+FetchContent_Declare(TomlCppGenerator
+	GIT_REPOSITORY
+		https://github.com/mwthinker/TomlCppGenerator.git
+	GIT_TAG
+		507fa0bf27c93d654e31e41eb274d218170f4686
+)
+FetchContent_MakeAvailable(TomlCppGenerator)
+FetchContent_GetProperties(TomlCppGenerator
+	SOURCE_DIR
+		TomlCppGenerator_SOURCE_DIR
+)
+include(${TomlCppGenerator_SOURCE_DIR}/toml_generate_cpp.cmake)
 
 # Load data.
 FetchContent_Declare(MWetrisData
