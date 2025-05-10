@@ -38,48 +38,10 @@ add_subdirectory(Network_Lib)
 add_subdirectory(GameServer)
 add_subdirectory(TetrisEngine)
 
-if (GAME_SERVER_ONLY)
-	set_target_properties(
-		Calculator
-		
-		PROPERTIES FOLDER
-			ExternalDependencies
-	)
-
-	if (Calculator_Test)
-		set_target_properties(Calculator_Test PROPERTIES FOLDER ExternalDependencies)
-	endif ()
-	if (Signal_Test)
-		set_target_properties(Signal_Test PROPERTIES FOLDER ExternalDependencies)
-	endif ()
-
-else()
-	add_subdirectory(App_Lib)
-	add_subdirectory(App_Test)
-	add_subdirectory(App)
-
-	set_target_properties(
-		CppSdl2
-		Calculator
-		ImGui
-		
-		PROPERTIES FOLDER
-			ExternalDependencies
-	)
-
-	if (CppSdl2_Test)
-		set_target_properties(CppSdl2_Test PROPERTIES FOLDER ExternalDependencies)
-	endif ()
-	if (CppSdl2_Example)
-		set_target_properties(CppSdl2_Example PROPERTIES FOLDER ExternalDependencies)
-	endif ()
-	if (Calculator_Test)
-		set_target_properties(Calculator_Test PROPERTIES FOLDER ExternalDependencies)
-	endif ()
-	if (Signal_Test)
-		set_target_properties(Signal_Test PROPERTIES FOLDER ExternalDependencies)
-	endif ()
-
-endif ()
+if (NOT GAME_SERVER_ONLY)
+    add_subdirectory(App_Lib)
+    add_subdirectory(App_Test)
+    add_subdirectory(App)
+endif()
 
 option(CODE_COVERAGE "Enable coverage reporting" OFF)

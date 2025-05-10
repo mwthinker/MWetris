@@ -10,6 +10,9 @@
 		"fmt",
 		"protobuf",
 		"asio",
-		"argparse"
+		"argparse",
+		"calculator",
+		"signal",
+		"gtest"
 	]
 }

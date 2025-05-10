@@ -24,6 +24,7 @@ target_link_libraries(GameServer
 		fmt::fmt
 		spdlog::spdlog_header_only
 		MWetris::Network_Lib
+
 )
 
 target_compile_definitions(GameServer

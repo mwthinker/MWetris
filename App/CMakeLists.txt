@@ -35,10 +35,6 @@ find_package(Threads REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 
-find_package(CppSdl2 REQUIRED)
-find_package(Signal REQUIRED)
-find_package(Calculator REQUIRED)
-
 # Copy data to build folder.
 file(COPY ${MWetrisData_SOURCE_DIR}/package DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ${MWetrisData_SOURCE_DIR}/images DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

@@ -101,8 +101,9 @@ find_package(asio CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(Signal REQUIRED)
-find_package(CppSdl2 REQUIRED)
+find_package(CppSdl2 CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
+find_package(Signal CONFIG REQUIRED)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 source_group(TREE
@@ -162,7 +163,6 @@ target_link_libraries(App_Lib
 		nlohmann_json::nlohmann_json
 		Signal::Signal
 		CppSdl2::CppSdl2
-		Calculator::Calculator
 		MWetris::TetrisEngine_Lib
 		MWetris::Network_Lib
 		MWetris::Protocol

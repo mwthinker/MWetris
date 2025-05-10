@@ -1,15 +1,5 @@
 include(FetchContent)
 # Load external github projects
-if (NOT GAME_SERVER_ONLY)
-	FetchContent_Declare(CppSdl2
-		GIT_REPOSITORY
-			https://github.com/mwthinker/CppSdl2.git
-		GIT_TAG
-			13c1bf0c15149c900b67a5304af11a6ab958f2b3
-		OVERRIDE_FIND_PACKAGE
-	)
-endif()
-
 FetchContent_Declare(SDL_GameControllerDB
 	GIT_REPOSITORY
 		https://github.com/gabomdq/SDL_GameControllerDB.git
@@ -32,22 +22,6 @@ FetchContent_MakeAvailable(IconFontCppHeaders)
 FetchContent_GetProperties(IconFontCppHeaders
 	SOURCE_DIR
 		IconFontCppHeaders_SOURCE_DIR
-)
-
-FetchContent_Declare(Signal
-	GIT_REPOSITORY
-		https://github.com/mwthinker/Signal.git
-	GIT_TAG
-		37e28bbbfcb7a6f9794af37c862f781f0df543a0
-	OVERRIDE_FIND_PACKAGE
-)
-
-FetchContent_Declare(Calculator
-	GIT_REPOSITORY
-		https://github.com/mwthinker/Calculator.git
-	GIT_TAG
-		97194c77a446e975233fca1f14138cd103f2f463
-	OVERRIDE_FIND_PACKAGE
 )
 
 FetchContent_Declare(CMakeHelper

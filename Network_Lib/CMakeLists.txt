@@ -38,7 +38,7 @@ set(SOURCES_LIB
 find_package(Threads REQUIRED)
 find_package(asio CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
-find_package(Signal REQUIRED)
+find_package(Signal CONFIG REQUIRED)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 source_group(TREE
