@@ -1,20 +1,22 @@
 {
 	"$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
 	"name": "mwetris",
-	"version-string": "0.3.0",
+	"version": "0.3.0",
 	"homepage": "https://github.com/mwthinker/MWetris",
-	"description": "Simple Tetris like game",
+	"description": "Tetris like game",
 	"license": "MIT",
 	"dependencies": [
 		"signal",
 		"cppsdl2",
 		"calculator",
-		"gtest",
-		"benchmark",
+
 		"protobuf",
 		"nlohmann-json",
 		"asio",
 		"freetype",
-		"argparse"
+		"argparse",
+
+		"gtest",
+		"benchmark"
 	]
 }

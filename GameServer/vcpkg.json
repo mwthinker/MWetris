@@ -3,16 +3,18 @@
 	"version-string": "0.3.0",
 	"port-version": 0,
 	"homepage": "https://github.com/mwthinker/MWetris",
-	"description": "Simple Tetris like game",
+	"description": "Tetris like game",
 	"license": "MIT",
 	"dependencies": [
+		"signal",
+		"calculator",
+
 		"spdlog",
 		"fmt",
 		"protobuf",
 		"asio",
 		"argparse",
-		"calculator",
-		"signal",
+
 		"gtest"
 	]
 }

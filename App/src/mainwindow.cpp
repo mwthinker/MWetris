@@ -9,8 +9,6 @@
 #include <network/tcpclient.h>
 #include <network/tcpserver.h>
 
-#include <app/ui/tetriswindow.h>
-
 MainWindow::MainWindow(const Config& config) 
 	: config_{config} {
 

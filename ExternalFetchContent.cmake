@@ -37,19 +37,6 @@ FetchContent_GetProperties(CMakeHelper
 )
 include(${CMakeHelper_SOURCE_DIR}/auxiliary.cmake)
 
-FetchContent_Declare(TomlCppGenerator
-	GIT_REPOSITORY
-		https://github.com/mwthinker/TomlCppGenerator.git
-	GIT_TAG
-		507fa0bf27c93d654e31e41eb274d218170f4686
-)
-FetchContent_MakeAvailable(TomlCppGenerator)
-FetchContent_GetProperties(TomlCppGenerator
-	SOURCE_DIR
-		TomlCppGenerator_SOURCE_DIR
-)
-include(${TomlCppGenerator_SOURCE_DIR}/toml_generate_cpp.cmake)
-
 # Load data.
 FetchContent_Declare(MWetrisData
 	GIT_REPOSITORY
