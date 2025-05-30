@@ -24,6 +24,11 @@ jobs:
         run: g++ --version
         if: runner.os == 'Linux'
 
+      - name: Install system dependencies
+        # Needed for SDL2
+        run: sudo apt-get update && sudo apt-get install -y libltdl-dev libx11-dev libxft-dev libxext-dev
+        if: runner.os == 'Linux'
+
       - name: Set C++ VCPKG_ROOT
         shell: bash
         run: echo VCPKG_ROOT="$VCPKG_INSTALLATION_ROOT" >> "$GITHUB_ENV"; cat "$GITHUB_ENV"
