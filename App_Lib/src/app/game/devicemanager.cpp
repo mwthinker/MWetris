@@ -64,6 +64,14 @@ namespace app::game {
 		}
 	}
 
+	void DeviceManager::tick() {
+		keyboard1_.keyboard->tick();
+		keyboard2_.keyboard->tick();
+		for (auto& [gamePad, device, _] : devices_) {
+			// TODO! Implement GamePad tick logic
+		}
+	}
+
 	std::vector<DevicePtr> DeviceManager::getAllDevicesAvailable() const {
 		std::vector<DevicePtr> devices;
 		devices.reserve(2 + devices_.size());

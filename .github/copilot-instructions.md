@@ -1,3 +1,19 @@
 # C++ code
-Assume C++23 compatible code. Prefer brace initialization over parentheses initialization.
-For member variables prefer "=" over "{}" for inline initialization, and use post fix underscore (_) for the names.
+- Use C++23 standard features (avoid modules).
+- Try to follow C++ Core Guidelines.
+- Use modern C++ best practices (e.g., smart pointers, range-based for loops where appropriate).
+- Use `const` and `constexpr` wherever possible.
+- Format code with consistent indentation. Use tabs for indentation not spaces.
+- Prefer brace initialization `{}` over parentheses `()` for variables and objects.
+- For member variables:
+	- Use inline initialization with `=`, not `{}`.
+	- Use a trailing underscore (`_`) in class member variable names (e.g., `int score_ = 0;`).
+- Prefer `enum class` over traditional enums.
+- Use `#ifndef`, `#define` and `#endif` for header guards:
+- Use guard name format `NAMESPACE_HEADER_NAME_H` (e.g., `APP_GAME_INPUT_H`) for the file `input.h` in namespace `app::game`.
+- Prefer `std::` library features over C-style code, avoid macros.
+- Write clear, self-documenting code with meaningful names.
+- Avoid raw pointers unless necessary. Use smart pointers (`std::unique_ptr`, `std::shared_ptr`) instead.
+- Prefer `override` and `final` for virtual functions.
+- Use `nullptr` instead of `NULL` or `0`.
+- Avoid prefixing class names with "I" (e.g., use `Player` instead of `IPlayer`). If an implementation class needs distinction, use `PlayerImpl`.

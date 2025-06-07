@@ -11,19 +11,31 @@ namespace app::game {
 
 		// Calculate and return the best input to achieve the current state.
 		Input calculateInput(tetris::Ai::State state, Input current) {
-			Input input{};
-			if (state.rotationLeft > 0) {
-				input.rotate = !current.rotate;
-			}
-			if (state.left > 0) {
-				input.left = true;
-			} else if (state.left < 0) {
-				input.right = true;
-			}
-			if (state.left == 0 && state.rotationLeft == 0) {
-				input.down = true;
-			}
-			return input;
+			Input next = {};
+
+			auto updateKey = [](bool nowHeld, const KeyState& prev) -> KeyState {
+				return {
+					.held = nowHeld,
+					.pressed = nowHeld && !prev.held,
+					.released = !nowHeld && prev.held
+				};
+			};
+
+			// Determine target key states
+			bool wantRotate = state.rotationLeft > 0;
+			bool wantLeft = state.left > 0;
+			bool wantRight = state.left < 0;
+			bool wantDown = state.left == 0 && state.rotationLeft == 0;
+
+			next.rotate = updateKey(wantRotate, current.rotate);
+			next.left = updateKey(wantLeft, current.left);
+			next.right = updateKey(wantRight, current.right);
+			next.down = updateKey(wantDown, current.down);
+
+			// Keep downGround unchanged for now (or add logic if needed)
+			next.downGround = updateKey(false, current.downGround);
+			
+			return next;
 		}
 
 	}

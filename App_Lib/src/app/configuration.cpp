@@ -38,6 +38,22 @@ namespace app {
 		};
 	}
 
+	void from_json(const json& j, Configuration::Device& deviceProperties) {
+		deviceProperties = Configuration::Device{
+			.guid = j.at("guid").get<std::string>(),
+			.das = j.at("das").get<double>(),
+			.arr = j.at("arr").get<double>(),
+		};
+	}
+
+	void to_json(json& j, const Configuration::Device& deviceProperties) {
+		j = json{
+			{"guid", deviceProperties.guid},
+			{"das", deviceProperties.das},
+			{"arr", deviceProperties.arr}
+		};
+	}
+
 }
 
 namespace tetris {
@@ -688,6 +704,34 @@ namespace app {
 			return impl_->jsonObject.at("window").at("tetrisBoard").at("middleTextBoxSize").get<int>();
 		} catch (const nlohmann::detail::out_of_range&) {
 			return 7;
+		}
+	}
+
+	std::optional<Configuration::Device> Configuration::getDevice(std::string_view guid) const {
+		auto devices = impl_->jsonObject["devices"].get<std::vector<Configuration::Device>>();
+		auto it = std::find_if(devices.begin(), devices.end(), [&guid](const Configuration::Device& device) {
+			return device.guid == guid;
+		});
+		if (it != devices.end()) {
+			return *it;
+		}
+		return std::nullopt;
+	}
+	
+	void Configuration::setDevice(std::string_view guid, double das, double arr) {
+		auto devices = impl_->jsonObject["devices"].get<std::vector<Configuration::Device>>();
+		auto it = std::find_if(devices.begin(), devices.end(), [&guid](const Configuration::Device& device) {
+			return device.guid == guid;
+		});
+		auto newDevice = Configuration::Device{
+			.guid = guid.data(),
+			.das = das,
+			.arr = arr
+		};
+		if (it != devices.end()) {
+			impl_->jsonObject[guid] = newDevice;
+		} else {
+			impl_->jsonObject.push_back(newDevice);
 		}
 	}
 

@@ -5,12 +5,18 @@
 
 namespace app::game {
 
+	struct KeyState {
+		bool held = false;
+		bool pressed = false;
+		bool released = false;
+	};
+
 	struct Input {
-		bool rotate : 1;
-		bool down : 1;
-		bool downGround : 1;
-		bool left : 1;
-		bool right : 1;
+		KeyState rotate;
+		KeyState down;
+		KeyState downGround;
+		KeyState left;
+		KeyState right;
 
 		friend constexpr auto operator<=>(const Input&, const Input&) = default;
 	};

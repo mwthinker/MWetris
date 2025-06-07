@@ -10,6 +10,7 @@ enable_testing()
 
 set(SOURCES_TEST
 	src/game/devicemanagertest.cpp
+	src/game/keyboardtest.cpp
 	src/game/serializetest.cpp
 	src/mwetristest.cpp
 	src/network/gameroomtest.cpp

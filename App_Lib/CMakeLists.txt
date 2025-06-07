@@ -20,6 +20,8 @@ set(SOURCES_LIB
 	src/app/game/actionhandler.h
 	src/app/game/computer.cpp
 	src/app/game/computer.h
+	src/app/game/dasarrhandler.cpp
+	src/app/game/dasarrhandler.h
 	src/app/game/defaultgamerules.h
 	src/app/game/devicemanager.cpp
 	src/app/game/devicemanager.h

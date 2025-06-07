@@ -1,6 +1,8 @@
 #ifndef APP_CONFIGURATION_H
 #define APP_CONFIGURATION_H
 
+#include <optional>
+
 #include <tetris/block.h>
 #include <tetris/ai.h>
 
@@ -41,6 +43,18 @@ namespace app {
 				std::string ip;
 				int port;
 			} server;
+		};
+
+		struct Device {
+			std::string guid;
+			double das;
+			double arr;
+		};
+
+		struct DeviceChangeEvent {
+			std::string guid;
+			double das;
+			double arr;
 		};
 
 		static Configuration& getInstance();
@@ -185,6 +199,9 @@ namespace app {
 
 		int getActiveLocalGameRows() const;
 		int getActiveLocalGameColumns() const;
+
+		std::optional<Device> getDevice(std::string_view guid) const;
+		void setDevice(std::string_view guid, double das, double arr);
 
 	private:
 		Configuration();

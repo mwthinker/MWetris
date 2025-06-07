@@ -22,10 +22,12 @@ namespace app::game {
 
 		bool eventUpdate(const SDL_Event& windowEvent);
 
+		void tick();
+
 	private:
 		Input input_{};
 		std::string name_;
-		KeyboardMapping keyboardMapping_;
+		KeyboardMapping keyboardMapping_{};
 	};
 
 }

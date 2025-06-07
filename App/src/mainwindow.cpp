@@ -119,6 +119,7 @@ void MainWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
 		subWindow->imGuiUpdate(deltaTime);
 	}
 	ioContext_.poll_one();
+	deviceManager_->tick();
 }
 
 void MainWindow::imGuiEventUpdate(const SDL_Event& windowEvent) {

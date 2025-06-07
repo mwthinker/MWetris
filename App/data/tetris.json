@@ -99,6 +99,18 @@
 			"port": 11175
 		}
 	},
+	"devices": [
+		{
+			"guid": "keyboard1",
+			"das": 0.167,
+			"arr": 0.033
+		},
+		{
+			"guid": "keyboard1",
+			"das": 0.167,
+			"arr": 0.033
+		}
+	],
 	"ai1": "Default",
 	"ai2": "Default",
 	"ai3": "Default",

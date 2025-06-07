@@ -6,6 +6,7 @@
 	"properties": {
 		"$schema":  { "type": "string" },
 		"window": { "$ref": "#/definitions/Window" },
+		"devices": { "$ref": "#/definitions/Devices" },
 		"network": { "$ref": "#/definitions/Network" },
 		"ai1": { "type": "string" },
 		"ai2": { "type": "string" },
@@ -273,6 +274,19 @@
 					"required": ["ip", "port"],
 					"additionalProperties": false
 				}
+			}
+		},
+		"Devices": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"guid": { "type": "string" },
+					"das": { "type": "number" },
+					"arr": { "type": "number" }
+				},
+				"required": ["guid", "das", "arr"],
+				"additionalProperties": false
 			}
 		}
 	}

@@ -50,6 +50,7 @@ namespace app::game {
 	}
 
 	bool GamePad::updateInput(Uint8 button, bool state) {
+		/*
 		switch (button) {
 			case SDL_CONTROLLER_BUTTON_A:
 				input_.downGround = state;
@@ -70,6 +71,7 @@ namespace app::game {
 				input_.right = state;
 				return true;
 		}
+		*/
 		return false;
 	}
 

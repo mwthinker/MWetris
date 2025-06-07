@@ -20,6 +20,9 @@ namespace app::game {
 
 		void eventUpdate(const SDL_Event& windowEvent);
 
+		// Called every frame to update the state of devices
+		void tick();
+
 		std::vector<DevicePtr> getAllDevicesAvailable() const;
 
 		DevicePtr getDefaultDevice1() const;
