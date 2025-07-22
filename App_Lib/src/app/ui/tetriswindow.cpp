@@ -148,7 +148,6 @@ namespace app::ui {
 		tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
 		tetrisController_->pause();
 
-
 		ImGui::GetStyle().Colors[ImGuiCol_Button] = Color{"#000000"};
 		ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered] = Color{"#4D4D4D"};
 		ImGui::GetStyle().Colors[ImGuiCol_ButtonActive] = Color{"#292929"};
@@ -301,6 +300,23 @@ namespace app::ui {
 					if (ImGui::MenuItem("About")) {
 						modalStateMachine_.switchTo<scene::About>();
 					}
+					ImGui::Menu("Player1", [&]() {
+						ImGui::TextUnformatted("Move: Arrow keys");
+						ImGui::ComboScoped("Device", "Keybard1", [&]() {
+							ImGui::Selectable("Keyboard1", true, ImGuiSelectableFlags_AllowDoubleClick, ImVec2{0, 0});
+							ImGui::Selectable("Keyboard2", false, ImGuiSelectableFlags_AllowDoubleClick, ImVec2{0, 0});
+						});
+						static int das = 60;
+						ImGui::SeparatorText("DAS/ARR");
+						ImGui::Button("Default"); 
+						ImGui::SameLine();
+						ImGui::Button("Save");
+						ImGui::SliderInt("DAS", &das, 0, 1000, "%d MS", ImGuiSliderFlags_AlwaysClamp);
+						static int arr = 100;
+						ImGui::SliderInt("ARR", &arr, 0, 1000, "%d MS", ImGuiSliderFlags_AlwaysClamp);
+						ImGui::Separator();
+					});
+
 				});
 				ImGui::PushStyleColor(ImGuiCol_Text, tetrisController_->isConnectedToServer() ? sdl::color::Green : sdl::color::Red);
 				ImGui::Text(ICON_FA_GLOBE);

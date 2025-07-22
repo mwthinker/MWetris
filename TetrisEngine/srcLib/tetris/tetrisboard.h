@@ -49,6 +49,12 @@ namespace tetris {
 		template <typename Rows>
 		int addExternalRows(const Rows& externalRows);
 
+		bool isBlockDown() const {
+			Block block = current_;
+			block.moveDown();
+			return collision(block);
+		}
+
 		void update(Move move);
 
 		void update(Move move, EventCallback auto&& eventCallback);
