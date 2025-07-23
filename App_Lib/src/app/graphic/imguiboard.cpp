@@ -6,7 +6,6 @@
 #include "util/auxiliary.h"
 
 #include <tetris/tetrisboard.h>
-#include <sdl/imguiauxiliary.h>
 
 #include <spdlog/spdlog.h>
 
@@ -16,6 +15,22 @@
 namespace app::graphic {
 
 	namespace {
+
+		void addImageQuad(const app::TextureView& texture,
+			const glm::vec2& pos, const glm::vec2& size, sdl::Color color = sdl::color::White) {
+
+			ImVec2 a = pos;
+			ImVec2 b = pos + glm::vec2{size.x, 0.f};
+			ImVec2 c = pos + glm::vec2{size.x, size.y};
+			ImVec2 d = pos + glm::vec2{0.f, size.y};
+
+			ImVec2 uv_c{texture.pos.x + texture.size.x, texture.pos.y + texture.size.y};
+			ImVec2 uv_d{texture.pos.x, texture.pos.y + texture.size.y};
+			ImVec2 uv_a{texture.pos.x, texture.pos.y};
+			ImVec2 uv_b{texture.pos.x + texture.size.x, texture.pos.y};
+
+			ImGui::GetWindowDrawList()->PrimQuadUV(a, b, c, d, uv_a, uv_b, uv_c, uv_d, color.toImU32());
+		}
 
 		Vec2 calculateCenterOfMass(const tetris::Block& block) {
 			Vec2 pos{};
@@ -131,18 +146,17 @@ namespace app::graphic {
 		auto drawList = ImGui::GetWindowDrawList();
 
 		auto texture = getSprite(block.getBlockType());
-		drawList->PushTextureID((ImTextureID)(intptr_t) texture);
-
+		drawList->PushTexture(Configuration::getInstance().getTextureAtlasBinding());
 		for (const auto& sq : block) {
 			auto x = pos.x + sq.column * squareSize_ + delta.x;
 			auto y = pos.y - (sq.row + 1) * squareSize_ + delta.y;
 			
 			if (sq.row < player_->getRows() - 2) {
 				drawList->PrimReserve(6, 4);
-				ImGui::Helper::AddImageQuad(texture, {x, y}, Vec2{squareSize_, squareSize_}, color);
+				addImageQuad(texture, {x, y}, Vec2{squareSize_, squareSize_}, color);
 			}
 		}
-		drawList->PopTextureID();
+		drawList->PopTexture();
 	}
 
 	void ImGuiBoard::drawGrid(int columns, int rows) {
@@ -214,6 +228,7 @@ namespace app::graphic {
 
 		rows_.resize(player_->getRows() - 2);
 
+		drawList->PushTexture(Configuration::getInstance().getTextureAtlasBinding());
 		for (int i = 0; i < player_->getRows() - 2; ++i) {
 			rows_[i].time += deltaTime;
 			float time = 2.f + rows_[i].time;
@@ -231,14 +246,14 @@ namespace app::graphic {
 					&& blockType != tetris::BlockType::Wall) {
 
 					auto texture = getSprite(blockType);
-					drawList->PushTextureID((ImTextureID)(intptr_t) texture);
+					
 					
 					drawList->PrimReserve(6, 4);
-					ImGui::Helper::AddImageQuad(texture, {x, y}, Vec2{squareSize_, squareSize_});
-					drawList->PopTextureID();
+					addImageQuad(texture, {x, y}, Vec2{squareSize_, squareSize_});
 				}
 			}
 		}
+		drawList->PopTexture();
 	}
 
 	void ImGuiBoard::draw(float width, float height, double deltaTime) {
@@ -324,7 +339,7 @@ namespace app::graphic {
 		return *player_;
 	}
 
-	sdl::TextureView ImGuiBoard::getSprite(tetris::BlockType blockType) const {
+	app::TextureView ImGuiBoard::getSprite(tetris::BlockType blockType) const {
 		switch (blockType) {
 		case tetris::BlockType::I:
 			return spriteI_;

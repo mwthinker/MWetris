@@ -7,7 +7,6 @@
 #include "game/tetrisgameevent.h"
 #include "game/player.h"
 
-#include <sdl/graphic.h>
 #include <mw/signal.h>
 
 #include <set>

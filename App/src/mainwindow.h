@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <sdl/imguiwindow.h>
+#include <sdl/window.h>
 
 #include <app/ui/subwindow.h>
 #include <app/game/devicemanager.h>
@@ -15,7 +15,7 @@ enum class Network {
 	DebugServer
 };
 
-class MainWindow : public sdl::ImGuiWindow {
+class MainWindow : public sdl::Window {
 public:
 	struct Config {
 		int windows = 1;
@@ -29,7 +29,7 @@ public:
 	~MainWindow() override;
 	
 private:
-	void initPreLoop() override;
+	void preLoop() override;
 
 	void initSingleTcpClient();
 
@@ -37,11 +37,9 @@ private:
 
 	void initDebugServer();
 
-	void eventUpdate(const SDL_Event& windowEvent) override;
+	void processEvent(const SDL_Event& windowEvent) override;
 
-	void imGuiUpdate(const sdl::DeltaTime& deltaTime) override;
-
-	void imGuiEventUpdate(const SDL_Event& windowEvent) override;
+	void renderImGui(const sdl::DeltaTime& deltaTime) override;
 		
 	asio::io_context ioContext_; // Must be declared first to guarantee destruction order.
 	std::vector<std::unique_ptr<app::ui::SubWindow>> subWindows_;

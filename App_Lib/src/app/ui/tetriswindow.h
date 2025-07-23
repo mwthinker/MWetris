@@ -13,7 +13,7 @@
 
 #include <network/client.h>
 
-#include <sdl/imguiwindow.h>
+#include <sdl/window.h>
 
 namespace app {
 
@@ -66,7 +66,7 @@ namespace app::ui {
 
 		sdl::Window& window_;
 		std::shared_ptr<game::DeviceManager> deviceManager_;
-		sdl::TextureView background_;
+		app::TextureView background_;
 		scene::StateMachine modalStateMachine_;
 		scene::StateMachine mainStateMachine_;
 

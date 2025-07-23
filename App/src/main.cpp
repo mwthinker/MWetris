@@ -4,7 +4,6 @@
 #include <app/ui/tetriswindow.h>
 #include <app/configuration.h>
 
-#include <sdl/initsdl.h>
 #include <sdl/gamecontroller.h>
 
 #include <argparse/argparse.hpp>
@@ -20,7 +19,6 @@ void startApplication(MainWindow::Config& config) {
 	spdlog::info("[main] MWetris vcpkg hash:  {}  date: {}", VCPKG_HASH, VCPKG_DATE);
 	spdlog::info("[main] MWetris GUI:  {}", MWETRIS_GUID);
 
-	const sdl::InitSdl SDL{SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER};
 	MainWindow mainWindow{config};
 
 	sdl::GameController::loadGameControllerMappings("gamecontrollerdb.txt");

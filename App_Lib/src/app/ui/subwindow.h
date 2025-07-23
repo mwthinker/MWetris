@@ -1,7 +1,7 @@
 #ifndef APP_UI_SUBWINDOW_H
 #define APP_UI_SUBWINDOW_H
 
-#include <sdl/imguiwindow.h>
+#include <sdl/window.h>
 
 #include <string>
 

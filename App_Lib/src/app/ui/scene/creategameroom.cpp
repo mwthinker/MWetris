@@ -41,7 +41,7 @@ namespace app::ui::scene {
 	}
 
 	void CreateGameRoom::imGuiUpdate(const DeltaTime& deltaTime) {
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiHeaderFont());
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiHeaderFont(), 50);
 		ImGui::Text("Create Game Room");
 		ImGui::PopFont();
 

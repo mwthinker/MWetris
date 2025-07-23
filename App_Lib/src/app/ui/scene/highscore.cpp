@@ -6,11 +6,11 @@ namespace app::ui::scene {
 	void HighScore::imGuiUpdate(const DeltaTime& deltaTime) {
 		auto labelColor = app::Configuration::getInstance().getLabelTextColor();
 
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiHeaderFont());
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiHeaderFont(), 0.f);
 		ImGui::TextColored(labelColor, "Highscore");
 		ImGui::PopFont();
 
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiDefaultFont());
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiDefaultFont(), 0.f);
 
 		ImGui::Table("Highscore", 6, ImGuiTableFlags_Borders, {500, 0}, [&]() {
 			ImGui::TableSetupColumn("Ranking", ImGuiTableColumnFlags_WidthFixed, 70);

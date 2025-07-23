@@ -2,7 +2,7 @@
 
 #include <sdl/gamecontroller.h>
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <spdlog/spdlog.h>
 
 #include <string>
@@ -22,10 +22,10 @@ namespace app::game {
 		));
 		keyboard2_ = createKeyboardDevice(std::make_unique<game::Keyboard>("Keyboard 2",
 			KeyboardMapping{
-				.down = SDLK_s,
-				.right = SDLK_d,
-				.left = SDLK_a,
-				.rotate = SDLK_w,
+				.down = SDLK_S,
+				.right = SDLK_D,
+				.left = SDLK_A,
+				.rotate = SDLK_W,
 				.downGround = SDLK_LCTRL
 			}
 		));
@@ -44,11 +44,11 @@ namespace app::game {
 
 	void DeviceManager::eventUpdate(const SDL_Event& windowEvent) {
 		switch (windowEvent.type) {
-			case SDL_CONTROLLERDEVICEADDED:
-				controllerDeviceAddedEvent(windowEvent.cdevice);
+			case SDL_EVENT_GAMEPAD_ADDED:
+				controllerDeviceAddedEvent(windowEvent.gdevice);
 				break;
-			case SDL_CONTROLLERDEVICEREMOVED:
-				controllerDeviceRemovedEvent(windowEvent.cdevice);
+			case SDL_EVENT_GAMEPAD_REMOVED:
+				controllerDeviceRemovedEvent(windowEvent.gdevice);
 				break;
 		}
 		if (keyboard1_.keyboard->eventUpdate(windowEvent)) {
@@ -99,7 +99,7 @@ namespace app::game {
 			return keyboard2_.device;
 		}
 
-		auto sdlGuid = SDL_JoystickGetGUIDFromString(guid.c_str());
+		auto sdlGuid = SDL_StringToGUID(guid.c_str());
 
 		auto it = std::find_if(devices_.begin(), devices_.end(), [sdlGuid](const Pair& pair) {
 			return pair.guid == sdlGuid;
@@ -110,7 +110,7 @@ namespace app::game {
 		return keyboard1_.device;
 	}
 
-	void DeviceManager::controllerDeviceAddedEvent(const SDL_ControllerDeviceEvent& deviceEvent) {
+	void DeviceManager::controllerDeviceAddedEvent(const SDL_GamepadDeviceEvent& deviceEvent) {
 		auto gameController = sdl::GameController::addController(deviceEvent.which);
 		auto it = std::find_if(devices_.begin(), devices_.end(), [&](const Pair& pair) {
 			return !pair.device->isConnected() && pair.guid == gameController.getGuid();
@@ -137,7 +137,7 @@ namespace app::game {
 		}
 	}
 
-	void DeviceManager::controllerDeviceRemovedEvent(const SDL_ControllerDeviceEvent& deviceEvent) {
+	void DeviceManager::controllerDeviceRemovedEvent(const SDL_GamepadDeviceEvent& deviceEvent) {
 		auto it = std::find_if(devices_.begin(), devices_.end(), [instanceId = deviceEvent.which](const Pair& pair) {
 			return instanceId == pair.gamePad->getInstanceId();
 		});

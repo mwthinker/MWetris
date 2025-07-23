@@ -6,7 +6,7 @@
 
 #include <tetris/tetrisboard.h>
 
-#include <sdl/sprite.h>
+#include "textureview.h"
 
 #include <vector>
 
@@ -36,7 +36,7 @@ namespace app::graphic {
 		void drawGrid(int columns, int rows);
 		void drawPreviewBlock(tetris::BlockType type, Color color);
 
-		sdl::TextureView getSprite(tetris::BlockType blockType) const;
+		app::TextureView getSprite(tetris::BlockType blockType) const;
 
 		float squareSize_ = 0.f;
 		float borderSize_ = 2.f;
@@ -50,7 +50,7 @@ namespace app::graphic {
 		
 		std::vector<Row> rows_;
 		float height_ = 0.f;
-		sdl::TextureView spriteI_, spriteJ_, spriteL_, spriteO_, spriteS_, spriteT_, spriteZ_;
+		app::TextureView spriteI_, spriteJ_, spriteL_, spriteO_, spriteS_, spriteT_, spriteZ_;
 		mw::signals::ScopedConnections connections_;
 	};
 

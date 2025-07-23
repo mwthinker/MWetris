@@ -9,10 +9,8 @@ namespace app::game {
 
 		SDL_Event createKeyboardEvent(SDL_Keycode keyCode, SDL_EventType type) {
 			SDL_KeyboardEvent keyBoardEvent{
-				.type = (Uint32) type,
-				.keysym = SDL_Keysym{
-					.sym = keyCode
-				}
+				.type = type,
+				.key = keyCode
 			};
 			SDL_Event event;
 			event.key = keyBoardEvent;
@@ -46,7 +44,7 @@ namespace app::game {
 		}};
 
 		// When
-		keyboard.eventUpdate(createKeyboardEvent(SDLK_DOWN, SDL_KEYDOWN));
+		keyboard.eventUpdate(createKeyboardEvent(SDLK_DOWN, SDL_EVENT_KEY_DOWN));
 
 		// Then
 		auto down = keyboard.getInput().down;
@@ -66,7 +64,7 @@ namespace app::game {
 		}};
 
 		// When
-		keyboard.eventUpdate(createKeyboardEvent(SDLK_DOWN, SDL_KEYDOWN));
+		keyboard.eventUpdate(createKeyboardEvent(SDLK_DOWN, SDL_EVENT_KEY_DOWN));
 		keyboard.tick();
 
 		// Then
@@ -85,10 +83,10 @@ namespace app::game {
 			.rotate=SDLK_UP,
 			.downGround=SDLK_RCTRL
 		}};
-		keyboard.eventUpdate(createKeyboardEvent(SDLK_DOWN, SDL_KEYDOWN));
+		keyboard.eventUpdate(createKeyboardEvent(SDLK_DOWN, SDL_EVENT_KEY_DOWN));
 		keyboard.tick();
 		keyboard.tick();
-		keyboard.eventUpdate(createKeyboardEvent(SDLK_DOWN, SDL_KEYUP));
+		keyboard.eventUpdate(createKeyboardEvent(SDLK_DOWN, SDL_EVENT_KEY_UP));
 
 		// When
 

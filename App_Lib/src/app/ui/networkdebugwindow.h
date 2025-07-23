@@ -7,7 +7,7 @@
 
 #include <network/servercore.h>
 
-#include <sdl/imguiwindow.h>
+#include <sdl/window.h>
 #include <signal.h>
 
 namespace network {

@@ -1,6 +1,6 @@
 #include "gamepad.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 namespace app::game {
 
@@ -31,14 +31,14 @@ namespace app::game {
 
 	bool GamePad::eventUpdate(const SDL_Event& windowEvent) {
 		switch (windowEvent.type) {
-			case SDL_CONTROLLERBUTTONDOWN:
-				if (gameController_.isAttached() && windowEvent.cbutton.which == gameController_.getInstanceId()) {
-					return updateInput(windowEvent.cbutton.button, true);
+			case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+				if (gameController_.isAttached() && windowEvent.button.which == gameController_.getInstanceId()) {
+					return updateInput(windowEvent.button.button, true);
 				}
 				break;
-			case SDL_CONTROLLERBUTTONUP:
-				if (gameController_.isAttached() && windowEvent.cbutton.which == gameController_.getInstanceId()) {
-					return updateInput(windowEvent.cbutton.button, false);
+			case SDL_EVENT_GAMEPAD_BUTTON_UP:
+				if (gameController_.isAttached() && windowEvent.button.which == gameController_.getInstanceId()) {
+					return updateInput(windowEvent.button.button, false);
 				}
 				break;
 		}

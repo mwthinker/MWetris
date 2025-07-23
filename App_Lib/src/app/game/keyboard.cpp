@@ -1,6 +1,6 @@
 #include "keyboard.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <spdlog/spdlog.h>
 
 #include <string>
@@ -56,7 +56,7 @@ namespace app::game {
 	}
 
 	bool Keyboard::eventUpdate(const SDL_Event& windowEvent) {
-		if (windowEvent.type != SDL_KEYDOWN && windowEvent.type != SDL_KEYUP) {
+		if (windowEvent.type != SDL_EVENT_KEY_DOWN && windowEvent.type != SDL_EVENT_KEY_UP) {
 			return false;
 		}
 
@@ -64,8 +64,8 @@ namespace app::game {
 			return false;
 		}
 
-		bool isDown = (windowEvent.type == SDL_KEYDOWN);
-		SDL_Keycode key = windowEvent.key.keysym.sym;
+		bool isDown = (windowEvent.type == SDL_EVENT_KEY_DOWN);
+		SDL_Keycode key = windowEvent.key.key;
 
 		if (key == keyboardMapping_.left) {
 			handleKey(input_.left, isDown);

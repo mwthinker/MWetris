@@ -22,8 +22,6 @@
 
 #include <network/client.h>
 
-#include <sdl/imguiauxiliary.h>
-
 #include <IconsFontAwesome6.h>
 #include <spdlog/spdlog.h>
 
@@ -71,6 +69,30 @@ namespace app::ui {
 				ImGui::Window(subWindow.getName().c_str(), nullptr, ImguiSecondaryWindow, t);
 			}
 		}
+
+		void addImageQuad(const app::TextureView& texture,
+			const glm::vec2& pos, const glm::vec2& size, sdl::Color color = sdl::color::White) {
+
+			ImVec2 a = pos;
+			ImVec2 b = pos + glm::vec2{size.x, 0.f};
+			ImVec2 c = pos + glm::vec2{size.x, size.y};
+			ImVec2 d = pos + glm::vec2{0.f, size.y};
+
+			ImVec2 uv_c{texture.pos.x + texture.size.x, texture.pos.y + texture.size.y};
+			ImVec2 uv_d{texture.pos.x, texture.pos.y + texture.size.y};
+			ImVec2 uv_a{texture.pos.x, texture.pos.y};
+			ImVec2 uv_b{texture.pos.x + texture.size.x, texture.pos.y};
+
+			ImGui::GetWindowDrawList()->PrimQuadUV(a, b, c, d, uv_a, uv_b, uv_c, uv_d, color.toImU32());
+		}
+
+		void imageBackground(const app::TextureView& texture) {
+			auto drawList = ImGui::GetWindowDrawList();
+			drawList->PushTexture(Configuration::getInstance().getTextureAtlasBinding());
+			drawList->PrimReserve(6, 4);
+			addImageQuad(texture, ImGui::GetCursorScreenPos(), ImGui::GetWindowSize());
+			drawList->PopTexture();
+		}
 	}
 
 	TetrisWindow::TetrisWindow(const std::string& windowName, Type type, sdl::Window& window,
@@ -102,10 +124,10 @@ namespace app::ui {
 	}
 
 	int TetrisWindow::getCurrentMonitorHz() const {
-		if (SDL_DisplayMode displayMode; SDL_GetCurrentDisplayMode(SDL_GetWindowDisplayIndex(window_.getSdlWindow()), &displayMode) == 0) {
-			if (displayMode.refresh_rate > 0) {
-				spdlog::info("[TetrisWindow] Window {}Hz", displayMode.refresh_rate);
-				return displayMode.refresh_rate;
+		if (auto displayMode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(window_.getSdlWindow())); displayMode != nullptr) {
+			if (displayMode->refresh_rate > 0) {
+				spdlog::info("[TetrisWindow] Window {}Hz", displayMode->refresh_rate);
+				return displayMode->refresh_rate;
 			} else {
 				spdlog::info("[TetrisWindow] Window Hz is unspecified");
 			}
@@ -116,7 +138,6 @@ namespace app::ui {
 	}
 
 	void TetrisWindow::initPreLoop() {
-		Configuration::getInstance().bindTextureFromAtlas();
 		background_ = Configuration::getInstance().getBackgroundSprite();
 
 		mainStateMachine_.emplace<scene::GameRoomLooby>(tetrisController_, deviceManager_);
@@ -231,7 +252,7 @@ namespace app::ui {
 		tetrisController_->update(deltaTimeSeconds);
 		timeHandler_.update(deltaTimeSeconds);
 
-		ImGui::PushFont(Configuration::getInstance().getImGuiDefaultFont());
+		ImGui::PushFont(Configuration::getInstance().getImGuiDefaultFont(), 0.f);
 		imGuiMainWindow(deltaTime);
 
 		modalStateMachine_.imGuiUpdate(deltaTime);
@@ -247,7 +268,7 @@ namespace app::ui {
 			});
 			*/
 
-			ImGui::ImageBackground(background_);
+			imageBackground(background_);
 
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {10.0, 10.0});
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 10.f);
@@ -342,15 +363,15 @@ namespace app::ui {
 		}
 
 		switch (windowEvent.type) {
-			case SDL_KEYDOWN:
-				switch (windowEvent.key.keysym.sym) {
+			case SDL_EVENT_KEY_DOWN:
+				switch (windowEvent.key.key) {
 					case SDLK_F1:
 						tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
 						break;
 					case SDLK_F5:
 						tetrisController_->restartGame();
 						break;
-					case SDLK_p: [[fallthrough]];
+					case SDLK_P: [[fallthrough]];
 					case SDLK_PAUSE:
 						tetrisController_->pause();
 						break;

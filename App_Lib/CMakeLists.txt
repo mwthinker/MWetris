@@ -96,6 +96,8 @@ set(SOURCES_LIB
 	src/app/timerhandler.cpp
 	src/app/timerhandler.h
 	src/app/types.h
+
+	src/app/textureview.h
 )
 
 find_package(Threads REQUIRED)
@@ -103,7 +105,7 @@ find_package(asio CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(Signal REQUIRED)
-find_package(CppSdl2 CONFIG REQUIRED)
+find_package(CppSdl3 CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(Signal CONFIG REQUIRED)
 
@@ -164,7 +166,7 @@ target_link_libraries(App_Lib
 		fmt::fmt
 		nlohmann_json::nlohmann_json
 		Signal::Signal
-		CppSdl2::CppSdl2
+		CppSdl3::CppSdl3
 		MWetris::TetrisEngine_Lib
 		MWetris::Network_Lib
 		MWetris::Protocol

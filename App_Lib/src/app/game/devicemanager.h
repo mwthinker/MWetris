@@ -7,7 +7,7 @@
 
 #include <mw/signal.h>
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <vector>
 
 namespace app::game {
@@ -39,9 +39,9 @@ namespace app::game {
 		
 		static KeyboardDevice createKeyboardDevice(std::unique_ptr<Keyboard> keyboard);
 
-		void controllerDeviceAddedEvent(const SDL_ControllerDeviceEvent& deviceEvent);
+		void controllerDeviceAddedEvent(const SDL_GamepadDeviceEvent& deviceEvent);
 
-		void controllerDeviceRemovedEvent(const SDL_ControllerDeviceEvent& deviceEvent);
+		void controllerDeviceRemovedEvent(const SDL_GamepadDeviceEvent& deviceEvent);
 		
 		KeyboardDevice keyboard1_;
 		KeyboardDevice keyboard2_;
@@ -49,7 +49,7 @@ namespace app::game {
 		struct Pair {
 			std::unique_ptr<GamePad> gamePad;
 			DevicePtr device;
-			SDL_JoystickGUID guid;
+			SDL_GUID guid;
 		};
 		std::vector<Pair> devices_;
 	};

@@ -59,11 +59,7 @@
 		"minHeight": 480,
 		"icon": "images/icon.png",
 		"sprites": {
-			"background": "images/background.png",
-			"computer": "images/computer.png",
-			"human": "images/human.png",
-			"cross": "images/cross.png",
-			"zoom": "images/signs.png"
+			"background": "images/background.png"
 		},
 		"tetrisBoard": {
 			"font": "fonts/Ubuntu-B.ttf",

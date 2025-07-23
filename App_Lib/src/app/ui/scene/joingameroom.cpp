@@ -41,7 +41,7 @@ namespace app::ui::scene {
 	}
 
 	void JoinGameRoom::imGuiUpdate(const DeltaTime& deltaTime) {
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiHeaderFont());
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiHeaderFont(), 0.f);
 		ImGui::Text("Custom Game");
 		ImGui::PopFont();
 

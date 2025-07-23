@@ -4,10 +4,6 @@
 #include "../types.h"
 #include "../configuration.h"
 
-#include <sdl/imguiauxiliary.h>
-
-#include <sdl/sprite.h>
-
 #include <chrono>
 #include <concepts>
 

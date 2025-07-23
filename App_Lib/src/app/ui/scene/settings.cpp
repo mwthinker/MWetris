@@ -30,14 +30,14 @@ namespace app::ui::scene {
 	void Settings::imGuiUpdate(const DeltaTime& deltaTime) {
 		auto labelColor = app::Configuration::getInstance().getLabelTextColor();
 
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiHeaderFont());
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiHeaderFont(), 0.f);
 		ImGui::TextColored(labelColor, "Settings");
 		ImGui::PopFont();
 
 		ImGui::Indent(10.f);
 		ImGui::Dummy({0.0f, 5.0f});
 
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiDefaultFont());
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiDefaultFont(), 0.f);
 		bool check = app::Configuration::getInstance().isWindowBordered();
 		if (ImGui::Checkbox("Border around window", &check)) {
 			app::Configuration::getInstance().setWindowBordered(check);
@@ -73,7 +73,7 @@ namespace app::ui::scene {
 			app::Configuration::getInstance().setShowDownBlock(check);
 		}
 
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiHeaderFont());
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiHeaderFont(), 0.f);
 		ImGui::TextColored(labelColor, "Ai players");
 		ImGui::PopFont();
 

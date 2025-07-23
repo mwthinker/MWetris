@@ -1,10 +1,16 @@
 #include "configuration.h"
 
-#include <sdl/textureatlas.h>
+#include <sdl/imageatlas.h>
+#include <sdl/util.h>
+#include <sdl/sdlexception.h>
+#include <sdl/gpu/gpuutil.h>
 
 #include <IconsFontAwesome6.h>
 #include <nlohmann/json.hpp>
+#include <fmt/format.h>
+#include <spdlog/spdlog.h>
 
+#include <filesystem>
 #include <map>
 #include <vector>
 #include <fstream>
@@ -193,9 +199,6 @@ namespace app {
 
 	struct Configuration::Impl {
 		std::string jsonPath;
-		sdl::TextureAtlas textureAtlas;
-		std::map<std::string, sdl::Sound> sounds;
-
 		nlohmann::json jsonObject;
 
 		mutable ImFont* defaultFont{};
@@ -210,16 +213,14 @@ namespace app {
 
 	void Configuration::quit() {
 		impl_ = nullptr;
+
+		// A bit of a hack. Resource needs to be destructed before GpuContext is destroyed.
+		sampler_ = {};
+		atlasTexture_ = {};
 	}
 
 	Configuration::Configuration()
 		: impl_{std::make_unique<Configuration::Impl>()} {
-		
-		impl_->textureAtlas = sdl::TextureAtlas{2048, 2048, []() {
-				gl::glTexParameteri(gl::GL_TEXTURE_2D, gl::GL_TEXTURE_MIN_FILTER, gl::GL_NEAREST);
-				gl::glTexParameteri(gl::GL_TEXTURE_2D, gl::GL_TEXTURE_MAG_FILTER, gl::GL_NEAREST);
-			}
-		};
 
 		std::ifstream defaultStream{"USE_APPLICATION_JSON"};
 		bool applicationJson;
@@ -244,38 +245,85 @@ namespace app {
 		stream << impl_->jsonObject.dump(1);
 	}
 
-	sdl::Sound Configuration::loadSound(const std::string& file) {
-		size_t size = impl_->sounds.size();
-		sdl::Sound& sound = impl_->sounds[file];
+	namespace {
 
-		// Sound not found?
-		if (impl_->sounds.size() > size) {
-			sound = sdl::Sound(file);
+		SDL_Surface* createSurface(int w, int h, sdl::Color color) {
+			auto s = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA32);
+			SDL_FillSurfaceRect(s, nullptr, color.toImU32());
+			return s;
 		}
 
-		return sound;
+		app::TextureView addImage(sdl::ImageAtlas& atlas, SDL_Surface* surfaceAtlas, const std::string& filename, int border = 0) {
+			auto surface = sdl::createSdlSurface(IMG_Load(filename.c_str()));
+			if (!surface) {
+				throw sdl::SdlException{"Failed to load surface from file: " + filename};
+			}
+			auto rectOptional = atlas.add(surface->w, surface->h, border);
+			if (!rectOptional) {
+				throw std::runtime_error{fmt::format("Failed to add surface to atlas: {}x{}, format: {}",
+					surface->w, surface->h, SDL_GetPixelFormatName(surface->format))};
+			}
+
+			auto rectDst = *rectOptional;
+			if (SDL_BlitSurface(surface.get(), nullptr, surfaceAtlas, &rectDst)) {
+				spdlog::info("Added surface to atlas: {}x{}, format: {}, at position: {},{}",
+					surface->w, surface->h, SDL_GetPixelFormatName(surface->format), rectDst.x, rectDst.y);
+				return app::TextureView{
+					.pos = {static_cast<float>(rectDst.x) / surfaceAtlas->w, static_cast<float>(rectDst.y) / surfaceAtlas->h},
+					.size = {static_cast<float>(rectDst.w) / surfaceAtlas->w, static_cast<float>(rectDst.h) / surfaceAtlas->h},
+				};
+			} else {
+				throw sdl::SdlException{"Failed to blit surface to atlas: " + filename + ", error: " + SDL_GetError()};
+			}
+		}
+
 	}
 
-	sdl::TextureView Configuration::loadSprite(const std::string& file) {
-		return impl_->textureAtlas.add(file, 1).getTextureView();
+	void Configuration::init(sdl::gpu::GpuContext& context) {
+		std::vector<std::string> files;
+		sdl::ImageAtlas atlas{2048, 2048};
+		auto surfaceAtlas = sdl::createSdlSurface(createSurface(atlas.getWidth(), atlas.getHeight(), sdl::color::White));
+
+		blockTypeI_ = addImage(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareI"].get<std::string>());
+		blockTypeJ_ = addImage(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareJ"].get<std::string>());
+		blockTypeL_ = addImage(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareL"].get<std::string>());
+		blockTypeO_ = addImage(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareO"].get<std::string>());
+		blockTypeS_ = addImage(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareS"].get<std::string>());
+		blockTypeT_ = addImage(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareT"].get<std::string>());
+		blockTypeZ_ = addImage(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareZ"].get<std::string>());
+		background_ = addImage(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["sprites"]["background"].get<std::string>());
+		
+		atlasTexture_ = sdl::gpu::uploadSurface(context, surfaceAtlas.get());
+		sampler_ = sdl::gpu::createSampler(context, SDL_GPUSamplerCreateInfo{
+			.min_filter = SDL_GPU_FILTER_NEAREST,
+			.mag_filter = SDL_GPU_FILTER_NEAREST,
+			.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST,
+			.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
+			.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
+			.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE
+		});
+		atlasBinding_ = SDL_GPUTextureSamplerBinding{
+			.texture = atlasTexture_.get(),
+			.sampler = sampler_.get()
+		};
 	}
 
-	sdl::TextureView Configuration::getSprite(tetris::BlockType blockType) {
+	app::TextureView Configuration::getSprite(tetris::BlockType blockType) {
 		switch (blockType) {
 			case tetris::BlockType::I:
-				return loadSprite(impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareI"].get<std::string>());
+				return blockTypeI_;
 			case tetris::BlockType::J:
-				return loadSprite(impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareJ"].get<std::string>());
+				return blockTypeJ_;
 			case tetris::BlockType::L:
-				return loadSprite(impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareL"].get<std::string>());
+				return blockTypeL_;
 			case tetris::BlockType::O:
-				return loadSprite(impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareO"].get<std::string>());
+				return blockTypeO_;
 			case tetris::BlockType::S:
-				return loadSprite(impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareS"].get<std::string>());
+				return blockTypeS_;
 			case tetris::BlockType::T:
-				return loadSprite(impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareT"].get<std::string>());
+				return blockTypeT_;
 			case tetris::BlockType::Z:
-				return loadSprite(impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareZ"].get<std::string>());
+				return blockTypeZ_;
 		}
 		return {};
 	}
@@ -316,10 +364,6 @@ namespace app {
 		}
 
 		return impl_->buttonFont;
-	}
-
-	void Configuration::bindTextureFromAtlas() {
-		impl_->textureAtlas.bind();
 	}
 
 	sdl::Color Configuration::getOuterSquareColor() const {
@@ -494,8 +538,8 @@ namespace app {
 		impl_->jsonObject["window"]["rowMovingTime"] = time;
 	}
 
-	sdl::TextureView Configuration::getBackgroundSprite() {
-		return loadSprite(impl_->jsonObject["window"]["sprites"]["background"].get<std::string>());
+	app::TextureView Configuration::getBackgroundSprite() {
+		return background_;
 	}
 
 	std::string Configuration::getAi1Name() const {
@@ -673,22 +717,6 @@ namespace app {
 
 	sdl::Color Configuration::getComboBoxShowDropDownColor() const {
 		return impl_->jsonObject["window"]["comboBox"]["showDropDownColor"].get<sdl::Color>();
-	}
-
-	sdl::TextureView Configuration::getHumanSprite() {
-		return loadSprite(impl_->jsonObject["window"]["sprites"]["human"].get<std::string>());
-	}
-
-	sdl::TextureView Configuration::getComputerSprite() {
-		return loadSprite(impl_->jsonObject["window"]["sprites"]["computer"].get<std::string>());
-	}
-
-	sdl::TextureView Configuration::getCrossSprite() {
-		return loadSprite(impl_->jsonObject["window"]["sprites"]["cross"].get<std::string>());
-	}
-
-	sdl::TextureView Configuration::getZoomSprite() {
-		return loadSprite(impl_->jsonObject["window"]["sprites"]["zoom"].get<std::string>());
 	}
 
 	sdl::Color Configuration::getMiddleTextColor() const {

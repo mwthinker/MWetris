@@ -6,8 +6,6 @@
 #include "game/tetrisparameters.h"
 #include "game/tetrisgameevent.h"
 
-#include <sdl/opengl.h>
-
 #include <fmt/format.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
@@ -45,7 +43,7 @@ namespace app::graphic {
 		for ([[maybe_unused]] auto& imguiBoard : imguiBoards_) {
 			ImGui::SetCursorPos(pos + Vec2{width / 2.f, height / 2.f});
 			pos.x += width;
-			ImGui::PushFont(Configuration::getInstance().getImGuiHeaderFont());
+			ImGui::PushFont(Configuration::getInstance().getImGuiHeaderFont(), 0.f);
 			if (gamePause_.pause) {
 				if (gamePause_.countDown > 0) {
 					ImGui::TextWithBackgroundColor(gamePause_.countDown, sdl::Color{0.f, 0.f, 0.f, 0.5f}, {5.f, 5.f});

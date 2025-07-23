@@ -6,13 +6,13 @@
 #include <tetris/block.h>
 #include <tetris/ai.h>
 
-#include <sdl/textureview.h>
-#include <sdl/sound.h>
+#include "textureview.h"
 #include <sdl/color.h>
-#include <sdl/font.h>
-#include <sdl/music.h>
 
+#include <sdl/gpu/sdlgpu.h>
 #include <imgui.h>
+
+#include <memory>
 
 namespace app {
 
@@ -65,10 +65,9 @@ namespace app {
 		Configuration& operator=(const Configuration&) = delete;
 
 		void save();
-
-		sdl::Sound loadSound(const std::string& file);
-		sdl::TextureView loadSprite(const std::string& file);
-		sdl::TextureView getSprite(tetris::BlockType blockType);
+		void init(sdl::gpu::GpuContext& context);
+		
+		app::TextureView getSprite(tetris::BlockType blockType);
 
 		ImFont* getImGuiDefaultFont() const;
 		ImFont* getImGuiHeaderFont() const;
@@ -86,8 +85,6 @@ namespace app {
 		bool isShowDownBlock() const;
 		void setShowDownBlock(bool showDownColor);
 		sdl::Color getDownBlockColor() const;
-
-		void bindTextureFromAtlas();
 
 		bool isLimitFps() const;
 		void setLimitFps(bool limited);
@@ -140,7 +137,7 @@ namespace app {
 
 		Network getNetwork() const;
 
-		sdl::TextureView getBackgroundSprite();
+		app::TextureView getBackgroundSprite();
 
 		std::string getAi1Name() const;
 		std::string getAi2Name() const;
@@ -189,11 +186,6 @@ namespace app {
 		sdl::Color getComboBoxBorderColor() const;
 		sdl::Color getComboBoxShowDropDownColor() const;
 
-		sdl::TextureView getHumanSprite();
-		sdl::TextureView getComputerSprite();
-		sdl::TextureView getCrossSprite();
-		sdl::TextureView getZoomSprite();
-
 		sdl::Color getMiddleTextColor() const;
 		int getMiddleTextBoxSize() const;
 
@@ -203,11 +195,28 @@ namespace app {
 		std::optional<Device> getDevice(std::string_view guid) const;
 		void setDevice(std::string_view guid, double das, double arr);
 
+		// Every TextureView is bound to the atlas texture
+		ImTextureID getTextureAtlasBinding() {
+			return ImTextureID(&atlasBinding_);
+		}
+
 	private:
 		Configuration();
 
+		app::TextureView blockTypeI_;
+		app::TextureView blockTypeJ_;
+		app::TextureView blockTypeL_;
+		app::TextureView blockTypeO_;
+		app::TextureView blockTypeS_;
+		app::TextureView blockTypeT_;
+		app::TextureView blockTypeZ_;
+		app::TextureView background_;
+
 		struct Impl;
 		std::unique_ptr<Impl> impl_;
+		sdl::gpu::GpuSampler sampler_;
+		sdl::gpu::GpuTexture atlasTexture_;
+		SDL_GPUTextureSamplerBinding atlasBinding_;
 	};
 
 }

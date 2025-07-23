@@ -1,8 +1,5 @@
 #include "imguiextra.h"
 
-#include <sdl/sprite.h>
-#include <sdl/imguiauxiliary.h>
-
 #include <utility>
 
 namespace ImGui {
@@ -20,7 +17,7 @@ namespace ImGui {
 	}
 
 	void PushButtonStyle() {
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiButtonFont());
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiButtonFont(), 0.f);
 		ImGui::PushStyleColor(ImGuiCol_Text, app::Configuration::getInstance().getButtonTextColor().toImU32());
 		ImGui::PushStyleColor(ImGuiCol_Border, app::Configuration::getInstance().getButtonBorderColor().toImU32());
 		ImGui::PushStyleColor(ImGuiCol_Button, app::Configuration::getInstance().getButtonBackgroundColor().toImU32());

@@ -14,10 +14,8 @@ MainWindow::MainWindow(const Config& config)
 
 	setPosition(app::Configuration::getInstance().getWindowPositionX(), app::Configuration::getInstance().getWindowPositionY());
 	setSize(app::Configuration::getInstance().getWindowWidth(), app::Configuration::getInstance().getWindowHeight());
-	setResizeable(true);
 	setTitle("MWetris");
 	setIcon(app::Configuration::getInstance().getWindowIcon());
-	setBordered(app::Configuration::getInstance().isWindowBordered());
 	setShowDemoWindow(config.showDemoWindow);
 }
 
@@ -30,14 +28,16 @@ MainWindow::~MainWindow() {
 	app::Configuration::getInstance().quit();
 }
 
-void MainWindow::initPreLoop() {
-	sdl::ImGuiWindow::initPreLoop();
-
+void MainWindow::preLoop() {
+	SDL_SetWindowResizable(window_, true);
+	SDL_SetWindowBordered(window_, app::Configuration::getInstance().isWindowBordered());
 	ImGui::GetIO().Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 12); // Used by demo window.
 	
 	app::Configuration::getInstance().getImGuiButtonFont();
 	app::Configuration::getInstance().getImGuiDefaultFont();
 	app::Configuration::getInstance().getImGuiHeaderFont();
+
+	app::Configuration::getInstance().init(gpuContext_);
 
 	deviceManager_ = std::make_shared<app::game::DeviceManager>();
 
@@ -108,13 +108,7 @@ void MainWindow::initDebugServer() {
 	server_->start();
 }
 
-void MainWindow::eventUpdate(const SDL_Event& windowEvent) {
-	sdl::ImGuiWindow::eventUpdate(windowEvent);
-
-	deviceManager_->eventUpdate(windowEvent);
-}
-
-void MainWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
+void MainWindow::renderImGui(const sdl::DeltaTime& deltaTime) {
 	for (auto& subWindow : subWindows_) {
 		subWindow->imGuiUpdate(deltaTime);
 	}
@@ -122,23 +116,21 @@ void MainWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
 	deviceManager_->tick();
 }
 
-void MainWindow::imGuiEventUpdate(const SDL_Event& windowEvent) {
+void MainWindow::processEvent(const SDL_Event& windowEvent) {
+	deviceManager_->eventUpdate(windowEvent);
+
 	switch (windowEvent.type) {
-		case SDL_WINDOWEVENT:
-			switch (windowEvent.window.event) {
-				case SDL_WINDOWEVENT_CLOSE:
-					quit();
-					break;
-			}
+		case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+			quit();
 			break;
-		case SDL_KEYDOWN:
-			switch (windowEvent.key.keysym.sym) {
+		case SDL_EVENT_KEY_DOWN:
+			switch (windowEvent.key.key) {
 				case SDLK_ESCAPE:
 					quit();
 					break;
 			}
 			break;
-		case SDL_QUIT:
+		case SDL_EVENT_QUIT:
 			quit();
 			break;
 	}

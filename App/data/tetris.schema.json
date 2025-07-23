@@ -126,13 +126,9 @@
 				"sprites": {
 					"type": "object",
 					"properties": {
-						"background": { "type": "string" },
-						"computer": { "type": "string" },
-						"human": { "type": "string" },
-						"cross": { "type": "string" },
-						"zoom": { "type": "string" }
+						"background": { "type": "string" }
 					},
-					"required": ["background", "computer", "human", "cross", "zoom"],
+					"required": ["background"],
 					"additionalProperties": false
 				},
 				"tetrisBoard": { "$ref": "#/definitions/TetrisBoard" }
