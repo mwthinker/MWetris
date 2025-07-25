@@ -5,6 +5,8 @@
 
 #include <sdl/gamecontroller.h>
 
+#include <SDL3/SDL_events.h>
+
 #include <string>
 
 namespace app::game {

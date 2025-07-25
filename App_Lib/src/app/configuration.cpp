@@ -4,6 +4,7 @@
 #include <sdl/util.h>
 #include <sdl/sdlexception.h>
 #include <sdl/gpu/gpuutil.h>
+#include <SDL3/SDL_surface.h>
 
 #include <IconsFontAwesome6.h>
 #include <nlohmann/json.hpp>
@@ -253,28 +254,12 @@ namespace app {
 			return s;
 		}
 
-		app::TextureView addImage(sdl::ImageAtlas& atlas, SDL_Surface* surfaceAtlas, const std::string& filename, int border = 0) {
-			auto surface = sdl::createSdlSurface(IMG_Load(filename.c_str()));
-			if (!surface) {
-				throw sdl::SdlException{"Failed to load surface from file: " + filename};
-			}
-			auto rectOptional = atlas.add(surface->w, surface->h, border);
-			if (!rectOptional) {
-				throw std::runtime_error{fmt::format("Failed to add surface to atlas: {}x{}, format: {}",
-					surface->w, surface->h, SDL_GetPixelFormatName(surface->format))};
-			}
-
-			auto rectDst = *rectOptional;
-			if (SDL_BlitSurface(surface.get(), nullptr, surfaceAtlas, &rectDst)) {
-				spdlog::info("Added surface to atlas: {}x{}, format: {}, at position: {},{}",
-					surface->w, surface->h, SDL_GetPixelFormatName(surface->format), rectDst.x, rectDst.y);
-				return app::TextureView{
-					.pos = {static_cast<float>(rectDst.x) / surfaceAtlas->w, static_cast<float>(rectDst.y) / surfaceAtlas->h},
-					.size = {static_cast<float>(rectDst.w) / surfaceAtlas->w, static_cast<float>(rectDst.h) / surfaceAtlas->h},
-				};
-			} else {
-				throw sdl::SdlException{"Failed to blit surface to atlas: " + filename + ", error: " + SDL_GetError()};
-			}
+		app::TextureView addImageToSurface(sdl::ImageAtlas& atlas, SDL_Surface* surfaceAtlas, const std::string& filename, int border = 0) {
+			auto rect = sdl::addImage(atlas, surfaceAtlas, filename, border);
+			return app::TextureView{
+				.pos = {static_cast<float>(rect.x) / surfaceAtlas->w, static_cast<float>(rect.y) / surfaceAtlas->h},
+				.size = {static_cast<float>(rect.w) / surfaceAtlas->w, static_cast<float>(rect.h) / surfaceAtlas->h},
+			};
 		}
 
 	}
@@ -284,14 +269,14 @@ namespace app {
 		sdl::ImageAtlas atlas{2048, 2048};
 		auto surfaceAtlas = sdl::createSdlSurface(createSurface(atlas.getWidth(), atlas.getHeight(), sdl::color::White));
 
-		blockTypeI_ = addImage(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareI"].get<std::string>());
-		blockTypeJ_ = addImage(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareJ"].get<std::string>());
-		blockTypeL_ = addImage(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareL"].get<std::string>());
-		blockTypeO_ = addImage(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareO"].get<std::string>());
-		blockTypeS_ = addImage(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareS"].get<std::string>());
-		blockTypeT_ = addImage(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareT"].get<std::string>());
-		blockTypeZ_ = addImage(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareZ"].get<std::string>());
-		background_ = addImage(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["sprites"]["background"].get<std::string>());
+		blockTypeI_ = addImageToSurface(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareI"].get<std::string>());
+		blockTypeJ_ = addImageToSurface(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareJ"].get<std::string>());
+		blockTypeL_ = addImageToSurface(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareL"].get<std::string>());
+		blockTypeO_ = addImageToSurface(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareO"].get<std::string>());
+		blockTypeS_ = addImageToSurface(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareS"].get<std::string>());
+		blockTypeT_ = addImageToSurface(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareT"].get<std::string>());
+		blockTypeZ_ = addImageToSurface(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareZ"].get<std::string>());
+		background_ = addImageToSurface(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["sprites"]["background"].get<std::string>());
 		
 		atlasTexture_ = sdl::gpu::uploadSurface(context, surfaceAtlas.get());
 		sampler_ = sdl::gpu::createSampler(context, SDL_GPUSamplerCreateInfo{

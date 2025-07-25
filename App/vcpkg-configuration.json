@@ -7,7 +7,7 @@
   "registries": [
     {
       "kind": "git",
-      "baseline": "d02990b4c268cbad647d73a47068ee5c9f6fd604",
+      "baseline": "cb1ea68cb3e6bfb1cc1e6854be10e6109ba0a3d9",
       "repository": "https://github.com/mwthinker/mw-vcpkg-registry.git",
       "packages": [
         "cppsdl3", "signal", "calculator"
