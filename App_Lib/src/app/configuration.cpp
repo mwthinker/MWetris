@@ -264,7 +264,7 @@ namespace app {
 
 	}
 
-	void Configuration::init(sdl::gpu::GpuContext& context) {
+	void Configuration::init(SDL_GPUDevice* gpuDevice) {
 		std::vector<std::string> files;
 		sdl::ImageAtlas atlas{2048, 2048};
 		auto surfaceAtlas = sdl::createSdlSurface(createSurface(atlas.getWidth(), atlas.getHeight(), sdl::color::White));
@@ -278,8 +278,8 @@ namespace app {
 		blockTypeZ_ = addImageToSurface(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareZ"].get<std::string>());
 		background_ = addImageToSurface(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["sprites"]["background"].get<std::string>());
 		
-		atlasTexture_ = sdl::gpu::uploadSurface(context, surfaceAtlas.get());
-		sampler_ = sdl::gpu::createSampler(context, SDL_GPUSamplerCreateInfo{
+		atlasTexture_ = sdl::gpu::uploadSurface(gpuDevice, surfaceAtlas.get());
+		sampler_ = sdl::gpu::createSampler(gpuDevice, SDL_GPUSamplerCreateInfo{
 			.min_filter = SDL_GPU_FILTER_NEAREST,
 			.mag_filter = SDL_GPU_FILTER_NEAREST,
 			.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST,

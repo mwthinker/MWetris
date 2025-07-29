@@ -37,7 +37,7 @@ void MainWindow::preLoop() {
 	app::Configuration::getInstance().getImGuiDefaultFont();
 	app::Configuration::getInstance().getImGuiHeaderFont();
 
-	app::Configuration::getInstance().init(gpuContext_);
+	app::Configuration::getInstance().init(gpuDevice_);
 
 	deviceManager_ = std::make_shared<app::game::DeviceManager>();
 

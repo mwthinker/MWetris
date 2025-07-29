@@ -65,7 +65,7 @@ namespace app {
 		Configuration& operator=(const Configuration&) = delete;
 
 		void save();
-		void init(sdl::gpu::GpuContext& context);
+		void init(SDL_GPUDevice* gpuDevice);
 		
 		app::TextureView getSprite(tetris::BlockType blockType);
 
