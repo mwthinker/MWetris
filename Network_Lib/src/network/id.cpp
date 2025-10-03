@@ -1,6 +1,7 @@
 #include "id.h"
 
 #include <protocol/shared.pb.h>
+#include <random>
 
 namespace network {
 

@@ -3,8 +3,9 @@
 #include <sdl/imageatlas.h>
 #include <sdl/util.h>
 #include <sdl/sdlexception.h>
-#include <sdl/gpu/gpuutil.h>
+#include <sdl/gpuutil.h>
 #include <SDL3/SDL_surface.h>
+#include <SDL3/SDL_filesystem.h>
 
 #include <IconsFontAwesome6.h>
 #include <nlohmann/json.hpp>
@@ -216,8 +217,7 @@ namespace app {
 		impl_ = nullptr;
 
 		// A bit of a hack. Resource needs to be destructed before GpuContext is destroyed.
-		sampler_ = {};
-		atlasTexture_ = {};
+		atlasTexture_.reset();
 	}
 
 	Configuration::Configuration()
@@ -278,19 +278,7 @@ namespace app {
 		blockTypeZ_ = addImageToSurface(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["tetrisBoard"]["sprites"]["squareZ"].get<std::string>());
 		background_ = addImageToSurface(atlas, surfaceAtlas.get(), impl_->jsonObject["window"]["sprites"]["background"].get<std::string>());
 		
-		atlasTexture_ = sdl::gpu::uploadSurface(gpuDevice, surfaceAtlas.get());
-		sampler_ = sdl::gpu::createSampler(gpuDevice, SDL_GPUSamplerCreateInfo{
-			.min_filter = SDL_GPU_FILTER_NEAREST,
-			.mag_filter = SDL_GPU_FILTER_NEAREST,
-			.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST,
-			.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
-			.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
-			.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE
-		});
-		atlasBinding_ = SDL_GPUTextureSamplerBinding{
-			.texture = atlasTexture_.get(),
-			.sampler = sampler_.get()
-		};
+		atlasTexture_ = sdl::uploadSurface(gpuDevice, surfaceAtlas.get());
 	}
 
 	app::TextureView Configuration::getSprite(tetris::BlockType blockType) {

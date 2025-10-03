@@ -9,7 +9,7 @@
 #include "textureview.h"
 #include <sdl/color.h>
 
-#include <sdl/gpu/sdlgpu.h>
+#include <sdl/gpu.h>
 #include <imgui.h>
 
 #include <memory>
@@ -197,7 +197,7 @@ namespace app {
 
 		// Every TextureView is bound to the atlas texture
 		ImTextureID getTextureAtlasBinding() {
-			return ImTextureID(&atlasBinding_);
+			return ImTextureID(atlasTexture_.get());
 		}
 
 	private:
@@ -214,9 +214,7 @@ namespace app {
 
 		struct Impl;
 		std::unique_ptr<Impl> impl_;
-		sdl::gpu::GpuSampler sampler_;
-		sdl::gpu::GpuTexture atlasTexture_;
-		SDL_GPUTextureSamplerBinding atlasBinding_;
+		sdl::GpuTexture atlasTexture_;
 	};
 
 }
