@@ -112,7 +112,7 @@ void MainWindow::renderImGui(const sdl::DeltaTime& deltaTime) {
 	for (auto& subWindow : subWindows_) {
 		subWindow->imGuiUpdate(deltaTime);
 	}
-	ioContext_.poll_one();
+	ioContext_.poll();
 	deviceManager_->tick();
 }
 
