@@ -1,7 +1,6 @@
 #ifndef CPPSDL2_SDL_TEXTUREVIEW_H
 #define CPPSDL2_SDL_TEXTUREVIEW_H
 
-#include <SDL3/SDL_rect.h>
 #include <glm/vec2.hpp>
 
 namespace app {

@@ -26,6 +26,7 @@
 .vscode/
 /build_server/
 /linux_build_server/
+.opencode/
 
 #################
 ## Eclipse
