@@ -136,11 +136,11 @@ namespace network {
 		try {
 			// Read header.
 			protobufMessage.reserveHeaderSize();
-			std::size_t size = co_await socket_.async_read_some(protobufMessage.getMutableDataBuffer(), asio::use_awaitable);
+			co_await asio::async_read(socket_, protobufMessage.getMutableDataBuffer(), asio::transfer_exactly(protobufMessage.getHeaderSize()), asio::use_awaitable);
 
 			// Read body.
 			protobufMessage.reserveBodySize();
-			size = co_await socket_.async_read_some(protobufMessage.getMutableBodyBuffer(), asio::use_awaitable);
+			co_await asio::async_read(socket_, protobufMessage.getMutableBodyBuffer(), asio::transfer_exactly(protobufMessage.getBodySize()), asio::use_awaitable);
 		} catch (const std::exception& e) {
 			spdlog::error("[TcpClient] {} async_read Exception: {}", name_, e.what());
 			
