@@ -41,7 +41,7 @@ namespace network {
 		if (buffer_.empty()) {
 			return 0;
 		}
-		return 255 * buffer_[0] + buffer_[1];
+		return (buffer_[0] << 8) | buffer_[1];
 	}
 
 	void ProtobufMessage::defineBodySize() {

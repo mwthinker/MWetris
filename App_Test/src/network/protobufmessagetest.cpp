@@ -84,6 +84,24 @@ namespace network {
 		EXPECT_EQ(expected.id(), result.id());
 	}
 
+	TEST_F(ProtobufMessageTest, fromLargeProtobufToMessageToProtobuf) {
+		// Given
+		ProtobufMessage message;
+		tp::GameRoomId expected;
+		expected.set_id(std::string(1024, 'x'));
+
+		// When
+		message.setBuffer(expected);
+		tp::GameRoomId result;
+		message.parseBodyInto(result);
+
+		// Then
+		EXPECT_GT(expected.ByteSizeLong(), 255);
+		EXPECT_EQ(expected.ByteSizeLong(), message.getBodySize());
+		EXPECT_EQ(message.getSize(), message.getHeaderSize() + message.getBodySize());
+		EXPECT_EQ(expected.id(), result.id());
+	}
+
 	TEST_F(ProtobufMessageTest, insertDataUsingMutableBuffer) {
 		// Given
 		tp::GameRoomId package;
@@ -101,6 +119,18 @@ namespace network {
 		// Then
 		EXPECT_EQ(package.id(), std::string{"test"});
 		EXPECT_EQ(package.id(), result.id());
+	}
+
+	TEST_F(ProtobufMessageTest, reserveLargeBodySize) {
+		// Given
+		ProtobufMessage message;
+
+		// When
+		message.reserveBodySize(1024);
+
+		// Then
+		EXPECT_EQ(message.getBodySize(), 1024);
+		EXPECT_EQ(message.getSize(), message.getHeaderSize() + message.getBodySize());
 	}
 
 }
