@@ -4,6 +4,7 @@
 #include "keyboard.h"
 #include "gamepad.h"
 #include "device.h"
+#include "../controlprofiles.h"
 
 #include <mw/signal.h>
 
@@ -16,7 +17,7 @@ namespace app::game {
 	public:
 		mw::PublicSignal<DeviceManager, DevicePtr> deviceConnected;
 
-		DeviceManager();
+		explicit DeviceManager(std::shared_ptr<ControlProfiles> controlProfiles);
 
 		void eventUpdate(const SDL_Event& windowEvent);
 
@@ -37,12 +38,17 @@ namespace app::game {
 			DevicePtr device;
 		};
 		
-		static KeyboardDevice createKeyboardDevice(std::unique_ptr<Keyboard> keyboard);
+		KeyboardDevice createKeyboardDevice(std::unique_ptr<Keyboard> keyboard);
+		void refreshInputTiming(const DevicePtr& device);
+		void onControlProfilesChanged(const ControlProfilesChange& change);
 
 		void controllerDeviceAddedEvent(const SDL_GamepadDeviceEvent& deviceEvent);
 
 		void controllerDeviceRemovedEvent(const SDL_GamepadDeviceEvent& deviceEvent);
 		
+		std::shared_ptr<ControlProfiles> controlProfiles_;
+		mw::signals::ScopedConnections connections_;
+
 		KeyboardDevice keyboard1_;
 		KeyboardDevice keyboard2_;
 

@@ -13,10 +13,13 @@
 #include <queue>
 #include <map>
 #include <cassert>
+#include <utility>
 
 namespace app::graphic {
 
-	GameComponent::GameComponent() {}
+	GameComponent::GameComponent(BoardSidebarRenderer boardSidebarRenderer)
+		: boardSidebarRenderer_{std::move(boardSidebarRenderer)} {
+	}
 
 	GameComponent::~GameComponent() {}
 
@@ -64,7 +67,7 @@ namespace app::graphic {
 	void GameComponent::initGame(const std::vector<game::PlayerPtr>& players) {
 		imguiBoards_.clear();
 		for (auto& player : players) {
-			imguiBoards_.emplace_back(player);
+			imguiBoards_.emplace_back(player, boardSidebarRenderer_);
 		}
 	}
 

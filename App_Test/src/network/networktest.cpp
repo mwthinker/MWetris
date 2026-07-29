@@ -269,9 +269,9 @@ namespace app::cnetwork {
 		pollOne();
 
 		// When
-		ON_CALL(*mockClient_, send(_)).WillByDefault(Invoke([](const network::ProtobufMessage& message) {
+		ON_CALL(*mockClient_, send(_)).WillByDefault([](const network::ProtobufMessage& message) {
 			FAIL() << "send should not be called";
-		}));
+		});
 
 		network_->setPlayerSlot(game::Human{
 			.name = "name 1"

@@ -78,6 +78,8 @@ set(SOURCES_LIB
 
 	src/app/ui/imguiextra.cpp
 	src/app/ui/imguiextra.h
+	src/app/ui/controlspresenter.cpp
+	src/app/ui/controlspresenter.h
 	src/app/ui/networkdebugwindow.cpp
 	src/app/ui/networkdebugwindow.h
 	src/app/ui/subwindow.h
@@ -91,6 +93,8 @@ set(SOURCES_LIB
 	
 	src/app/tetriscontroller.cpp
 	src/app/tetriscontroller.h
+	src/app/controlprofiles.cpp
+	src/app/controlprofiles.h
 	src/app/configuration.cpp
 	src/app/configuration.h
 	src/app/timerhandler.cpp

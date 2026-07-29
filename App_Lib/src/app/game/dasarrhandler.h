@@ -11,13 +11,17 @@ namespace app::game {
 	public:
 		DasArrHandler(double das, double arr);
 
+		double getDas() const;
+		double getArr() const;
+		void setTiming(double das, double arr);
+
 		void update(double timeStep, const KeyState& keyState);
 		bool doAction();
 		void reset();
 
 	private:
-		double das_;                 // Delayed Auto Shift (initial delay)
-		double arr_;                 // Auto Repeat Rate (repeat interval)
+		double das_ = 0.0;           // Delayed Auto Shift (initial delay)
+		double arr_ = 0.0;           // Auto Repeat Rate (repeat interval)
 		double time_ = 0.0;          // Total elapsed time
 		double lastActionTime_ = 0.0;
 

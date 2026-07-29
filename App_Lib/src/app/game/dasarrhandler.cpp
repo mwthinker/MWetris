@@ -1,10 +1,33 @@
 #include "dasarrhandler.h"
 
+#include <cmath>
+#include <stdexcept>
+
 namespace app::game {
 
-	DasArrHandler::DasArrHandler(double das, double arr)
-		: das_{das}
-		, arr_{arr} {
+	DasArrHandler::DasArrHandler(double das, double arr) {
+		setTiming(das, arr);
+	}
+
+	double DasArrHandler::getDas() const {
+		return das_;
+	}
+
+	double DasArrHandler::getArr() const {
+		return arr_;
+	}
+
+	void DasArrHandler::setTiming(double das, double arr) {
+		if (!std::isfinite(das) || das <= 0.0 || !std::isfinite(arr) || arr <= 0.0) {
+			throw std::invalid_argument{"DAS and ARR must be finite positive values"};
+		}
+		if (das_ == das && arr_ == arr) {
+			return;
+		}
+
+		das_ = das;
+		arr_ = arr;
+		reset();
 	}
 
 	void DasArrHandler::update(double timeStep, const KeyState& keyState) {

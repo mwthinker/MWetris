@@ -9,6 +9,12 @@
 
 #include <network/servercore.h>
 
+namespace app {
+
+	class ControlProfiles;
+
+}
+
 enum class Network {
 	SingleTcpClient,
 	TcpServer,
@@ -42,8 +48,9 @@ private:
 	void renderImGui(const sdl::DeltaTime& deltaTime) override;
 		
 	asio::io_context ioContext_; // Must be declared first to guarantee destruction order.
-	std::vector<std::unique_ptr<app::ui::SubWindow>> subWindows_;
+	std::shared_ptr<app::ControlProfiles> controlProfiles_;
 	std::shared_ptr<app::game::DeviceManager> deviceManager_;
+	std::vector<std::unique_ptr<app::ui::SubWindow>> subWindows_;
 	std::shared_ptr<network::ServerCore> server_;
 	Config config_;
 };

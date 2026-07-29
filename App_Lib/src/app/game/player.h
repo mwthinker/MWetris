@@ -47,7 +47,11 @@ namespace app::game {
 
 		mw::PublicSignal<Player, PlayerBoardEvent> playerBoardUpdate;
 
-		Player(Type type, std::unique_ptr<TetrisBoardMoveController> moveController, tetris::TetrisBoard&& tetrisBoard);
+		Player(
+			Type type,
+			std::unique_ptr<TetrisBoardMoveController> moveController,
+			tetris::TetrisBoard&& tetrisBoard,
+			DevicePtr device = {});
 
 		void update(double deltaTime);
 
@@ -98,6 +102,8 @@ namespace app::game {
 
 		bool isLocal() const;
 
+		const DevicePtr& getDevice() const;
+
 		void setGravity(double gravity);
 
 		void setClearedRows(int clearedRows);
@@ -110,6 +116,7 @@ namespace app::game {
 		void invokePlayerBoardEvent(const PlayerBoardEvent&) override;
 
 		std::unique_ptr<TetrisBoardMoveController> moveController_;
+		DevicePtr device_;
 		mw::signals::ScopedConnections connections_;
 		tetris::TetrisBoard tetrisBoard_;
 		int clearedRows_ = 0;

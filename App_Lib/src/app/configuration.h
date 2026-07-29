@@ -1,11 +1,12 @@
 #ifndef APP_CONFIGURATION_H
 #define APP_CONFIGURATION_H
 
-#include <optional>
-
 #include <tetris/block.h>
 #include <tetris/ai.h>
 
+#include <nlohmann/json.hpp>
+
+#include "controlprofiles.h"
 #include "textureview.h"
 #include <sdl/color.h>
 
@@ -15,6 +16,7 @@
 #include <memory>
 
 namespace app {
+	using ControlProfilesLoadResult = std::expected<ControlProfilesState, std::string>;
 
 	constexpr tetris::BlockType charToBlockType(char key);
 	constexpr const char* blockTypeToString(tetris::BlockType blocktype);
@@ -45,18 +47,6 @@ namespace app {
 			} server;
 		};
 
-		struct Device {
-			std::string guid;
-			double das;
-			double arr;
-		};
-
-		struct DeviceChangeEvent {
-			std::string guid;
-			double das;
-			double arr;
-		};
-
 		static Configuration& getInstance();
 
 		void quit();
@@ -64,7 +54,6 @@ namespace app {
 		Configuration(const Configuration&) = delete;
 		Configuration& operator=(const Configuration&) = delete;
 
-		void save();
 		void init(SDL_GPUDevice* gpuDevice);
 		
 		app::TextureView getSprite(tetris::BlockType blockType);
@@ -192,8 +181,9 @@ namespace app {
 		int getActiveLocalGameRows() const;
 		int getActiveLocalGameColumns() const;
 
-		std::optional<Device> getDevice(std::string_view guid) const;
-		void setDevice(std::string_view guid, double das, double arr);
+		ControlProfilesLoadResult loadControlProfiles();
+		ControlProfilesPersistenceResult persistControlProfiles(const ControlProfilesState& state);
+		static ControlProfilesState normalizeControlProfiles(nlohmann::json& jsonObject);
 
 		// Every TextureView is bound to the atlas texture
 		ImTextureID getTextureAtlasBinding() {

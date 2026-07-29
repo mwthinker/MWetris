@@ -2,9 +2,11 @@
 #define APP_GAME_DEVICE_H
 
 #include "input.h"
+#include "../controlprofiles.h"
 
 #include <mw/signal.h>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -39,8 +41,24 @@ namespace app::game {
 		bool isConnected() const {
 			return connected_;
 		}
+
+		app::InputTiming getInputTiming() const {
+			return inputTiming_;
+		}
+
+		std::uint64_t getInputTimingRevision() const {
+			return inputTimingRevision_;
+		}
 	
 	private:
+		void setInputTiming(app::InputTiming timing) {
+			if (inputTiming_ == timing) {
+				return;
+			}
+			inputTiming_ = timing;
+			++inputTimingRevision_;
+		}
+
 		void invokeConnection(bool connected) {
 			connected_ = connected;
 			connection.invoke(connected);
@@ -50,6 +68,8 @@ namespace app::game {
 		bool connected_ = false;
 		std::string name_;
 		std::string guid_;
+		app::InputTiming inputTiming_{};
+		std::uint64_t inputTimingRevision_ = 0;
 	};
 
 }

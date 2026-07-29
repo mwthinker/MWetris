@@ -75,6 +75,11 @@ namespace app::game {
 			gravityMove_.reset();
 		}
 
+		void setInputTiming(double das, double arr) {
+			leftHandler_.setTiming(das, arr);
+			rightHandler_.setTiming(das, arr);
+		}
+
 		void updateGravity(float speed) {
 			speed_ = speed;
 		}

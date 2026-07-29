@@ -8,13 +8,16 @@
 
 #include "textureview.h"
 
+#include <functional>
 #include <vector>
 
 namespace app::graphic {
 
 	class ImGuiBoard {
 	public:
-		explicit ImGuiBoard(game::PlayerPtr player);
+		using SidebarRenderer = std::function<void(const game::PlayerPtr&, float)>;
+
+		explicit ImGuiBoard(game::PlayerPtr player, SidebarRenderer sidebarRenderer = {});
 
 		void draw(float width, float height, double deltaTime);
 
@@ -40,6 +43,7 @@ namespace app::graphic {
 
 		float squareSize_ = 0.f;
 		float borderSize_ = 2.f;
+		SidebarRenderer sidebarRenderer_;
 		
 		game::PlayerPtr player_;
 

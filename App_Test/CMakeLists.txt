@@ -9,9 +9,13 @@ find_package(GTest CONFIG REQUIRED)
 enable_testing()
 
 set(SOURCES_TEST
+	src/configurationtest.cpp
+	src/controlprofilestest.cpp
+	src/game/dasarrhandlertest.cpp
 	src/game/devicemanagertest.cpp
 	src/game/keyboardtest.cpp
 	src/game/serializetest.cpp
+	src/game/tetrisboardcontrollertest.cpp
 	src/mwetristest.cpp
 	src/network/gameroomtest.cpp
 	src/network/networktest.cpp

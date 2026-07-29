@@ -1,6 +1,7 @@
 #include "tetriswindow.h"
 #include "tetriscontroller.h"
 #include "imguiextra.h"
+#include "controlspresenter.h"
 #include "configuration.h"
 
 #include "scene/about.h"
@@ -26,6 +27,8 @@
 #include <spdlog/spdlog.h>
 
 #include <chrono>
+#include <string>
+#include <utility>
 
 using namespace std::chrono_literals;
 
@@ -56,10 +59,6 @@ namespace app::ui {
 		constexpr auto DefaultRefreshRate = 30;
 		
 		constexpr auto CheckRefreshRateInterval = 30s;
-
-		int acceptNameInput(ImGuiInputTextCallbackData* data) {
-			return data->BufTextLen < 30;
-		}
 
 		void MainWindow(const SubWindow& subWindow, std::invocable auto&& t) {
 			if (subWindow.getType() == TetrisWindow::Type::MainWindow) {
@@ -93,18 +92,25 @@ namespace app::ui {
 			addImageQuad(texture, ImGui::GetCursorScreenPos(), ImGui::GetWindowSize());
 			drawList->PopTexture();
 		}
+
 	}
 
 	TetrisWindow::TetrisWindow(const std::string& windowName, Type type, sdl::Window& window,
 		std::shared_ptr<game::DeviceManager> deviceManager,
+		std::shared_ptr<ControlProfiles> controlProfiles,
 		std::shared_ptr<cnetwork::Network> network)
 		: window_{window}
 		, deviceManager_{deviceManager}
+		, controlsPresenter_{std::make_shared<ControlsPresenter>(windowName, deviceManager, std::move(controlProfiles))}
+		, modalStateMachine_{ui::scene::StateMachine::StateType::Modal}
 		, type_{type}
-		, windowName_{windowName}
-		, modalStateMachine_{ui::scene::StateMachine::StateType::Modal} {
+		, windowName_{windowName} {
 
-		tetrisController_ = std::make_shared<TetrisController>(deviceManager_, network, std::make_shared<graphic::GameComponent>());
+		auto gameComponent = std::make_shared<graphic::GameComponent>(
+			[presenter = controlsPresenter_](const game::PlayerPtr& player, float width) {
+				presenter->drawDeviceProfileSelection(player, width);
+			});
+		tetrisController_ = std::make_shared<TetrisController>(deviceManager_, network, std::move(gameComponent));
 
 		connections_ += deviceManager_->deviceConnected.connect([](game::DevicePtr device) {
 			spdlog::info("Device found: {}", device->getName());
@@ -116,8 +122,6 @@ namespace app::ui {
 	}
 
 	TetrisWindow::~TetrisWindow() {
-		Configuration::getInstance().quit();
-
 		if (type_ == Type::MainWindow) {
 			tetrisController_->saveDefaultGame();
 		}
@@ -317,27 +321,15 @@ namespace app::ui {
 						tetrisController_->restartGame();
 					}
 				});
+				if (ImGui::BeginMenu("Options")) {
+					controlsPresenter_->drawMenu();
+
+					ImGui::EndMenu();
+				}
 				ImGui::Menu("Help", [&]() {
 					if (ImGui::MenuItem("About")) {
 						modalStateMachine_.switchTo<scene::About>();
 					}
-					ImGui::Menu("Player1", [&]() {
-						ImGui::TextUnformatted("Move: Arrow keys");
-						ImGui::ComboScoped("Device", "Keybard1", [&]() {
-							ImGui::Selectable("Keyboard1", true, ImGuiSelectableFlags_AllowDoubleClick, ImVec2{0, 0});
-							ImGui::Selectable("Keyboard2", false, ImGuiSelectableFlags_AllowDoubleClick, ImVec2{0, 0});
-						});
-						static int das = 60;
-						ImGui::SeparatorText("DAS/ARR");
-						ImGui::Button("Default"); 
-						ImGui::SameLine();
-						ImGui::Button("Save");
-						ImGui::SliderInt("DAS", &das, 0, 1000, "%d MS", ImGuiSliderFlags_AlwaysClamp);
-						static int arr = 100;
-						ImGui::SliderInt("ARR", &arr, 0, 1000, "%d MS", ImGuiSliderFlags_AlwaysClamp);
-						ImGui::Separator();
-					});
-
 				});
 				ImGui::PushStyleColor(ImGuiCol_Text, tetrisController_->isConnectedToServer() ? sdl::color::Green : sdl::color::Red);
 				ImGui::Text(ICON_FA_GLOBE);
@@ -352,6 +344,7 @@ namespace app::ui {
 				}
 			});
 			ImGui::PopStyleVar(2);
+			controlsPresenter_->drawProfileDialog();
 			
 			mainStateMachine_.imGuiUpdate(deltaTime);
 		});

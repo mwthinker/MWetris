@@ -1,11 +1,12 @@
 {
-	"$schema": "https://json-schema.org/draft/2020-12/output/schema#",
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"$id": "http://mwthinker/schemas/tetris-0.1.json",
 
 	"type": "object",
 	"properties": {
 		"$schema":  { "type": "string" },
 		"window": { "$ref": "#/definitions/Window" },
+		"inputProfiles": { "$ref": "#/definitions/InputProfiles" },
 		"devices": { "$ref": "#/definitions/Devices" },
 		"network": { "$ref": "#/definitions/Network" },
 		"ai1": { "type": "string" },
@@ -23,7 +24,7 @@
 			}
 		}
 	},
-	"required": ["window", "network", "ai1", "ai2", "ai3" ,"ai4", "ais"],
+	"required": ["window", "network", "inputProfiles", "devices", "ai1", "ai2", "ai3" ,"ai4", "ais"],
 	"additionalProperties": false,
 	
 	"definitions": {
@@ -272,16 +273,29 @@
 				}
 			}
 		},
+		"InputProfiles": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "string", "minLength": 1 },
+					"name": { "type": "string", "minLength": 1, "maxLength": 29 },
+					"das": { "type": "integer", "minimum": 1, "maximum": 1000 },
+					"arr": { "type": "integer", "minimum": 1, "maximum": 250 }
+				},
+				"required": ["id", "name", "das", "arr"],
+				"additionalProperties": false
+			}
+		},
 		"Devices": {
 			"type": "array",
 			"items": {
 				"type": "object",
 				"properties": {
-					"guid": { "type": "string" },
-					"das": { "type": "number" },
-					"arr": { "type": "number" }
+					"guid": { "type": "string", "minLength": 1 },
+					"inputProfileId": { "type": "string", "minLength": 1 }
 				},
-				"required": ["guid", "das", "arr"],
+				"required": ["guid", "inputProfileId"],
 				"additionalProperties": false
 			}
 		}

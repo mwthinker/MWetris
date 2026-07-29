@@ -6,6 +6,7 @@
 
 #include <tetris/helper.h>
 
+#include <cstdint>
 #include <queue>
 
 namespace app::game {
@@ -28,6 +29,14 @@ namespace app::game {
 		}
 
 		void updateMove(tetris::TetrisBoard& tetrisBoard, double deltaTime, PlayerBoardEventInvoker& invoker) override {
+			auto inputTimingRevision = device_->getInputTimingRevision();
+			if (inputTimingRevision != lastAppliedInputTimingRevision_) {
+				auto inputTiming = device_->getInputTiming();
+				tetrisBoardController_.setInputTiming(
+					inputTiming.dasMs / 1000.0,
+					inputTiming.arrMs / 1000.0);
+				lastAppliedInputTimingRevision_ = inputTimingRevision;
+			}
 			tetrisBoardController_.update(tetrisBoard, device_->getInput(), deltaTime, [&](const PlayerBoardEvent& event) {
 				invoker.invokePlayerBoardEvent(event);
 			});
@@ -40,6 +49,7 @@ namespace app::game {
 	private:
 		DevicePtr device_;
 		TetrisBoardController tetrisBoardController_;
+		std::uint64_t lastAppliedInputTimingRevision_ = 0;
 	};
 
 	class AiMoveController : public TetrisBoardMoveController {
@@ -68,7 +78,11 @@ namespace app::game {
 
 	PlayerPtr createHumanPlayer(DevicePtr device, const PlayerData& playerData, tetris::TetrisBoard&& tetrisBoard) {
 		auto moveController = std::make_unique<HumanMoveController>(device);
-		auto player = std::make_shared<Player>(Player::Type::Human, std::move(moveController), std::move(tetrisBoard));
+		auto player = std::make_shared<Player>(
+			Player::Type::Human,
+			std::move(moveController),
+			std::move(tetrisBoard),
+			std::move(device));
 		player->updatePlayerData(playerData);
 		return player;
 	}
@@ -87,9 +101,14 @@ namespace app::game {
 		return player;
 	}
 
-	Player::Player(Type type, std::unique_ptr<TetrisBoardMoveController> moveController, tetris::TetrisBoard&& tetrisBoard)		
-		: tetrisBoard_{tetrisBoard}
-		, moveController_{std::move(moveController)}
+	Player::Player(
+		Type type,
+		std::unique_ptr<TetrisBoardMoveController> moveController,
+		tetris::TetrisBoard&& tetrisBoard,
+		DevicePtr device)
+		: moveController_{std::move(moveController)}
+		, device_{type == Type::Human ? std::move(device) : DevicePtr{}}
+		, tetrisBoard_{std::move(tetrisBoard)}
 		, type_{type} {
 	}
 	
@@ -183,6 +202,10 @@ namespace app::game {
 
 	bool Player::isLocal() const {
 		return !isRemote();
+	}
+
+	const DevicePtr& Player::getDevice() const {
+		return device_;
 	}
 
 	void Player::setGravity(double gravity) {

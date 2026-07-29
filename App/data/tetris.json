@@ -95,16 +95,15 @@
 			"port": 11175
 		}
 	},
+	"inputProfiles": [],
 	"devices": [
 		{
-			"guid": "keyboard1",
-			"das": 0.167,
-			"arr": 0.033
+			"guid": "Keyboard 1",
+			"inputProfileId": "balanced"
 		},
 		{
-			"guid": "keyboard1",
-			"das": 0.167,
-			"arr": 0.033
+			"guid": "Keyboard 2",
+			"inputProfileId": "balanced"
 		}
 	],
 	"ai1": "Default",

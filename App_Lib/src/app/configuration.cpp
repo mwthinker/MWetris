@@ -1,5 +1,7 @@
 #include "configuration.h"
 
+#include "util/uuid.h"
+
 #include <sdl/imageatlas.h>
 #include <sdl/util.h>
 #include <sdl/sdlexception.h>
@@ -12,8 +14,12 @@
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 
+#include <algorithm>
+#include <cmath>
 #include <filesystem>
+#include <limits>
 #include <map>
+#include <optional>
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -43,22 +49,6 @@ namespace app {
 		ai = Configuration::Ai{
 			.name = name,
 			.ai = valueFunction,
-		};
-	}
-
-	void from_json(const json& j, Configuration::Device& deviceProperties) {
-		deviceProperties = Configuration::Device{
-			.guid = j.at("guid").get<std::string>(),
-			.das = j.at("das").get<double>(),
-			.arr = j.at("arr").get<double>(),
-		};
-	}
-
-	void to_json(json& j, const Configuration::Device& deviceProperties) {
-		j = json{
-			{"guid", deviceProperties.guid},
-			{"das", deviceProperties.das},
-			{"arr", deviceProperties.arr}
 		};
 	}
 
@@ -241,12 +231,210 @@ namespace app {
 		stream >> impl_->jsonObject;
 	}
 
-	void Configuration::save() {
-		std::ofstream stream{impl_->jsonPath};
-		stream << impl_->jsonObject.dump(1);
-	}
-
 	namespace {
+		constexpr std::string_view ProfileNameWhitespace{" \t\r\n\f\v"};
+
+		std::string truncateUtf8(std::string_view value, std::size_t maximumLength) {
+			std::size_t length = 0;
+			for (std::size_t index = 0; index < value.size(); ++index) {
+				if ((static_cast<unsigned char>(value[index]) & 0xc0) != 0x80) {
+					if (length == maximumLength) {
+						return std::string{value.substr(0, index)};
+					}
+					++length;
+				}
+			}
+			return std::string{value};
+		}
+
+		bool isBuiltInProfileId(const ProfileId& profileId) {
+			return profileId == ControlProfiles::BalancedProfileId
+				|| profileId == ControlProfiles::FastProfileId
+				|| profileId == ControlProfiles::ClassicProfileId;
+		}
+
+		bool containsProfileId(const ControlProfilesState& state, const ProfileId& profileId) {
+			return std::ranges::find(state.profiles, profileId, &InputProfile::id) != state.profiles.end();
+		}
+
+		std::string trimProfileName(std::string name) {
+			const auto first = name.find_first_not_of(ProfileNameWhitespace);
+			if (first == std::string::npos) {
+				return {};
+			}
+			const auto last = name.find_last_not_of(ProfileNameWhitespace);
+			return name.substr(first, last - first + 1);
+		}
+
+		std::string makeUniqueProfileName(std::string name, const ControlProfilesState& state) {
+			name = trimProfileName(std::move(name));
+			if (name.empty()) {
+				name = "Custom Profile";
+			}
+			name = truncateUtf8(name, ControlProfiles::MaxProfileNameLength);
+
+			auto nameExists = [&state](std::string_view candidate) {
+				return std::ranges::find(state.profiles, candidate, &InputProfile::name) != state.profiles.end();
+			};
+			if (!nameExists(name)) {
+				return name;
+			}
+
+			for (std::size_t copyNumber = 1; copyNumber < std::numeric_limits<std::size_t>::max(); ++copyNumber) {
+				auto suffix = copyNumber == 1
+					? std::string{" Copy"}
+					: " Copy " + std::to_string(copyNumber);
+				auto candidate = truncateUtf8(name, ControlProfiles::MaxProfileNameLength - suffix.size()) + suffix;
+				if (!nameExists(candidate)) {
+					return candidate;
+				}
+			}
+			return name;
+		}
+
+		ProfileId makeUniqueProfileId(
+			std::string preferredId,
+			const ControlProfilesState& state,
+			std::size_t& migratedId) {
+			ProfileId profileId{std::move(preferredId)};
+			if (!profileId.value.empty() && !containsProfileId(state, profileId)) {
+				return profileId;
+			}
+
+			do {
+				profileId.value = "migrated-" + std::to_string(migratedId++);
+			} while (containsProfileId(state, profileId));
+			return profileId;
+		}
+
+		std::optional<double> getNumber(const json& object, std::string_view key) {
+			auto value = object.find(key);
+			if (value == object.end() || !value->is_number()) {
+				return std::nullopt;
+			}
+			auto number = value->get<double>();
+			if (!std::isfinite(number)) {
+				return std::nullopt;
+			}
+			return number;
+		}
+
+		int convertTiming(double value, double scale, int minimum, int maximum) {
+			if (value <= static_cast<double>(minimum) / scale) {
+				return minimum;
+			}
+			if (value >= static_cast<double>(maximum) / scale) {
+				return maximum;
+			}
+			return std::clamp(static_cast<int>(std::llround(value * scale)), minimum, maximum);
+		}
+
+		std::optional<InputTiming> getTiming(const json& object, double scale) {
+			auto das = getNumber(object, "das");
+			auto arr = getNumber(object, "arr");
+			if (!das || !arr) {
+				return std::nullopt;
+			}
+			return InputTiming{
+				.dasMs = convertTiming(*das, scale, ControlProfiles::MinDasMs, ControlProfiles::MaxDasMs),
+				.arrMs = convertTiming(*arr, scale, ControlProfiles::MinArrMs, ControlProfiles::MaxArrMs),
+			};
+		}
+
+		std::string normalizeDeviceGuid(std::string guid) {
+			if (guid == "keyboard1") {
+				return "Keyboard 1";
+			}
+			if (guid == "keyboard2") {
+				return "Keyboard 2";
+			}
+			return guid;
+		}
+
+		std::optional<ProfileId> getBuiltInProfileId(InputTiming timing) {
+			if (timing == InputTiming{167, 33}) {
+				return ControlProfiles::BalancedProfileId;
+			}
+			if (timing == InputTiming{100, 16}) {
+				return ControlProfiles::FastProfileId;
+			}
+			if (timing == InputTiming{250, 50}) {
+				return ControlProfiles::ClassicProfileId;
+			}
+			return std::nullopt;
+		}
+
+		json serializeInputProfiles(const ControlProfilesState& state) {
+			auto profiles = json::array();
+			for (const auto& profile : state.profiles) {
+				if (profile.builtIn || isBuiltInProfileId(profile.id)) {
+					continue;
+				}
+				profiles.push_back({
+					{"id", profile.id.value},
+					{"name", profile.name},
+					{"das", profile.timing.dasMs},
+					{"arr", profile.timing.arrMs},
+				});
+			}
+			return profiles;
+		}
+
+		json serializeDeviceAssignments(const ControlProfilesState& state) {
+			auto devices = json::array();
+			for (const auto& assignment : state.assignments) {
+				devices.push_back({
+					{"guid", assignment.deviceGuid},
+					{"inputProfileId", assignment.profileId.value},
+				});
+			}
+			return devices;
+		}
+
+		ControlProfilesPersistenceResult replaceJsonFile(
+			const std::string& path,
+			const json& jsonObject) {
+			std::string temporaryPath;
+			std::ofstream stream;
+			for (int attempt = 0; attempt < 10 && !stream.is_open(); ++attempt) {
+				temporaryPath = path + "." + util::generateUuid() + ".tmp";
+				stream.open(temporaryPath, std::ios::binary | std::ios::out | std::ios::noreplace);
+				stream.clear();
+			}
+			if (!stream.is_open()) {
+				return std::unexpected{"Could not create a temporary configuration file beside: " + path};
+			}
+
+			auto errorWithCleanup = [&temporaryPath](std::string message) -> ControlProfilesPersistenceResult {
+				if (!SDL_RemovePath(temporaryPath.c_str())) {
+					message += "; could not remove temporary file: ";
+					message += SDL_GetError();
+				}
+				return std::unexpected{std::move(message)};
+			};
+
+			try {
+				stream << jsonObject.dump(1);
+				stream.flush();
+				if (!stream) {
+					stream.close();
+					return errorWithCleanup("Could not write temporary configuration file: " + temporaryPath);
+				}
+				stream.close();
+				if (stream.fail()) {
+					return errorWithCleanup("Could not close temporary configuration file: " + temporaryPath);
+				}
+			} catch (const std::exception& exception) {
+				stream.close();
+				return errorWithCleanup(exception.what());
+			}
+
+			if (!SDL_RenamePath(temporaryPath.c_str(), path.c_str())) {
+				auto message = std::string{"Could not replace configuration file: "} + SDL_GetError();
+				return errorWithCleanup(std::move(message));
+			}
+			return {};
+		}
 
 		SDL_Surface* createSurface(int w, int h, sdl::Color color) {
 			auto s = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA32);
@@ -708,31 +896,122 @@ namespace app {
 		}
 	}
 
-	std::optional<Configuration::Device> Configuration::getDevice(std::string_view guid) const {
-		auto devices = impl_->jsonObject["devices"].get<std::vector<Configuration::Device>>();
-		auto it = std::find_if(devices.begin(), devices.end(), [&guid](const Configuration::Device& device) {
-			return device.guid == guid;
-		});
-		if (it != devices.end()) {
-			return *it;
+	ControlProfilesState Configuration::normalizeControlProfiles(json& jsonObject) {
+		if (!jsonObject.is_object()) {
+			jsonObject = json::object();
 		}
-		return std::nullopt;
+		auto state = ControlProfiles::createDefaultState();
+		std::size_t migratedId = 1;
+
+		auto inputProfiles = jsonObject.find("inputProfiles");
+		if (inputProfiles != jsonObject.end() && inputProfiles->is_array()) {
+			for (const auto& value : *inputProfiles) {
+				if (!value.is_object()) {
+					continue;
+				}
+				auto nameValue = value.find("name");
+				auto timing = getTiming(value, 1.0);
+				if (nameValue == value.end() || !nameValue->is_string() || !timing) {
+					continue;
+				}
+
+				auto idValue = value.find("id");
+				auto id = idValue != value.end() && idValue->is_string()
+					? idValue->get<std::string>()
+					: std::string{};
+				state.profiles.push_back({
+					.id = makeUniqueProfileId(std::move(id), state, migratedId),
+					.name = makeUniqueProfileName(nameValue->get<std::string>(), state),
+					.timing = *timing,
+					.builtIn = false,
+				});
+			}
+		}
+
+		std::vector<std::pair<InputTiming, ProfileId>> migratedTimings;
+		std::vector<std::string> deviceGuids;
+		auto devices = jsonObject.find("devices");
+		if (devices != jsonObject.end() && devices->is_array()) {
+			for (const auto& value : *devices) {
+				if (!value.is_object()) {
+					continue;
+				}
+				auto guidValue = value.find("guid");
+				if (guidValue == value.end() || !guidValue->is_string()) {
+					continue;
+				}
+				auto guid = normalizeDeviceGuid(guidValue->get<std::string>());
+				if (guid.empty() || std::ranges::find(deviceGuids, guid) != deviceGuids.end()) {
+					continue;
+				}
+				deviceGuids.push_back(guid);
+
+				ProfileId profileId = ControlProfiles::BalancedProfileId;
+				auto profileIdValue = value.find("inputProfileId");
+				if (profileIdValue != value.end() && profileIdValue->is_string()) {
+					ProfileId requestedId{profileIdValue->get<std::string>()};
+					if (containsProfileId(state, requestedId)) {
+						profileId = std::move(requestedId);
+					}
+				} else if (auto timing = getTiming(value, 1000.0)) {
+					if (auto builtInId = getBuiltInProfileId(*timing)) {
+						profileId = *builtInId;
+					} else {
+						auto migrated = std::ranges::find(migratedTimings, *timing, &std::pair<InputTiming, ProfileId>::first);
+						if (migrated != migratedTimings.end()) {
+							profileId = migrated->second;
+						} else {
+							profileId = makeUniqueProfileId({}, state, migratedId);
+							auto name = makeUniqueProfileName(
+								fmt::format("Legacy {}/{} ms", timing->dasMs, timing->arrMs),
+								state);
+							state.profiles.push_back({profileId, std::move(name), *timing, false});
+							migratedTimings.push_back({*timing, profileId});
+						}
+					}
+				}
+
+				state.assignments.push_back({std::move(guid), std::move(profileId)});
+			}
+		}
+
+		auto normalizedProfiles = serializeInputProfiles(state);
+		auto normalizedDevices = serializeDeviceAssignments(state);
+		jsonObject["inputProfiles"] = std::move(normalizedProfiles);
+		jsonObject["devices"] = std::move(normalizedDevices);
+		return state;
 	}
-	
-	void Configuration::setDevice(std::string_view guid, double das, double arr) {
-		auto devices = impl_->jsonObject["devices"].get<std::vector<Configuration::Device>>();
-		auto it = std::find_if(devices.begin(), devices.end(), [&guid](const Configuration::Device& device) {
-			return device.guid == guid;
-		});
-		auto newDevice = Configuration::Device{
-			.guid = guid.data(),
-			.das = das,
-			.arr = arr
-		};
-		if (it != devices.end()) {
-			impl_->jsonObject[guid] = newDevice;
-		} else {
-			impl_->jsonObject.push_back(newDevice);
+
+	ControlProfilesLoadResult Configuration::loadControlProfiles() {
+		try {
+			auto candidate = impl_->jsonObject;
+			auto state = normalizeControlProfiles(candidate);
+			if (candidate != impl_->jsonObject) {
+				auto result = replaceJsonFile(impl_->jsonPath, candidate);
+				if (!result) {
+					return std::unexpected{result.error()};
+				}
+				impl_->jsonObject = std::move(candidate);
+			}
+			return state;
+		} catch (const std::exception& exception) {
+			return std::unexpected{exception.what()};
+		}
+	}
+
+	ControlProfilesPersistenceResult Configuration::persistControlProfiles(const ControlProfilesState& state) {
+		try {
+			auto candidate = impl_->jsonObject;
+			candidate["inputProfiles"] = serializeInputProfiles(state);
+			candidate["devices"] = serializeDeviceAssignments(state);
+			auto result = replaceJsonFile(impl_->jsonPath, candidate);
+			if (!result) {
+				return result;
+			}
+			impl_->jsonObject = std::move(candidate);
+			return {};
+		} catch (const std::exception& exception) {
+			return std::unexpected{exception.what()};
 		}
 	}
 

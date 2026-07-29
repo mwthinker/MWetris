@@ -17,6 +17,7 @@
 
 namespace app {
 
+	class ControlProfiles;
 	class TetrisController;
 	struct PlayerSlotEvent;
 	struct CreateGameEvent;
@@ -33,10 +34,13 @@ namespace app {
 
 namespace app::ui {
 
+	class ControlsPresenter;
+
 	class TetrisWindow : public SubWindow {
 	public:
 		TetrisWindow(const std::string& windowName, Type type, sdl::Window& window,
 			std::shared_ptr<game::DeviceManager> deviceManager,
+			std::shared_ptr<ControlProfiles> controlProfiles,
 			std::shared_ptr<cnetwork::Network> network
 		);
 
@@ -66,6 +70,7 @@ namespace app::ui {
 
 		sdl::Window& window_;
 		std::shared_ptr<game::DeviceManager> deviceManager_;
+		std::shared_ptr<ControlsPresenter> controlsPresenter_;
 		app::TextureView background_;
 		scene::StateMachine modalStateMachine_;
 		scene::StateMachine mainStateMachine_;

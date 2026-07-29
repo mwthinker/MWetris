@@ -9,6 +9,8 @@
 #include <network/tcpclient.h>
 #include <network/tcpserver.h>
 
+#include <utility>
+
 MainWindow::MainWindow(const Config& config) 
 	: config_{config} {
 
@@ -25,6 +27,9 @@ MainWindow::~MainWindow() {
 	}
 	ioContext_.stop();
 	ioContext_.run();
+	subWindows_.clear();
+	deviceManager_.reset();
+	controlProfiles_.reset();
 	app::Configuration::getInstance().quit();
 }
 
@@ -37,9 +42,19 @@ void MainWindow::preLoop() {
 	app::Configuration::getInstance().getImGuiDefaultFont();
 	app::Configuration::getInstance().getImGuiHeaderFont();
 
-	app::Configuration::getInstance().init(gpuDevice_);
+	auto& configuration = app::Configuration::getInstance();
+	configuration.init(gpuDevice_);
 
-	deviceManager_ = std::make_shared<app::game::DeviceManager>();
+	auto loadedProfiles = configuration.loadControlProfiles();
+	if (!loadedProfiles) {
+		spdlog::error("Could not load control profiles: {}", loadedProfiles.error());
+	}
+	controlProfiles_ = std::make_shared<app::ControlProfiles>(
+		loadedProfiles ? std::move(*loadedProfiles) : app::ControlProfiles::createDefaultState(),
+		[](const app::ControlProfilesState& state) {
+			return app::Configuration::getInstance().persistControlProfiles(state);
+		});
+	deviceManager_ = std::make_shared<app::game::DeviceManager>(controlProfiles_);
 
 	switch (config_.network) {
 		case Network::SingleTcpClient:
@@ -69,6 +84,7 @@ void MainWindow::initSingleTcpClient() {
 		std::string name = (i == 0) ? "MainWindow" : fmt::format("SecondaryWindow{}", i);
 		subWindows_.push_back(std::make_unique<app::ui::TetrisWindow>(name, type, *this,
 			deviceManager_,
+			controlProfiles_,
 			std::make_shared<app::cnetwork::Network>(tcpClient)
 		));
 	}
@@ -86,6 +102,7 @@ void MainWindow::initTcpServer() {
 		std::string name = (i == 0) ? "MainWindow" : fmt::format("SecondaryWindow{}", i);
 		subWindows_.push_back(std::make_unique<app::ui::TetrisWindow>(name, type, *this,
 			deviceManager_,
+			controlProfiles_,
 			std::make_shared<app::cnetwork::Network>(tcpClient)
 		));
 	}
@@ -101,6 +118,7 @@ void MainWindow::initDebugServer() {
 		std::string name = (i == 0) ? "MainWindow" : fmt::format("SecondaryWindow{}", i);
 		subWindows_.push_back(std::make_unique<app::ui::TetrisWindow>(name, type, *this,
 			deviceManager_,
+			controlProfiles_,
 			std::make_shared<app::cnetwork::Network>(debugClient)
 		));
 	}

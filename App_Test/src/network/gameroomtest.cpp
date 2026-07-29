@@ -105,10 +105,10 @@ namespace network {
 		tp_s2c::Wrapper wrapperToClient;
 		ClientId clientId;
 		EXPECT_CALL(mockServer_, sendToClient(_, _)).WillOnce(
-			Invoke([&](const ClientId& id, const google::protobuf::MessageLite& message) {
+			[&](const ClientId& id, const google::protobuf::MessageLite& message) {
 				clientId = id;
 				wrapperToClient = dynamic_cast<const tp_s2c::Wrapper&>(message);
-			}));
+			});
 
 		// When
 		gameRoom_->receiveMessage(mockServer_, ClientId{"client uuid 0"}, wrapperFromClient);
@@ -139,10 +139,10 @@ namespace network {
 		tp_s2c::Wrapper wrapperToClient;
 		ClientId clientId;
 		ON_CALL(mockServer_, sendToClient(_, _)).WillByDefault(
-			Invoke([&](const ClientId& id, const google::protobuf::MessageLite& message) {
+			[&](const ClientId& id, const google::protobuf::MessageLite& message) {
 			clientId = id;
 			wrapperToClient = dynamic_cast<const tp_s2c::Wrapper&>(message);
-		}));
+		});
 
 		// When
 		auto mutablePlayerSlot = wrapperFromClient.mutable_player_slot();

@@ -16,7 +16,7 @@ FetchContent_Declare(IconFontCppHeaders
 	GIT_REPOSITORY
 		https://github.com/juliettef/IconFontCppHeaders.git
 	GIT_TAG
-		3eac3a08c43680cd8a5cef32001a75766126ef99
+		210b5a399a64270674560d633638952d1e8d804d
 )
 FetchContent_MakeAvailable(IconFontCppHeaders)
 FetchContent_GetProperties(IconFontCppHeaders
@@ -42,7 +42,7 @@ FetchContent_Declare(MWetrisData
 	GIT_REPOSITORY
 		https://github.com/mwthinker/MWetrisData.git
 	GIT_TAG
-		a68929105254ec3fab8ebe8a4279b9763b83d007
+		3f5d2d0985aa98b6256a19fca94558511da32b1d
 )
 FetchContent_MakeAvailable(MWetrisData)
 FetchContent_GetProperties(MWetrisData

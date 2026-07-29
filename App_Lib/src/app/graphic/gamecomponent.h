@@ -9,6 +9,7 @@
 
 #include <mw/signal.h>
 
+#include <functional>
 #include <set>
 
 namespace app::game {
@@ -22,7 +23,9 @@ namespace app::graphic {
 
 	class GameComponent {
 	public:
-		GameComponent();
+		using BoardSidebarRenderer = std::function<void(const game::PlayerPtr&, float)>;
+
+		explicit GameComponent(BoardSidebarRenderer boardSidebarRenderer = {});
 		~GameComponent();
 
 		void draw(int width, int height, double deltaTime);
@@ -33,6 +36,7 @@ namespace app::graphic {
 
 	private:
 		std::vector<ImGuiBoard> imguiBoards_;
+		BoardSidebarRenderer boardSidebarRenderer_;
 		
 		game::GamePause gamePause_{};
 	};

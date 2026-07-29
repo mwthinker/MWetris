@@ -1,6 +1,5 @@
 #include "imguiboard.h"
 #include "configuration.h"
-#include "configuration.h"
 
 #include "game/player.h"
 #include "util/auxiliary.h"
@@ -11,6 +10,7 @@
 
 #include <variant>
 #include <concepts>
+#include <utility>
 
 namespace app::graphic {
 
@@ -64,8 +64,9 @@ namespace app::graphic {
 
 	}
 
-	ImGuiBoard::ImGuiBoard(game::PlayerPtr player)
-		: player_{player} {
+	ImGuiBoard::ImGuiBoard(game::PlayerPtr player, SidebarRenderer sidebarRenderer)
+		: sidebarRenderer_{std::move(sidebarRenderer)}
+		, player_{player} {
 
 		spriteZ_ = Configuration::getInstance().getSprite(tetris::BlockType::Z);
 		spriteS_ = Configuration::getInstance().getSprite(tetris::BlockType::S);
@@ -84,6 +85,7 @@ namespace app::graphic {
 	ImGuiBoard::ImGuiBoard(const ImGuiBoard& imGuiBoard)
 		: squareSize_{imGuiBoard.squareSize_}
 		, borderSize_{imGuiBoard.borderSize_}
+		, sidebarRenderer_{imGuiBoard.sidebarRenderer_}
 		, player_{imGuiBoard.player_}
 		, rows_{imGuiBoard.rows_}
 		, height_{imGuiBoard.height_}
@@ -102,6 +104,7 @@ namespace app::graphic {
 	ImGuiBoard& ImGuiBoard::operator=(const ImGuiBoard& imGuiBoard) {
 		squareSize_ = imGuiBoard.squareSize_;
 		borderSize_ = imGuiBoard.borderSize_;
+		sidebarRenderer_ = imGuiBoard.sidebarRenderer_;
 		player_ = imGuiBoard.player_;
 		rows_ = imGuiBoard.rows_;
 		height_ = imGuiBoard.height_;
@@ -257,6 +260,7 @@ namespace app::graphic {
 	}
 
 	void ImGuiBoard::draw(float width, float height, double deltaTime) {
+		ImGui::PushID(this);
 		ImGui::Group([&]() {
 			const int columns = player_->getColumns();
 			const int rows = player_->getRows() - 2;
@@ -305,6 +309,10 @@ namespace app::graphic {
 					}
 				}, player_->getPlayerData());
 				ImGui::Text("%s: %d", "Rows", player_->getClearedRows());
+				if (player_->isHuman() && sidebarRenderer_) {
+					ImGui::Spacing();
+					sidebarRenderer_(player_, NormalizedPreviewSize * squareSize_ - 20.f);
+				}
 			});
 
 
@@ -333,6 +341,7 @@ namespace app::graphic {
 				ImGui::SetCursorPos(cursorPos);
 			}
 		});
+		ImGui::PopID();
 	}
 
 	const game::Player& ImGuiBoard::getPlayer() const {
