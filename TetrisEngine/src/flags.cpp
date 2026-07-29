@@ -4,7 +4,7 @@
 #include <sstream>
 #include <limits>
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 using namespace std::chrono_literals;
 using namespace tetris;
