@@ -26,6 +26,7 @@ endif ()
 
 add_library(TetrisEngine_Lib ${SOURCES_LIB})
 add_library(MWetris::TetrisEngine_Lib ALIAS TetrisEngine_Lib)
+target_sources(TetrisEngine_Lib PRIVATE AGENTS.md)
 
 target_include_directories(TetrisEngine_Lib
 	PUBLIC

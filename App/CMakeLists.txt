@@ -15,6 +15,7 @@ set(SOURCES
 	src/mainwindow.h
 
 	CPack.cmake
+	data/AGENTS.md
 	vcpkg.json
 )
 

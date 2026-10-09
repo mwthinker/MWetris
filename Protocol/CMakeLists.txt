@@ -21,6 +21,7 @@ protobuf_generate_cpp(
 )
 add_library(Protocol ${PROTO_UTIL} ${PROTO_HDRS} ${PROTO_SRC} ${PROTO_FILES})
 add_library(MWetris::Protocol ALIAS Protocol)
+target_sources(Protocol PRIVATE AGENTS.md)
 
 if (MSVC)
 	target_compile_options(Protocol

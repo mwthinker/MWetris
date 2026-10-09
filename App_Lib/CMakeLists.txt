@@ -121,6 +121,7 @@ source_group(TREE
 
 add_library(App_Lib ${SOURCES_LIB})
 add_library(MWetris::App_Lib ALIAS App_Lib)
+target_sources(App_Lib PRIVATE AGENTS.md)
 
 target_include_directories(App_Lib
 	PUBLIC

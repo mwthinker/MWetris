@@ -49,6 +49,7 @@ source_group(TREE
 
 add_library(Network_Lib ${SOURCES_LIB})
 add_library(MWetris::Network_Lib ALIAS Network_Lib)
+target_sources(Network_Lib PRIVATE AGENTS.md)
 
 target_include_directories(Network_Lib
 	PUBLIC
