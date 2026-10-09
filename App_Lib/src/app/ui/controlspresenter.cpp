@@ -289,7 +289,7 @@ namespace app::ui {
 			} else if (assignedDeviceCount == 1) {
 				ImGui::TextDisabled("1 device uses this profile and will switch to Balanced.");
 			} else {
-				ImGui::TextDisabled("%zu devices use this profile and will switch to Balanced.", assignedDeviceCount);
+				ImGui::TextDisabled("%d devices use this profile and will switch to Balanced.", assignedDeviceCount);
 			}
 
 			if (!dialog.error.empty()) {

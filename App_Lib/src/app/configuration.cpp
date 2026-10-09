@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <cmath>
 #include <filesystem>
+#include <iterator>
 #include <limits>
 #include <map>
 #include <optional>
@@ -234,12 +235,12 @@ namespace app {
 	namespace {
 		constexpr std::string_view ProfileNameWhitespace{" \t\r\n\f\v"};
 
-		std::string truncateUtf8(std::string_view value, std::size_t maximumLength) {
-			std::size_t length = 0;
-			for (std::size_t index = 0; index < value.size(); ++index) {
-				if ((static_cast<unsigned char>(value[index]) & 0xc0) != 0x80) {
+		std::string truncateUtf8(std::string_view value, int maximumLength) {
+			int length = 0;
+			for (auto position = value.begin(); position != value.end(); ++position) {
+				if ((static_cast<unsigned char>(*position) & 0xc0) != 0x80) {
 					if (length == maximumLength) {
-						return std::string{value.substr(0, index)};
+						return std::string{value.begin(), position};
 					}
 					++length;
 				}
@@ -280,11 +281,13 @@ namespace app {
 				return name;
 			}
 
-			for (std::size_t copyNumber = 1; copyNumber < std::numeric_limits<std::size_t>::max(); ++copyNumber) {
+			for (int copyNumber = 1; copyNumber < std::numeric_limits<int>::max(); ++copyNumber) {
 				auto suffix = copyNumber == 1
 					? std::string{" Copy"}
 					: " Copy " + std::to_string(copyNumber);
-				auto candidate = truncateUtf8(name, ControlProfiles::MaxProfileNameLength - suffix.size()) + suffix;
+				auto candidate = truncateUtf8(
+					name,
+					ControlProfiles::MaxProfileNameLength - static_cast<int>(std::ssize(suffix))) + suffix;
 				if (!nameExists(candidate)) {
 					return candidate;
 				}
@@ -295,7 +298,7 @@ namespace app {
 		ProfileId makeUniqueProfileId(
 			std::string preferredId,
 			const ControlProfilesState& state,
-			std::size_t& migratedId) {
+			int& migratedId) {
 			ProfileId profileId{std::move(preferredId)};
 			if (!profileId.value.empty() && !containsProfileId(state, profileId)) {
 				return profileId;
@@ -391,9 +394,7 @@ namespace app {
 			return devices;
 		}
 
-		ControlProfilesPersistenceResult replaceJsonFile(
-			const std::string& path,
-			const json& jsonObject) {
+		ControlProfilesPersistenceResult replaceJsonFile(const std::string& path, const json& jsonObject) {
 			std::string temporaryPath;
 			std::ofstream stream;
 			for (int attempt = 0; attempt < 10 && !stream.is_open(); ++attempt) {
@@ -901,7 +902,7 @@ namespace app {
 			jsonObject = json::object();
 		}
 		auto state = ControlProfiles::createDefaultState();
-		std::size_t migratedId = 1;
+		int migratedId = 1;
 
 		auto inputProfiles = jsonObject.find("inputProfiles");
 		if (inputProfiles != jsonObject.end() && inputProfiles->is_array()) {

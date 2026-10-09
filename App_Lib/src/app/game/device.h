@@ -42,11 +42,15 @@ namespace app::game {
 			return connected_;
 		}
 
+		/// @brief Return the resolved input timing assigned to this device.
+		/// @return The device's DAS and ARR timing.
 		app::InputTiming getInputTiming() const {
 			return inputTiming_;
 		}
 
-		std::uint64_t getInputTimingRevision() const {
+		/// @brief Return the revision incremented whenever the input timing changes.
+		/// @return The current input timing revision.
+		std::int64_t getInputTimingRevision() const {
 			return inputTimingRevision_;
 		}
 	
@@ -69,7 +73,7 @@ namespace app::game {
 		std::string name_;
 		std::string guid_;
 		app::InputTiming inputTiming_{};
-		std::uint64_t inputTimingRevision_ = 0;
+		std::int64_t inputTimingRevision_ = 0;
 	};
 
 }

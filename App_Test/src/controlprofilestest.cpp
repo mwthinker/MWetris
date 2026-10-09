@@ -74,7 +74,7 @@ namespace app {
 
 		const std::string unicodeCharacter{"\xC3\xA9"};
 		std::string unicodeName;
-		for (std::size_t index = 0; index < ControlProfiles::MaxProfileNameLength; ++index) {
+		for (int index = 0; index < ControlProfiles::MaxProfileNameLength; ++index) {
 			unicodeName += unicodeCharacter;
 		}
 		auto unicodeResult = profiles.duplicateProfile(

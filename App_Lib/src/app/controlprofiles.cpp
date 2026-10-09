@@ -4,24 +4,25 @@
 
 #include <algorithm>
 #include <exception>
+#include <iterator>
 #include <limits>
 #include <utility>
 
 namespace app {
 	namespace {
 
-		std::size_t utf8Length(std::string_view value) {
-			return static_cast<std::size_t>(std::ranges::count_if(value, [](char character) {
+		int utf8Length(std::string_view value) {
+			return static_cast<int>(std::ranges::count_if(value, [](char character) {
 				return (static_cast<unsigned char>(character) & 0xc0) != 0x80;
 			}));
 		}
 
-		std::string truncateUtf8(std::string_view value, std::size_t maximumLength) {
-			std::size_t length = 0;
-			for (std::size_t index = 0; index < value.size(); ++index) {
-				if ((static_cast<unsigned char>(value[index]) & 0xc0) != 0x80) {
+		std::string truncateUtf8(std::string_view value, int maximumLength) {
+			int length = 0;
+			for (auto position = value.begin(); position != value.end(); ++position) {
+				if ((static_cast<unsigned char>(*position) & 0xc0) != 0x80) {
 					if (length == maximumLength) {
-						return std::string{value.substr(0, index)};
+						return std::string{value.begin(), position};
 					}
 					++length;
 				}
@@ -88,8 +89,8 @@ namespace app {
 		return getProfile(getAssignedProfileId(deviceGuid))->timing;
 	}
 
-	std::size_t ControlProfiles::getAssignedDeviceCount(const ProfileId& profileId) const {
-		return static_cast<std::size_t>(std::ranges::count(state_.assignments, profileId, &DeviceProfileAssignment::profileId));
+	int ControlProfiles::getAssignedDeviceCount(const ProfileId& profileId) const {
+		return static_cast<int>(std::ranges::count(state_.assignments, profileId, &DeviceProfileAssignment::profileId));
 	}
 
 	ControlProfilesResult<std::string> ControlProfiles::getDuplicateProfileName(const ProfileId& profileId) const {
@@ -101,11 +102,11 @@ namespace app {
 			}};
 		}
 
-		for (std::size_t copyNumber = 1; copyNumber < std::numeric_limits<std::size_t>::max(); ++copyNumber) {
+		for (int copyNumber = 1; copyNumber < std::numeric_limits<int>::max(); ++copyNumber) {
 			auto suffix = copyNumber == 1
 				? std::string{" Copy"}
 				: " Copy " + std::to_string(copyNumber);
-			auto name = truncateUtf8(profile->name, MaxProfileNameLength - suffix.size()) + suffix;
+			auto name = truncateUtf8(profile->name, MaxProfileNameLength - static_cast<int>(std::ssize(suffix))) + suffix;
 			auto duplicate = std::ranges::find(state_.profiles, name, &InputProfile::name);
 			if (duplicate == state_.profiles.end()) {
 				return name;
@@ -217,7 +218,7 @@ namespace app {
 		return commit(std::move(candidate), change);
 	}
 
-	ControlProfilesResult<std::size_t> ControlProfiles::deleteProfile(const ProfileId& profileId) {
+	ControlProfilesResult<int> ControlProfiles::deleteProfile(const ProfileId& profileId) {
 		auto profile = std::ranges::find(state_.profiles, profileId, &InputProfile::id);
 		if (profile == state_.profiles.end()) {
 			return std::unexpected{ControlProfilesError{
@@ -244,7 +245,7 @@ namespace app {
 			return candidateProfile.id == profileId;
 		});
 
-		const auto affectedDeviceCount = change.affectedDeviceGuids.size();
+		const int affectedDeviceCount = static_cast<int>(std::ssize(change.affectedDeviceGuids));
 		auto commitResult = commit(std::move(candidate), change);
 		if (!commitResult) {
 			return std::unexpected{commitResult.error()};

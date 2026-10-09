@@ -49,7 +49,7 @@ namespace app::game {
 	private:
 		DevicePtr device_;
 		TetrisBoardController tetrisBoardController_;
-		std::uint64_t lastAppliedInputTimingRevision_ = 0;
+		std::int64_t lastAppliedInputTimingRevision_ = 0;
 	};
 
 	class AiMoveController : public TetrisBoardMoveController {

@@ -3,7 +3,6 @@
 
 #include <mw/signal.h>
 
-#include <cstddef>
 #include <expected>
 #include <functional>
 #include <optional>
@@ -74,7 +73,7 @@ namespace app {
 
 	class ControlProfiles {
 	public:
-		static constexpr std::size_t MaxProfileNameLength = 29;
+		static constexpr int MaxProfileNameLength = 29;
 		static constexpr int MinDasMs = 1;
 		static constexpr int MaxDasMs = 1000;
 		static constexpr int MinArrMs = 1;
@@ -97,7 +96,7 @@ namespace app {
 		const std::vector<DeviceProfileAssignment>& getAssignments() const;
 		ProfileId getAssignedProfileId(std::string_view deviceGuid) const;
 		InputTiming getAssignedTiming(std::string_view deviceGuid) const;
-		std::size_t getAssignedDeviceCount(const ProfileId& profileId) const;
+		int getAssignedDeviceCount(const ProfileId& profileId) const;
 		ControlProfilesResult<std::string> getDuplicateProfileName(const ProfileId& profileId) const;
 
 		ControlProfilesResult<void> assignProfile(
@@ -115,7 +114,7 @@ namespace app {
 			std::string name,
 			InputTiming timing);
 
-		ControlProfilesResult<std::size_t> deleteProfile(const ProfileId& profileId);
+		ControlProfilesResult<int> deleteProfile(const ProfileId& profileId);
 
 	private:
 		ControlProfilesResult<std::string> validateProfile(
