@@ -9,8 +9,6 @@
 #include <network/tcpclient.h>
 #include <network/tcpserver.h>
 
-#include <utility>
-
 MainWindow::MainWindow(const Config& config) 
 	: config_{config} {
 
@@ -45,16 +43,17 @@ void MainWindow::preLoop() {
 	auto& configuration = app::Configuration::getInstance();
 	configuration.init(gpuDevice_);
 
-	auto loadedProfiles = configuration.loadControlProfiles();
-	if (!loadedProfiles) {
-		spdlog::error("Could not load control profiles: {}", loadedProfiles.error());
-	}
 	controlProfiles_ = std::make_shared<app::ControlProfiles>(
-		loadedProfiles ? std::move(*loadedProfiles) : app::ControlProfiles::createDefaultState(),
+		configuration.loadControlProfiles()
+			.or_else([](const std::string& error) -> app::ControlProfilesLoadResult {
+				spdlog::error("Could not load control profiles: {}", error);
+				return app::ControlProfiles::createDefaultState();
+			})
+			.value(),
 		[](const app::ControlProfilesState& state) {
 			return app::Configuration::getInstance().persistControlProfiles(state);
 		});
-	deviceManager_ = std::make_shared<app::game::DeviceManager>(controlProfiles_);
+	deviceManager_ = std::make_shared<app::game::DeviceManager>();
 
 	switch (config_.network) {
 		case Network::SingleTcpClient:
@@ -85,7 +84,7 @@ void MainWindow::initSingleTcpClient() {
 		subWindows_.push_back(std::make_unique<app::ui::TetrisWindow>(name, type, *this,
 			deviceManager_,
 			controlProfiles_,
-			std::make_shared<app::cnetwork::Network>(tcpClient)
+			std::make_shared<app::cnetwork::Network>(tcpClient, controlProfiles_)
 		));
 	}
 }
@@ -103,7 +102,7 @@ void MainWindow::initTcpServer() {
 		subWindows_.push_back(std::make_unique<app::ui::TetrisWindow>(name, type, *this,
 			deviceManager_,
 			controlProfiles_,
-			std::make_shared<app::cnetwork::Network>(tcpClient)
+			std::make_shared<app::cnetwork::Network>(tcpClient, controlProfiles_)
 		));
 	}
 	server_ = server;
@@ -119,7 +118,7 @@ void MainWindow::initDebugServer() {
 		subWindows_.push_back(std::make_unique<app::ui::TetrisWindow>(name, type, *this,
 			deviceManager_,
 			controlProfiles_,
-			std::make_shared<app::cnetwork::Network>(debugClient)
+			std::make_shared<app::cnetwork::Network>(debugClient, controlProfiles_)
 		));
 	}
 	server_ = server;

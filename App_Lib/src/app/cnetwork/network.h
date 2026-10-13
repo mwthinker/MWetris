@@ -19,6 +19,12 @@
 
 #include <chrono>
 
+namespace app {
+
+	class ControlProfiles;
+
+}
+
 namespace app::cnetwork {
 
 	class Network : public std::enable_shared_from_this<Network> {
@@ -32,7 +38,7 @@ namespace app::cnetwork {
 			bool connected = true;
 		};
 
-		explicit Network(std::shared_ptr<network::Client> client);
+		Network(std::shared_ptr<network::Client> client, std::shared_ptr<ControlProfiles> controlProfiles);
 
 		void start();
 
@@ -132,6 +138,7 @@ namespace app::cnetwork {
 		tp_c2s::Wrapper wrapperToServer_;
 		tp_s2c::Wrapper wrapperFromServer_;
 		std::shared_ptr<network::Client> client_;
+		std::shared_ptr<ControlProfiles> controlProfiles_;
 		network::GameRoomId gameRoomId_;
 		bool running_ = true;
 		network::ClientId clientId_;

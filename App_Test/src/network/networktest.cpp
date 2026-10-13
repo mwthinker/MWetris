@@ -4,6 +4,7 @@
 #include <gmock/gmock.h>
 
 #include <app/cnetwork/network.h>
+#include <app/controlprofiles.h>
 
 #include <network/client.h>
 #include <network/debugclient.h>
@@ -89,7 +90,8 @@ namespace app::cnetwork {
 
 			shutdown = false;
 			receivedMessages_ = std::queue<network::ProtobufMessage>();
-			network_ = std::make_shared<Network>(mockClient_);
+			controlProfiles_ = std::make_shared<ControlProfiles>();
+			network_ = std::make_shared<Network>(mockClient_, controlProfiles_);
 			shutdown = false;
 		}
 
@@ -123,6 +125,7 @@ namespace app::cnetwork {
 		}
 
 		std::shared_ptr<NiceMock<MockClient>> mockClient_;
+		std::shared_ptr<ControlProfiles> controlProfiles_;
 		tp_s2c::Wrapper wrapperFromServer;
 		std::shared_ptr<Network> network_;
 	};

@@ -48,7 +48,7 @@ namespace app::ui::scene {
 
 	class GameRoomLooby : public Scene {
 	public:
-		GameRoomLooby(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager);
+		GameRoomLooby(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager, std::shared_ptr<ControlProfiles> controlProfiles);
 
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
 
@@ -59,6 +59,7 @@ namespace app::ui::scene {
 		void switchedFrom() override;
 
 		std::shared_ptr<TetrisController> tetrisController_;
+		std::shared_ptr<ControlProfiles> controlProfiles_;
 		std::string serverId_ = "";
 		mw::signals::ScopedConnections connections_;
 

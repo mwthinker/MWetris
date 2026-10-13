@@ -2,11 +2,9 @@
 #define APP_GAME_DEVICE_H
 
 #include "input.h"
-#include "../controlprofiles.h"
 
 #include <mw/signal.h>
 
-#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -42,27 +40,7 @@ namespace app::game {
 			return connected_;
 		}
 
-		/// @brief Return the resolved input timing assigned to this device.
-		/// @return The device's DAS and ARR timing.
-		app::InputTiming getInputTiming() const {
-			return inputTiming_;
-		}
-
-		/// @brief Return the revision incremented whenever the input timing changes.
-		/// @return The current input timing revision.
-		std::int64_t getInputTimingRevision() const {
-			return inputTimingRevision_;
-		}
-	
 	private:
-		void setInputTiming(app::InputTiming timing) {
-			if (inputTiming_ == timing) {
-				return;
-			}
-			inputTiming_ = timing;
-			++inputTimingRevision_;
-		}
-
 		void invokeConnection(bool connected) {
 			connected_ = connected;
 			connection.invoke(connected);
@@ -72,8 +50,6 @@ namespace app::game {
 		bool connected_ = false;
 		std::string name_;
 		std::string guid_;
-		app::InputTiming inputTiming_{};
-		std::int64_t inputTimingRevision_ = 0;
 	};
 
 }

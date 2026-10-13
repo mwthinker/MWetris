@@ -26,11 +26,11 @@ namespace app::ui::scene {
 
 		constexpr auto PopUpId = "CreatePopup";
 
-		std::vector<game::PlayerPtr> createPlayersFromSlots(const std::vector<game::PlayerSlot>& playerSlots) {
+		std::vector<game::PlayerPtr> createPlayersFromSlots(const std::vector<game::PlayerSlot>& playerSlots, const std::shared_ptr<ControlProfiles>& controlProfiles) {
 			std::vector<game::PlayerPtr> players;
 			for (const auto& playerSlot : playerSlots) {
 				if (auto human = std::get_if<game::Human>(&playerSlot)) {
-					players.push_back(game::createHumanPlayer(human->device));
+					players.push_back(game::createHumanPlayer(human->device, controlProfiles));
 				} else if (auto ai = std::get_if<game::Ai>(&playerSlot)) {
 					players.push_back(game::createAiPlayer(ai->ai));
 				}
@@ -72,8 +72,9 @@ namespace app::ui::scene {
 
 	}
 
-	GameRoomLooby::GameRoomLooby(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager)
-		: tetrisController_{tetrisController} {
+	GameRoomLooby::GameRoomLooby(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager, std::shared_ptr<ControlProfiles> controlProfiles)
+		: tetrisController_{tetrisController}
+		, controlProfiles_{std::move(controlProfiles)} {
 
 		for (int i = 0; i < 4; ++i) {
 			playerSlots_.push_back(game::OpenSlot{});
@@ -230,7 +231,7 @@ namespace app::ui::scene {
 				tetrisController_->startNetworkGame(gameRulesConfig_, game::TetrisWidth, game::TetrisHeight);
 			} else {
 				spdlog::info("[CreateGame] Starting local game.");
-				tetrisController_->startLocalGame(gameRulesConfig_, createPlayersFromSlots(playerSlots_));
+				tetrisController_->startLocalGame(gameRulesConfig_, createPlayersFromSlots(playerSlots_, controlProfiles_));
 			}
 		}
 		ImGui::EndDisabled();

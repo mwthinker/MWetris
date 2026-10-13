@@ -1,8 +1,6 @@
 #ifndef APP_CONTROLPROFILES_H
 #define APP_CONTROLPROFILES_H
 
-#include <mw/signal.h>
-
 #include <expected>
 #include <functional>
 #include <optional>
@@ -39,10 +37,6 @@ namespace app {
 		ProfileId profileId;
 
 		friend bool operator==(const DeviceProfileAssignment&, const DeviceProfileAssignment&) = default;
-	};
-
-	struct ControlProfilesChange {
-		std::vector<std::string> affectedDeviceGuids;
 	};
 
 	struct ControlProfilesState {
@@ -83,8 +77,6 @@ namespace app {
 		static const ProfileId FastProfileId;
 		static const ProfileId ClassicProfileId;
 
-		mw::PublicSignal<ControlProfiles, const ControlProfilesChange&> changed;
-
 		explicit ControlProfiles(ControlProfilesPersistence persistence = {});
 		ControlProfiles(ControlProfilesState initialState, ControlProfilesPersistence persistence = {});
 
@@ -121,7 +113,7 @@ namespace app {
 			std::string name,
 			InputTiming timing,
 			const std::optional<ProfileId>& ignoredProfileId = std::nullopt) const;
-		ControlProfilesResult<void> commit(ControlProfilesState candidate, const ControlProfilesChange& change);
+		ControlProfilesResult<void> commit(ControlProfilesState candidate);
 		bool isBuiltIn(const ProfileId& profileId) const;
 		ProfileId generateProfileId(const ControlProfilesState& state) const;
 

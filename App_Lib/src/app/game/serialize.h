@@ -2,6 +2,7 @@
 #define APP_GAME_SERIALIZE_H
 
 #include "device.h"
+#include "../controlprofiles.h"
 
 #include <memory>
 
@@ -16,7 +17,7 @@ namespace app::game {
 
 	void saveGame(const Player& player);
 
-	PlayerPtr loadGame(DevicePtr device);
+	PlayerPtr loadGame(DevicePtr device, std::shared_ptr<ControlProfiles> controlProfiles);
 
 }
 

@@ -63,7 +63,7 @@ namespace app {
 	public:
 		mw::PublicSignal<TetrisController, const TetrisEvent&> tetrisEvent;
 
-		TetrisController(std::shared_ptr<game::DeviceManager> deviceManager, std::shared_ptr<cnetwork::Network> network, std::shared_ptr<graphic::GameComponent> gameComponent);
+		TetrisController(std::shared_ptr<game::DeviceManager> deviceManager, std::shared_ptr<ControlProfiles> controlProfiles, std::shared_ptr<cnetwork::Network> network, std::shared_ptr<graphic::GameComponent> gameComponent);
 
 		// Updates everything. Should be called each frame.
 		void update(double deltaTime);
@@ -132,6 +132,7 @@ namespace app {
 
 		mw::signals::ScopedConnections connections_;
 		std::shared_ptr<game::DeviceManager> deviceManager_;
+		std::shared_ptr<ControlProfiles> controlProfiles_;
 		std::unique_ptr<game::GameRules> rules_;
 		std::shared_ptr<cnetwork::Network> network_;
 		game::TetrisGame tetrisGame_;

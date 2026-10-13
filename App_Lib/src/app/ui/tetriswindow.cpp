@@ -101,7 +101,8 @@ namespace app::ui {
 		std::shared_ptr<cnetwork::Network> network)
 		: window_{window}
 		, deviceManager_{deviceManager}
-		, controlsPresenter_{std::make_shared<ControlsPresenter>(windowName, deviceManager, std::move(controlProfiles))}
+		, controlProfiles_{std::move(controlProfiles)}
+		, controlsPresenter_{std::make_shared<ControlsPresenter>(windowName, deviceManager, controlProfiles_)}
 		, modalStateMachine_{ui::scene::StateMachine::StateType::Modal}
 		, type_{type}
 		, windowName_{windowName} {
@@ -110,7 +111,7 @@ namespace app::ui {
 			[presenter = controlsPresenter_](const game::PlayerPtr& player, float width) {
 				presenter->drawDeviceProfileSelection(player, width);
 			});
-		tetrisController_ = std::make_shared<TetrisController>(deviceManager_, network, std::move(gameComponent));
+		tetrisController_ = std::make_shared<TetrisController>(deviceManager_, controlProfiles_, network, std::move(gameComponent));
 
 		connections_ += deviceManager_->deviceConnected.connect([](game::DevicePtr device) {
 			spdlog::info("Device found: {}", device->getName());
@@ -144,7 +145,7 @@ namespace app::ui {
 	void TetrisWindow::initPreLoop() {
 		background_ = Configuration::getInstance().getBackgroundSprite();
 
-		mainStateMachine_.emplace<scene::GameRoomLooby>(tetrisController_, deviceManager_);
+		mainStateMachine_.emplace<scene::GameRoomLooby>(tetrisController_, deviceManager_, controlProfiles_);
 		mainStateMachine_.emplace<scene::Resume>(tetrisController_, deviceManager_);
 		mainStateMachine_.emplace<scene::Play>(tetrisController_);
 		

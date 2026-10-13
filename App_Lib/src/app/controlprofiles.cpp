@@ -140,7 +140,7 @@ namespace app {
 			candidate.assignments.push_back({std::string{deviceGuid}, profileId});
 		}
 
-		return commit(std::move(candidate), {{std::string{deviceGuid}}});
+		return commit(std::move(candidate));
 	}
 
 	ControlProfilesResult<ProfileId> ControlProfiles::duplicateProfile(
@@ -171,7 +171,7 @@ namespace app {
 			candidate.assignments.push_back({std::string{deviceGuid}, profileId});
 		}
 
-		auto commitResult = commit(std::move(candidate), {{std::string{deviceGuid}}});
+		auto commitResult = commit(std::move(candidate));
 		if (!commitResult) {
 			return std::unexpected{commitResult.error()};
 		}
@@ -204,18 +204,11 @@ namespace app {
 			return {};
 		}
 
-		ControlProfilesChange change;
-		for (const auto& assignment : state_.assignments) {
-			if (assignment.profileId == profileId) {
-				change.affectedDeviceGuids.push_back(assignment.deviceGuid);
-			}
-		}
-
 		auto candidate = state_;
 		auto candidateProfile = std::ranges::find(candidate.profiles, profileId, &InputProfile::id);
 		candidateProfile->name = std::move(*validatedName);
 		candidateProfile->timing = timing;
-		return commit(std::move(candidate), change);
+		return commit(std::move(candidate));
 	}
 
 	ControlProfilesResult<int> ControlProfiles::deleteProfile(const ProfileId& profileId) {
@@ -234,19 +227,18 @@ namespace app {
 		}
 
 		auto candidate = state_;
-		ControlProfilesChange change;
+		int affectedDeviceCount = 0;
 		for (auto& assignment : candidate.assignments) {
 			if (assignment.profileId == profileId) {
 				assignment.profileId = BalancedProfileId;
-				change.affectedDeviceGuids.push_back(assignment.deviceGuid);
+				++affectedDeviceCount;
 			}
 		}
 		std::erase_if(candidate.profiles, [&profileId](const InputProfile& candidateProfile) {
 			return candidateProfile.id == profileId;
 		});
 
-		const int affectedDeviceCount = static_cast<int>(std::ssize(change.affectedDeviceGuids));
-		auto commitResult = commit(std::move(candidate), change);
+		auto commitResult = commit(std::move(candidate));
 		if (!commitResult) {
 			return std::unexpected{commitResult.error()};
 		}
@@ -299,9 +291,7 @@ namespace app {
 		return name;
 	}
 
-	ControlProfilesResult<void> ControlProfiles::commit(
-		ControlProfilesState candidate,
-		const ControlProfilesChange& change) {
+	ControlProfilesResult<void> ControlProfiles::commit(ControlProfilesState candidate) {
 		if (persistence_) {
 			ControlProfilesPersistenceResult result;
 			try {
@@ -329,7 +319,6 @@ namespace app {
 		}
 
 		state_ = std::move(candidate);
-		changed(change);
 		return {};
 	}
 

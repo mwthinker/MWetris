@@ -91,13 +91,13 @@ namespace app::game {
 			tpPlayerBoard.mutable_current()->set_type(static_cast<tp::BlockType>(player.getBlock().getBlockType()));
 		}
 		
-		PlayerPtr createPlayer(DevicePtr device, const tp::PlayerBoard& tpPlayer) {
+		PlayerPtr createPlayer(DevicePtr device, std::shared_ptr<ControlProfiles> controlProfiles, const tp::PlayerBoard& tpPlayer) {
 			tetris::TetrisBoard tetrisBoard = toTetrisBoard(tpPlayer);
 			DefaultPlayerData playerData{
 				.level = tpPlayer.level(),
 				.points = tpPlayer.points()
 			};
-			auto player = createHumanPlayer(device, playerData, std::move(tetrisBoard));
+			auto player = createHumanPlayer(device, std::move(controlProfiles), playerData, std::move(tetrisBoard));
 			player->setClearedRows(tpPlayer.cleared_rows());
 			player->setGravity(calculateGravity(tpPlayer.level()));
 			return player;
@@ -127,7 +127,7 @@ namespace app::game {
 		}
 	}
 
-	PlayerPtr loadGame(DevicePtr devicePtr) {
+	PlayerPtr loadGame(DevicePtr devicePtr, std::shared_ptr<ControlProfiles> controlProfiles) {
 		if (!gameLoaded) {
 			gameLoaded = true;
 			
@@ -142,7 +142,7 @@ namespace app::game {
 			}
 		}
 		if (cachedGame.has_player_board()) {
-			return createPlayer(devicePtr, cachedGame.player_board());
+			return createPlayer(devicePtr, std::move(controlProfiles), cachedGame.player_board());
 		}
 		return nullptr;
 	}

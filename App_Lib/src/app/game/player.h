@@ -6,12 +6,14 @@
 #include "device.h"
 #include "playerboardevent.h"
 #include "tetrisparameters.h"
+#include "../controlprofiles.h"
 
 #include <tetris/tetrisboard.h>
 
 #include <mw/signal.h>
 
 #include <memory>
+#include <optional>
 #include <variant>
 
 namespace app::game {
@@ -33,7 +35,7 @@ namespace app::game {
 	
 	PlayerPtr createAiPlayer(const tetris::Ai& ai, const PlayerData& playerData = DefaultPlayerData{}, tetris::TetrisBoard&& tetrisBoard = tetris::TetrisBoard{game::TetrisWidth, game::TetrisHeight, tetris::BlockType::L, tetris::BlockType::L});
 	
-	PlayerPtr createHumanPlayer(DevicePtr device, const PlayerData& playerData = DefaultPlayerData{}, tetris::TetrisBoard&& tetrisBoard = tetris::TetrisBoard{game::TetrisWidth, game::TetrisHeight, tetris::BlockType::L, tetris::BlockType::L});
+	PlayerPtr createHumanPlayer(DevicePtr device, std::shared_ptr<ControlProfiles> controlProfiles, const PlayerData& playerData = DefaultPlayerData{}, tetris::TetrisBoard&& tetrisBoard = tetris::TetrisBoard{game::TetrisWidth, game::TetrisHeight, tetris::BlockType::L, tetris::BlockType::L});
 
 	PlayerPtr createRemotePlayer(const PlayerData& playerData = DefaultPlayerData{}, tetris::TetrisBoard&& tetrisBoard = tetris::TetrisBoard{game::TetrisWidth, game::TetrisHeight, tetris::BlockType::L, tetris::BlockType::L});
 
@@ -50,8 +52,7 @@ namespace app::game {
 		Player(
 			Type type,
 			std::unique_ptr<TetrisBoardMoveController> moveController,
-			tetris::TetrisBoard&& tetrisBoard,
-			DevicePtr device = {});
+			tetris::TetrisBoard&& tetrisBoard);
 
 		void update(double deltaTime);
 
@@ -102,7 +103,10 @@ namespace app::game {
 
 		bool isLocal() const;
 
-		const DevicePtr& getDevice() const;
+		DevicePtr getDevice() const;
+		bool setDevice(DevicePtr device);
+		std::optional<ProfileId> getProfileId() const;
+		bool setProfileId(const ProfileId& profileId);
 
 		void setGravity(double gravity);
 
@@ -116,7 +120,6 @@ namespace app::game {
 		void invokePlayerBoardEvent(const PlayerBoardEvent&) override;
 
 		std::unique_ptr<TetrisBoardMoveController> moveController_;
-		DevicePtr device_;
 		mw::signals::ScopedConnections connections_;
 		tetris::TetrisBoard tetrisBoard_;
 		int clearedRows_ = 0;

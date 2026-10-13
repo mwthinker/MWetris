@@ -9,7 +9,6 @@
 #include <imgui.h>
 
 #include <algorithm>
-#include <map>
 #include <optional>
 #include <string>
 #include <utility>
@@ -24,11 +23,6 @@ namespace app::ui {
 			Duplicate,
 			Edit,
 			Delete,
-		};
-
-		struct BoardSelection {
-			std::string deviceGuid;
-			std::string error;
 		};
 
 		struct DialogState {
@@ -128,7 +122,7 @@ namespace app::ui {
 			return changed;
 		}
 
-		void drawProfileCombo(
+		void drawAssignedProfileCombo(
 			const std::string& deviceGuid,
 			const char* label,
 			std::string& error) const {
@@ -163,6 +157,36 @@ namespace app::ui {
 			}
 		}
 
+		void drawPlayerProfileCombo(game::Player& player, const char* label) const {
+			auto selectedProfileId = player.getProfileId();
+			if (!selectedProfileId) {
+				ImGui::BeginDisabled();
+				ImGui::ComboScoped(label, "No controls", []() {});
+				ImGui::EndDisabled();
+				return;
+			}
+
+			auto selectedProfile = controlProfiles->getProfile(*selectedProfileId);
+			const auto& profiles = controlProfiles->getProfiles();
+			std::optional<ProfileId> requestedProfileId;
+			ImGui::ComboScoped(label, selectedProfile ? selectedProfile->name.c_str() : "Unknown profile", [&]() {
+				for (const auto& profile : profiles) {
+					ImGui::PushID(profile.id.value.c_str());
+					bool isSelected = *selectedProfileId == profile.id;
+					if (ImGui::Selectable(profile.name.c_str(), isSelected, ImGuiSelectableFlags_NoAutoClosePopups)) {
+						requestedProfileId = profile.id;
+					}
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
+					ImGui::PopID();
+				}
+			});
+			if (requestedProfileId) {
+				player.setProfileId(*requestedProfileId);
+			}
+		}
+
 		void openProfileDialog(
 			ProfileDialogAction action,
 			const InputProfile& profile,
@@ -193,7 +217,6 @@ namespace app::ui {
 
 		std::string selectedOptionsDeviceGuid;
 		std::string optionsError;
-		std::map<std::weak_ptr<game::Player>, BoardSelection, std::owner_less<>> boardSelections;
 		DialogState dialog;
 		std::string popupIdSuffix;
 		std::shared_ptr<game::DeviceManager> deviceManager;
@@ -225,7 +248,7 @@ namespace app::ui {
 			false)) {
 			impl_->optionsError.clear();
 		}
-		impl_->drawProfileCombo(impl_->selectedOptionsDeviceGuid, "Profile", impl_->optionsError);
+		impl_->drawAssignedProfileCombo(impl_->selectedOptionsDeviceGuid, "Profile", impl_->optionsError);
 		ImGui::PopItemWidth();
 
 		if (impl_->selectedOptionsDeviceGuid.empty()) {
@@ -381,27 +404,19 @@ namespace app::ui {
 	void ControlsPresenter::drawDeviceProfileSelection(
 		const std::shared_ptr<game::Player>& player,
 		float width) {
-		std::erase_if(impl_->boardSelections, [](const auto& selection) {
-			return selection.first.expired();
-		});
 		auto playerDevice = player->getDevice();
-		auto selection = impl_->boardSelections.try_emplace(
-			std::weak_ptr<game::Player>{player},
-			BoardSelection{.deviceGuid = playerDevice ? playerDevice->getGuid() : std::string{}}).first;
+		auto deviceGuid = playerDevice ? playerDevice->getGuid() : std::string{};
 
 		ImGui::PushID(player.get());
 		ImGui::TextUnformatted("Device");
 		ImGui::PushItemWidth(width);
 		auto connectedDevices = impl_->getConnectedDevices();
-		if (impl_->drawDeviceCombo(selection->second.deviceGuid, connectedDevices, "##Device", true)) {
-			selection->second.error.clear();
+		if (impl_->drawDeviceCombo(deviceGuid, connectedDevices, "##Device", true)) {
+			player->setDevice(impl_->deviceManager->findDevice(deviceGuid));
 		}
 		ImGui::TextUnformatted("Profile");
-		impl_->drawProfileCombo(selection->second.deviceGuid, "##Profile", selection->second.error);
+		impl_->drawPlayerProfileCombo(*player, "##Profile");
 		ImGui::PopItemWidth();
-		if (!selection->second.error.empty()) {
-			ImGui::TextWrapped("%s", selection->second.error.c_str());
-		}
 		ImGui::PopID();
 	}
 

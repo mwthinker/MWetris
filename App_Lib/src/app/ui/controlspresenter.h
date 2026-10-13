@@ -21,14 +21,8 @@ namespace app::ui {
 
 	class ControlsPresenter {
 	public:
-		ControlsPresenter(
-			std::string windowName,
-			std::shared_ptr<game::DeviceManager> deviceManager,
-			std::shared_ptr<ControlProfiles> controlProfiles);
+		ControlsPresenter(std::string windowName, std::shared_ptr<game::DeviceManager> deviceManager, std::shared_ptr<ControlProfiles> controlProfiles);
 		~ControlsPresenter();
-
-		ControlsPresenter(const ControlsPresenter&) = delete;
-		ControlsPresenter& operator=(const ControlsPresenter&) = delete;
 
 		void drawMenu();
 		void drawProfileDialog();

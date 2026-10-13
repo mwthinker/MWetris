@@ -11,8 +11,7 @@
 
 namespace app::game {
 
-	DeviceManager::DeviceManager(std::shared_ptr<ControlProfiles> controlProfiles)
-		: controlProfiles_{std::move(controlProfiles)} {
+	DeviceManager::DeviceManager() {
 		keyboard1_ = createKeyboardDevice(std::make_unique<game::Keyboard>("Keyboard 1",
 			KeyboardMapping{
 				.down = SDLK_DOWN,
@@ -31,7 +30,6 @@ namespace app::game {
 				.downGround = SDLK_LCTRL
 			}
 		));
-		connections_ += controlProfiles_->changed.connect(this, &DeviceManager::onControlProfilesChanged);
 	}
 
 	DeviceManager::KeyboardDevice DeviceManager::createKeyboardDevice(std::unique_ptr<Keyboard> keyboard) {
@@ -42,27 +40,7 @@ namespace app::game {
 		keyboardDevice.device->name_ = keyboardDevice.keyboard->getName();
 		keyboardDevice.device->connected_ = true;
 		keyboardDevice.device->input_ = {};
-		refreshInputTiming(keyboardDevice.device);
 		return keyboardDevice;
-	}
-
-	void DeviceManager::refreshInputTiming(const DevicePtr& device) {
-		device->setInputTiming(controlProfiles_->getAssignedTiming(device->guid_));
-	}
-
-	void DeviceManager::onControlProfilesChanged(const ControlProfilesChange& change) {
-		auto refreshIfAffected = [&](const DevicePtr& device) {
-			if (std::find(change.affectedDeviceGuids.begin(), change.affectedDeviceGuids.end(), device->guid_)
-				!= change.affectedDeviceGuids.end()) {
-				refreshInputTiming(device);
-			}
-		};
-
-		refreshIfAffected(keyboard1_.device);
-		refreshIfAffected(keyboard2_.device);
-		for (const auto& pair : devices_) {
-			refreshIfAffected(pair.device);
-		}
 	}
 
 	void DeviceManager::eventUpdate(const SDL_Event& windowEvent) {
@@ -141,7 +119,6 @@ namespace app::game {
 		if (it != devices_.end()) {
 			it->gamePad->setGameController(std::move(gameController));
 			spdlog::info("GamePad reconnected: {} {} {}", it->gamePad->getInstanceId(), it->gamePad->getGuid(), it->gamePad->getName());
-			refreshInputTiming(it->device);
 			it->device->invokeConnection(true);
 		} else {
 			auto guid = gameController.getGuid();
@@ -155,8 +132,6 @@ namespace app::game {
 			pair.device->guid_ = pair.gamePad->getGuid();
 			pair.device->input_ = {};
 			pair.device->name_ = pair.gamePad->getName();
-			refreshInputTiming(pair.device);
-
 			spdlog::info("GamePad added: {} {} {}", pair.gamePad->getInstanceId(), pair.gamePad->getGuid(), pair.gamePad->getName());
 			deviceConnected(pair.device);
 		}

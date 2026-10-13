@@ -34,8 +34,9 @@ namespace app {
 
 	}
 
-	TetrisController::TetrisController(std::shared_ptr<game::DeviceManager> deviceManager, std::shared_ptr<cnetwork::Network> network, std::shared_ptr<graphic::GameComponent> gameComponent)
+	TetrisController::TetrisController(std::shared_ptr<game::DeviceManager> deviceManager, std::shared_ptr<ControlProfiles> controlProfiles, std::shared_ptr<cnetwork::Network> network, std::shared_ptr<graphic::GameComponent> gameComponent)
 		: deviceManager_{deviceManager}
+		, controlProfiles_{std::move(controlProfiles)}
 		, network_{network}
 		, gameComponent_{gameComponent} {
 
@@ -117,14 +118,14 @@ namespace app {
 		if (network_->isInsideGameRoom()) {
 			network_->leaveGameRoom();
 		}
-		game::PlayerPtr player = loadGame(device);
+		game::PlayerPtr player = loadGame(device, controlProfiles_);
 		if (!player) {
 			game::DefaultPlayerData playerData{
 				.level = 1,
 				.points = 0
 			};
 			tetris::TetrisBoard tetrisBoard{game::TetrisWidth, game::TetrisHeight, tetris::randomBlockType(), tetris::randomBlockType()};
-			player = createHumanPlayer(device, playerData, std::move(tetrisBoard));
+			player = createHumanPlayer(device, controlProfiles_, playerData, std::move(tetrisBoard));
 			tetrisGame_.setPause(true);
 		} else {
 			// Only restart game if is not a new game.

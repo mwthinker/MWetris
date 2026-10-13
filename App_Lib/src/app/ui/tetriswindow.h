@@ -70,6 +70,7 @@ namespace app::ui {
 
 		sdl::Window& window_;
 		std::shared_ptr<game::DeviceManager> deviceManager_;
+		std::shared_ptr<ControlProfiles> controlProfiles_;
 		std::shared_ptr<ControlsPresenter> controlsPresenter_;
 		app::TextureView background_;
 		scene::StateMachine modalStateMachine_;

@@ -65,8 +65,9 @@ namespace app::cnetwork {
 	}
 		
 
-	Network::Network(std::shared_ptr<network::Client> client)
+	Network::Network(std::shared_ptr<network::Client> client, std::shared_ptr<ControlProfiles> controlProfiles)
 		: client_{client}
+		, controlProfiles_{controlProfiles}
 		, timer_{client->getIoContext()} {
 
 		start();
@@ -472,7 +473,7 @@ namespace app::cnetwork {
 		if (auto human = std::get_if<game::Human>(&networkSlot.playerSlot); human) {
 			networkPlayer = players_.emplace_back(
 				NetworkPlayer{
-					.player = game::createHumanPlayer(human->device, playerData, std::move(tetrisBoard)),
+					.player = game::createHumanPlayer(human->device, controlProfiles_, playerData, std::move(tetrisBoard)),
 					.playerId = tpPlayer.player_id(),
 					.clientId = clientId_
 				}

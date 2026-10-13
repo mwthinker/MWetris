@@ -6,7 +6,7 @@
 
 #include <tetris/helper.h>
 
-#include <cstdint>
+#include <optional>
 #include <queue>
 
 namespace app::game {
@@ -20,22 +20,46 @@ namespace app::game {
 
 		virtual void setGravity(double gravity) {
 		}
+
+		virtual DevicePtr getDevice() const {
+			return {};
+		}
+
+		virtual bool setDevice(DevicePtr device) {
+			return false;
+		}
+
+		virtual std::optional<ProfileId> getProfileId() const {
+			return std::nullopt;
+		}
+
+		virtual bool setProfileId(const ProfileId& profileId) {
+			return false;
+		}
 	};
 
-	class HumanMoveController : public TetrisBoardMoveController {
+	class HumanMoveController final : public TetrisBoardMoveController {
 	public:
-		HumanMoveController(DevicePtr device)
-			: device_{device} {
+		HumanMoveController(DevicePtr device, std::shared_ptr<ControlProfiles> controlProfiles)
+			: device_{std::move(device)}
+			, profileId_{device_ ? controlProfiles->getAssignedProfileId(device_->getGuid()) : ControlProfiles::BalancedProfileId}
+			, controlProfiles_{std::move(controlProfiles)} {
 		}
 
 		void updateMove(tetris::TetrisBoard& tetrisBoard, double deltaTime, PlayerBoardEventInvoker& invoker) override {
-			auto inputTimingRevision = device_->getInputTimingRevision();
-			if (inputTimingRevision != lastAppliedInputTimingRevision_) {
-				auto inputTiming = device_->getInputTiming();
+			auto profile = controlProfiles_->getProfile(profileId_);
+			if (!profile) {
+				profileId_ = ControlProfiles::BalancedProfileId;
+				profile = controlProfiles_->getProfile(profileId_);
+			}
+			if (!appliedTiming_ || *appliedTiming_ != profile->timing) {
 				tetrisBoardController_.setInputTiming(
-					inputTiming.dasMs / 1000.0,
-					inputTiming.arrMs / 1000.0);
-				lastAppliedInputTimingRevision_ = inputTimingRevision;
+					profile->timing.dasMs / 1000.0,
+					profile->timing.arrMs / 1000.0);
+				appliedTiming_ = profile->timing;
+			}
+			if (!device_) {
+				return;
 			}
 			tetrisBoardController_.update(tetrisBoard, device_->getInput(), deltaTime, [&](const PlayerBoardEvent& event) {
 				invoker.invokePlayerBoardEvent(event);
@@ -46,10 +70,39 @@ namespace app::game {
 			tetrisBoardController_.updateGravity(gravity);
 		}
 
+		DevicePtr getDevice() const override {
+			return device_;
+		}
+
+		bool setDevice(DevicePtr device) override {
+			if (!device) {
+				return false;
+			}
+			if (device_ != device) {
+				device_ = std::move(device);
+				tetrisBoardController_.reset();
+			}
+			return true;
+		}
+
+		std::optional<ProfileId> getProfileId() const override {
+			return profileId_;
+		}
+
+		bool setProfileId(const ProfileId& profileId) override {
+			if (!controlProfiles_->getProfile(profileId)) {
+				return false;
+			}
+			profileId_ = profileId;
+			return true;
+		}
+
 	private:
 		DevicePtr device_;
+		ProfileId profileId_;
+		std::shared_ptr<ControlProfiles> controlProfiles_;
+		std::optional<InputTiming> appliedTiming_;
 		TetrisBoardController tetrisBoardController_;
-		std::int64_t lastAppliedInputTimingRevision_ = 0;
 	};
 
 	class AiMoveController : public TetrisBoardMoveController {
@@ -76,13 +129,12 @@ namespace app::game {
 		Computer computer_;
 	};
 
-	PlayerPtr createHumanPlayer(DevicePtr device, const PlayerData& playerData, tetris::TetrisBoard&& tetrisBoard) {
-		auto moveController = std::make_unique<HumanMoveController>(device);
+	PlayerPtr createHumanPlayer(DevicePtr device, std::shared_ptr<ControlProfiles> controlProfiles, const PlayerData& playerData, tetris::TetrisBoard&& tetrisBoard) {
+		auto moveController = std::make_unique<HumanMoveController>(std::move(device), std::move(controlProfiles));
 		auto player = std::make_shared<Player>(
 			Player::Type::Human,
 			std::move(moveController),
-			std::move(tetrisBoard),
-			std::move(device));
+			std::move(tetrisBoard));
 		player->updatePlayerData(playerData);
 		return player;
 	}
@@ -104,10 +156,8 @@ namespace app::game {
 	Player::Player(
 		Type type,
 		std::unique_ptr<TetrisBoardMoveController> moveController,
-		tetris::TetrisBoard&& tetrisBoard,
-		DevicePtr device)
+		tetris::TetrisBoard&& tetrisBoard)
 		: moveController_{std::move(moveController)}
-		, device_{type == Type::Human ? std::move(device) : DevicePtr{}}
 		, tetrisBoard_{std::move(tetrisBoard)}
 		, type_{type} {
 	}
@@ -204,8 +254,20 @@ namespace app::game {
 		return !isRemote();
 	}
 
-	const DevicePtr& Player::getDevice() const {
-		return device_;
+	DevicePtr Player::getDevice() const {
+		return moveController_->getDevice();
+	}
+
+	bool Player::setDevice(DevicePtr device) {
+		return moveController_->setDevice(std::move(device));
+	}
+
+	std::optional<ProfileId> Player::getProfileId() const {
+		return moveController_->getProfileId();
+	}
+
+	bool Player::setProfileId(const ProfileId& profileId) {
+		return moveController_->setProfileId(profileId);
 	}
 
 	void Player::setGravity(double gravity) {

@@ -72,7 +72,6 @@ namespace app::game {
 			rotateHandler_.reset();
 			downGroundHandler_.reset();
 			downHandler_.reset();
-			gravityMove_.reset();
 		}
 
 		void setInputTiming(double das, double arr) {

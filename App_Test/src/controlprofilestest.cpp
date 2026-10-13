@@ -158,17 +158,12 @@ namespace app {
 		EXPECT_EQ(profiles.getAssignedProfileId("Keyboard 1"), *customProfile);
 		EXPECT_EQ(profiles.getAssignedProfileId("Keyboard 2"), *customProfile);
 
-		std::vector<std::string> affectedDevices;
-		mw::signals::ScopedConnection connection = profiles.changed.connect([&](const ControlProfilesChange& change) {
-			affectedDevices = change.affectedDeviceGuids;
-		});
 		auto deleteResult = profiles.deleteProfile(*customProfile);
 		ASSERT_TRUE(deleteResult);
 		EXPECT_EQ(*deleteResult, 2);
 		EXPECT_FALSE(profiles.getProfile(*customProfile));
 		EXPECT_EQ(profiles.getAssignedProfileId("Keyboard 1"), ControlProfiles::BalancedProfileId);
 		EXPECT_EQ(profiles.getAssignedProfileId("Keyboard 2"), ControlProfiles::BalancedProfileId);
-		EXPECT_EQ(affectedDevices, (std::vector<std::string>{"Keyboard 1", "Keyboard 2"}));
 		EXPECT_EQ(saveCount, 4);
 	}
 
@@ -224,18 +219,10 @@ namespace app {
 		}};
 		committedProfiles = &profiles;
 
-		int changeCount = 0;
-		mw::signals::ScopedConnection connection = profiles.changed.connect([&](const ControlProfilesChange& change) {
-			EXPECT_TRUE(candidatePersisted);
-			EXPECT_EQ(profiles.getAssignedProfileId("Keyboard 1"), ControlProfiles::FastProfileId);
-			EXPECT_EQ(change.affectedDeviceGuids, std::vector<std::string>{"Keyboard 1"});
-			++changeCount;
-		});
-
 		auto result = profiles.assignProfile("Keyboard 1", ControlProfiles::FastProfileId);
 		EXPECT_TRUE(result);
 		EXPECT_TRUE(candidatePersisted);
-		EXPECT_EQ(changeCount, 1);
+		EXPECT_EQ(profiles.getAssignedProfileId("Keyboard 1"), ControlProfiles::FastProfileId);
 	}
 
 	TEST(ControlProfilesTest, failedPersistenceRollsBackEveryMutation) {
@@ -261,11 +248,6 @@ namespace app {
 		ASSERT_TRUE(customProfile);
 		failPersistence = true;
 		saveCount = 0;
-
-		int changeCount = 0;
-		mw::signals::ScopedConnection connection = profiles.changed.connect([&](const ControlProfilesChange&) {
-			++changeCount;
-		});
 
 		auto assignResult = profiles.assignProfile("Keyboard 1", ControlProfiles::FastProfileId);
 		ASSERT_FALSE(assignResult);
@@ -300,7 +282,6 @@ namespace app {
 		EXPECT_EQ(profiles.getAssignedProfileId("Keyboard 1"), *customProfile);
 
 		EXPECT_EQ(saveCount, 5);
-		EXPECT_EQ(changeCount, 0);
 	}
 
 }

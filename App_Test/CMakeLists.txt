@@ -14,6 +14,7 @@ set(SOURCES_TEST
 	src/game/dasarrhandlertest.cpp
 	src/game/devicemanagertest.cpp
 	src/game/keyboardtest.cpp
+	src/game/playertest.cpp
 	src/game/serializetest.cpp
 	src/game/tetrisboardcontrollertest.cpp
 	src/mwetristest.cpp
