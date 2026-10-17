@@ -53,6 +53,7 @@ namespace app::ui {
 		const std::string& getName() const override;
 
 		SubWindow::Type getType() const override;
+		void pauseOnFocusLost();
 	
 	private:
 		void onTetrisEvent(const game::GamePause& gamePause);
@@ -64,6 +65,7 @@ namespace app::ui {
 		void onTetrisEvent(const cnetwork::NetworkErrorEvent& networkErrorEvent);
 
 		void initPreLoop();
+		void refreshSettings();
 		int getCurrentMonitorHz() const;
 
 		void imGuiMainWindow(const sdl::DeltaTime& deltaTime);

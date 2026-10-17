@@ -21,6 +21,8 @@ namespace app::ui::scene {
 
 	class StateMachine {
 	public:
+		friend class Scene;
+
 		enum class StateType {
 			Fullscreen,
 			Modal
@@ -51,6 +53,8 @@ namespace app::ui::scene {
 		std::shared_ptr<Type> getScene();
 
 	private:
+		void requestClose();
+
 		using Key = size_t;
 
 		template <typename Type> requires DerivedFromScene<Type>
@@ -61,6 +65,7 @@ namespace app::ui::scene {
 		StateType stateType_;
 		bool openPopUp_ = false;
 		bool closePopUp_ = false;
+		bool closeRequested_ = false;
 	};
 
 	template <typename Type> requires DerivedFromScene<Type>

@@ -29,7 +29,7 @@ namespace app {
 		};
 
 		nlohmann::json legacyConfiguration() {
-			return {
+			auto document = nlohmann::json{
 				{"sentinel", 42},
 				{"inputProfiles", {
 					{
@@ -56,6 +56,44 @@ namespace app {
 					{{"guid", "user-device"}, {"inputProfileId", "user-profile"}},
 				}},
 			};
+			document["window"] = {
+				{"width", 860}, {"height", 1120}, {"minWidth", 480}, {"minHeight", 480},
+				{"resizeable", true}, {"border", true}, {"maximized", false},
+				{"pauseOnLostFocus", true}, {"fullscreenOnDoubleClick", false},
+				{"moveWindowByHoldingDownMouse", false}, {"vsync", true}, {"limitFps", false},
+				{"font", "fonts/ui.ttf"}, {"icon", "images/icon.png"},
+				{"label", {{"textColor", "#ffffff"}}},
+				{"button", {
+					{"focusColor", "#111111"}, {"textColor", "#ffffff"}, {"hoverColor", "#222222"},
+					{"pushColor", "#333333"}, {"backgroundColor", "#000000"}, {"borderColor", "#ffffff"},
+				}},
+				{"sprites", {{"background", "images/background.png"}}},
+				{"tetrisBoard", {
+					{"font", "fonts/board.ttf"}, {"borderSize", 3.0}, {"showDownBlock", true},
+					{"outerSquareColor", "#111111"}, {"innerSquareColor", "#222222"},
+					{"startAreaColor", "#333333"}, {"playerAreaColor", "#444444"},
+					{"borderColor", "#555555"}, {"downBlockColor", "#ffffff26"},
+					{"sprites", {
+						{"squareI", "images/I.png"}, {"squareJ", "images/J.png"},
+						{"squareL", "images/L.png"}, {"squareO", "images/O.png"},
+						{"squareS", "images/S.png"}, {"squareT", "images/T.png"},
+						{"squareZ", "images/Z.png"},
+					}},
+				}},
+			};
+			document["network"] = {
+				{"globalServer", {{"ip", "127.0.0.1"}, {"port", 11155}}},
+				{"server", {{"ip", "127.0.0.1"}, {"port", 11175}}},
+			};
+			document["ai1"] = "Default";
+			document["ai2"] = "Default";
+			document["ai3"] = "Default";
+			document["ai4"] = "Default";
+			document["ais"] = nlohmann::json::array({{
+				{"name", "Careful"},
+				{"valueFunction", "-1*holes"},
+			}});
+			return document;
 		}
 
 		int temporaryConfigurationFileCount() {
@@ -138,6 +176,10 @@ namespace app {
 			selection << true;
 			std::ofstream configuration{"tetris.json"};
 			configuration << initialDocument.dump();
+			std::ofstream defaults{"tetris.defaults.json"};
+			auto defaultDocument = initialDocument;
+			defaultDocument["window"]["width"] = 1024;
+			defaults << defaultDocument.dump();
 		}
 
 		auto& configuration = Configuration::getInstance();
@@ -237,6 +279,61 @@ namespace app {
 			&DeviceProfileAssignment::deviceGuid);
 		ASSERT_NE(committedUserAssignment, afterFailure->assignments.end());
 		EXPECT_EQ(committedUserAssignment->profileId, ControlProfiles::ClassicProfileId);
+
+		auto settings = configuration.getEditableSettings();
+		EXPECT_EQ(settings.window.width, 860);
+		EXPECT_EQ(settings.ais.size(), 1);
+		settings.window.width = 900;
+		settings.board.showDownBlock = false;
+		settings.activeAiNames[2] = "Careful";
+		settings.ais.push_back({"Aggressive", "-0.5*holes - landingHeight"});
+		auto settingsSave = configuration.persistEditableSettings(settings);
+		ASSERT_TRUE(settingsSave);
+		EXPECT_FALSE(settingsSave->restartRequired);
+
+		{
+			std::ifstream stream{"tetris.json"};
+			stream >> persisted;
+		}
+		EXPECT_EQ(persisted.at("sentinel"), 42);
+		EXPECT_EQ(persisted.at("window").at("width"), 900);
+		EXPECT_FALSE(persisted.at("window").at("tetrisBoard").at("showDownBlock"));
+		EXPECT_EQ(persisted.at("ai3"), "Careful");
+		EXPECT_TRUE(persisted.contains("devices"));
+		EXPECT_TRUE(persisted.contains("inputProfiles"));
+
+		auto restartSettings = settings;
+		restartSettings.network.server.ip = "127.0.0.2";
+		auto restartSave = configuration.persistEditableSettings(restartSettings);
+		ASSERT_TRUE(restartSave);
+		EXPECT_TRUE(restartSave->restartRequired);
+		EXPECT_EQ(restartSave->restartReasons, std::vector<std::string>{"Network endpoints"});
+		auto revertRestartSetting = configuration.persistEditableSettings(settings);
+		ASSERT_TRUE(revertRestartSetting);
+		EXPECT_FALSE(revertRestartSetting->restartRequired);
+
+		auto invalidSettings = settings;
+		invalidSettings.network.server.port = 70000;
+		auto invalidSave = configuration.persistEditableSettings(invalidSettings);
+		ASSERT_FALSE(invalidSave);
+		EXPECT_NE(invalidSave.error().find("ports"), std::string::npos);
+		EXPECT_EQ(configuration.getEditableSettings(), settings);
+
+		auto defaults = configuration.getDefaultEditableSettings();
+		ASSERT_TRUE(defaults);
+		EXPECT_EQ(defaults->window.width, 1024);
+		EXPECT_EQ(configuration.getEditableSettings().window.width, 900);
+
+		auto failedSettings = settings;
+		failedSettings.window.width = 1000;
+		std::filesystem::rename("tetris.json", "tetris.json.backup");
+		std::filesystem::create_directory("tetris.json");
+		auto failedSettingsSave = configuration.persistEditableSettings(failedSettings);
+		ASSERT_FALSE(failedSettingsSave);
+		EXPECT_EQ(configuration.getEditableSettings(), settings);
+		EXPECT_EQ(temporaryConfigurationFileCount(), 0);
+		std::filesystem::remove("tetris.json");
+		std::filesystem::rename("tetris.json.backup", "tetris.json");
 
 		std::filesystem::current_path(std::filesystem::temp_directory_path());
 		std::filesystem::remove_all(testDirectory);

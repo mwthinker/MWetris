@@ -33,8 +33,12 @@ namespace app::ui::scene {
 		}
 
 	protected:
+		void close();
+
 		class StateMachineWrapper {
 		public:
+			friend class Scene;
+
 			StateMachineWrapper() = default;
 			StateMachineWrapper(StateMachine* stateMachine);
 

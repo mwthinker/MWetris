@@ -18,6 +18,11 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data/
 	COMPONENT data
 )
 
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tetris.defaults.json
+	DESTINATION .
+	COMPONENT data
+)
+
 # Replace the USE_APPLICATION_JSON file, use default saving place.
 install(FILES ${App_SOURCE_DIR}/data/package/USE_APPLICATION_JSON
 	DESTINATION .

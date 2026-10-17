@@ -9,18 +9,20 @@
 		"inputProfiles": { "$ref": "#/definitions/InputProfiles" },
 		"devices": { "$ref": "#/definitions/Devices" },
 		"network": { "$ref": "#/definitions/Network" },
-		"ai1": { "type": "string" },
-		"ai2": { "type": "string" },
-		"ai3": { "type": "string" },
-		"ai4": { "type": "string" },
+		"ai1": { "type": "string", "minLength": 1 },
+		"ai2": { "type": "string", "minLength": 1 },
+		"ai3": { "type": "string", "minLength": 1 },
+		"ai4": { "type": "string", "minLength": 1 },
 		"ais": {
 			"type": "array",
 			"items": {
 				"type": "object",
 				"properties": {
-					"name": { "type": "string" },
-					"valueFunction": { "type": "string" }
-				}
+					"name": { "type": "string", "minLength": 1 },
+					"valueFunction": { "type": "string", "minLength": 1 }
+				},
+				"required": ["name", "valueFunction"],
+				"additionalProperties": false
 			}
 		}
 	},
@@ -114,20 +116,20 @@
 				"radioButton": { "$ref": "#/definitions/RadioButton" },
 				"button": { "$ref": "#/definitions/Button" },
 				"comboBox": { "$ref": "#/definitions/ComboBox" },
-				"font": { "type": "string" },
-				"width": { "type": "integer" },
-				"height": { "type": "integer" },
+				"font": { "type": "string", "minLength": 1 },
+				"width": { "type": "integer", "minimum": 320, "maximum": 7680 },
+				"height": { "type": "integer", "minimum": 320, "maximum": 4320 },
 				"positionX": { "type": "integer" },
 				"positionY": { "type": "integer" },
 				"maximized": { "type": "boolean" },
 				"resizeable": { "type": "boolean" },
-				"minWidth": { "type": "integer", "minimum": 1 },
-				"minHeight": { "type": "integer", "minimum": 1},
-				"icon": { "type": "string" },
+				"minWidth": { "type": "integer", "minimum": 200, "maximum": 7680 },
+				"minHeight": { "type": "integer", "minimum": 200, "maximum": 4320 },
+				"icon": { "type": "string", "minLength": 1 },
 				"sprites": {
 					"type": "object",
 					"properties": {
-						"background": { "type": "string" }
+						"background": { "type": "string", "minLength": 1 }
 					},
 					"required": ["background"],
 					"additionalProperties": false
@@ -207,19 +209,19 @@
 		"TetrisBoard": {
 			"type": "object",
 			"properties": {
-				"font": { "type": "string" },
+				"font": { "type": "string", "minLength": 1 },
 				"squareSize": { "type": "number" },
-				"borderSize": { "type": "number" },
+				"borderSize": { "type": "number", "minimum": 0, "maximum": 20 },
 				"sprites": {
 					"type": "object",
 					"properties": {
-						"squareZ": { "type": "string" },
-						"squareS": { "type": "string" },
-						"squareJ": { "type": "string" },
-						"squareI": { "type": "string" },
-						"squareL": { "type": "string" },
-						"squareT": { "type": "string" },
-						"squareO": { "type": "string" }
+						"squareZ": { "type": "string", "minLength": 1 },
+						"squareS": { "type": "string", "minLength": 1 },
+						"squareJ": { "type": "string", "minLength": 1 },
+						"squareI": { "type": "string", "minLength": 1 },
+						"squareL": { "type": "string", "minLength": 1 },
+						"squareT": { "type": "string", "minLength": 1 },
+						"squareO": { "type": "string", "minLength": 1 }
 					},
 					"required": ["squareZ", "squareS", "squareJ", "squareI", "squareL", "squareT", "squareO"],
 					"additionalProperties": false
@@ -271,7 +273,9 @@
 					"required": ["ip", "port"],
 					"additionalProperties": false
 				}
-			}
+			},
+			"required": ["globalServer", "server"],
+			"additionalProperties": false
 		},
 		"InputProfiles": {
 			"type": "array",

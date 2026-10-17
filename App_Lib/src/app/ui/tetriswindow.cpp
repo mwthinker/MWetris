@@ -151,7 +151,7 @@ namespace app::ui {
 		
 		modalStateMachine_.emplace<scene::JoinGameRoom>(tetrisController_);
 		modalStateMachine_.emplace<scene::CreateGameRoom>(tetrisController_);
-		modalStateMachine_.emplace<scene::Settings>();
+		modalStateMachine_.emplace<scene::Settings>(controlsPresenter_);
 		modalStateMachine_.emplace<scene::HighScore>();
 		modalStateMachine_.emplace<scene::NewHighScore>([this]() {
 			modalStateMachine_.switchTo<scene::HighScore>();
@@ -174,10 +174,24 @@ namespace app::ui {
 		tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
 		tetrisController_->pause();
 
-		ImGui::GetStyle().Colors[ImGuiCol_Button] = Color{"#000000"};
-		ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered] = Color{"#4D4D4D"};
-		ImGui::GetStyle().Colors[ImGuiCol_ButtonActive] = Color{"#292929"};
-		ImGui::GetStyle().Colors[ImGuiCol_CheckMark] = Color{"#1FFF00"};
+		refreshSettings();
+		connections_ += Configuration::getInstance().settingsChanged.connect([this](const auto&, const auto&) {
+			refreshSettings();
+		});
+	}
+
+	void TetrisWindow::refreshSettings() {
+		auto& configuration = Configuration::getInstance();
+		ImGui::GetStyle().Colors[ImGuiCol_Button] = configuration.getButtonBackgroundColor();
+		ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered] = configuration.getButtonHoverColor();
+		ImGui::GetStyle().Colors[ImGuiCol_ButtonActive] = configuration.getButtonFocusColor();
+		ImGui::GetStyle().Colors[ImGuiCol_CheckMark] = configuration.getChecboxCheckColor();
+	}
+
+	void TetrisWindow::pauseOnFocusLost() {
+		if (!tetrisController_->isPaused()) {
+			tetrisController_->pause();
+		}
 	}
 
 	void TetrisWindow::onTetrisEvent(const game::GamePause& gamePause) {

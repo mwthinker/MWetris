@@ -201,13 +201,16 @@ namespace app::graphic {
 		drawBoardSquares(deltaTime);
 		
 		Vec2 cursorPos = ImGui::GetCursorScreenPos();
-		drawBlock(player_->getBlockDown(), cursorPos, false, Color(1.f, 1.f, 1, 0.3f));
+		if (Configuration::getInstance().isShowDownBlock()) {
+			drawBlock(player_->getBlockDown(), cursorPos, false, Configuration::getInstance().getDownBlockColor());
+		}
 		drawBlock(player_->getBlock(), cursorPos);
 		
 		ImGui::Dummy({squareSize_ * columns, squareSize_ * (rows - 2)});
 	}
 
 	void ImGuiBoard::drawBorder(float width, float height, Color color) {
+		borderSize_ = Configuration::getInstance().getTetrisBorderSize();
 		auto drawList = ImGui::GetWindowDrawList();
 		Vec2 pos = ImGui::GetCursorScreenPos();
 		
@@ -260,6 +263,7 @@ namespace app::graphic {
 	}
 
 	void ImGuiBoard::draw(float width, float height, double deltaTime) {
+		ImGui::PushFont(Configuration::getInstance().getImGuiBoardFont(), 0.f);
 		ImGui::PushID(this);
 		ImGui::Group([&]() {
 			const int columns = player_->getColumns();
@@ -285,7 +289,7 @@ namespace app::graphic {
 				ImGui::SameLine();
 			}
 
-			drawBorder(normalizedWidth * squareSize_, normalizedHeight * squareSize_, color::Red);
+			drawBorder(normalizedWidth * squareSize_, normalizedHeight * squareSize_, Configuration::getInstance().getBorderColor());
 			drawBoard(deltaTime);
 
 			ImGui::SameLine();
@@ -342,6 +346,7 @@ namespace app::graphic {
 			}
 		});
 		ImGui::PopID();
+		ImGui::PopFont();
 	}
 
 	const game::Player& ImGuiBoard::getPlayer() const {

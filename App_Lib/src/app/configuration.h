@@ -12,8 +12,13 @@
 
 #include <sdl/gpu.h>
 #include <imgui.h>
+#include <mw/signal.h>
 
+#include <array>
+#include <expected>
 #include <memory>
+#include <string>
+#include <vector>
 
 namespace app {
 	using ControlProfilesLoadResult = std::expected<ControlProfilesState, std::string>;
@@ -31,21 +36,103 @@ namespace app {
 
 	class Configuration {
 	public:
+		struct Endpoint {
+			std::string ip;
+			int port = 0;
+
+			bool operator==(const Endpoint&) const = default;
+		};
+
 		struct Ai {
 			std::string name;
 			tetris::Ai ai;
 		};
 
 		struct Network {
-			struct {
-				std::string ip;
-				int port;
-			} global;
-			struct {
-				std::string ip;
-				int port;
-			} server;
+			Endpoint global;
+			Endpoint server;
+
+			bool operator==(const Network&) const = default;
 		};
+
+		struct WindowSettings {
+			int width = 0;
+			int height = 0;
+			int minWidth = 0;
+			int minHeight = 0;
+			bool resizable = true;
+			bool bordered = true;
+			bool maximized = false;
+			bool pauseOnLostFocus = true;
+			bool fullscreenOnDoubleClick = false;
+			bool moveWindowByHoldingDownMouse = false;
+			bool vsync = true;
+			bool limitFps = false;
+
+			bool operator==(const WindowSettings&) const = default;
+		};
+
+		struct BoardSettings {
+			float borderSize = 0.f;
+			bool showDownBlock = true;
+			std::string outerSquareColor;
+			std::string innerSquareColor;
+			std::string startAreaColor;
+			std::string borderColor;
+			std::string downBlockColor;
+
+			bool operator==(const BoardSettings&) const = default;
+		};
+
+		struct AppearanceSettings {
+			std::string labelTextColor;
+			std::string buttonFocusColor;
+			std::string buttonTextColor;
+			std::string buttonHoverColor;
+			std::string buttonBackgroundColor;
+			std::string buttonBorderColor;
+
+			bool operator==(const AppearanceSettings&) const = default;
+		};
+
+		struct AssetSettings {
+			std::string windowFont;
+			std::string boardFont;
+			std::string icon;
+			std::string background;
+			std::array<std::string, 7> blockSprites;
+
+			bool operator==(const AssetSettings&) const = default;
+		};
+
+		struct AiDefinition {
+			std::string name;
+			std::string valueFunction;
+
+			bool operator==(const AiDefinition&) const = default;
+		};
+
+		struct EditableSettings {
+			WindowSettings window;
+			BoardSettings board;
+			AppearanceSettings appearance;
+			AssetSettings assets;
+			Network network;
+			std::array<std::string, 4> activeAiNames;
+			std::vector<AiDefinition> ais;
+
+			bool operator==(const EditableSettings&) const = default;
+		};
+
+		struct SettingsApplyResult {
+			bool restartRequired = false;
+			std::vector<std::string> restartReasons;
+		};
+
+		using SettingsValidationResult = std::expected<void, std::string>;
+		using SettingsPersistenceResult = std::expected<SettingsApplyResult, std::string>;
+
+		mw::PublicSignal<Configuration, const EditableSettings&, const EditableSettings&> settingsChanged;
 
 		static Configuration& getInstance();
 
@@ -61,6 +148,7 @@ namespace app {
 		ImFont* getImGuiDefaultFont() const;
 		ImFont* getImGuiHeaderFont() const;
 		ImFont* getImGuiButtonFont() const;
+		ImFont* getImGuiBoardFont() const;
 
 		sdl::Color getOuterSquareColor() const;
 		sdl::Color getInnerSquareColor() const;
@@ -125,6 +213,11 @@ namespace app {
 		void setMoveWindowByHoldingDownMouse(bool activate);
 
 		Network getNetwork() const;
+
+		EditableSettings getEditableSettings() const;
+		std::expected<EditableSettings, std::string> getDefaultEditableSettings() const;
+		SettingsValidationResult validateEditableSettings(const EditableSettings& candidate) const;
+		SettingsPersistenceResult persistEditableSettings(const EditableSettings& candidate);
 
 		app::TextureView getBackgroundSprite();
 

@@ -1,104 +1,283 @@
 #include "settings.h"
+
 #include "types.h"
-#include "configuration.h"
+#include "ui/controlspresenter.h"
 #include "ui/imguiextra.h"
+
+#include <algorithm>
+#include <array>
+#include <string>
 
 namespace app::ui::scene {
 
 	namespace {
 
-		bool ComboAi(const char* name, int& item, const std::vector<Configuration::Ai>& ais, ImGuiComboFlags flags = 0) {
-			int oldItem = item;
-			ImGui::ComboScoped(name, ais[item].name.c_str(), flags, [&]() {
-				auto size = ais.size();
-				for (int n = 0; n < size; ++n)
-				{
-					bool isSelected = (item == n);
-					if (ImGui::Selectable(ais[item].name.c_str(), isSelected)) {
-						item = n;
+		bool colorEdit(const char* label, std::string& color) {
+			sdl::Color parsed{color};
+			ImVec4 value = parsed;
+			if (!ImGui::ColorEdit4(label, &value.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs)) {
+				return false;
+			}
+			color = sdl::Color{value.x, value.y, value.z, value.w}.toHexString();
+			return true;
+		}
+
+		void restartOnlyLabel() {
+			ImGui::SameLine();
+			ImGui::TextDisabled("(restart required)");
+		}
+
+		void inputPath(const char* label, std::string& value) {
+			ImGui::InputText(label, &value);
+			restartOnlyLabel();
+		}
+
+		bool aiCombo(const char* label, std::string& selected, const std::vector<Configuration::AiDefinition>& definitions) {
+			bool changed = false;
+			ImGui::ComboScoped(label, selected.c_str(), [&]() {
+				auto drawOption = [&](const std::string& name) {
+					bool isSelected = selected == name;
+					if (ImGui::Selectable(name.c_str(), isSelected)) {
+						selected = name;
+						changed = true;
 					}
 					if (isSelected) {
 						ImGui::SetItemDefaultFocus();
 					}
+				};
+				drawOption("Default");
+				for (const auto& definition : definitions) {
+					drawOption(definition.name);
 				}
 			});
-			return oldItem != item;
+			return changed;
 		}
 
 	}
 
-	void Settings::imGuiUpdate(const DeltaTime& deltaTime) {
-		auto labelColor = app::Configuration::getInstance().getLabelTextColor();
+	Settings::Settings(std::shared_ptr<ControlsPresenter> controlsPresenter)
+		: controlsPresenter_{std::move(controlsPresenter)} {
+	}
 
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiHeaderFont(), 0.f);
-		ImGui::TextColored(labelColor, "Settings");
+	void Settings::switchedTo(const SceneData&) {
+		showAdvanced_ = false;
+		error_.clear();
+		restartReasons_.clear();
+		try {
+			committed_ = Configuration::getInstance().getEditableSettings();
+			for (auto& name : committed_.activeAiNames) {
+				bool exists = name == "Default" || std::ranges::find(committed_.ais, name, &Configuration::AiDefinition::name) != committed_.ais.end();
+				if (!exists) {
+					name = "Default";
+				}
+			}
+			draft_ = committed_;
+			loaded_ = true;
+		} catch (const std::exception& exception) {
+			error_ = exception.what();
+			loaded_ = false;
+		}
+	}
+
+	void Settings::switchedFrom() {
+		committed_ = {};
+		draft_ = {};
+		error_.clear();
+		restartReasons_.clear();
+		loaded_ = false;
+	}
+
+	ImVec2 Settings::getSize() const {
+		auto viewportSize = ImGui::GetMainViewport()->WorkSize;
+		return {std::min(820.f, viewportSize.x - 20.f), std::min(760.f, viewportSize.y - 20.f)};
+	}
+
+	void Settings::drawAiSelectors() {
+		if (ImGui::CollapsingHeader("AI players", ImGuiTreeNodeFlags_DefaultOpen)) {
+			ImGui::PushItemWidth(260.f);
+			for (int index = 0; index < std::ssize(draft_.activeAiNames); ++index) {
+				auto label = "AI " + std::to_string(index + 1);
+				aiCombo(label.c_str(), draft_.activeAiNames[index], draft_.ais);
+			}
+			ImGui::PopItemWidth();
+		}
+	}
+
+	void Settings::drawBasicSettings() {
+		if (ImGui::CollapsingHeader("General / Display", ImGuiTreeNodeFlags_DefaultOpen)) {
+			ImGui::Checkbox("Pause on focus loss", &draft_.window.pauseOnLostFocus);
+			ImGui::Checkbox("Limit FPS", &draft_.window.limitFps);
+			ImGui::Checkbox("Show ghost block", &draft_.board.showDownBlock);
+			if (draft_.board.showDownBlock) {
+				colorEdit("Ghost block color", draft_.board.downBlockColor);
+			}
+		}
+		drawAiSelectors();
+		if (ImGui::CollapsingHeader("Controls", ImGuiTreeNodeFlags_DefaultOpen)) {
+			controlsPresenter_->drawMenu();
+			ImGui::TextDisabled("Control profile changes are saved immediately.");
+		}
+	}
+
+	void Settings::drawCustomAis() {
+		if (!ImGui::CollapsingHeader("Custom AI")) {
+			return;
+		}
+		for (int index = 0; index < std::ssize(draft_.ais); ++index) {
+			auto& definition = draft_.ais[index];
+			ImGui::PushID(index);
+			ImGui::SeparatorText(definition.name.empty() ? "Unnamed AI" : definition.name.c_str());
+			ImGui::InputText("Name", &definition.name);
+			ImGui::InputTextMultiline("Value function", &definition.valueFunction, {0.f, 55.f});
+			bool inUse = std::ranges::find(draft_.activeAiNames, definition.name) != draft_.activeAiNames.end();
+			ImGui::BeginDisabled(inUse);
+			if (ImGui::Button("Delete")) {
+				draft_.ais.erase(draft_.ais.begin() + index);
+				--index;
+			}
+			ImGui::EndDisabled();
+			if (inUse) {
+				ImGui::SameLine();
+				ImGui::TextDisabled("Remap active AI slots before deleting.");
+			}
+			ImGui::PopID();
+		}
+		if (ImGui::Button("Add custom AI")) {
+			std::string name{"Custom AI"};
+			for (int suffix = 2; std::ranges::find(draft_.ais, name, &Configuration::AiDefinition::name) != draft_.ais.end(); ++suffix) {
+				name = "Custom AI " + std::to_string(suffix);
+			}
+			draft_.ais.push_back({std::move(name), "-1*holes - 0.4*landingHeight"});
+		}
+	}
+
+	void Settings::drawAdvancedSettings() {
+		if (ImGui::CollapsingHeader("Window", ImGuiTreeNodeFlags_DefaultOpen)) {
+			ImGui::InputInt("Width", &draft_.window.width);
+			ImGui::InputInt("Height", &draft_.window.height);
+			ImGui::InputInt("Minimum width", &draft_.window.minWidth);
+			ImGui::InputInt("Minimum height", &draft_.window.minHeight);
+			draft_.window.width = std::clamp(draft_.window.width, 320, 7680);
+			draft_.window.height = std::clamp(draft_.window.height, 320, 4320);
+			draft_.window.minWidth = std::clamp(draft_.window.minWidth, 200, 7680);
+			draft_.window.minHeight = std::clamp(draft_.window.minHeight, 200, 4320);
+			ImGui::Checkbox("Resizable", &draft_.window.resizable);
+			ImGui::Checkbox("Window border", &draft_.window.bordered);
+			ImGui::Checkbox("Start maximized", &draft_.window.maximized);
+			ImGui::Checkbox("Fullscreen on double-click", &draft_.window.fullscreenOnDoubleClick);
+			ImGui::Checkbox("Drag window from title area", &draft_.window.moveWindowByHoldingDownMouse);
+		}
+
+		if (ImGui::CollapsingHeader("Graphics / Board")) {
+			ImGui::Checkbox("VSync", &draft_.window.vsync);
+			restartOnlyLabel();
+			ImGui::SliderFloat("Board border size", &draft_.board.borderSize, 0.f, 20.f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
+			colorEdit("Board border", draft_.board.borderColor);
+			colorEdit("Start area", draft_.board.startAreaColor);
+			colorEdit("Outer squares", draft_.board.outerSquareColor);
+			colorEdit("Inner squares", draft_.board.innerSquareColor);
+		}
+
+		if (ImGui::CollapsingHeader("Network")) {
+			ImGui::TextDisabled("Changes require restart.");
+			ImGui::InputText("Global server address", &draft_.network.global.ip);
+			ImGui::InputInt("Global server port", &draft_.network.global.port);
+			ImGui::InputText("Game server address", &draft_.network.server.ip);
+			ImGui::InputInt("Game server port", &draft_.network.server.port);
+			draft_.network.global.port = std::clamp(draft_.network.global.port, 1, 65535);
+			draft_.network.server.port = std::clamp(draft_.network.server.port, 1, 65535);
+		}
+
+		if (ImGui::CollapsingHeader("Appearance")) {
+			colorEdit("Heading text", draft_.appearance.labelTextColor);
+			colorEdit("Button text", draft_.appearance.buttonTextColor);
+			colorEdit("Button background", draft_.appearance.buttonBackgroundColor);
+			colorEdit("Button hover", draft_.appearance.buttonHoverColor);
+			colorEdit("Button active", draft_.appearance.buttonFocusColor);
+			colorEdit("Button border", draft_.appearance.buttonBorderColor);
+		}
+
+		if (ImGui::CollapsingHeader("Assets / Theme")) {
+			inputPath("UI font", draft_.assets.windowFont);
+			inputPath("Board font", draft_.assets.boardFont);
+			inputPath("Window icon", draft_.assets.icon);
+			inputPath("Background", draft_.assets.background);
+			constexpr std::array labels{"I sprite", "J sprite", "L sprite", "O sprite", "S sprite", "T sprite", "Z sprite"};
+			for (int index = 0; index < std::ssize(labels); ++index) {
+				inputPath(labels[index], draft_.assets.blockSprites[index]);
+			}
+		}
+		drawCustomAis();
+	}
+
+	void Settings::apply() {
+		auto result = Configuration::getInstance().persistEditableSettings(draft_);
+		if (!result) {
+			error_ = result.error();
+			return;
+		}
+		committed_ = draft_;
+		error_.clear();
+		restartReasons_ = result->restartReasons;
+		if (restartReasons_.empty()) {
+			close();
+		}
+	}
+
+	void Settings::imGuiUpdate(const DeltaTime&) {
+		auto labelColor = Configuration::getInstance().getLabelTextColor();
+		ImGui::PushFont(Configuration::getInstance().getImGuiHeaderFont(), 0.f);
+		ImGui::TextColored(labelColor, "Preferences");
 		ImGui::PopFont();
 
-		ImGui::Indent(10.f);
-		ImGui::Dummy({0.0f, 5.0f});
-
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiDefaultFont(), 0.f);
-		bool check = app::Configuration::getInstance().isWindowBordered();
-		if (ImGui::Checkbox("Border around window", &check)) {
-			app::Configuration::getInstance().setWindowBordered(check);
+		if (!loaded_) {
+			ImGui::TextWrapped("%s", error_.c_str());
+			return;
 		}
 
-		check = app::Configuration::getInstance().isFullscreenOnDoubleClick();
-		if (ImGui::Checkbox("Fullscreen on double click", &check)) {
-			app::Configuration::getInstance().setFullscreenOnDoubleClick(check);
+		ImGui::Checkbox("Show advanced settings", &showAdvanced_);
+		ImGui::Separator();
+		auto draftBeforeRendering = draft_;
+		ImGui::BeginChild("SettingsContent", {0.f, -160.f}, true);
+		drawBasicSettings();
+		if (showAdvanced_) {
+			drawAdvancedSettings();
+		}
+		ImGui::EndChild();
+		if (draft_ != draftBeforeRendering) {
+			error_.clear();
 		}
 
-		check = app::Configuration::getInstance().isMoveWindowByHoldingDownMouse();
-		if (ImGui::Checkbox("Move the window by holding down left mouse button", &check)) {
-			app::Configuration::getInstance().setMoveWindowByHoldingDownMouse(check);
+		auto validation = Configuration::getInstance().validateEditableSettings(draft_);
+		if (!error_.empty()) {
+			ImGui::TextColored({1.f, 0.35f, 0.35f, 1.f}, "%s", error_.c_str());
+		}
+		if (!validation) {
+			ImGui::TextColored({1.f, 0.35f, 0.35f, 1.f}, "%s", validation.error().c_str());
+		}
+		if (!restartReasons_.empty()) {
+			ImGui::TextUnformatted("Saved. Restart required for:");
+			for (const auto& reason : restartReasons_) {
+				ImGui::BulletText("%s", reason.c_str());
+			}
 		}
 
-		check = app::Configuration::getInstance().isWindowVsync();
-		if (ImGui::Checkbox("Vsync", &check)) {
-			app::Configuration::getInstance().setWindowVsync(check);
+		bool dirty = draft_ != committed_;
+		ImGui::BeginDisabled(!dirty || !validation);
+		if (ImGui::ConfirmationButton("Apply", {100.f, 30.f})) {
+			apply();
 		}
-
-		check = app::Configuration::getInstance().isLimitFps();
-		if (ImGui::Checkbox("FpsLimiter", &check)) {
-			app::Configuration::getInstance().setLimitFps(check);
+		ImGui::EndDisabled();
+		ImGui::SameLine();
+		if (ImGui::Button("Restore Defaults", {140.f, 30.f})) {
+			auto defaults = Configuration::getInstance().getDefaultEditableSettings();
+			if (defaults) {
+				draft_ = std::move(*defaults);
+				error_.clear();
+			} else {
+				error_ = defaults.error();
+			}
 		}
-
-		check = app::Configuration::getInstance().isWindowPauseOnLostFocus();
-		if (ImGui::Checkbox("Paus on lost focus", &check)) {
-			app::Configuration::getInstance().setWindowPauseOnLostFocus(check);
-		}
-
-		check = app::Configuration::getInstance().isShowDownBlock();
-		if (ImGui::Checkbox("Show down block", &check)) {
-			app::Configuration::getInstance().setShowDownBlock(check);
-		}
-
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiHeaderFont(), 0.f);
-		ImGui::TextColored(labelColor, "Ai players");
-		ImGui::PopFont();
-
-		ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.20f);
-
-		const auto& ais = Configuration::getInstance().getAiVector();
-		int nbrAi1 = std::find_if(ais.begin(), ais.end(), [](const Configuration::Ai& ai) { return ai.name == Configuration::getInstance().getAi1Name(); }) - ais.begin();
-		if (ComboAi("Ai1", nbrAi1, ais)) {
-			Configuration::getInstance().setAi1Name(ais[nbrAi1].name);
-		}
-		int nbrAi2 = std::find_if(ais.begin(), ais.end(), [](const Configuration::Ai& ai) { return ai.name == Configuration::getInstance().getAi2Name(); }) - ais.begin();
-		if (ComboAi("Ai2", nbrAi2, ais)) {
-			Configuration::getInstance().setAi2Name(ais[nbrAi2].name);
-		}
-		int nbrAi3 = std::find_if(ais.begin(), ais.end(), [](const Configuration::Ai& ai) { return ai.name == Configuration::getInstance().getAi3Name(); }) - ais.begin();
-		if (ComboAi("Ai3", nbrAi3, ais)) {
-			Configuration::getInstance().setAi4Name(ais[nbrAi3].name);
-		}
-		int nbrAi4 = std::find_if(ais.begin(), ais.end(), [](const Configuration::Ai& ai) { return ai.name == Configuration::getInstance().getAi4Name(); }) - ais.begin();
-		if (ComboAi("Ai4", nbrAi4, ais)) {
-			Configuration::getInstance().setAi4Name(ais[nbrAi4].name);
-		}
-
-		ImGui::PopItemWidth();
-		ImGui::PopFont();
 	}
 
 }

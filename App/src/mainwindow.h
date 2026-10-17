@@ -5,9 +5,11 @@
 
 #include <app/ui/subwindow.h>
 #include <app/game/devicemanager.h>
+#include <app/configuration.h>
 #include <network/debugserver.h>
 
 #include <network/servercore.h>
+#include <mw/signal.h>
 
 namespace app {
 
@@ -44,6 +46,7 @@ private:
 	void initDebugServer();
 
 	void processEvent(const SDL_Event& windowEvent) override;
+	void applyCommittedSettings(const app::Configuration::EditableSettings& settings, const app::Configuration::EditableSettings* previous = nullptr);
 
 	void renderImGui(const sdl::DeltaTime& deltaTime) override;
 		
@@ -52,7 +55,13 @@ private:
 	std::shared_ptr<app::game::DeviceManager> deviceManager_;
 	std::vector<std::unique_ptr<app::ui::SubWindow>> subWindows_;
 	std::shared_ptr<network::ServerCore> server_;
+	mw::signals::ScopedConnections connections_;
 	Config config_;
+	bool draggingWindow_ = false;
+	float dragMouseX_ = 0.f;
+	float dragMouseY_ = 0.f;
+	int dragWindowX_ = 0;
+	int dragWindowY_ = 0;
 };
 
 #endif

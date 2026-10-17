@@ -2,12 +2,43 @@
 #define APP_UI_SCENE_SETTINGS_H
 
 #include "scene.h"
+#include "configuration.h"
+
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace app::ui {
+
+	class ControlsPresenter;
+
+}
 
 namespace app::ui::scene {
 
 	class Settings : public Scene {
 	public:
+		explicit Settings(std::shared_ptr<ControlsPresenter> controlsPresenter);
+
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
+		ImVec2 getSize() const override;
+
+	private:
+		void switchedTo(const SceneData& data) override;
+		void switchedFrom() override;
+		void drawBasicSettings();
+		void drawAdvancedSettings();
+		void drawAiSelectors();
+		void drawCustomAis();
+		void apply();
+
+		std::shared_ptr<ControlsPresenter> controlsPresenter_;
+		Configuration::EditableSettings committed_;
+		Configuration::EditableSettings draft_;
+		std::string error_;
+		std::vector<std::string> restartReasons_;
+		bool showAdvanced_ = false;
+		bool loaded_ = false;
 	};
 
 }

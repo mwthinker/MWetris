@@ -37,8 +37,8 @@ namespace app::ui::scene {
 				auto size = ImVec2{60.f, 30.f};
 
 				ImGui::SetCursorPosX(ImGui::GetWindowWidth() - size.x - 10.f); // TODO! Fix more less hard coded right alignment.
-				if (ImGui::AbortButton("Cancel", size) || ImGui::IsKeyDown(ImGuiKey_Escape)) {
-					closePopUp_ = true;
+				if (ImGui::AbortButton("Cancel", size) || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+					requestClose();
 				}
 				if (closePopUp_) {
 					closePopUp_ = false;
@@ -51,12 +51,27 @@ namespace app::ui::scene {
 					scenes_[currentKey_]->imGuiUpdate(deltaTime);
 				}
 			});
+			if (closeRequested_) {
+				closeRequested_ = false;
+				switchTo<EmptyScene>();
+			}
 		} else if (stateType_ == StateType::Fullscreen) {
 			if (currentKey_) {
 				scenes_[currentKey_]->imGuiUpdate(deltaTime);
 			}
 		}
 		ImGui::PopID();
+	}
+
+	void StateMachine::requestClose() {
+		closeRequested_ = true;
+		closePopUp_ = true;
+	}
+
+	void Scene::close() {
+		if (stateMachine_) {
+			stateMachine_.stateMachine_->requestClose();
+		}
 	}
 	
 	Scene::StateMachineWrapper::StateMachineWrapper(StateMachine* stateMachine)

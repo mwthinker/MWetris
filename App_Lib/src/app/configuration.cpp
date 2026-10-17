@@ -15,6 +15,7 @@
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
+#include <charconv>
 #include <cmath>
 #include <filesystem>
 #include <iterator>
@@ -24,6 +25,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <unordered_set>
 
 using nlohmann::json;
 using namespace app;
@@ -192,11 +194,14 @@ namespace app {
 
 	struct Configuration::Impl {
 		std::string jsonPath;
+		std::string defaultsPath;
 		nlohmann::json jsonObject;
+		std::optional<EditableSettings> startupSettings;
 
 		mutable ImFont* defaultFont{};
 		mutable ImFont* headerFont{};
 		mutable ImFont* buttonFont{};
+		mutable ImFont* boardFont{};
 	};
 
 	Configuration& Configuration::getInstance() {
@@ -218,6 +223,7 @@ namespace app {
 		bool applicationJson;
 		defaultStream >> applicationJson;
 		const std::string APPLICATION_JSON{"tetris.json"};
+		impl_->defaultsPath = "tetris.defaults.json";
 		if (applicationJson) {
 			impl_->jsonPath = APPLICATION_JSON;
 		} else {
@@ -234,6 +240,142 @@ namespace app {
 
 	namespace {
 		constexpr std::string_view ProfileNameWhitespace{" \t\r\n\f\v"};
+		constexpr std::array<const char*, 7> BlockSpriteKeys{
+			"squareI", "squareJ", "squareL", "squareO", "squareS", "squareT", "squareZ"
+		};
+
+		Configuration::EditableSettings editableSettingsFromJson(const json& document) {
+			const auto& window = document.at("window");
+			const auto& board = window.at("tetrisBoard");
+			const auto& button = window.at("button");
+			Configuration::EditableSettings settings{
+				.window = {
+					.width = window.at("width").get<int>(),
+					.height = window.at("height").get<int>(),
+					.minWidth = window.at("minWidth").get<int>(),
+					.minHeight = window.at("minHeight").get<int>(),
+					.resizable = window.at("resizeable").get<bool>(),
+					.bordered = window.at("border").get<bool>(),
+					.maximized = window.at("maximized").get<bool>(),
+					.pauseOnLostFocus = window.at("pauseOnLostFocus").get<bool>(),
+					.fullscreenOnDoubleClick = window.at("fullscreenOnDoubleClick").get<bool>(),
+					.moveWindowByHoldingDownMouse = window.at("moveWindowByHoldingDownMouse").get<bool>(),
+					.vsync = window.at("vsync").get<bool>(),
+					.limitFps = window.at("limitFps").get<bool>(),
+				},
+				.board = {
+					.borderSize = board.at("borderSize").get<float>(),
+					.showDownBlock = board.at("showDownBlock").get<bool>(),
+					.outerSquareColor = board.at("outerSquareColor").get<std::string>(),
+					.innerSquareColor = board.at("innerSquareColor").get<std::string>(),
+					.startAreaColor = board.at("startAreaColor").get<std::string>(),
+					.borderColor = board.at("borderColor").get<std::string>(),
+					.downBlockColor = board.at("downBlockColor").get<std::string>(),
+				},
+				.appearance = {
+					.labelTextColor = window.at("label").at("textColor").get<std::string>(),
+					.buttonFocusColor = button.at("focusColor").get<std::string>(),
+					.buttonTextColor = button.at("textColor").get<std::string>(),
+					.buttonHoverColor = button.at("hoverColor").get<std::string>(),
+					.buttonBackgroundColor = button.at("backgroundColor").get<std::string>(),
+					.buttonBorderColor = button.at("borderColor").get<std::string>(),
+				},
+				.assets = {
+					.windowFont = window.at("font").get<std::string>(),
+					.boardFont = board.at("font").get<std::string>(),
+					.icon = window.at("icon").get<std::string>(),
+					.background = window.at("sprites").at("background").get<std::string>(),
+				},
+				.network = document.at("network").get<Configuration::Network>(),
+				.activeAiNames = {
+					document.at("ai1").get<std::string>(),
+					document.at("ai2").get<std::string>(),
+					document.at("ai3").get<std::string>(),
+					document.at("ai4").get<std::string>(),
+				},
+			};
+			for (int index = 0; index < std::ssize(BlockSpriteKeys); ++index) {
+				settings.assets.blockSprites[index] = board.at("sprites").at(BlockSpriteKeys[index]).get<std::string>();
+			}
+			for (const auto& definition : document.at("ais")) {
+				settings.ais.push_back({
+					.name = definition.at("name").get<std::string>(),
+					.valueFunction = definition.at("valueFunction").get<std::string>(),
+				});
+			}
+			return settings;
+		}
+
+		void writeEditableSettings(json& document, const Configuration::EditableSettings& settings) {
+			auto& window = document["window"];
+			auto& board = window["tetrisBoard"];
+			window["width"] = settings.window.width;
+			window["height"] = settings.window.height;
+			window["minWidth"] = settings.window.minWidth;
+			window["minHeight"] = settings.window.minHeight;
+			window["resizeable"] = settings.window.resizable;
+			window["border"] = settings.window.bordered;
+			window["maximized"] = settings.window.maximized;
+			window["pauseOnLostFocus"] = settings.window.pauseOnLostFocus;
+			window["fullscreenOnDoubleClick"] = settings.window.fullscreenOnDoubleClick;
+			window["moveWindowByHoldingDownMouse"] = settings.window.moveWindowByHoldingDownMouse;
+			window["vsync"] = settings.window.vsync;
+			window["limitFps"] = settings.window.limitFps;
+			board["borderSize"] = settings.board.borderSize;
+			board["showDownBlock"] = settings.board.showDownBlock;
+			board["outerSquareColor"] = settings.board.outerSquareColor;
+			board["innerSquareColor"] = settings.board.innerSquareColor;
+			board["startAreaColor"] = settings.board.startAreaColor;
+			board["borderColor"] = settings.board.borderColor;
+			board["downBlockColor"] = settings.board.downBlockColor;
+			window["label"]["textColor"] = settings.appearance.labelTextColor;
+			auto& button = window["button"];
+			button["focusColor"] = settings.appearance.buttonFocusColor;
+			button["textColor"] = settings.appearance.buttonTextColor;
+			button["hoverColor"] = settings.appearance.buttonHoverColor;
+			button["backgroundColor"] = settings.appearance.buttonBackgroundColor;
+			button["borderColor"] = settings.appearance.buttonBorderColor;
+			window["font"] = settings.assets.windowFont;
+			board["font"] = settings.assets.boardFont;
+			window["icon"] = settings.assets.icon;
+			window["sprites"]["background"] = settings.assets.background;
+			for (int index = 0; index < std::ssize(BlockSpriteKeys); ++index) {
+				board["sprites"][BlockSpriteKeys[index]] = settings.assets.blockSprites[index];
+			}
+			document["network"] = {
+				{"globalServer", {{"ip", settings.network.global.ip}, {"port", settings.network.global.port}}},
+				{"server", {{"ip", settings.network.server.ip}, {"port", settings.network.server.port}}},
+			};
+			for (int index = 0; index < std::ssize(settings.activeAiNames); ++index) {
+				document["ai" + std::to_string(index + 1)] = settings.activeAiNames[index];
+			}
+			document["ais"] = json::array();
+			for (const auto& definition : settings.ais) {
+				document["ais"].push_back({
+					{"name", definition.name},
+					{"valueFunction", definition.valueFunction},
+				});
+			}
+		}
+
+		bool isValidIpv4(std::string_view address) {
+			int parts = 0;
+			while (!address.empty()) {
+				auto separator = address.find('.');
+				auto part = address.substr(0, separator);
+				int value = -1;
+				auto [end, error] = std::from_chars(part.data(), part.data() + part.size(), value);
+				if (part.empty() || error != std::errc{} || end != part.data() + part.size() || value < 0 || value > 255) {
+					return false;
+				}
+				++parts;
+				if (separator == std::string_view::npos) {
+					break;
+				}
+				address.remove_prefix(separator + 1);
+			}
+			return parts == 4;
+		}
 
 		std::string truncateUtf8(std::string_view value, int maximumLength) {
 			int length = 0;
@@ -494,7 +636,8 @@ namespace app {
 		if (!impl_->defaultFont) {
 			auto& io = ImGui::GetIO();
 
-			impl_->defaultFont = io.Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 16);
+			auto font = impl_->jsonObject["window"]["font"].get<std::string>();
+			impl_->defaultFont = io.Fonts->AddFontFromFileTTF(font.c_str(), 16);
 			
 			float baseFontSize = 13.0f; // 13.0f is the size of the default font. Change to the font size you use.
 			float iconFontSize = baseFontSize * 3.0f / 3.0f;
@@ -514,7 +657,8 @@ namespace app {
 
 	ImFont* Configuration::getImGuiHeaderFont() const {
 		if (!impl_->headerFont) {
-			impl_->headerFont = ImGui::GetIO().Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 50);
+			auto font = impl_->jsonObject["window"]["font"].get<std::string>();
+			impl_->headerFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(font.c_str(), 50);
 		}
 
 		return impl_->headerFont;
@@ -522,10 +666,19 @@ namespace app {
 
 	ImFont* Configuration::getImGuiButtonFont() const {
 		if (!impl_->buttonFont) {
-			impl_->buttonFont = ImGui::GetIO().Fonts->AddFontFromFileTTF("fonts/Ubuntu-B.ttf", 35);
+			auto font = impl_->jsonObject["window"]["font"].get<std::string>();
+			impl_->buttonFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(font.c_str(), 35);
 		}
 
 		return impl_->buttonFont;
+	}
+
+	ImFont* Configuration::getImGuiBoardFont() const {
+		if (!impl_->boardFont) {
+			auto font = impl_->jsonObject["window"]["tetrisBoard"]["font"].get<std::string>();
+			impl_->boardFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(font.c_str(), 16);
+		}
+		return impl_->boardFont;
 	}
 
 	sdl::Color Configuration::getOuterSquareColor() const {
@@ -779,6 +932,132 @@ namespace app {
 
 	Configuration::Network Configuration::getNetwork() const {
 		return impl_->jsonObject["network"].get<Configuration::Network>();
+	}
+
+	Configuration::EditableSettings Configuration::getEditableSettings() const {
+		return editableSettingsFromJson(impl_->jsonObject);
+	}
+
+	std::expected<Configuration::EditableSettings, std::string> Configuration::getDefaultEditableSettings() const {
+		try {
+			std::ifstream stream{impl_->defaultsPath};
+			if (!stream.is_open()) {
+				stream.open("tetris.json");
+			}
+			if (!stream.is_open()) {
+				return std::unexpected{"Could not open tetris.defaults.json"};
+			}
+			json document;
+			stream >> document;
+			return editableSettingsFromJson(document);
+		} catch (const std::exception& exception) {
+			return std::unexpected{exception.what()};
+		}
+	}
+
+	Configuration::SettingsValidationResult Configuration::validateEditableSettings(const EditableSettings& candidate) const {
+		auto invalidRange = [](int value, int minimum, int maximum) {
+			return value < minimum || value > maximum;
+		};
+		if (invalidRange(candidate.window.width, 320, 7680) || invalidRange(candidate.window.height, 320, 4320)) {
+			return std::unexpected{"Window size must be between 320 x 320 and 7680 x 4320."};
+		}
+		if (invalidRange(candidate.window.minWidth, 200, 7680) || invalidRange(candidate.window.minHeight, 200, 4320)) {
+			return std::unexpected{"Minimum window size must be between 200 x 200 and 7680 x 4320."};
+		}
+		if (candidate.window.minWidth > candidate.window.width || candidate.window.minHeight > candidate.window.height) {
+			return std::unexpected{"Minimum window size cannot exceed the window size."};
+		}
+		if (!std::isfinite(candidate.board.borderSize) || candidate.board.borderSize < 0.f || candidate.board.borderSize > 20.f) {
+			return std::unexpected{"Board border size must be between 0 and 20."};
+		}
+		if (!isValidIpv4(candidate.network.global.ip) || !isValidIpv4(candidate.network.server.ip)) {
+			return std::unexpected{"Network addresses must be valid IPv4 addresses."};
+		}
+		if (invalidRange(candidate.network.global.port, 1, 65535) || invalidRange(candidate.network.server.port, 1, 65535)) {
+			return std::unexpected{"Network ports must be between 1 and 65535."};
+		}
+
+		const std::array colors{
+			candidate.board.outerSquareColor, candidate.board.innerSquareColor, candidate.board.startAreaColor,
+			candidate.board.borderColor, candidate.board.downBlockColor,
+			candidate.appearance.labelTextColor, candidate.appearance.buttonFocusColor,
+			candidate.appearance.buttonTextColor, candidate.appearance.buttonHoverColor,
+			candidate.appearance.buttonBackgroundColor,
+			candidate.appearance.buttonBorderColor,
+		};
+		if (std::ranges::any_of(colors, [](const std::string& color) { return !sdl::color::isValidHexColor(color); })) {
+			return std::unexpected{"Colors must use #RGB, #RGBA, #RRGGBB, or #RRGGBBAA syntax."};
+		}
+
+		const std::array paths{
+			candidate.assets.windowFont, candidate.assets.boardFont, candidate.assets.icon, candidate.assets.background,
+			candidate.assets.blockSprites[0], candidate.assets.blockSprites[1], candidate.assets.blockSprites[2],
+			candidate.assets.blockSprites[3], candidate.assets.blockSprites[4], candidate.assets.blockSprites[5],
+			candidate.assets.blockSprites[6],
+		};
+		if (std::ranges::any_of(paths, [](const std::string& path) { return path.empty() || path.contains('\0'); })) {
+			return std::unexpected{"Asset paths cannot be empty."};
+		}
+
+		std::unordered_set<std::string> aiNames{"Default"};
+		for (const auto& definition : candidate.ais) {
+			if (definition.name.empty()) {
+				return std::unexpected{"AI names cannot be empty."};
+			}
+			if (!aiNames.insert(definition.name).second) {
+				return std::unexpected{"AI names must be unique and 'Default' is reserved."};
+			}
+			if (definition.valueFunction.empty()) {
+				return std::unexpected{"AI value functions cannot be empty."};
+			}
+			try {
+				tetris::Ai{definition.valueFunction, true};
+			} catch (const std::exception& exception) {
+				return std::unexpected{"Invalid AI '" + definition.name + "': " + exception.what()};
+			}
+		}
+		for (const auto& activeName : candidate.activeAiNames) {
+			if (!aiNames.contains(activeName)) {
+				return std::unexpected{"Every active AI must reference Default or a custom AI."};
+			}
+		}
+		return {};
+	}
+
+	Configuration::SettingsPersistenceResult Configuration::persistEditableSettings(const EditableSettings& candidate) {
+		try {
+			if (auto validation = validateEditableSettings(candidate); !validation) {
+				return std::unexpected{validation.error()};
+			}
+			auto previous = getEditableSettings();
+			if (!impl_->startupSettings) {
+				impl_->startupSettings = previous;
+			}
+			auto document = impl_->jsonObject;
+			writeEditableSettings(document, candidate);
+			if (auto replacement = replaceJsonFile(impl_->jsonPath, document); !replacement) {
+				return std::unexpected{replacement.error()};
+			}
+			impl_->jsonObject = std::move(document);
+
+			SettingsApplyResult result;
+			const auto& runningSettings = *impl_->startupSettings;
+			if (runningSettings.network != candidate.network) {
+				result.restartReasons.emplace_back("Network endpoints");
+			}
+			if (runningSettings.assets != candidate.assets) {
+				result.restartReasons.emplace_back("Fonts and image assets");
+			}
+			if (runningSettings.window.vsync != candidate.window.vsync) {
+				result.restartReasons.emplace_back("VSync");
+			}
+			result.restartRequired = !result.restartReasons.empty();
+			settingsChanged(previous, candidate);
+			return result;
+		} catch (const std::exception& exception) {
+			return std::unexpected{exception.what()};
+		}
 	}
 
 	float Configuration::getWindowBarHeight() const {
