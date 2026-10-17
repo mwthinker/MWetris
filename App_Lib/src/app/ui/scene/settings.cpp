@@ -165,7 +165,7 @@ namespace app::ui::scene {
 			ImGui::Checkbox("Window border", &draft_.window.bordered);
 			ImGui::Checkbox("Start maximized", &draft_.window.maximized);
 			ImGui::Checkbox("Fullscreen on double-click", &draft_.window.fullscreenOnDoubleClick);
-			ImGui::Checkbox("Drag window from title area", &draft_.window.moveWindowByHoldingDownMouse);
+			ImGui::Checkbox("Drag window", &draft_.window.moveWindowByHoldingDownMouse);
 		}
 
 		if (ImGui::CollapsingHeader("Graphics / Board")) {

@@ -180,8 +180,42 @@ void MainWindow::renderImGui(const sdl::DeltaTime& deltaTime) {
 	for (auto& subWindow : subWindows_) {
 		subWindow->imGuiUpdate(deltaTime);
 	}
+	// ImGui-captured mouse events do not reach processEvent(), so handle window mouse actions here.
+	processWindowMouseActions();
 	ioContext_.poll();
 	deviceManager_->tick();
+}
+
+void MainWindow::processWindowMouseActions() {
+	auto& configuration = app::Configuration::getInstance();
+	if (configuration.isFullscreenOnDoubleClick() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+		draggingWindow_ = false;
+		SDL_CaptureMouse(false);
+		auto fullscreen = (SDL_GetWindowFlags(window_) & SDL_WINDOW_FULLSCREEN) != 0;
+		if (!SDL_SetWindowFullscreen(window_, !fullscreen)) {
+			spdlog::warn("Could not toggle fullscreen: {}", SDL_GetError());
+		}
+		return;
+	}
+
+	if (configuration.isMoveWindowByHoldingDownMouse()
+		&& ImGui::IsMouseClicked(ImGuiMouseButton_Left)
+		&& !ImGui::IsAnyItemActive()) {
+		draggingWindow_ = true;
+		SDL_GetGlobalMouseState(&dragMouseX_, &dragMouseY_);
+		SDL_GetWindowPosition(window_, &dragWindowX_, &dragWindowY_);
+		SDL_CaptureMouse(true);
+	}
+
+	if (draggingWindow_ && ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+		float mouseX = 0.f;
+		float mouseY = 0.f;
+		SDL_GetGlobalMouseState(&mouseX, &mouseY);
+		SDL_SetWindowPosition(window_, dragWindowX_ + static_cast<int>(mouseX - dragMouseX_), dragWindowY_ + static_cast<int>(mouseY - dragMouseY_));
+	} else if (draggingWindow_) {
+		draggingWindow_ = false;
+		SDL_CaptureMouse(false);
+	}
 }
 
 void MainWindow::processEvent(const SDL_Event& windowEvent) {
@@ -195,34 +229,6 @@ void MainWindow::processEvent(const SDL_Event& windowEvent) {
 						tetrisWindow->pauseOnFocusLost();
 					}
 				}
-			}
-			break;
-		case SDL_EVENT_MOUSE_BUTTON_DOWN:
-			if (windowEvent.button.button == SDL_BUTTON_LEFT && windowEvent.button.clicks >= 2
-				&& app::Configuration::getInstance().isFullscreenOnDoubleClick()) {
-				auto fullscreen = (SDL_GetWindowFlags(window_) & SDL_WINDOW_FULLSCREEN) != 0;
-				SDL_SetWindowFullscreen(window_, !fullscreen);
-			} else if (windowEvent.button.button == SDL_BUTTON_LEFT
-				&& windowEvent.button.y <= app::Configuration::getInstance().getWindowBarHeight()
-				&& app::Configuration::getInstance().isMoveWindowByHoldingDownMouse()) {
-				draggingWindow_ = true;
-				SDL_GetGlobalMouseState(&dragMouseX_, &dragMouseY_);
-				SDL_GetWindowPosition(window_, &dragWindowX_, &dragWindowY_);
-				SDL_CaptureMouse(true);
-			}
-			break;
-		case SDL_EVENT_MOUSE_MOTION:
-			if (draggingWindow_) {
-				float mouseX = 0.f;
-				float mouseY = 0.f;
-				SDL_GetGlobalMouseState(&mouseX, &mouseY);
-				SDL_SetWindowPosition(window_, dragWindowX_ + static_cast<int>(mouseX - dragMouseX_), dragWindowY_ + static_cast<int>(mouseY - dragMouseY_));
-			}
-			break;
-		case SDL_EVENT_MOUSE_BUTTON_UP:
-			if (windowEvent.button.button == SDL_BUTTON_LEFT && draggingWindow_) {
-				draggingWindow_ = false;
-				SDL_CaptureMouse(false);
 			}
 			break;
 		case SDL_EVENT_WINDOW_CLOSE_REQUESTED:

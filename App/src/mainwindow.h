@@ -46,6 +46,7 @@ private:
 	void initDebugServer();
 
 	void processEvent(const SDL_Event& windowEvent) override;
+	void processWindowMouseActions();
 	void applyCommittedSettings(const app::Configuration::EditableSettings& settings, const app::Configuration::EditableSettings* previous = nullptr);
 
 	void renderImGui(const sdl::DeltaTime& deltaTime) override;
