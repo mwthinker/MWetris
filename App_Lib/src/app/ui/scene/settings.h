@@ -6,6 +6,7 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -37,6 +38,8 @@ namespace app::ui::scene {
 		std::function<void()> requestRestart_;
 		Configuration::EditableSettings committed_;
 		Configuration::EditableSettings draft_;
+		std::optional<Configuration::EditableSettings> defaults_;
+		std::string defaultsError_;
 		std::string error_;
 		std::vector<std::string> restartReasons_;
 		bool showAdvanced_ = false;
