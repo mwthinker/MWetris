@@ -68,10 +68,13 @@ namespace network {
 				connected_ = true;
 				break;
 			} catch (const asio::system_error& e) {
+				connected_ = false;
+				if (isStopped_) {
+					co_return;
+				}
 				spdlog::error("[TcpClient] {} async_connect Exception: {}", name_, e.what());
 				// TODO! Make exponential backoff?
 				tryToConnectTimer_.expires_after(3s);
-				connected_ = false;
 			}
 			co_await tryToConnectTimer_.async_wait(asio::use_awaitable);
 		}

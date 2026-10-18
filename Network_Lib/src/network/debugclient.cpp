@@ -36,7 +36,14 @@ namespace network {
 
 	asio::awaitable<ProtobufMessage> DebugClientOnServer::receive() {
 		while (receivedMessages_.empty() && !stopped_) {
-			co_await timer_.async_wait(asio::use_awaitable);
+			try {
+				co_await timer_.async_wait(asio::use_awaitable);
+			} catch (const asio::system_error&) {
+				if (stopped_) {
+					co_return ProtobufMessage{};
+				}
+				throw;
+			}
 			timer_.expires_after(std::chrono::seconds{0});
 		}
 		if (stopped_) {
@@ -75,7 +82,7 @@ namespace network {
 	}
 
 	bool DebugClientOnServer::isConnected() const {
-		return true;
+		return !stopped_;
 	}
 
 	void DebugClientOnServer::reconnect() {
@@ -108,7 +115,14 @@ namespace network {
 
 	asio::awaitable<ProtobufMessage> DebugClientOnNetwork::receive() {
 		while (receivedMessages_.empty() && !stopped_) {
-			co_await timer_.async_wait(asio::use_awaitable);
+			try {
+				co_await timer_.async_wait(asio::use_awaitable);
+			} catch (const asio::system_error&) {
+				if (stopped_) {
+					co_return ProtobufMessage{};
+				}
+				throw;
+			}
 			timer_.expires_after(std::chrono::seconds(0));
 		}
 		if (stopped_) {
@@ -147,7 +161,7 @@ namespace network {
 	}
 
 	bool DebugClientOnNetwork::isConnected() const {
-		return true;
+		return !stopped_;
 	}
 
 	void DebugClientOnNetwork::reconnect() {}
