@@ -1,5 +1,6 @@
 #include "imguiextra.h"
 
+#include <cstdarg>
 #include <utility>
 
 namespace ImGui {
@@ -17,7 +18,7 @@ namespace ImGui {
 	}
 
 	void PushButtonStyle() {
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiButtonFont(), 0.f);
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiMediumFont(), 0.f);
 		ImGui::PushStyleColor(ImGuiCol_Text, app::Configuration::getInstance().getButtonTextColor().toImU32());
 		ImGui::PushStyleColor(ImGuiCol_Border, app::Configuration::getInstance().getButtonBorderColor().toImU32());
 		ImGui::PushStyleColor(ImGuiCol_Button, app::Configuration::getInstance().getButtonBackgroundColor().toImU32());
@@ -27,6 +28,36 @@ namespace ImGui {
 
 	void PopButtonStyle() {
 		ImGui::PopStyleColor(5);
+		ImGui::PopFont();
+	}
+
+	bool MediumButton(const char* label, const ImVec2& size) {
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiMediumFont(), 0.f);
+		bool result = ImGui::Button(label, size);
+		ImGui::PopFont();
+		return result;
+	}
+
+	bool MediumSmallButton(const char* label) {
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiMediumFont(), 0.f);
+		bool result = ImGui::SmallButton(label);
+		ImGui::PopFont();
+		return result;
+	}
+
+	bool SemiBoldCollapsingHeader(const char* label, ImGuiTreeNodeFlags flags) {
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
+		bool result = ImGui::CollapsingHeader(label, flags);
+		ImGui::PopFont();
+		return result;
+	}
+
+	void SecondaryText(const char* format, ...) {
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiRegularSmallFont(), 0.f);
+		va_list args;
+		va_start(args, format);
+		ImGui::TextDisabledV(format, args);
+		va_end(args);
 		ImGui::PopFont();
 	}
 
@@ -57,16 +88,20 @@ namespace ImGui {
 	}
 
 	bool ConfirmationButton(const char* label, const ImVec2& size) {
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiMediumFont(), 0.f);
 		ImGui::PushStyleColor(ImGuiCol_Button, sdl::color::Green);
 		bool result = ImGui::Button(label, size);
 		ImGui::PopStyleColor();
+		ImGui::PopFont();
 		return result;
 	}
 
 	bool AbortButton(const char* label, const ImVec2& size) {
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiMediumFont(), 0.f);
 		ImGui::PushStyleColor(ImGuiCol_Button, sdl::color::Red);
 		bool result = ImGui::Button(label, size);
 		ImGui::PopStyleColor();
+		ImGui::PopFont();
 		return result;
 	}
 

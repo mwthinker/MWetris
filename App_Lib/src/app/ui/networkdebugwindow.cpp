@@ -1,6 +1,7 @@
 #include "networkdebugwindow.h"
 
 #include "graphic/gamecomponent.h"
+#include "imguiextra.h"
 #include "network/debugclient.h"
 #include "util/auxiliary.h"
 
@@ -78,7 +79,7 @@ namespace app::ui {
 			// TODO!
 		}
 			
-		if (ImGui::Button("Restart Game")) {
+		if (ImGui::MediumButton("Restart Game")) {
 			// TODO!
 		}
 

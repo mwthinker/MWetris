@@ -73,7 +73,7 @@ namespace app::ui::scene {
 	}
 
 	void AddPlayer::imGuiUpdate(const DeltaTime& deltaTime) {
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiHeaderFont(), 0.f);
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
 		ImGui::Text("Add Player");
 		ImGui::PopFont();
 		

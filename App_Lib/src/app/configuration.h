@@ -142,13 +142,17 @@ namespace app {
 		Configuration& operator=(const Configuration&) = delete;
 
 		void init(SDL_GPUDevice* gpuDevice);
-		
+		void initImGuiFonts() const;
+
 		app::TextureView getSprite(tetris::BlockType blockType);
 
 		ImFont* getImGuiDefaultFont() const;
-		ImFont* getImGuiHeaderFont() const;
-		ImFont* getImGuiButtonFont() const;
-		ImFont* getImGuiBoardFont() const;
+		ImFont* getImGuiRegularSmallFont() const;
+		ImFont* getImGuiBoardRegularFont() const;
+		ImFont* getImGuiMediumFont() const;
+		ImFont* getImGuiMediumValueFont() const;
+		ImFont* getImGuiSemiBoldFont() const;
+		ImFont* getImGuiScoreFont() const;
 
 		sdl::Color getOuterSquareColor() const;
 		sdl::Color getInnerSquareColor() const;

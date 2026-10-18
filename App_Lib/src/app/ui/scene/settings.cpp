@@ -20,11 +20,13 @@ namespace app::ui::scene {
 			}
 			ImGui::SameLine();
 			ImGui::PushID(id);
-			if (ImGui::SmallButton(ICON_FA_ARROW_ROTATE_LEFT)) {
+			if (ImGui::MediumSmallButton(ICON_FA_ARROW_ROTATE_LEFT)) {
 				value = defaultValue;
 			}
 			if (ImGui::IsItemHovered()) {
+				ImGui::PushFont(Configuration::getInstance().getImGuiRegularSmallFont(), 0.f);
 				ImGui::SetTooltip("Restore default");
+				ImGui::PopFont();
 			}
 			ImGui::PopID();
 		}
@@ -44,7 +46,7 @@ namespace app::ui::scene {
 
 		void restartOnlyLabel() {
 			ImGui::SameLine();
-			ImGui::TextDisabled("(restart required)");
+			ImGui::SecondaryText("(restart required)");
 		}
 
 		void inputPath(const char* label, std::string& value, const std::string* defaultValue) {
@@ -130,7 +132,7 @@ namespace app::ui::scene {
 	}
 
 	void Settings::drawAiSelectors() {
-		if (ImGui::CollapsingHeader("AI players", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::SemiBoldCollapsingHeader("AI players", ImGuiTreeNodeFlags_DefaultOpen)) {
 			const auto* defaults = defaults_ ? &*defaults_ : nullptr;
 			ImGui::PushItemWidth(260.f);
 			for (int index = 0; index < std::ssize(draft_.activeAiNames); ++index) {
@@ -143,7 +145,7 @@ namespace app::ui::scene {
 
 	void Settings::drawBasicSettings() {
 		const auto* defaults = defaults_ ? &*defaults_ : nullptr;
-		if (ImGui::CollapsingHeader("General / Display", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::SemiBoldCollapsingHeader("General / Display", ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::Checkbox("Pause on focus loss", &draft_.window.pauseOnLostFocus);
 			if (defaults) {
 				drawDefaultReset("Pause on focus loss", draft_.window.pauseOnLostFocus, defaults->window.pauseOnLostFocus);
@@ -161,14 +163,14 @@ namespace app::ui::scene {
 			}
 		}
 		drawAiSelectors();
-		if (ImGui::CollapsingHeader("Controls", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::SemiBoldCollapsingHeader("Controls", ImGuiTreeNodeFlags_DefaultOpen)) {
 			controlsPresenter_->drawMenu();
-			ImGui::TextDisabled("Control profile changes are saved immediately.");
+			ImGui::SecondaryText("Control profile changes are saved immediately.");
 		}
 	}
 
 	void Settings::drawCustomAis() {
-		if (!ImGui::CollapsingHeader("Custom AI")) {
+		if (!ImGui::SemiBoldCollapsingHeader("Custom AI")) {
 			return;
 		}
 		if (defaults_ && draft_.ais != defaults_->ais) {
@@ -178,23 +180,25 @@ namespace app::ui::scene {
 		for (int index = 0; index < std::ssize(draft_.ais); ++index) {
 			auto& definition = draft_.ais[index];
 			ImGui::PushID(index);
+			ImGui::PushFont(Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
 			ImGui::SeparatorText(definition.name.empty() ? "Unnamed AI" : definition.name.c_str());
+			ImGui::PopFont();
 			ImGui::InputText("Name", &definition.name);
 			ImGui::InputTextMultiline("Value function", &definition.valueFunction, {0.f, 55.f});
 			bool inUse = std::ranges::find(draft_.activeAiNames, definition.name) != draft_.activeAiNames.end();
 			ImGui::BeginDisabled(inUse);
-			if (ImGui::Button("Delete")) {
+			if (ImGui::MediumButton("Delete")) {
 				draft_.ais.erase(draft_.ais.begin() + index);
 				--index;
 			}
 			ImGui::EndDisabled();
 			if (inUse) {
 				ImGui::SameLine();
-				ImGui::TextDisabled("Remap active AI slots before deleting.");
+				ImGui::SecondaryText("Remap active AI slots before deleting.");
 			}
 			ImGui::PopID();
 		}
-		if (ImGui::Button("Add custom AI")) {
+		if (ImGui::MediumButton("Add custom AI")) {
 			std::string name{"Custom AI"};
 			for (int suffix = 2; std::ranges::find(draft_.ais, name, &Configuration::AiDefinition::name) != draft_.ais.end(); ++suffix) {
 				name = "Custom AI " + std::to_string(suffix);
@@ -205,7 +209,7 @@ namespace app::ui::scene {
 
 	void Settings::drawAdvancedSettings() {
 		const auto* defaults = defaults_ ? &*defaults_ : nullptr;
-		if (ImGui::CollapsingHeader("Window", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::SemiBoldCollapsingHeader("Window", ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::InputInt("Width", &draft_.window.width);
 			if (defaults) {
 				drawDefaultReset("Width", draft_.window.width, defaults->window.width);
@@ -248,7 +252,7 @@ namespace app::ui::scene {
 			}
 		}
 
-		if (ImGui::CollapsingHeader("Graphics / Board")) {
+		if (ImGui::SemiBoldCollapsingHeader("Graphics / Board")) {
 			ImGui::Checkbox("VSync", &draft_.window.vsync);
 			if (defaults) {
 				drawDefaultReset("VSync", draft_.window.vsync, defaults->window.vsync);
@@ -264,8 +268,8 @@ namespace app::ui::scene {
 			colorEdit("Inner squares", draft_.board.innerSquareColor, defaults ? &defaults->board.innerSquareColor : nullptr);
 		}
 
-		if (ImGui::CollapsingHeader("Network")) {
-			ImGui::TextDisabled("Changes require restart.");
+		if (ImGui::SemiBoldCollapsingHeader("Network")) {
+			ImGui::SecondaryText("Changes require restart.");
 			ImGui::InputText("Global server address", &draft_.network.global.ip);
 			if (defaults) {
 				drawDefaultReset("Global server address", draft_.network.global.ip, defaults->network.global.ip);
@@ -286,7 +290,7 @@ namespace app::ui::scene {
 			draft_.network.server.port = std::clamp(draft_.network.server.port, 1, 65535);
 		}
 
-		if (ImGui::CollapsingHeader("Appearance")) {
+		if (ImGui::SemiBoldCollapsingHeader("Appearance")) {
 			colorEdit("Heading text", draft_.appearance.labelTextColor, defaults ? &defaults->appearance.labelTextColor : nullptr);
 			colorEdit("Button text", draft_.appearance.buttonTextColor, defaults ? &defaults->appearance.buttonTextColor : nullptr);
 			colorEdit("Button background", draft_.appearance.buttonBackgroundColor, defaults ? &defaults->appearance.buttonBackgroundColor : nullptr);
@@ -295,7 +299,7 @@ namespace app::ui::scene {
 			colorEdit("Button border", draft_.appearance.buttonBorderColor, defaults ? &defaults->appearance.buttonBorderColor : nullptr);
 		}
 
-		if (ImGui::CollapsingHeader("Assets / Theme")) {
+		if (ImGui::SemiBoldCollapsingHeader("Assets / Theme")) {
 			inputPath("UI font", draft_.assets.windowFont, defaults ? &defaults->assets.windowFont : nullptr);
 			inputPath("Board font", draft_.assets.boardFont, defaults ? &defaults->assets.boardFont : nullptr);
 			inputPath("Window icon", draft_.assets.icon, defaults ? &defaults->assets.icon : nullptr);
@@ -324,7 +328,7 @@ namespace app::ui::scene {
 
 	void Settings::imGuiUpdate(const DeltaTime&) {
 		auto labelColor = Configuration::getInstance().getLabelTextColor();
-		ImGui::PushFont(Configuration::getInstance().getImGuiHeaderFont(), 0.f);
+		ImGui::PushFont(Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
 		ImGui::TextColored(labelColor, "Preferences");
 		ImGui::PopFont();
 
@@ -358,7 +362,7 @@ namespace app::ui::scene {
 			ImGui::TextUnformatted("Saved. Restart required for:");
 			ImGui::SameLine();
 			ImGui::BeginDisabled(dirty || !requestRestart_);
-			if (ImGui::Button("Restart now", {120.f, 30.f})) {
+			if (ImGui::MediumButton("Restart now", {120.f, 30.f})) {
 				requestRestart_();
 			}
 			ImGui::EndDisabled();
@@ -374,13 +378,15 @@ namespace app::ui::scene {
 		ImGui::EndDisabled();
 		ImGui::SameLine();
 		ImGui::BeginDisabled(!defaults_);
-		if (ImGui::Button("Restore Defaults", {140.f, 30.f})) {
+		if (ImGui::MediumButton("Restore Defaults", {140.f, 30.f})) {
 			draft_ = *defaults_;
 			error_.clear();
 		}
 		ImGui::EndDisabled();
 		if (!defaults_ && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+			ImGui::PushFont(Configuration::getInstance().getImGuiRegularSmallFont(), 0.f);
 			ImGui::SetTooltip("Defaults unavailable: %s", defaultsError_.c_str());
+			ImGui::PopFont();
 		}
 	}
 

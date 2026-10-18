@@ -146,7 +146,7 @@ namespace app::ui::scene {
 				} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
 					// Skip.
 				} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
-					if (ImGui::Button("Open Slot", {slotSize, slotSize})) {
+					if (ImGui::MediumButton("Open Slot", {slotSize, slotSize})) {
 						scene::AddPlayerData data{};
 						data.index = i;
 						data.usedDevices = getUsedDevices(playerSlots_);

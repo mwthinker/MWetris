@@ -9,7 +9,7 @@ namespace app::ui::scene {
 	void About::imGuiUpdate(const DeltaTime& deltaTime) {
 		auto labelColor = app::Configuration::getInstance().getLabelTextColor();
 
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiHeaderFont(), 0.f);
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
 		ImGui::TextColored(labelColor, "MWetris");
 		ImGui::PopFont();
 
@@ -20,7 +20,7 @@ namespace app::ui::scene {
 		ImGui::NewLine();
 		ImGui::Text("An open source inspired Tetris game.");
 		constexpr auto Url = "https://github.com/mwthinker/MWetris";
-		if (ImGui::Button(Url)) {
+		if (ImGui::MediumButton(Url)) {
 			if (SDL_OpenURL(Url) != 0) {
 				spdlog::error("[SceneStateMachine] Failed to open URL: {}", SDL_GetError());
 			}

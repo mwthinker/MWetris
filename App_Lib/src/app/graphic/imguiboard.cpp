@@ -64,8 +64,9 @@ namespace app::graphic {
 
 	}
 
-	ImGuiBoard::ImGuiBoard(game::PlayerPtr player, SidebarRenderer sidebarRenderer)
+	ImGuiBoard::ImGuiBoard(game::PlayerPtr player, int playerNumber, SidebarRenderer sidebarRenderer)
 		: sidebarRenderer_{std::move(sidebarRenderer)}
+		, playerNumber_{playerNumber}
 		, player_{player} {
 
 		spriteZ_ = Configuration::getInstance().getSprite(tetris::BlockType::Z);
@@ -86,6 +87,7 @@ namespace app::graphic {
 		: squareSize_{imGuiBoard.squareSize_}
 		, borderSize_{imGuiBoard.borderSize_}
 		, sidebarRenderer_{imGuiBoard.sidebarRenderer_}
+		, playerNumber_{imGuiBoard.playerNumber_}
 		, player_{imGuiBoard.player_}
 		, rows_{imGuiBoard.rows_}
 		, height_{imGuiBoard.height_}
@@ -105,6 +107,7 @@ namespace app::graphic {
 		squareSize_ = imGuiBoard.squareSize_;
 		borderSize_ = imGuiBoard.borderSize_;
 		sidebarRenderer_ = imGuiBoard.sidebarRenderer_;
+		playerNumber_ = imGuiBoard.playerNumber_;
 		player_ = imGuiBoard.player_;
 		rows_ = imGuiBoard.rows_;
 		height_ = imGuiBoard.height_;
@@ -263,7 +266,6 @@ namespace app::graphic {
 	}
 
 	void ImGuiBoard::draw(float width, float height, double deltaTime) {
-		ImGui::PushFont(Configuration::getInstance().getImGuiBoardFont(), 0.f);
 		ImGui::PushID(this);
 		ImGui::Group([&]() {
 			const int columns = player_->getColumns();
@@ -295,6 +297,12 @@ namespace app::graphic {
 			ImGui::SameLine();
 
 			ImGui::Group([&]() {
+				ImGui::PushFont(Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
+				ImGui::Text("Player %d", playerNumber_);
+				ImGui::PopFont();
+				ImGui::PushFont(Configuration::getInstance().getImGuiBoardRegularFont(), 0.f);
+				ImGui::TextUnformatted("Next");
+				ImGui::PopFont();
 				drawPreviewBlock(player_->getNextBlockType(), Color(1.f, 1.f, 1, 0.3f));
 
 				ImGui::Indent(10.f);
@@ -304,15 +312,35 @@ namespace app::graphic {
 				std::visit([&](auto&& playerData) mutable {
 					using T = std::decay_t<decltype(playerData)>;
 					if constexpr (std::is_same_v<T, game::DefaultPlayerData>) {
-						ImGui::Text("%s: %d", "Level", playerData.level);
-						ImGui::Text("%s: %d", "Points", playerData.points);
+						ImGui::PushFont(Configuration::getInstance().getImGuiBoardRegularFont(), 0.f);
+						ImGui::TextUnformatted("Score");
+						ImGui::PopFont();
+						ImGui::PushFont(Configuration::getInstance().getImGuiScoreFont(), 0.f);
+						ImGui::Text("%d", playerData.points);
+						ImGui::PopFont();
+						ImGui::PushFont(Configuration::getInstance().getImGuiBoardRegularFont(), 0.f);
+						ImGui::TextUnformatted("Level");
+						ImGui::PopFont();
+						ImGui::PushFont(Configuration::getInstance().getImGuiMediumValueFont(), 0.f);
+						ImGui::Text("%d", playerData.level);
+						ImGui::PopFont();
 					} else if constexpr (std::is_same_v<T, game::SurvivalPlayerData>) {
-						ImGui::Text("%s: %d", "OpponentRows", playerData.opponentRows);
+						ImGui::PushFont(Configuration::getInstance().getImGuiBoardRegularFont(), 0.f);
+						ImGui::TextUnformatted("Opponent rows");
+						ImGui::PopFont();
+						ImGui::PushFont(Configuration::getInstance().getImGuiMediumValueFont(), 0.f);
+						ImGui::Text("%d", playerData.opponentRows);
+						ImGui::PopFont();
 					} else {
 						static_assert(util::always_false_v<T>, "non-exhaustive visitor!");
 					}
 				}, player_->getPlayerData());
-				ImGui::Text("%s: %d", "Rows", player_->getClearedRows());
+				ImGui::PushFont(Configuration::getInstance().getImGuiBoardRegularFont(), 0.f);
+				ImGui::TextUnformatted("Lines");
+				ImGui::PopFont();
+				ImGui::PushFont(Configuration::getInstance().getImGuiMediumValueFont(), 0.f);
+				ImGui::Text("%d", player_->getClearedRows());
+				ImGui::PopFont();
 				if (player_->isHuman() && sidebarRenderer_) {
 					ImGui::Spacing();
 					sidebarRenderer_(player_, NormalizedPreviewSize * squareSize_ - 20.f);
@@ -346,7 +374,6 @@ namespace app::graphic {
 			}
 		});
 		ImGui::PopID();
-		ImGui::PopFont();
 	}
 
 	const game::Player& ImGuiBoard::getPlayer() const {

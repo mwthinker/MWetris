@@ -6,7 +6,7 @@ namespace app::ui::scene {
 	void HighScore::imGuiUpdate(const DeltaTime& deltaTime) {
 		auto labelColor = app::Configuration::getInstance().getLabelTextColor();
 
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiHeaderFont(), 0.f);
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
 		ImGui::TextColored(labelColor, "Highscore");
 		ImGui::PopFont();
 

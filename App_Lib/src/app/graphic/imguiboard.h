@@ -17,7 +17,7 @@ namespace app::graphic {
 	public:
 		using SidebarRenderer = std::function<void(const game::PlayerPtr&, float)>;
 
-		explicit ImGuiBoard(game::PlayerPtr player, SidebarRenderer sidebarRenderer = {});
+		explicit ImGuiBoard(game::PlayerPtr player, int playerNumber, SidebarRenderer sidebarRenderer = {});
 
 		void draw(float width, float height, double deltaTime);
 
@@ -44,7 +44,8 @@ namespace app::graphic {
 		float squareSize_ = 0.f;
 		float borderSize_ = 2.f;
 		SidebarRenderer sidebarRenderer_;
-		
+		int playerNumber_ = 0;
+
 		game::PlayerPtr player_;
 
 		struct Row {

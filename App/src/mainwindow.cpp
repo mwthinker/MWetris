@@ -51,13 +51,7 @@ void MainWindow::requestRestart() {
 void MainWindow::preLoop() {
 	auto& configuration = app::Configuration::getInstance();
 	applyCommittedSettings(configuration.getEditableSettings());
-	auto font = configuration.getEditableSettings().assets.windowFont;
-	ImGui::GetIO().Fonts->AddFontFromFileTTF(font.c_str(), 12); // Used by demo window.
-	
-	configuration.getImGuiButtonFont();
-	configuration.getImGuiDefaultFont();
-	configuration.getImGuiHeaderFont();
-	configuration.getImGuiBoardFont();
+	configuration.initImGuiFonts();
 
 	configuration.init(gpuDevice_);
 	connections_ += configuration.settingsChanged.connect([this](const auto& previous, const auto& current) {

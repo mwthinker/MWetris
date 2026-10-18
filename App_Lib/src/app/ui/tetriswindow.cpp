@@ -294,7 +294,16 @@ namespace app::ui {
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {10.0, 10.0});
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 10.f);
 			ImGui::MenuBar([&]() {
-				ImGui::Menu("Game", [&]() {
+				auto menu = [&](const char* label, std::invocable auto&& content) {
+					ImGui::PushFont(Configuration::getInstance().getImGuiMediumFont(), 0.f);
+					bool open = ImGui::BeginMenu(label);
+					ImGui::PopFont();
+					if (open) {
+						content();
+						ImGui::EndMenu();
+					}
+				};
+				menu("Game", [&]() {
 					bool insideGameRoom = tetrisController_->isGameRoomSession();
 					ImGui::BeginDisabled(insideGameRoom);
 					if (ImGui::MenuItem(game::hasSavedGame() ? "Resume Single Player" : "New Single Player", "F1")) {
@@ -330,7 +339,7 @@ namespace app::ui {
 						window_.quit();
 					}
 				});
-				ImGui::Menu("Current", [&]() {
+				menu("Current", [&]() {
 					if (ImGui::MenuItem(pauseMenuText_.c_str(), "P")) {
 						tetrisController_->pause();
 					}
@@ -338,12 +347,10 @@ namespace app::ui {
 						tetrisController_->restartGame();
 					}
 				});
-				if (ImGui::BeginMenu("Options")) {
+				menu("Options", [&]() {
 					controlsPresenter_->drawMenu();
-
-					ImGui::EndMenu();
-				}
-				ImGui::Menu("Help", [&]() {
+				});
+				menu("Help", [&]() {
 					if (ImGui::MenuItem("About")) {
 						modalStateMachine_.switchTo<scene::About>();
 					}
@@ -353,10 +360,12 @@ namespace app::ui {
 				ImGui::PopStyleColor();
 				if (ImGui::IsItemHovered()) {
 					ImGui::Tooltip([&]() {
+						ImGui::PushFont(Configuration::getInstance().getImGuiRegularSmallFont(), 0.f);
 						ImGui::Text(tetrisController_->isConnectedToServer()
 							? "Connected to game server"
 							: "Not connected to game server"
 						);
+						ImGui::PopFont();
 					});
 				}
 			});

@@ -19,7 +19,7 @@ namespace app::ui::scene {
 			ImGui::SetKeyboardFocusHere(0); // Set focus on input field
 		}
 
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiHeaderFont(), 0.f);
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
 		ImGui::Text("Place %d", game::getHighScorePlacement(data_.points));
 		ImGui::PopFont();
 
@@ -30,7 +30,7 @@ namespace app::ui::scene {
 				save();
 			}
 
-			if (ImGui::Button("Save") && data_.name.size() > 0) {
+			if (ImGui::MediumButton("Save") && data_.name.size() > 0) {
 				save();
 			}
 		}

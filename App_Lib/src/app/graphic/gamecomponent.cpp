@@ -46,7 +46,7 @@ namespace app::graphic {
 		for ([[maybe_unused]] auto& imguiBoard : imguiBoards_) {
 			ImGui::SetCursorPos(pos + Vec2{width / 2.f, height / 2.f});
 			pos.x += width;
-			ImGui::PushFont(Configuration::getInstance().getImGuiHeaderFont(), 0.f);
+			ImGui::PushFont(Configuration::getInstance().getImGuiScoreFont(), 0.f);
 			if (gamePause_.pause) {
 				if (gamePause_.countDown > 0) {
 					ImGui::TextWithBackgroundColor(gamePause_.countDown, sdl::Color{0.f, 0.f, 0.f, 0.5f}, {5.f, 5.f});
@@ -66,8 +66,9 @@ namespace app::graphic {
 
 	void GameComponent::initGame(const std::vector<game::PlayerPtr>& players) {
 		imguiBoards_.clear();
+		int playerNumber = 1;
 		for (auto& player : players) {
-			imguiBoards_.emplace_back(player, boardSidebarRenderer_);
+			imguiBoards_.emplace_back(player, playerNumber++, boardSidebarRenderer_);
 		}
 	}
 

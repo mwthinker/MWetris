@@ -215,12 +215,12 @@ namespace app::ui {
 		auto profileId = controlProfiles_->getAssignedProfileId(selectedOptionsDeviceGuid_);
 		auto profile = controlProfiles_->getProfile(profileId);
 		if (!profile) {
-			ImGui::TextDisabled("The assigned profile is unavailable.");
+			ImGui::SecondaryText("The assigned profile is unavailable.");
 			return;
 		}
 		ImGui::Text("DAS %d ms   ARR %d ms", profile->timing.dasMs, profile->timing.arrMs);
 
-		if (ImGui::Button("Duplicate")) {
+		if (ImGui::MediumButton("Duplicate")) {
 			openProfileDialog(
 				ProfileDialogAction::Duplicate,
 				*profile,
@@ -228,16 +228,16 @@ namespace app::ui {
 		}
 		ImGui::SameLine();
 		ImGui::BeginDisabled(profile->builtIn);
-		if (ImGui::Button("Edit")) {
+		if (ImGui::MediumButton("Edit")) {
 			openProfileDialog(ProfileDialogAction::Edit, *profile);
 		}
 		ImGui::SameLine();
-		if (ImGui::Button("Delete")) {
+		if (ImGui::MediumButton("Delete")) {
 			openProfileDialog(ProfileDialogAction::Delete, *profile);
 		}
 		ImGui::EndDisabled();
 		if (profile->builtIn) {
-			ImGui::TextDisabled("Built-in profiles can only be duplicated.");
+			ImGui::SecondaryText("Built-in profiles can only be duplicated.");
 		}
 		if (!optionsError_.empty()) {
 			ImGui::TextWrapped("%s", optionsError_.c_str());
@@ -262,11 +262,11 @@ namespace app::ui {
 			ImGui::Text("Delete profile '%s'?", dialog.profileName.c_str());
 			auto assignedDeviceCount = controlProfiles_->getAssignedDeviceCount(dialog.profileId);
 			if (assignedDeviceCount == 0) {
-				ImGui::TextDisabled("No devices use this profile.");
+				ImGui::SecondaryText("No devices use this profile.");
 			} else if (assignedDeviceCount == 1) {
-				ImGui::TextDisabled("1 device uses this profile and will switch to Balanced.");
+				ImGui::SecondaryText("1 device uses this profile and will switch to Balanced.");
 			} else {
-				ImGui::TextDisabled("%d devices use this profile and will switch to Balanced.", assignedDeviceCount);
+				ImGui::SecondaryText("%d devices use this profile and will switch to Balanced.", assignedDeviceCount);
 			}
 
 			if (!dialog.error.empty()) {
@@ -281,7 +281,7 @@ namespace app::ui {
 				}
 			}
 			ImGui::SameLine();
-			if (ImGui::Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+			if (ImGui::MediumButton("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
 				closeProfileDialog();
 			}
 			ImGui::EndPopup();
@@ -360,13 +360,17 @@ namespace app::ui {
 		auto deviceGuid = playerDevice ? playerDevice->getGuid() : std::string{};
 
 		ImGui::PushID(player.get());
+		ImGui::PushFont(Configuration::getInstance().getImGuiRegularSmallFont(), 0.f);
 		ImGui::TextUnformatted("Device");
+		ImGui::PopFont();
 		ImGui::PushItemWidth(width);
 		auto connectedDevices = getConnectedDevices();
 		if (drawDeviceCombo(deviceGuid, connectedDevices, "##Device", true)) {
 			player->setDevice(deviceManager_->findDevice(deviceGuid));
 		}
+		ImGui::PushFont(Configuration::getInstance().getImGuiRegularSmallFont(), 0.f);
 		ImGui::TextUnformatted("Profile");
+		ImGui::PopFont();
 		drawPlayerProfileCombo(*player, "##Profile");
 		ImGui::PopItemWidth();
 		ImGui::PopID();

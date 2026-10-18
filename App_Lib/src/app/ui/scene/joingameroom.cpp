@@ -41,7 +41,7 @@ namespace app::ui::scene {
 	}
 
 	void JoinGameRoom::imGuiUpdate(const DeltaTime& deltaTime) {
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiHeaderFont(), 0.f);
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
 		ImGui::Text("Custom Game");
 		ImGui::PopFont();
 
@@ -60,7 +60,7 @@ namespace app::ui::scene {
 			tetrisController_->joinGameRoom(serverId_);
 		}
 
-		if (ImGui::Button("Refresh")) {
+		if (ImGui::MediumButton("Refresh")) {
 			tetrisController_->refreshGameRoomList();
 		}
 
@@ -81,7 +81,7 @@ namespace app::ui::scene {
 				ImGui::TableNextColumn(); ImGui::Text("%i / %i", gameRoom.playerCount, gameRoom.maxPlayerCount);
 
 				ImGui::TableNextColumn();
-				if (ImGui::Button("Connect")) {
+				if (ImGui::MediumButton("Connect")) {
 					tetrisController_->joinGameRoom(gameRoom.id.c_str());
 				}
 			}

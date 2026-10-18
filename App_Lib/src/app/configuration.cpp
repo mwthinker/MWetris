@@ -199,9 +199,12 @@ namespace app {
 		std::optional<EditableSettings> startupSettings;
 
 		mutable ImFont* defaultFont{};
-		mutable ImFont* headerFont{};
-		mutable ImFont* buttonFont{};
-		mutable ImFont* boardFont{};
+		mutable ImFont* regularSmallFont{};
+		mutable ImFont* boardRegularFont{};
+		mutable ImFont* mediumFont{};
+		mutable ImFont* mediumValueFont{};
+		mutable ImFont* semiBoldFont{};
+		mutable ImFont* scoreFont{};
 	};
 
 	Configuration& Configuration::getInstance() {
@@ -211,9 +214,12 @@ namespace app {
 
 	void Configuration::resetRuntimeResources() {
 		impl_->defaultFont = nullptr;
-		impl_->headerFont = nullptr;
-		impl_->buttonFont = nullptr;
-		impl_->boardFont = nullptr;
+		impl_->regularSmallFont = nullptr;
+		impl_->boardRegularFont = nullptr;
+		impl_->mediumFont = nullptr;
+		impl_->mediumValueFont = nullptr;
+		impl_->semiBoldFont = nullptr;
+		impl_->scoreFont = nullptr;
 		impl_->startupSettings.reset();
 
 		blockTypeI_ = {};
@@ -652,53 +658,73 @@ namespace app {
 		return {};
 	}
 
-	ImFont* Configuration::getImGuiDefaultFont() const {
-		if (!impl_->defaultFont) {
-			auto& io = ImGui::GetIO();
-
-			auto font = impl_->jsonObject["window"]["font"].get<std::string>();
-			impl_->defaultFont = io.Fonts->AddFontFromFileTTF(font.c_str(), 16);
-			
-			float baseFontSize = 13.0f; // 13.0f is the size of the default font. Change to the font size you use.
-			float iconFontSize = baseFontSize * 3.0f / 3.0f;
-
-			static const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
-			ImFontConfig icons_config;
-			icons_config.MergeMode = true;
-			icons_config.PixelSnapH = true;
-			icons_config.GlyphMinAdvanceX = iconFontSize;
-
-			auto file = fmt::format("fonts/{}", FONT_ICON_FILE_NAME_FAS);
-			io.Fonts->AddFontFromFileTTF(file.c_str(), iconFontSize, &icons_config, icons_ranges);
+	void Configuration::initImGuiFonts() const {
+		if (impl_->defaultFont) {
+			return;
 		}
 
+		auto regularFont = impl_->jsonObject["window"]["font"].get<std::string>();
+		auto boardRegularFont = impl_->jsonObject["window"]["tetrisBoard"]["font"].get<std::string>();
+		constexpr auto mediumFont = "fonts/inter/Inter_18pt-Medium.ttf";
+		constexpr auto semiBoldFont = "fonts/inter/Inter_18pt-SemiBold.ttf";
+		auto& io = ImGui::GetIO();
+
+		// Add the primary font first and select it explicitly so unscoped ImGui
+		// content and newly-created windows consistently use Inter Regular.
+		impl_->defaultFont = io.Fonts->AddFontFromFileTTF(regularFont.c_str(), 17.f);
+		io.FontDefault = impl_->defaultFont;
+
+		static const ImWchar iconRanges[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
+		ImFontConfig iconConfig;
+		iconConfig.MergeMode = true;
+		iconConfig.PixelSnapH = true;
+		iconConfig.GlyphMinAdvanceX = 15.f;
+		auto iconFile = fmt::format("fonts/{}", FONT_ICON_FILE_NAME_FAS);
+		io.Fonts->AddFontFromFileTTF(iconFile.c_str(), 15.f, &iconConfig, iconRanges);
+
+		impl_->regularSmallFont = io.Fonts->AddFontFromFileTTF(regularFont.c_str(), 14.f);
+		impl_->boardRegularFont = boardRegularFont == regularFont
+			? impl_->regularSmallFont
+			: io.Fonts->AddFontFromFileTTF(boardRegularFont.c_str(), 14.f);
+		impl_->mediumFont = io.Fonts->AddFontFromFileTTF(mediumFont, 15.f);
+		impl_->mediumValueFont = io.Fonts->AddFontFromFileTTF(mediumFont, 17.f);
+		impl_->semiBoldFont = io.Fonts->AddFontFromFileTTF(semiBoldFont, 15.f);
+		impl_->scoreFont = io.Fonts->AddFontFromFileTTF(semiBoldFont, 24.f);
+	}
+
+	ImFont* Configuration::getImGuiDefaultFont() const {
+		initImGuiFonts();
 		return impl_->defaultFont;
 	}
 
-	ImFont* Configuration::getImGuiHeaderFont() const {
-		if (!impl_->headerFont) {
-			auto font = impl_->jsonObject["window"]["font"].get<std::string>();
-			impl_->headerFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(font.c_str(), 50);
-		}
-
-		return impl_->headerFont;
+	ImFont* Configuration::getImGuiRegularSmallFont() const {
+		initImGuiFonts();
+		return impl_->regularSmallFont;
 	}
 
-	ImFont* Configuration::getImGuiButtonFont() const {
-		if (!impl_->buttonFont) {
-			auto font = impl_->jsonObject["window"]["font"].get<std::string>();
-			impl_->buttonFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(font.c_str(), 35);
-		}
-
-		return impl_->buttonFont;
+	ImFont* Configuration::getImGuiBoardRegularFont() const {
+		initImGuiFonts();
+		return impl_->boardRegularFont;
 	}
 
-	ImFont* Configuration::getImGuiBoardFont() const {
-		if (!impl_->boardFont) {
-			auto font = impl_->jsonObject["window"]["tetrisBoard"]["font"].get<std::string>();
-			impl_->boardFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(font.c_str(), 16);
-		}
-		return impl_->boardFont;
+	ImFont* Configuration::getImGuiMediumFont() const {
+		initImGuiFonts();
+		return impl_->mediumFont;
+	}
+
+	ImFont* Configuration::getImGuiMediumValueFont() const {
+		initImGuiFonts();
+		return impl_->mediumValueFont;
+	}
+
+	ImFont* Configuration::getImGuiSemiBoldFont() const {
+		initImGuiFonts();
+		return impl_->semiBoldFont;
+	}
+
+	ImFont* Configuration::getImGuiScoreFont() const {
+		initImGuiFonts();
+		return impl_->scoreFont;
 	}
 
 	sdl::Color Configuration::getOuterSquareColor() const {

@@ -48,7 +48,7 @@
 			"borderColor": "#ffffffff",
 			"showDropDownColor": "#ffffff"
 		},
-		"font": "fonts/Ubuntu-B.ttf",
+		"font": "fonts/inter/Inter_18pt-Regular.ttf",
 		"width": 860,
 		"height": 1120,
 		"positionX": 1496,
@@ -62,7 +62,7 @@
 			"background": "images/background.png"
 		},
 		"tetrisBoard": {
-			"font": "fonts/Ubuntu-B.ttf",
+			"font": "fonts/inter/Inter_18pt-Regular.ttf",
 			"squareSize": 10,
 			"borderSize": 3,
 			"sprites": {

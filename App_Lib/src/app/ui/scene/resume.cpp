@@ -1,5 +1,7 @@
 #include "resume.h"
 
+#include "../imguiextra.h"
+
 namespace app::ui::scene {
 
 	Resume::Resume(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager)
@@ -11,7 +13,7 @@ namespace app::ui::scene {
 		ImVec2 buttonSize{300, 70};
 
 		ImGui::SetCursorPos(ImVec2{(ImGui::GetWindowWidth() - buttonSize.x) / 2.0f, (ImGui::GetWindowHeight() - buttonSize.y) / 2.0f});
-		if (ImGui::Button("Resume Single Player F1", buttonSize)) {
+		if (ImGui::MediumButton("Resume Single Player F1", buttonSize)) {
 			tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
 		}
 	}

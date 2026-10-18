@@ -23,6 +23,7 @@
 
 ## Runtime/Data Gotchas
 - App runtime data is copied at build time from `App/data`, fetched `MWetrisData`, and fetched `SDL_GameControllerDB` into the app build dir.
+- Fonts come from the pinned `MWetrisData` repository, not `App/data`. Inter is stored as `fonts/inter/{Inter_18pt-Regular.ttf,Inter_18pt-Medium.ttf,Inter_18pt-SemiBold.ttf,OFL.txt}`; `App/CMakeLists.txt` copies that tree to `<build>/App/fonts/inter`, and `App/CPack.cmake` installs it with the same layout. Runtime font paths are executable-relative (`fonts/inter/...`). After changing the `MWetrisData` hash in `ExternalFetchContent.cmake`, rerun CMake configure to fetch and copy the new assets.
 - `App/data/tetris.json` is schema-backed by `App/data/tetris.schema.json`; AI value functions live in this JSON.
 - Docker server flow is `Docker/build-server`; on arm64 it exports `VCPKG_FORCE_SYSTEM_BINARIES=1`, builds `unix-game-server-only`, and compose maps port `11175`.
 
