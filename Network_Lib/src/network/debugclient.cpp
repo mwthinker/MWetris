@@ -26,12 +26,21 @@ namespace network {
 	}
 
 	void DebugClientOnServer::stop() {
+		stopped_ = true;
+		try {
+			timer_.cancel();
+		} catch (const asio::system_error& exception) {
+			spdlog::warn("[DebugClientOnServer] Could not cancel timer: {}", exception.what());
+		}
 	}
 
 	asio::awaitable<ProtobufMessage> DebugClientOnServer::receive() {
-		while (receivedMessages_.empty()) {
+		while (receivedMessages_.empty() && !stopped_) {
 			co_await timer_.async_wait(asio::use_awaitable);
 			timer_.expires_after(std::chrono::seconds{0});
+		}
+		if (stopped_) {
+			co_return ProtobufMessage{};
 		}
 		auto message = std::move(receivedMessages_.front());
 		receivedMessages_.pop();
@@ -89,12 +98,21 @@ namespace network {
 	}
 
 	void DebugClientOnNetwork::stop() {
+		stopped_ = true;
+		try {
+			timer_.cancel();
+		} catch (const asio::system_error& exception) {
+			spdlog::warn("[DebugClientOnNetwork] Could not cancel timer: {}", exception.what());
+		}
 	}
 
 	asio::awaitable<ProtobufMessage> DebugClientOnNetwork::receive() {
-		while (receivedMessages_.empty()) {
+		while (receivedMessages_.empty() && !stopped_) {
 			co_await timer_.async_wait(asio::use_awaitable);
 			timer_.expires_after(std::chrono::seconds(0));
+		}
+		if (stopped_) {
+			co_return ProtobufMessage{};
 		}
 		auto message = std::move(receivedMessages_.front());
 		receivedMessages_.pop();

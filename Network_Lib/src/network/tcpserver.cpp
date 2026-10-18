@@ -19,18 +19,30 @@ namespace network {
 		spdlog::debug("[TcpServer] Destructor");
 	}
 
+	void TcpServer::stop() {
+		ServerCore::stop();
+		if (acceptor_) {
+			std::error_code error;
+			acceptor_->cancel(error);
+			acceptor_->close(error);
+		}
+	}
+
 	asio::awaitable<void> TcpServer::run() {
 		co_await run(shared_from_this());
 	}
 
 	asio::awaitable<void> TcpServer::run(std::shared_ptr<TcpServer> server) {
-		asio::ip::tcp::acceptor acceptor{server->ioContext_, server->getEndpoint()};
+		server->acceptor_ = std::make_unique<asio::ip::tcp::acceptor>(server->ioContext_, server->getEndpoint());
 		while (!server->isStopped_) try {
-			asio::ip::tcp::socket socket = co_await acceptor.async_accept(asio::use_awaitable);
+			asio::ip::tcp::socket socket = co_await server->acceptor_->async_accept(asio::use_awaitable);
 			server->spawnCoroutine(std::move(socket));
 		} catch (const std::exception& e) {
-			spdlog::error("[TcpServer] Exception: {}", e.what());
+			if (!server->isStopped_) {
+				spdlog::error("[TcpServer] Exception: {}", e.what());
+			}
 		}
+		server->acceptor_.reset();
 		spdlog::debug("[TcpServer] Stopped");
 	}
 

@@ -51,6 +51,11 @@ namespace app {
 		});
 	}
 
+	TetrisController::~TetrisController() {
+		connections_.clear();
+		network_->stop();
+	}
+
 	void TetrisController::onNetworkEvent(const cnetwork::PlayerSlotEvent& playerSlotEvent) {
 		tetrisEvent(PlayerSlotEvent{
 			.playerSlot = playerSlotEvent.playerSlot,

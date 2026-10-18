@@ -308,9 +308,23 @@ namespace app {
 		ASSERT_TRUE(restartSave);
 		EXPECT_TRUE(restartSave->restartRequired);
 		EXPECT_EQ(restartSave->restartReasons, std::vector<std::string>{"Network endpoints"});
+
+		configuration.resetRuntimeResources();
+		configuration.resetRuntimeResources();
+		EXPECT_EQ(configuration.getEditableSettings(), restartSettings);
+		auto postRestartSave = configuration.persistEditableSettings(restartSettings);
+		ASSERT_TRUE(postRestartSave);
+		EXPECT_FALSE(postRestartSave->restartRequired);
+		EXPECT_TRUE(postRestartSave->restartReasons.empty());
+
 		auto revertRestartSetting = configuration.persistEditableSettings(settings);
 		ASSERT_TRUE(revertRestartSetting);
-		EXPECT_FALSE(revertRestartSetting->restartRequired);
+		EXPECT_TRUE(revertRestartSetting->restartRequired);
+		EXPECT_EQ(revertRestartSetting->restartReasons, std::vector<std::string>{"Network endpoints"});
+		configuration.resetRuntimeResources();
+		auto resetBaselineSave = configuration.persistEditableSettings(settings);
+		ASSERT_TRUE(resetBaselineSave);
+		EXPECT_FALSE(resetBaselineSave->restartRequired);
 
 		auto invalidSettings = settings;
 		invalidSettings.network.server.port = 70000;

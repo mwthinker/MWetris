@@ -25,6 +25,7 @@ namespace network {
 
 		~TcpServer() override;
 
+		void stop() override;
 		asio::awaitable<void> run() override;
 
 	private:
@@ -39,6 +40,7 @@ namespace network {
 		asio::ip::tcp::endpoint getEndpoint() const;
 
 		Settings settings_;
+		std::unique_ptr<asio::ip::tcp::acceptor> acceptor_;
 	};
 
 }

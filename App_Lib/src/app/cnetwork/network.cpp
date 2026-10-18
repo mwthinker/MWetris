@@ -87,12 +87,12 @@ namespace app::cnetwork {
 	}
 
 	void Network::stop() {
-		client_->stop();
-		// To avoid getting stuck
-		gameRoomId_ = network::GameRoomId{};
-
 		// To be able to stop the coroutine
 		running_ = false;
+		client_->stop();
+
+		// To avoid getting stuck
+		gameRoomId_ = network::GameRoomId{};
 
 		wrapperToServer_.Clear();
 	}
@@ -307,14 +307,13 @@ namespace app::cnetwork {
 		}
 		co_return;
 	} catch (const std::system_error& e) {
-		spdlog::warn("[Network] Lost connection: {}", e.what());
-		
 		if (network->running_) {
+			spdlog::warn("[Network] Lost connection: {}", e.what());
 			network->reconnect();
+			network->networkEvent(NetworkErrorEvent{
+				.insideGameRoom = network->isInsideGameRoom()
+			});
 		}
-		network->networkEvent(NetworkErrorEvent{
-			.insideGameRoom = network->isInsideGameRoom()
-		});
 		network->gameRoomId_ = network::GameRoomId{}; // Room destroyed.
 		network->networkSlots_.clear();
 		network->aiBySlotIndex_.clear();

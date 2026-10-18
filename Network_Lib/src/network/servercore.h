@@ -39,7 +39,7 @@ namespace network {
 		/// connected client coroutines. But current jobs must still be run to
 		/// completion. I.e. ioContext.poll() must be called until all jobs are
 		/// done to garantee that the coroutines are finished.
-		void stop();
+		virtual void stop();
 
 		/// @brief Start the server. Spawns a coroutine.
 		void start();

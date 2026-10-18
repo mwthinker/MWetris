@@ -52,6 +52,7 @@ namespace network {
 		std::shared_ptr<DebugServer> debugServer_;
 		std::shared_ptr<DebugClientOnNetwork> debugClientOnNetwork_;
 		std::queue<ProtobufMessage> receivedMessages_;
+		bool stopped_ = false;
 	};
 
 	class DebugClientOnNetwork : public Client {
@@ -88,6 +89,7 @@ namespace network {
 		std::weak_ptr<DebugClientOnServer> debugClientOnServer_;
 		std::queue<ProtobufMessage> receivedMessages_;
 		std::function<void(const ProtobufMessage&)> sendToServerCallback_;
+		bool stopped_ = false;
 	};
 
 }

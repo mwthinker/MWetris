@@ -64,6 +64,7 @@ namespace app {
 		mw::PublicSignal<TetrisController, const TetrisEvent&> tetrisEvent;
 
 		TetrisController(std::shared_ptr<game::DeviceManager> deviceManager, std::shared_ptr<ControlProfiles> controlProfiles, std::shared_ptr<cnetwork::Network> network, std::shared_ptr<graphic::GameComponent> gameComponent);
+		~TetrisController();
 
 		// Updates everything. Should be called each frame.
 		void update(double deltaTime);

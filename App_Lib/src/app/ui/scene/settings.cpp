@@ -55,8 +55,9 @@ namespace app::ui::scene {
 
 	}
 
-	Settings::Settings(std::shared_ptr<ControlsPresenter> controlsPresenter)
-		: controlsPresenter_{std::move(controlsPresenter)} {
+	Settings::Settings(std::shared_ptr<ControlsPresenter> controlsPresenter, std::function<void()> requestRestart)
+		: controlsPresenter_{std::move(controlsPresenter)}
+		, requestRestart_{std::move(requestRestart)} {
 	}
 
 	void Settings::switchedTo(const SceneData&) {
@@ -255,14 +256,20 @@ namespace app::ui::scene {
 		if (!validation) {
 			ImGui::TextColored({1.f, 0.35f, 0.35f, 1.f}, "%s", validation.error().c_str());
 		}
+		bool dirty = draft_ != committed_;
 		if (!restartReasons_.empty()) {
 			ImGui::TextUnformatted("Saved. Restart required for:");
+			ImGui::SameLine();
+			ImGui::BeginDisabled(dirty || !requestRestart_);
+			if (ImGui::Button("Restart now", {120.f, 30.f})) {
+				requestRestart_();
+			}
+			ImGui::EndDisabled();
 			for (const auto& reason : restartReasons_) {
 				ImGui::BulletText("%s", reason.c_str());
 			}
 		}
 
-		bool dirty = draft_ != committed_;
 		ImGui::BeginDisabled(!dirty || !validation);
 		if (ImGui::ConfirmationButton("Apply", {100.f, 30.f})) {
 			apply();

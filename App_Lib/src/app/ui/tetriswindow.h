@@ -15,6 +15,8 @@
 
 #include <sdl/window.h>
 
+#include <functional>
+
 namespace app {
 
 	class ControlProfiles;
@@ -41,7 +43,8 @@ namespace app::ui {
 		TetrisWindow(const std::string& windowName, Type type, sdl::Window& window,
 			std::shared_ptr<game::DeviceManager> deviceManager,
 			std::shared_ptr<ControlProfiles> controlProfiles,
-			std::shared_ptr<cnetwork::Network> network
+			std::shared_ptr<cnetwork::Network> network,
+			std::function<void()> requestRestart
 		);
 
 		~TetrisWindow();
@@ -74,6 +77,7 @@ namespace app::ui {
 		std::shared_ptr<game::DeviceManager> deviceManager_;
 		std::shared_ptr<ControlProfiles> controlProfiles_;
 		std::shared_ptr<ControlsPresenter> controlsPresenter_;
+		std::function<void()> requestRestart_;
 		app::TextureView background_;
 		scene::StateMachine modalStateMachine_;
 		scene::StateMachine mainStateMachine_;

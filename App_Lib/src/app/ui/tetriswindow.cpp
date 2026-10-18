@@ -98,11 +98,13 @@ namespace app::ui {
 	TetrisWindow::TetrisWindow(const std::string& windowName, Type type, sdl::Window& window,
 		std::shared_ptr<game::DeviceManager> deviceManager,
 		std::shared_ptr<ControlProfiles> controlProfiles,
-		std::shared_ptr<cnetwork::Network> network)
+		std::shared_ptr<cnetwork::Network> network,
+		std::function<void()> requestRestart)
 		: window_{window}
 		, deviceManager_{deviceManager}
 		, controlProfiles_{std::move(controlProfiles)}
 		, controlsPresenter_{std::make_shared<ControlsPresenter>(windowName, deviceManager, controlProfiles_)}
+		, requestRestart_{std::move(requestRestart)}
 		, modalStateMachine_{ui::scene::StateMachine::StateType::Modal}
 		, type_{type}
 		, windowName_{windowName} {
@@ -151,7 +153,7 @@ namespace app::ui {
 		
 		modalStateMachine_.emplace<scene::JoinGameRoom>(tetrisController_);
 		modalStateMachine_.emplace<scene::CreateGameRoom>(tetrisController_);
-		modalStateMachine_.emplace<scene::Settings>(controlsPresenter_);
+		modalStateMachine_.emplace<scene::Settings>(controlsPresenter_, requestRestart_);
 		modalStateMachine_.emplace<scene::HighScore>();
 		modalStateMachine_.emplace<scene::NewHighScore>([this]() {
 			modalStateMachine_.switchTo<scene::HighScore>();

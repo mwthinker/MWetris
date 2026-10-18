@@ -27,12 +27,25 @@ MainWindow::~MainWindow() {
 	if (server_) {
 		server_->stop();
 	}
-	ioContext_.stop();
-	ioContext_.run();
+	connections_.clear();
 	subWindows_.clear();
+	server_.reset();
 	deviceManager_.reset();
 	controlProfiles_.reset();
-	app::Configuration::getInstance().quit();
+
+	ioContext_.restart();
+	ioContext_.poll();
+
+	app::Configuration::getInstance().resetRuntimeResources();
+}
+
+MainWindow::ExitAction MainWindow::getExitAction() const {
+	return exitAction_;
+}
+
+void MainWindow::requestRestart() {
+	exitAction_ = ExitAction::Restart;
+	quit();
 }
 
 void MainWindow::preLoop() {
@@ -135,7 +148,8 @@ void MainWindow::initSingleTcpClient() {
 		subWindows_.push_back(std::make_unique<app::ui::TetrisWindow>(name, type, *this,
 			deviceManager_,
 			controlProfiles_,
-			std::make_shared<app::cnetwork::Network>(tcpClient, controlProfiles_)
+			std::make_shared<app::cnetwork::Network>(tcpClient, controlProfiles_),
+			[this]() { requestRestart(); }
 		));
 	}
 }
@@ -153,7 +167,8 @@ void MainWindow::initTcpServer() {
 		subWindows_.push_back(std::make_unique<app::ui::TetrisWindow>(name, type, *this,
 			deviceManager_,
 			controlProfiles_,
-			std::make_shared<app::cnetwork::Network>(tcpClient, controlProfiles_)
+			std::make_shared<app::cnetwork::Network>(tcpClient, controlProfiles_),
+			[this]() { requestRestart(); }
 		));
 	}
 	server_ = server;
@@ -169,7 +184,8 @@ void MainWindow::initDebugServer() {
 		subWindows_.push_back(std::make_unique<app::ui::TetrisWindow>(name, type, *this,
 			deviceManager_,
 			controlProfiles_,
-			std::make_shared<app::cnetwork::Network>(debugClient, controlProfiles_)
+			std::make_shared<app::cnetwork::Network>(debugClient, controlProfiles_),
+			[this]() { requestRestart(); }
 		));
 	}
 	server_ = server;

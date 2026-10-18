@@ -12,18 +12,13 @@
 
 template <> struct fmt::formatter<argparse::ArgumentParser> : fmt::ostream_formatter {};
 
-void startApplication(MainWindow::Config& config) {
-	mwetris::logger::init();
-	spdlog::info("[main] MWetris Version:  {}", PROJECT_VERSION);
-	spdlog::info("[main] MWetris git hash:  {}  date: {}", GIT_VERSION, GIT_DATE);
-	spdlog::info("[main] MWetris vcpkg hash:  {}  date: {}", VCPKG_HASH, VCPKG_DATE);
-	spdlog::info("[main] MWetris GUI:  {}", MWETRIS_GUID);
-
+MainWindow::ExitAction startApplication(const MainWindow::Config& config) {
 	MainWindow mainWindow{config};
 
 	sdl::GameController::loadGameControllerMappings("gamecontrollerdb.txt");
 
 	mainWindow.startLoop();
+	return mainWindow.getExitAction();
 }
 
 int main(int argc, char** argv) {
@@ -74,6 +69,15 @@ int main(int argc, char** argv) {
 		config.network = Network::TcpServer;
 	}
 
-	startApplication(config);
+	mwetris::logger::init();
+	spdlog::info("[main] MWetris Version:  {}", PROJECT_VERSION);
+	spdlog::info("[main] MWetris git hash:  {}  date: {}", GIT_VERSION, GIT_DATE);
+	spdlog::info("[main] MWetris vcpkg hash:  {}  date: {}", VCPKG_HASH, VCPKG_DATE);
+	spdlog::info("[main] MWetris GUI:  {}", MWETRIS_GUID);
+
+	MainWindow::ExitAction exitAction;
+	do {
+		exitAction = startApplication(config);
+	} while (exitAction == MainWindow::ExitAction::Restart);
 	return 0;
 }

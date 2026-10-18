@@ -21,13 +21,18 @@ namespace network {
 
 	void TcpClient::stop() {
 		spdlog::debug("[TcpClient] {} Stop", name_);
-		try {
-			socket_.close();
-		} catch (const asio::system_error& e) {
-			spdlog::error("[TcpClient] {} Stop Exception: {}", name_, e.what());
-		}
 		isStopped_ = true;
 		connected_ = false;
+
+		std::error_code error;
+		try {
+			tryToConnectTimer_.cancel();
+			waitingToConnect_.cancel();
+		} catch (const asio::system_error& exception) {
+			spdlog::warn("[TcpClient] {} could not cancel timer: {}", name_, exception.what());
+		}
+		socket_.cancel(error);
+		socket_.close(error);
 	}
 
 	bool TcpClient::isConnected() const {
@@ -142,10 +147,12 @@ namespace network {
 			protobufMessage.reserveBodySize();
 			co_await asio::async_read(socket_, protobufMessage.getMutableBodyBuffer(), asio::transfer_exactly(protobufMessage.getBodySize()), asio::use_awaitable);
 		} catch (const std::exception& e) {
-			spdlog::error("[TcpClient] {} async_read Exception: {}", name_, e.what());
+			if (!isStopped_) {
+				spdlog::error("[TcpClient] {} async_read Exception: {}", name_, e.what());
+			}
 			
 			stop();
-			throw e;
+			throw;
 		}
 
 		co_return protobufMessage;

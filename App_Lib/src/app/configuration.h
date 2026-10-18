@@ -136,7 +136,7 @@ namespace app {
 
 		static Configuration& getInstance();
 
-		void quit();
+		void resetRuntimeResources();
 
 		Configuration(const Configuration&) = delete;
 		Configuration& operator=(const Configuration&) = delete;

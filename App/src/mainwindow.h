@@ -25,6 +25,11 @@ enum class Network {
 
 class MainWindow : public sdl::Window {
 public:
+	enum class ExitAction {
+		Quit,
+		Restart
+	};
+
 	struct Config {
 		int windows = 1;
 		bool showDebugWindow = false;
@@ -35,8 +40,11 @@ public:
 	explicit MainWindow(const Config& config);
 
 	~MainWindow() override;
+
+	ExitAction getExitAction() const;
 	
 private:
+	void requestRestart();
 	void preLoop() override;
 
 	void initSingleTcpClient();
@@ -58,6 +66,7 @@ private:
 	std::shared_ptr<network::ServerCore> server_;
 	mw::signals::ScopedConnections connections_;
 	Config config_;
+	ExitAction exitAction_ = ExitAction::Quit;
 	bool draggingWindow_ = false;
 	float dragMouseX_ = 0.f;
 	float dragMouseY_ = 0.f;

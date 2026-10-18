@@ -209,10 +209,23 @@ namespace app {
 		return instance;
 	}
 
-	void Configuration::quit() {
-		impl_ = nullptr;
+	void Configuration::resetRuntimeResources() {
+		impl_->defaultFont = nullptr;
+		impl_->headerFont = nullptr;
+		impl_->buttonFont = nullptr;
+		impl_->boardFont = nullptr;
+		impl_->startupSettings.reset();
 
-		// A bit of a hack. Resource needs to be destructed before GpuContext is destroyed.
+		blockTypeI_ = {};
+		blockTypeJ_ = {};
+		blockTypeL_ = {};
+		blockTypeO_ = {};
+		blockTypeS_ = {};
+		blockTypeT_ = {};
+		blockTypeZ_ = {};
+		background_ = {};
+
+		// This resource must be destroyed before the window's GPU device.
 		atlasTexture_.reset();
 	}
 
@@ -228,7 +241,14 @@ namespace app {
 			impl_->jsonPath = APPLICATION_JSON;
 		} else {
 			// Find default path to save/load file from.
-			impl_->jsonPath = SDL_GetPrefPath("mwthinker", "MWetris2") + APPLICATION_JSON;
+			auto preferencePath = std::unique_ptr<char, decltype(&SDL_free)>{
+				SDL_GetPrefPath("mwthinker", "MWetris2"),
+				SDL_free
+			};
+			if (!preferencePath) {
+				throw sdl::SdlException{"Could not determine the configuration directory"};
+			}
+			impl_->jsonPath = std::string{preferencePath.get()} + APPLICATION_JSON;
 		}
 		std::ifstream stream(impl_->jsonPath);
 		if (!stream.is_open()) {

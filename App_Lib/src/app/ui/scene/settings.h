@@ -4,6 +4,7 @@
 #include "scene.h"
 #include "configuration.h"
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -18,7 +19,7 @@ namespace app::ui::scene {
 
 	class Settings : public Scene {
 	public:
-		explicit Settings(std::shared_ptr<ControlsPresenter> controlsPresenter);
+		Settings(std::shared_ptr<ControlsPresenter> controlsPresenter, std::function<void()> requestRestart);
 
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
 		ImVec2 getSize() const override;
@@ -33,6 +34,7 @@ namespace app::ui::scene {
 		void apply();
 
 		std::shared_ptr<ControlsPresenter> controlsPresenter_;
+		std::function<void()> requestRestart_;
 		Configuration::EditableSettings committed_;
 		Configuration::EditableSettings draft_;
 		std::string error_;
