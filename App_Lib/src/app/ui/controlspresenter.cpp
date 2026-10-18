@@ -34,10 +34,9 @@ namespace app::ui {
 		return deviceManager_->getAllDevicesAvailable();
 	}
 
-	game::DevicePtr ControlsPresenter::resolveDevice(
-		const std::string& deviceGuid,
-		const std::vector<game::DevicePtr>& connectedDevices,
+	game::DevicePtr ControlsPresenter::resolveDevice(const std::string& deviceGuid, const std::vector<game::DevicePtr>& connectedDevices, 
 		bool retainDisconnected) const {
+
 		auto connected = std::ranges::find_if(connectedDevices, [&](const game::DevicePtr& device) {
 			return device->getGuid() == deviceGuid;
 		});
@@ -47,11 +46,9 @@ namespace app::ui {
 		return retainDisconnected ? deviceManager_->findDevice(deviceGuid) : nullptr;
 	}
 
-	bool ControlsPresenter::drawDeviceCombo(
-		std::string& selectedDeviceGuid,
-		const std::vector<game::DevicePtr>& connectedDevices,
-		const char* label,
-		bool retainDisconnected) const {
+	bool ControlsPresenter::drawDeviceCombo(std::string& selectedDeviceGuid, const std::vector<game::DevicePtr>& connectedDevices,
+		const char* label, bool retainDisconnected) const {
+
 		bool changed = false;
 		auto selectedDevice = resolveDevice(selectedDeviceGuid, connectedDevices, retainDisconnected);
 		if (!selectedDevice && !connectedDevices.empty()) {
@@ -76,7 +73,7 @@ namespace app::ui {
 				ImGui::PushID(device->getGuid().c_str());
 				ImGui::PushID(device.get());
 				bool isSelected = selectedDeviceGuid == device->getGuid();
-				if (ImGui::Selectable(device->getName().c_str(), isSelected, ImGuiSelectableFlags_NoAutoClosePopups)) {
+				if (ImGui::Selectable(device->getName().c_str(), isSelected)) {
 					selectedDeviceGuid = device->getGuid();
 					changed = true;
 				}
@@ -109,7 +106,7 @@ namespace app::ui {
 			for (const auto& profile : profiles) {
 				ImGui::PushID(profile.id.value.c_str());
 				bool isSelected = selectedProfileId == profile.id;
-				if (ImGui::Selectable(profile.name.c_str(), isSelected, ImGuiSelectableFlags_NoAutoClosePopups)) {
+				if (ImGui::Selectable(profile.name.c_str(), isSelected)) {
 					requestedProfileId = profile.id;
 				}
 				if (isSelected) {
@@ -141,7 +138,7 @@ namespace app::ui {
 			for (const auto& profile : profiles) {
 				ImGui::PushID(profile.id.value.c_str());
 				bool isSelected = *selectedProfileId == profile.id;
-				if (ImGui::Selectable(profile.name.c_str(), isSelected, ImGuiSelectableFlags_NoAutoClosePopups)) {
+				if (ImGui::Selectable(profile.name.c_str(), isSelected)) {
 					requestedProfileId = profile.id;
 				}
 				if (isSelected) {
