@@ -18,3 +18,4 @@
 - Avoid prefixing class names with "I" (use `Player` instead of `IPlayer`). For concrete implementations, use `PlayerImpl` or a more descriptive name if possible.
 - For nested namespaces, use the compact syntax `namespace a::b::c { … }`.
 - Prefer signed integers for values, counters, and arithmetic; use unsigned only for bit manipulation, intentional modular arithmetic, or API-required types (ES.101, ES.102).
+- Prefer keeping method parameters on the same line; wrap them only when needed for readability.
