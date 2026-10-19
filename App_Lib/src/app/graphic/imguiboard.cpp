@@ -54,6 +54,8 @@ namespace app::graphic {
 		constexpr float PreviewRounding = 4.f;
 		constexpr float ValueIndent = 10.f;
 		constexpr float SidebarSectionSpacing = 8.f;
+		constexpr float PlayerCardPadding = 10.f;
+		constexpr float PlayerCardRounding = 8.f;
 
 		const char* gamePosition(int position) {
 			switch (position) {
@@ -278,7 +280,18 @@ namespace app::graphic {
 
 	void ImGuiBoard::draw(float width, float height, double deltaTime) {
 		ImGui::PushID(this);
-		ImGui::Group([&]() {
+		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, PlayerCardRounding);
+		ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 2.f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Vec2{PlayerCardPadding, PlayerCardPadding});
+		auto playerCardBackground = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+		playerCardBackground.w = 0.65f;
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, playerCardBackground);
+		ImGui::PushStyleColor(ImGuiCol_Border,
+			setAlpha(Configuration::getInstance().getBorderColor(), 0.8f).toImU32());
+		if (ImGui::BeginChild("PlayerCard", {width, height}, true,
+			ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+			width = ImGui::GetContentRegionAvail().x;
+			height = ImGui::GetContentRegionAvail().y;
 			const int columns = player_->getColumns();
 			const int rows = player_->getRows() - 2;
 
@@ -302,7 +315,7 @@ namespace app::graphic {
 				ImGui::SameLine();
 			}
 
-			drawBorder(normalizedWidth * squareSize_, normalizedHeight * squareSize_, Configuration::getInstance().getBorderColor());
+			drawBorder(columns * squareSize_, normalizedHeight * squareSize_, Configuration::getInstance().getBorderColor());
 			drawBoard(deltaTime);
 
 			const float sidebarWidth = NormalizedPreviewSize * squareSize_ - SidebarGap;
@@ -313,6 +326,8 @@ namespace app::graphic {
 			auto sidebarBackground = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
 			sidebarBackground.w = 0.85f;
 			ImGui::PushStyleColor(ImGuiCol_ChildBg, sidebarBackground);
+			ImGui::PushStyleColor(ImGuiCol_Border,
+				setAlpha(Configuration::getInstance().getBorderColor(), 0.4f).toImU32());
 			if (ImGui::BeginChild("Sidebar", {sidebarWidth, height_}, true,
 				ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
 				ImGui::PushFont(Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
@@ -373,7 +388,7 @@ namespace app::graphic {
 				}
 			}
 			ImGui::EndChild();
-			ImGui::PopStyleColor();
+			ImGui::PopStyleColor(2);
 			ImGui::PopStyleVar(3);
 
 
@@ -401,7 +416,10 @@ namespace app::graphic {
 				
 				ImGui::SetCursorPos(cursorPos);
 			}
-		});
+		}
+		ImGui::EndChild();
+		ImGui::PopStyleColor(2);
+		ImGui::PopStyleVar(3);
 		ImGui::PopID();
 	}
 

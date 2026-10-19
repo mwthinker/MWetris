@@ -14,8 +14,12 @@
 #include <map>
 #include <cassert>
 #include <utility>
+#include <algorithm>
 
 namespace app::graphic {
+	namespace {
+		constexpr float PlayerCardSpacing = 12.f;
+	}
 
 	GameComponent::GameComponent(BoardSidebarRenderer boardSidebarRenderer)
 		: boardSidebarRenderer_{std::move(boardSidebarRenderer)} {
@@ -32,19 +36,23 @@ namespace app::graphic {
 		ImGui::PushStyleColor(ImGuiCol_Border, sdl::color::html::Red);
 
 		float width = windowWidth;
-		float height = windowHeight;
 		if (imguiBoards_.size() > 1) {
 			width = windowWidth / imguiBoards_.size();
 		}
+		const float cardWidth = std::max(1.f, width - 2.f * PlayerCardSpacing);
+		const float cardHeight = std::max(1.f, windowHeight - 2.f * PlayerCardSpacing);
 
 		Vec2 pos = ImGui::GetCursorPos();
-		for (auto& imguiBoard : imguiBoards_) {
-			imguiBoard.draw(width, height, deltaTime);
-			ImGui::SameLine();
+		ImGui::SetCursorPos(pos + Vec2{PlayerCardSpacing, PlayerCardSpacing});
+		for (std::size_t i = 0; i < imguiBoards_.size(); ++i) {
+			imguiBoards_[i].draw(cardWidth, cardHeight, deltaTime);
+			if (i + 1 < imguiBoards_.size()) {
+				ImGui::SameLine(0.f, 2.f * PlayerCardSpacing);
+			}
 		}
 
 		for ([[maybe_unused]] auto& imguiBoard : imguiBoards_) {
-			ImGui::SetCursorPos(pos + Vec2{width / 2.f, height / 2.f});
+			ImGui::SetCursorPos(pos + Vec2{width / 2.f, windowHeight / 2.f});
 			pos.x += width;
 			ImGui::PushFont(Configuration::getInstance().getImGuiScoreFont(), 0.f);
 			if (gamePause_.pause) {
