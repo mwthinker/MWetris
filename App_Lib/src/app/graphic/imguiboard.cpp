@@ -48,6 +48,12 @@ namespace app::graphic {
 		}
 
 		constexpr float NormalizedPreviewSize = 5.f;
+		constexpr float SidebarGap = 4.f;
+		constexpr float SidebarPadding = 10.f;
+		constexpr float SidebarRounding = 6.f;
+		constexpr float PreviewRounding = 4.f;
+		constexpr float ValueIndent = 10.f;
+		constexpr float SidebarSectionSpacing = 8.f;
 
 		const char* gamePosition(int position) {
 			switch (position) {
@@ -185,15 +191,20 @@ namespace app::graphic {
 		}
 	}
 
-	void ImGuiBoard::drawPreviewBlock(tetris::BlockType type, Color color) {
+	void ImGuiBoard::drawPreviewBlock(tetris::BlockType type, float width) {
 		auto drawList = ImGui::GetWindowDrawList();
 		Vec2 pos = ImGui::GetCursorScreenPos();
 
-		Vec2 sqSize{squareSize_ * NormalizedPreviewSize , squareSize_ * NormalizedPreviewSize};
-		drawList->AddRectFilled(pos + sqSize * 0.05f, pos + sqSize * 0.95f, color.toImU32());
-		drawBlock(tetris::Block{player_->getNextBlockType(), 0, 0}, pos + squareSize_, true);
+		Vec2 previewSize{width, width};
+		drawList->AddRectFilled(pos, pos + previewSize,
+			ImGui::GetColorU32(ImGuiCol_FrameBg), PreviewRounding);
+		drawList->AddRect(pos, pos + previewSize,
+			ImGui::GetColorU32(ImGuiCol_Border), PreviewRounding);
 
-		ImGui::Dummy(sqSize);
+		const Vec2 blockOffset = previewSize * 0.5f - Vec2{1.5f * squareSize_};
+		drawBlock(tetris::Block{type, 0, 0}, pos + blockOffset, true);
+
+		ImGui::Dummy(previewSize);
 	}
 
 	void ImGuiBoard::drawBoard(double deltaTime) {
@@ -294,18 +305,25 @@ namespace app::graphic {
 			drawBorder(normalizedWidth * squareSize_, normalizedHeight * squareSize_, Configuration::getInstance().getBorderColor());
 			drawBoard(deltaTime);
 
-			ImGui::SameLine();
-
-			ImGui::Group([&]() {
+			const float sidebarWidth = NormalizedPreviewSize * squareSize_ - SidebarGap;
+			ImGui::SameLine(0.f, SidebarGap);
+			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, SidebarRounding);
+			ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 1.f);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Vec2{SidebarPadding, SidebarPadding});
+			auto sidebarBackground = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+			sidebarBackground.w = 0.85f;
+			ImGui::PushStyleColor(ImGuiCol_ChildBg, sidebarBackground);
+			if (ImGui::BeginChild("Sidebar", {sidebarWidth, height_}, true,
+				ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
 				ImGui::PushFont(Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
 				ImGui::Text("Player %d", playerNumber_);
 				ImGui::PopFont();
+				ImGui::Dummy({0.f, SidebarSectionSpacing});
 				ImGui::PushFont(Configuration::getInstance().getImGuiBoardRegularFont(), 0.f);
 				ImGui::TextUnformatted("Next");
 				ImGui::PopFont();
-				drawPreviewBlock(player_->getNextBlockType(), Color(1.f, 1.f, 1, 0.3f));
-
-				ImGui::Indent(10.f);
+				drawPreviewBlock(player_->getNextBlockType(), ImGui::GetContentRegionAvail().x);
+				ImGui::Dummy({0.f, SidebarSectionSpacing});
 
 				//ImGui::Text("%s:", player_->getName().c_str());
 				
@@ -315,22 +333,28 @@ namespace app::graphic {
 						ImGui::PushFont(Configuration::getInstance().getImGuiBoardRegularFont(), 0.f);
 						ImGui::TextUnformatted("Score");
 						ImGui::PopFont();
+						ImGui::Indent(ValueIndent);
 						ImGui::PushFont(Configuration::getInstance().getImGuiScoreFont(), 0.f);
 						ImGui::Text("%d", playerData.points);
 						ImGui::PopFont();
+						ImGui::Unindent(ValueIndent);
 						ImGui::PushFont(Configuration::getInstance().getImGuiBoardRegularFont(), 0.f);
 						ImGui::TextUnformatted("Level");
 						ImGui::PopFont();
+						ImGui::Indent(ValueIndent);
 						ImGui::PushFont(Configuration::getInstance().getImGuiMediumValueFont(), 0.f);
 						ImGui::Text("%d", playerData.level);
 						ImGui::PopFont();
+						ImGui::Unindent(ValueIndent);
 					} else if constexpr (std::is_same_v<T, game::SurvivalPlayerData>) {
 						ImGui::PushFont(Configuration::getInstance().getImGuiBoardRegularFont(), 0.f);
 						ImGui::TextUnformatted("Opponent rows");
 						ImGui::PopFont();
+						ImGui::Indent(ValueIndent);
 						ImGui::PushFont(Configuration::getInstance().getImGuiMediumValueFont(), 0.f);
 						ImGui::Text("%d", playerData.opponentRows);
 						ImGui::PopFont();
+						ImGui::Unindent(ValueIndent);
 					} else {
 						static_assert(util::always_false_v<T>, "non-exhaustive visitor!");
 					}
@@ -338,14 +362,19 @@ namespace app::graphic {
 				ImGui::PushFont(Configuration::getInstance().getImGuiBoardRegularFont(), 0.f);
 				ImGui::TextUnformatted("Lines");
 				ImGui::PopFont();
+				ImGui::Indent(ValueIndent);
 				ImGui::PushFont(Configuration::getInstance().getImGuiMediumValueFont(), 0.f);
 				ImGui::Text("%d", player_->getClearedRows());
 				ImGui::PopFont();
+				ImGui::Unindent(ValueIndent);
 				if (player_->isHuman() && sidebarRenderer_) {
-					ImGui::Spacing();
-					sidebarRenderer_(player_, NormalizedPreviewSize * squareSize_ - 20.f);
+					ImGui::Dummy({0.f, SidebarSectionSpacing});
+					sidebarRenderer_(player_, ImGui::GetContentRegionAvail().x);
 				}
-			});
+			}
+			ImGui::EndChild();
+			ImGui::PopStyleColor();
+			ImGui::PopStyleVar(3);
 
 
 			if (blankSideUpAndDown) {

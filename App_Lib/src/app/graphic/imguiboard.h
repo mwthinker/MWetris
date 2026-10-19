@@ -37,7 +37,7 @@ namespace app::graphic {
 		void drawBlock(const tetris::Block& block, Vec2 pos = {}, bool center = false, Color color = color::White);
 		void drawBoardSquares(double deltaTime);
 		void drawGrid(int columns, int rows);
-		void drawPreviewBlock(tetris::BlockType type, Color color);
+		void drawPreviewBlock(tetris::BlockType type, float width);
 
 		app::TextureView getSprite(tetris::BlockType blockType) const;
 
