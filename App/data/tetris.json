@@ -7,6 +7,7 @@
 		"moveWindowByHoldingDownMouse": false,
 		"vsync": true,
 		"limitFps": false,
+		"uiScale": 1.0,
 		"multiSampleBuffers": 0,
 		"multiSampleSamples": 0,
 		"rowFadingTime": 0.25,

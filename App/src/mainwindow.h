@@ -56,6 +56,7 @@ private:
 	void processEvent(const SDL_Event& windowEvent) override;
 	void processWindowMouseActions();
 	void applyCommittedSettings(const app::Configuration::EditableSettings& settings, const app::Configuration::EditableSettings* previous = nullptr);
+	void applyUiScale();
 
 	void renderImGui(const sdl::DeltaTime& deltaTime) override;
 		
@@ -72,6 +73,9 @@ private:
 	float dragMouseY_ = 0.f;
 	int dragWindowX_ = 0;
 	int dragWindowY_ = 0;
+	ImGuiStyle baseImGuiStyle_{};
+	float userUiScale_ = 1.f;
+	bool uiScaleDirty_ = true;
 };
 
 #endif

@@ -68,6 +68,7 @@ namespace app {
 			bool moveWindowByHoldingDownMouse = false;
 			bool vsync = true;
 			bool limitFps = false;
+			float uiScale = 1.f;
 
 			bool operator==(const WindowSettings&) const = default;
 		};

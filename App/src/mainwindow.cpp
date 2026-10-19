@@ -9,6 +9,8 @@
 #include <network/tcpclient.h>
 #include <network/tcpserver.h>
 
+#include <algorithm>
+#include <array>
 #include <chrono>
 
 using namespace std::chrono_literals;
@@ -50,6 +52,7 @@ void MainWindow::requestRestart() {
 
 void MainWindow::preLoop() {
 	auto& configuration = app::Configuration::getInstance();
+	baseImGuiStyle_ = ImGui::GetStyle();
 	applyCommittedSettings(configuration.getEditableSettings());
 	configuration.initImGuiFonts();
 
@@ -116,6 +119,10 @@ void MainWindow::applyCommittedSettings(const app::Configuration::EditableSettin
 	if (!previous || previous->window.limitFps != settings.window.limitFps) {
 		setLoopSleepingTime(settings.window.limitFps ? 16ms : 0ms);
 	}
+	if (!previous || previous->window.uiScale != settings.window.uiScale) {
+		userUiScale_ = settings.window.uiScale;
+		uiScaleDirty_ = true;
+	}
 	if (!previous && gpuDevice_) {
 		auto presentMode = SDL_GPU_PRESENTMODE_VSYNC;
 		if (!settings.window.vsync) {
@@ -131,6 +138,24 @@ void MainWindow::applyCommittedSettings(const app::Configuration::EditableSettin
 			spdlog::warn("Could not configure swapchain presentation: {}", SDL_GetError());
 		}
 	}
+}
+
+void MainWindow::applyUiScale() {
+	auto monitorScale = SDL_GetWindowDisplayScale(window_);
+	if (monitorScale <= 0.f) {
+		spdlog::warn("Could not determine monitor DPI scale: {}", SDL_GetError());
+		monitorScale = 1.f;
+	}
+	const auto effectiveScale = monitorScale * userUiScale_;
+
+	auto& style = ImGui::GetStyle();
+	std::array<ImVec4, ImGuiCol_COUNT> colors;
+	std::copy_n(style.Colors, ImGuiCol_COUNT, colors.begin());
+	style = baseImGuiStyle_;
+	std::copy_n(colors.begin(), ImGuiCol_COUNT, style.Colors);
+	style.ScaleAllSizes(effectiveScale);
+	style.FontScaleMain = effectiveScale;
+	uiScaleDirty_ = false;
 }
 
 void MainWindow::initSingleTcpClient() {
@@ -187,6 +212,9 @@ void MainWindow::initDebugServer() {
 }
 
 void MainWindow::renderImGui(const sdl::DeltaTime& deltaTime) {
+	if (uiScaleDirty_) {
+		applyUiScale();
+	}
 	for (auto& subWindow : subWindows_) {
 		subWindow->imGuiUpdate(deltaTime);
 	}
@@ -232,6 +260,11 @@ void MainWindow::processEvent(const SDL_Event& windowEvent) {
 	deviceManager_->eventUpdate(windowEvent);
 
 	switch (windowEvent.type) {
+		case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
+			if (windowEvent.window.windowID == SDL_GetWindowID(window_)) {
+				uiScaleDirty_ = true;
+			}
+			break;
 		case SDL_EVENT_WINDOW_FOCUS_LOST:
 			if (app::Configuration::getInstance().isWindowPauseOnLostFocus()) {
 				for (auto& subWindow : subWindows_) {

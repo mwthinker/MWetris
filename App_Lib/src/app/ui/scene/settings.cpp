@@ -146,6 +146,10 @@ namespace app::ui::scene {
 	void Settings::drawBasicSettings() {
 		const auto* defaults = defaults_ ? &*defaults_ : nullptr;
 		if (ImGui::SemiBoldCollapsingHeader("General / Display", ImGuiTreeNodeFlags_DefaultOpen)) {
+			ImGui::SliderFloat("UI scale", &draft_.window.uiScale, 0.5f, 2.f, "%.2fx", ImGuiSliderFlags_AlwaysClamp);
+			if (defaults) {
+				drawDefaultReset("UI scale", draft_.window.uiScale, defaults->window.uiScale);
+			}
 			ImGui::Checkbox("Pause on focus loss", &draft_.window.pauseOnLostFocus);
 			if (defaults) {
 				drawDefaultReset("Pause on focus loss", draft_.window.pauseOnLostFocus, defaults->window.pauseOnLostFocus);

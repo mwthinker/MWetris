@@ -106,6 +106,7 @@
 				"moveWindowByHoldingDownMouse": { "type": "boolean" },
 				"vsync": { "type": "boolean" },
 				"limitFps": { "type": "boolean" },
+				"uiScale": { "type": "number", "minimum": 0.5, "maximum": 2.0 },
 				"multiSampleBuffers": { "type": "integer" },
 				"multiSampleSamples": { "type": "integer" },
 				"rowFadingTime": { "type": "number" },
@@ -136,7 +137,7 @@
 				},
 				"tetrisBoard": { "$ref": "#/definitions/TetrisBoard" }
 			},
-			"required": ["fullscreenOnDoubleClick", "border", "pauseOnLostFocus", "moveWindowByHoldingDownMouse", "vsync", "limitFps", "multiSampleBuffers", "multiSampleSamples", "rowFadingTime", "rowMovingTime", "bar", "label", "checkBox", "radioButton", "button", "comboBox", "font", "width", "height", "positionX", "positionY", "maximized", "resizeable", "minWidth", "minHeight", "icon", "sprites", "tetrisBoard" ],
+			"required": ["fullscreenOnDoubleClick", "border", "pauseOnLostFocus", "moveWindowByHoldingDownMouse", "vsync", "limitFps", "uiScale", "multiSampleBuffers", "multiSampleSamples", "rowFadingTime", "rowMovingTime", "bar", "label", "checkBox", "radioButton", "button", "comboBox", "font", "width", "height", "positionX", "positionY", "maximized", "resizeable", "minWidth", "minHeight", "icon", "sprites", "tetrisBoard" ],
 			"additionalProperties": false
 		},
 		"Bar": {

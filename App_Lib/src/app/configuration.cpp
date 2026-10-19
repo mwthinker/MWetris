@@ -288,6 +288,7 @@ namespace app {
 					.moveWindowByHoldingDownMouse = window.at("moveWindowByHoldingDownMouse").get<bool>(),
 					.vsync = window.at("vsync").get<bool>(),
 					.limitFps = window.at("limitFps").get<bool>(),
+					.uiScale = window.value("uiScale", 1.f),
 				},
 				.board = {
 					.borderSize = board.at("borderSize").get<float>(),
@@ -347,6 +348,7 @@ namespace app {
 			window["moveWindowByHoldingDownMouse"] = settings.window.moveWindowByHoldingDownMouse;
 			window["vsync"] = settings.window.vsync;
 			window["limitFps"] = settings.window.limitFps;
+			window["uiScale"] = settings.window.uiScale;
 			board["borderSize"] = settings.board.borderSize;
 			board["showDownBlock"] = settings.board.showDownBlock;
 			board["outerSquareColor"] = settings.board.outerSquareColor;
@@ -1013,6 +1015,9 @@ namespace app {
 		}
 		if (candidate.window.minWidth > candidate.window.width || candidate.window.minHeight > candidate.window.height) {
 			return std::unexpected{"Minimum window size cannot exceed the window size."};
+		}
+		if (!std::isfinite(candidate.window.uiScale) || candidate.window.uiScale < 0.5f || candidate.window.uiScale > 2.f) {
+			return std::unexpected{"UI scale must be between 0.5x and 2.0x."};
 		}
 		if (!std::isfinite(candidate.board.borderSize) || candidate.board.borderSize < 0.f || candidate.board.borderSize > 20.f) {
 			return std::unexpected{"Board border size must be between 0 and 20."};

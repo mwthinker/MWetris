@@ -282,8 +282,10 @@ namespace app {
 
 		auto settings = configuration.getEditableSettings();
 		EXPECT_EQ(settings.window.width, 860);
+		EXPECT_FLOAT_EQ(settings.window.uiScale, 1.f);
 		EXPECT_EQ(settings.ais.size(), 1);
 		settings.window.width = 900;
+		settings.window.uiScale = 1.25f;
 		settings.board.showDownBlock = false;
 		settings.activeAiNames[2] = "Careful";
 		settings.ais.push_back({"Aggressive", "-0.5*holes - landingHeight"});
@@ -297,6 +299,7 @@ namespace app {
 		}
 		EXPECT_EQ(persisted.at("sentinel"), 42);
 		EXPECT_EQ(persisted.at("window").at("width"), 900);
+		EXPECT_FLOAT_EQ(persisted.at("window").at("uiScale").get<float>(), 1.25f);
 		EXPECT_FALSE(persisted.at("window").at("tetrisBoard").at("showDownBlock"));
 		EXPECT_EQ(persisted.at("ai3"), "Careful");
 		EXPECT_TRUE(persisted.contains("devices"));
@@ -331,6 +334,13 @@ namespace app {
 		auto invalidSave = configuration.persistEditableSettings(invalidSettings);
 		ASSERT_FALSE(invalidSave);
 		EXPECT_NE(invalidSave.error().find("ports"), std::string::npos);
+		EXPECT_EQ(configuration.getEditableSettings(), settings);
+
+		invalidSettings = settings;
+		invalidSettings.window.uiScale = 0.25f;
+		invalidSave = configuration.persistEditableSettings(invalidSettings);
+		ASSERT_FALSE(invalidSave);
+		EXPECT_NE(invalidSave.error().find("UI scale"), std::string::npos);
 		EXPECT_EQ(configuration.getEditableSettings(), settings);
 
 		auto defaults = configuration.getDefaultEditableSettings();
