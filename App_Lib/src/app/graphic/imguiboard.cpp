@@ -95,6 +95,8 @@ namespace app::graphic {
 		, player_{imGuiBoard.player_}
 		, rows_{imGuiBoard.rows_}
 		, height_{imGuiBoard.height_}
+		, boardCenter_{imGuiBoard.boardCenter_}
+		, boardSize_{imGuiBoard.boardSize_}
 		, spriteI_{imGuiBoard.spriteI_}
 		, spriteJ_{imGuiBoard.spriteJ_}
 		, spriteL_{imGuiBoard.spriteL_}
@@ -115,6 +117,8 @@ namespace app::graphic {
 		player_ = imGuiBoard.player_;
 		rows_ = imGuiBoard.rows_;
 		height_ = imGuiBoard.height_;
+		boardCenter_ = imGuiBoard.boardCenter_;
+		boardSize_ = imGuiBoard.boardSize_;
 		spriteI_ = imGuiBoard.spriteI_;
 		spriteJ_ = imGuiBoard.spriteJ_;
 		spriteL_ = imGuiBoard.spriteL_;
@@ -312,7 +316,9 @@ namespace app::graphic {
 				ImGui::SameLine();
 			}
 
-			drawBorder(columns * squareSize_, normalizedHeight * squareSize_, Configuration::getInstance().getBorderColor());
+			boardSize_ = Vec2{columns * squareSize_, normalizedHeight * squareSize_};
+			boardCenter_ = Vec2{ImGui::GetCursorScreenPos()} + boardSize_ * 0.5f;
+			drawBorder(boardSize_.x, boardSize_.y, Configuration::getInstance().getBorderColor());
 			drawBoard(deltaTime);
 
 			const float sidebarWidth = NormalizedPreviewSize * squareSize_ - SidebarGap;
@@ -421,6 +427,14 @@ namespace app::graphic {
 
 	const game::Player& ImGuiBoard::getPlayer() const {
 		return *player_;
+	}
+
+	Vec2 ImGuiBoard::getBoardCenter() const {
+		return boardCenter_;
+	}
+
+	Vec2 ImGuiBoard::getBoardSize() const {
+		return boardSize_;
 	}
 
 	app::TextureView ImGuiBoard::getSprite(tetris::BlockType blockType) const {

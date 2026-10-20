@@ -22,6 +22,8 @@ namespace app::graphic {
 		void draw(float width, float height, double deltaTime);
 
 		const game::Player& getPlayer() const;
+		Vec2 getBoardCenter() const;
+		Vec2 getBoardSize() const;
 
 		ImGuiBoard(const ImGuiBoard& imGuiBoard);
 		ImGuiBoard& operator=(const ImGuiBoard& imGuiBoard);
@@ -55,6 +57,8 @@ namespace app::graphic {
 		
 		std::vector<Row> rows_;
 		float height_ = 0.f;
+		Vec2 boardCenter_{};
+		Vec2 boardSize_{};
 		app::TextureView spriteI_, spriteJ_, spriteL_, spriteO_, spriteS_, spriteT_, spriteZ_;
 		mw::signals::ScopedConnections connections_;
 	};
