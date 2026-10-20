@@ -20,7 +20,10 @@ namespace app::ui::scene {
 			}
 			ImGui::SameLine();
 			ImGui::PushID(id);
-			if (ImGui::MediumSmallButton(ICON_FA_ARROW_ROTATE_LEFT)) {
+			ImGui::PushFont(Configuration::getInstance().getImGuiDefaultFont(), 0.f);
+			const bool reset = ImGui::SmallButton(ICON_FA_ARROW_ROTATE_LEFT);
+			ImGui::PopFont();
+			if (reset) {
 				value = defaultValue;
 			}
 			if (ImGui::IsItemHovered()) {
