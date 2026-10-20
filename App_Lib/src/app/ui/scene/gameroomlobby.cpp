@@ -194,11 +194,14 @@ namespace app::ui::scene {
 
 			ImGui::PopupModal(PopUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
 				auto pos = ImGui::GetCursorScreenPos();
-				auto size = ImVec2{60.f, 30.f};
+				auto size = ImVec2{30.f, 30.f};
 
-				ImGui::SetCursorPosX(ImGui::GetWindowWidth() - size.x - 10.f); // TODO! Fix more less hard coded right alignment.
-				if (ImGui::AbortButton("Cancel", size) || ImGui::IsKeyDown(ImGuiKey_Escape)) {
+				ImGui::SetCursorPosX(ImGui::GetWindowWidth() - size.x - ImGui::GetStyle().WindowPadding.x);
+				if (ImGui::MediumButton("X", size) || ImGui::IsKeyDown(ImGuiKey_Escape)) {
 					ImGui::CloseCurrentPopup();
+				}
+				if (ImGui::IsItemHovered()) {
+					ImGui::SetTooltip("Close");
 				}
 				ImGui::SetCursorScreenPos(pos);
 

@@ -250,15 +250,28 @@ namespace app::ui {
 		if (dialog.openRequested) {
 			dialog.openRequested = false;
 			ImGui::OpenPopup(popupId.c_str());
-			ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, {0.5f, 0.5f});
-			ImGui::SetNextWindowSize({360.f, 0.f}, ImGuiCond_Appearing);
 		}
+		const bool deleteDialog = dialog.action == ProfileDialogAction::Delete;
+		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, {0.5f, 0.5f});
+		ImGui::SetNextWindowSize(deleteDialog ? ImVec2{520.f, 240.f} : ImVec2{520.f, 420.f}, ImGuiCond_Always);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {24.f, 20.f});
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {10.f, 10.f});
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.f, 6.f});
 
-		if (!ImGui::BeginPopupModal(popupId.c_str(), nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
+		if (!ImGui::BeginPopupModal(popupId.c_str(), nullptr,
+			ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar
+				| ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+			ImGui::PopStyleVar(3);
 			return;
 		}
 
-		if (dialog.action == ProfileDialogAction::Delete) {
+		ImGui::PushFont(Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
+		ImGui::TextUnformatted(dialogTitle(dialog.action));
+		ImGui::PopFont();
+		ImGui::Separator();
+		ImGui::Dummy({0.f, 4.f});
+
+		if (deleteDialog) {
 			ImGui::Text("Delete profile '%s'?", dialog.profileName.c_str());
 			auto assignedDeviceCount = controlProfiles_->getAssignedDeviceCount(dialog.profileId);
 			if (assignedDeviceCount == 0) {
@@ -270,9 +283,18 @@ namespace app::ui {
 			}
 
 			if (!dialog.error.empty()) {
-				ImGui::TextWrapped("%s", dialog.error.c_str());
+				ImGui::TextColored({1.f, 0.35f, 0.35f, 1.f}, "%s", dialog.error.c_str());
 			}
-			if (ImGui::AbortButton("Delete")) {
+			ImGui::Dummy({0.f, 6.f});
+			ImGui::Separator();
+			ImGui::Dummy({0.f, 6.f});
+			const float actionWidth = 180.f + ImGui::GetStyle().ItemSpacing.x;
+			ImGui::AlignNextItemRight(actionWidth);
+			if (ImGui::MediumButton("Cancel", {90.f, 30.f}) || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+				closeProfileDialog();
+			}
+			ImGui::SameLine();
+			if (ImGui::AbortButton("Delete", {90.f, 30.f})) {
 				auto result = controlProfiles_->deleteProfile(dialog.profileId);
 				if (result) {
 					closeProfileDialog();
@@ -280,11 +302,8 @@ namespace app::ui {
 					dialog.error = result.error().message;
 				}
 			}
-			ImGui::SameLine();
-			if (ImGui::MediumButton("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
-				closeProfileDialog();
-			}
 			ImGui::EndPopup();
+			ImGui::PopStyleVar(3);
 			return;
 		}
 
@@ -296,34 +315,50 @@ namespace app::ui {
 		if (duplicate) {
 			inputFlags |= ImGuiInputTextFlags_AutoSelectAll;
 		}
-		bool submitted = ImGui::InputText("Name", &dialog.name, inputFlags);
-		bool changed = ImGui::IsItemEdited();
-		ImGui::PushItemWidth(180.f);
-		changed |= ImGui::SliderInt(
-			"DAS",
-			&dialog.timing.dasMs,
-			ControlProfiles::MinDasMs,
-			ControlProfiles::MaxDasMs,
-			"%d ms",
-			ImGuiSliderFlags_AlwaysClamp);
-		changed |= ImGui::SliderInt(
-			"ARR",
-			&dialog.timing.arrMs,
-			ControlProfiles::MinArrMs,
-			ControlProfiles::MaxArrMs,
-			"%d ms",
-			ImGuiSliderFlags_AlwaysClamp);
-		ImGui::PopItemWidth();
+		bool submitted = false;
+		bool changed = false;
+		ImGui::FormTable("Profile name form", [&]() {
+			ImGui::FormRow("Name", [&]() {
+				submitted = ImGui::InputText("##Value", &dialog.name, inputFlags);
+				changed |= ImGui::IsItemEdited();
+			});
+		}, 120.f);
+
+		ImGui::Dummy({0.f, 6.f});
+		ImGui::PushFont(Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
+		ImGui::SeparatorText("Repeat timing");
+		ImGui::PopFont();
+		ImGui::FormTable("Profile timing form", [&]() {
+			ImGui::FormRow("DAS delay", [&]() {
+				changed |= ImGui::SliderInt("##Value", &dialog.timing.dasMs,
+					ControlProfiles::MinDasMs, ControlProfiles::MaxDasMs, "%d ms", ImGuiSliderFlags_AlwaysClamp);
+			});
+			ImGui::FormRow("ARR interval", [&]() {
+				changed |= ImGui::SliderInt("##Value", &dialog.timing.arrMs,
+					ControlProfiles::MinArrMs, ControlProfiles::MaxArrMs, "%d ms", ImGuiSliderFlags_AlwaysClamp);
+			});
+		}, 120.f);
+		ImGui::SecondaryText("DAS is the delay before a held direction starts repeating.");
+		ImGui::SecondaryText("ARR is the interval between repeated movements.");
 		if (changed) {
 			dialog.error.clear();
 		}
 
 		if (!dialog.error.empty()) {
-			ImGui::TextWrapped("%s", dialog.error.c_str());
+			ImGui::TextColored({1.f, 0.35f, 0.35f, 1.f}, "%s", dialog.error.c_str());
 		}
 
 		const char* confirmationLabel = duplicate ? "Create" : "Save";
-		if (ImGui::ConfirmationButton(confirmationLabel) || submitted) {
+		ImGui::Dummy({0.f, 6.f});
+		ImGui::Separator();
+		ImGui::Dummy({0.f, 6.f});
+		const float actionWidth = 180.f + ImGui::GetStyle().ItemSpacing.x;
+		ImGui::AlignNextItemRight(actionWidth);
+		if (ImGui::MediumButton("Cancel", {90.f, 30.f}) || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+			closeProfileDialog();
+		}
+		ImGui::SameLine();
+		if (ImGui::ConfirmationButton(confirmationLabel, {90.f, 30.f}) || submitted) {
 			if (duplicate) {
 				auto result = controlProfiles_->duplicateProfile(
 					dialog.deviceGuid,
@@ -347,12 +382,8 @@ namespace app::ui {
 				}
 			}
 		}
-		ImGui::SameLine();
-		if (ImGui::AbortButton("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
-			closeProfileDialog();
-		}
-
 		ImGui::EndPopup();
+		ImGui::PopStyleVar(3);
 	}
 
 	void ControlsPresenter::drawDeviceProfileSelection(const std::shared_ptr<game::Player>& player, float width) {

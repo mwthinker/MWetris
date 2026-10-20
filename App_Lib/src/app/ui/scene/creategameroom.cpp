@@ -45,22 +45,25 @@ namespace app::ui::scene {
 		ImGui::Text("Create Game Room");
 		ImGui::PopFont();
 
-		ImGui::Text("Name");
-		if (InputText("##ServerName", &serverName_)) {
-		}
-
-		ImGui::Checkbox("Public", &public_);
-
-		ImGui::PopupContextItem([&]() {
-			if (ImGui::MenuItem("Paste", "CTRL+V")) {
-				serverName_.assign(ImGui::GetClipboardText());
-				ImGui::CloseCurrentPopup();
-			}
+		ImGui::FormTable("Create game room form", [&]() {
+			ImGui::FormRow("Name", [&]() {
+				InputText("##Value", &serverName_);
+				ImGui::PopupContextItem([&]() {
+					if (ImGui::MenuItem("Paste", "CTRL+V")) {
+						serverName_.assign(ImGui::GetClipboardText());
+						ImGui::CloseCurrentPopup();
+					}
+				});
+			});
+			ImGui::FormRow("Public", [&]() {
+				ImGui::Checkbox("##Value", &public_);
+			});
 		});
 
 		bool validName = serverName_.size() > 5 && serverName_.size() < 30;
+		ImGui::AlignNextItemRight(100.f);
 		ImGui::BeginDisabled(!validName);
-		if (ImGui::ConfirmationButton("Create")) { // TODO! Handle lag and show a spinner.
+		if (ImGui::ConfirmationButton("Create", {100.f, 30.f})) { // TODO! Handle lag and show a spinner.
 			tetrisController_->createNetworkGameRoom(serverName_, public_);
 		}
 		ImGui::EndDisabled();

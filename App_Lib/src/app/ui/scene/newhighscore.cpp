@@ -24,13 +24,17 @@ namespace app::ui::scene {
 		ImGui::PopFont();
 
 		if (data_.points > 0) {
-			if (ImGui::InputText("Player name", &data_.name, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CallbackAlways, acceptNameInput)
-				&& data_.name.size() > 0) {
-				
-				save();
-			}
+			bool submitted = false;
+			ImGui::FormTable("High score form", [&]() {
+				ImGui::FormRow("Player name", [&]() {
+					submitted = ImGui::InputText("##Value", &data_.name,
+						ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CallbackAlways,
+						acceptNameInput);
+				});
+			});
 
-			if (ImGui::MediumButton("Save") && data_.name.size() > 0) {
+			ImGui::AlignNextItemRight(100.f);
+			if ((ImGui::ConfirmationButton("Save", {100.f, 30.f}) || submitted) && !data_.name.empty()) {
 				save();
 			}
 		}

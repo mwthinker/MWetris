@@ -2,6 +2,7 @@
 #include "configuration.h"
 
 #include "game/player.h"
+#include "game/tetrisgameevent.h"
 #include "util/auxiliary.h"
 
 #include <tetris/tetrisboard.h>
@@ -9,7 +10,10 @@
 #include <spdlog/spdlog.h>
 
 #include <variant>
+#include <algorithm>
 #include <concepts>
+#include <limits>
+#include <string>
 #include <utility>
 
 namespace app::graphic {
@@ -52,6 +56,8 @@ namespace app::graphic {
 		constexpr float SidebarSectionSpacing = 8.f;
 		constexpr float PlayerCardPadding = 10.f;
 		constexpr float PlayerCardRounding = 8.f;
+		constexpr float PauseOverlayMinFontSize = 36.f;
+		constexpr float PauseOverlayMaxFontSize = 64.f;
 
 		const char* gamePosition(int position) {
 			switch (position) {
@@ -278,7 +284,7 @@ namespace app::graphic {
 		drawList->PopTexture();
 	}
 
-	void ImGuiBoard::draw(float width, float height, double deltaTime) {
+	void ImGuiBoard::draw(float width, float height, double deltaTime, const game::GamePause& pause) {
 		ImGui::PushID(this);
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, PlayerCardRounding);
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 2.f);
@@ -418,6 +424,9 @@ namespace app::graphic {
 				
 				ImGui::SetCursorPos(cursorPos);
 			}
+			if (pause.pause) {
+				drawPauseOverlay(pause);
+			}
 		}
 		ImGui::EndChild();
 		ImGui::PopStyleColor(3);
@@ -429,12 +438,35 @@ namespace app::graphic {
 		return *player_;
 	}
 
-	Vec2 ImGuiBoard::getBoardCenter() const {
-		return boardCenter_;
-	}
 
-	Vec2 ImGuiBoard::getBoardSize() const {
-		return boardSize_;
+	void ImGuiBoard::drawPauseOverlay(const game::GamePause& pause) const {
+		const auto text = pause.countDown > 0 ? std::to_string(pause.countDown) : std::string{"PAUSED"};
+		float fontSize = std::clamp(boardSize_.x * 0.16f, PauseOverlayMinFontSize, PauseOverlayMaxFontSize);
+		auto font = Configuration::getInstance().getImGuiScoreFont();
+		Vec2 textSize = font->CalcTextSizeA(fontSize, std::numeric_limits<float>::max(), 0.f, text.c_str());
+		const float initialPanelWidth = textSize.x + fontSize * 0.9f;
+		if (initialPanelWidth > boardSize_.x * 0.9f) {
+			fontSize *= boardSize_.x * 0.9f / initialPanelWidth;
+			textSize = font->CalcTextSizeA(fontSize, std::numeric_limits<float>::max(), 0.f, text.c_str());
+		}
+		const Vec2 padding{fontSize * 0.45f, fontSize * 0.3f};
+		const Vec2 panelMin = boardCenter_ - textSize * 0.5f - padding;
+		const Vec2 panelMax = boardCenter_ + textSize * 0.5f + padding;
+		const Vec2 shadowOffset{4.f, 4.f};
+		auto drawList = ImGui::GetWindowDrawList();
+		auto& configuration = Configuration::getInstance();
+
+		drawList->AddRectFilled(panelMin + shadowOffset, panelMax + shadowOffset,
+			sdl::Color{0.f, 0.f, 0.f, 0.4f}.toImU32(), 10.f);
+		drawList->AddRectFilled(panelMin, panelMax,
+			configuration.getPreviewBackgroundColor().toImU32(), 10.f);
+		drawList->AddRect(panelMin, panelMax,
+			configuration.getPlayerCardBorderColor().toImU32(), 10.f, 1.5f, ImDrawFlags_None);
+		drawList->AddText(font, fontSize, boardCenter_ - textSize * 0.5f,
+			(pause.countDown > 0
+				? configuration.getPlayerCardBorderColor()
+				: configuration.getPlayerCardTextColor()).toImU32(),
+			text.c_str());
 	}
 
 	app::TextureView ImGuiBoard::getSprite(tetris::BlockType blockType) const {

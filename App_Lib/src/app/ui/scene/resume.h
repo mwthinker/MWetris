@@ -13,6 +13,7 @@ namespace app::ui::scene {
 		Resume(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager);
 
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
+		ImVec2 getSize() const override { return {500.f, 220.f}; }
 
 	private:
 		std::shared_ptr<TetrisController> tetrisController_;

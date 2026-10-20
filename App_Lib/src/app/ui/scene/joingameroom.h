@@ -43,6 +43,7 @@ namespace app::ui::scene {
 		JoinGameRoom(std::shared_ptr<TetrisController> tetrisController);
 
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
+		ImVec2 getSize() const override { return {700.f, 600.f}; }
 
 	private:
 		void switchedTo(const SceneData& sceneData) override;

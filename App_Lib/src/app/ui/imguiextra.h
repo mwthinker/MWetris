@@ -4,7 +4,9 @@
 #include "../types.h"
 #include "../configuration.h"
 
+#include <algorithm>
 #include <chrono>
+#include <cfloat>
 #include <concepts>
 
 namespace ImGui {
@@ -28,6 +30,31 @@ namespace ImGui {
 	bool ConfirmationButton(const char* label, const ImVec2& size = {});
 
 	bool AbortButton(const char* label, const ImVec2& size = {});
+
+	void FormTable(const char* id, std::invocable auto&& content, float labelWidth = 160.f) {
+		if (ImGui::BeginTable(id, 2, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_PadOuterX)) {
+			ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, labelWidth);
+			ImGui::TableSetupColumn("Control", ImGuiTableColumnFlags_WidthStretch);
+			content();
+			ImGui::EndTable();
+		}
+	}
+
+	void FormRow(const char* label, std::invocable auto&& control) {
+		ImGui::TableNextRow();
+		ImGui::TableNextColumn();
+		ImGui::AlignTextToFramePadding();
+		ImGui::TextUnformatted(label);
+		ImGui::TableNextColumn();
+		ImGui::SetNextItemWidth(-FLT_MIN);
+		ImGui::PushID(label);
+		control();
+		ImGui::PopID();
+	}
+
+	inline void AlignNextItemRight(float width) {
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + std::max(0.f, ImGui::GetContentRegionAvail().x - width));
+	}
 
 	template<typename T>
 	concept ComboType = requires(T t) {

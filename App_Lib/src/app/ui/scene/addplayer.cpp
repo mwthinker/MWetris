@@ -77,37 +77,34 @@ namespace app::ui::scene {
 		ImGui::Text("Add Player");
 		ImGui::PopFont();
 		
-		ImGui::SetNextItemWidth(150.f);
-		playerTypesCombo_.imGuiCombo("##Player Type");
-		
-		if (playerTypesCombo_.getSelected().player == Player::Human) {
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(150.f);
-			if (humansCombo_.imGuiCombo("##Players")) {
-				auto selected = humansCombo_.getSelected();
-				selected.name = playerName_;
-				player_ = selected;
+		ImGui::FormTable("Add player form", [&]() {
+			ImGui::FormRow("Player type", [&]() {
+				playerTypesCombo_.imGuiCombo("##Value");
+			});
+			if (playerTypesCombo_.getSelected().player == Player::Human) {
+				ImGui::FormRow("Device", [&]() {
+					if (humansCombo_.imGuiCombo("##Value")) {
+						auto selected = humansCombo_.getSelected();
+						selected.name = playerName_;
+						player_ = selected;
+					}
+				});
+			} else if (playerTypesCombo_.getSelected().player == Player::Ai) {
+				ImGui::FormRow("AI", [&]() {
+					if (aisCombo_.imGuiCombo("##Value")) {
+						auto selected = aisCombo_.getSelected();
+						selected.name = playerName_;
+						player_ = selected;
+					}
+				});
 			}
-		} else if (playerTypesCombo_.getSelected().player == Player::Ai) {
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(150.f);
-			if (aisCombo_.imGuiCombo("##Players")) {
-				auto selected = aisCombo_.getSelected();
-				selected.name = playerName_;
-				player_ = selected;
-			}
-		}
+			ImGui::FormRow("Name", [&]() {
+				ImGui::InputText("##Value", &playerName_);
+			});
+		});
 
-		ImGui::SameLine();
-		ImGui::SetNextItemWidth(100.f);
-		ImGui::InputText("##PlayerName", &playerName_);
-
-		float width = ImGui::GetWindowWidth() - 2 * ImGui::GetCursorPosX();
-		float height = 100.f;
-		float y = ImGui::GetWindowHeight() - height - ImGui::GetStyle().WindowPadding.y;
-
-		ImGui::SetCursorPosY(y);
-		if (ImGui::ConfirmationButton("Add", {width, height})) {
+		ImGui::AlignNextItemRight(100.f);
+		if (ImGui::ConfirmationButton("Add", {100.f, 30.f})) {
 			addCallback_(*this);
 			ImGui::CloseCurrentPopup();
 		}

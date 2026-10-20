@@ -45,27 +45,31 @@ namespace app::ui::scene {
 		ImGui::Text("Custom Game");
 		ImGui::PopFont();
 
-		ImGui::Text("Server Id");
-		if (InputText("##ServerId", &serverId_)) {
-		}
-
-		ImGui::PopupContextItem([&]() {
-			if (ImGui::MenuItem("Paste", "CTRL+V")) {
-				serverId_.assign(ImGui::GetClipboardText());
-				ImGui::CloseCurrentPopup();
-			}
+		ImGui::FormTable("Join game room form", [&]() {
+			ImGui::FormRow("Server ID", [&]() {
+				InputText("##Value", &serverId_);
+				ImGui::PopupContextItem([&]() {
+					if (ImGui::MenuItem("Paste", "CTRL+V")) {
+						serverId_.assign(ImGui::GetClipboardText());
+						ImGui::CloseCurrentPopup();
+					}
+				});
+			});
 		});
 
-		if (ImGui::ConfirmationButton("Connect")) { // TODO! Handle lag and show a spinner.
+		const float actionWidth = 200.f + ImGui::GetStyle().ItemSpacing.x;
+		ImGui::AlignNextItemRight(actionWidth);
+		if (ImGui::MediumButton("Refresh", {100.f, 30.f})) {
+			tetrisController_->refreshGameRoomList();
+		}
+		ImGui::SameLine();
+		if (ImGui::ConfirmationButton("Connect", {100.f, 30.f})) { // TODO! Handle lag and show a spinner.
 			tetrisController_->joinGameRoom(serverId_);
 		}
 
-		if (ImGui::MediumButton("Refresh")) {
-			tetrisController_->refreshGameRoomList();
-		}
-
-		if (InputText("Filter", &filter_)) {
-		}
+		ImGui::FormTable("Game room filter", [&]() {
+			ImGui::FormRow("Filter", [&]() { InputText("##Value", &filter_); });
+		});
 
 		ImGui::Table("Game rooms", 4, ImGuiTableFlags_Borders, {500, 0}, [&]() {
 			ImGui::TableSetupColumn("Id");// , ImGuiTableColumnFlags_WidthFixed, 70);

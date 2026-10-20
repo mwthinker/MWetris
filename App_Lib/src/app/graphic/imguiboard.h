@@ -11,6 +11,10 @@
 #include <functional>
 #include <vector>
 
+namespace app::game {
+	class GamePause;
+}
+
 namespace app::graphic {
 
 	class ImGuiBoard {
@@ -19,11 +23,9 @@ namespace app::graphic {
 
 		explicit ImGuiBoard(game::PlayerPtr player, int playerNumber, SidebarRenderer sidebarRenderer = {});
 
-		void draw(float width, float height, double deltaTime);
+		void draw(float width, float height, double deltaTime, const game::GamePause& pause);
 
 		const game::Player& getPlayer() const;
-		Vec2 getBoardCenter() const;
-		Vec2 getBoardSize() const;
 
 		ImGuiBoard(const ImGuiBoard& imGuiBoard);
 		ImGuiBoard& operator=(const ImGuiBoard& imGuiBoard);
@@ -40,6 +42,7 @@ namespace app::graphic {
 		void drawBoardSquares(double deltaTime);
 		void drawGrid(int columns, int rows);
 		void drawPreviewBlock(tetris::BlockType type, float width);
+		void drawPauseOverlay(const game::GamePause& pause) const;
 
 		app::TextureView getSprite(tetris::BlockType blockType) const;
 

@@ -48,7 +48,7 @@ namespace app::ui::scene {
 		void switchedTo(const SceneData& sceneData) override;
 
 		ImVec2 getSize() const override {
-			return {800, 200};
+			return {520.f, 240.f};
 		}
 	
 	private:
