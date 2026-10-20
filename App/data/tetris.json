@@ -66,6 +66,7 @@
 			"font": "fonts/inter/Inter_18pt-Regular.ttf",
 			"squareSize": 10,
 			"borderSize": 3,
+			"colorScheme": "frostedBlue",
 			"sprites": {
 				"squareZ": "images/Z.png",
 				"squareS": "images/S.png",
@@ -85,6 +86,7 @@
 			"sidebarBorderColor": "#B8D8E866",
 			"previewBackgroundColor": "#40566BB3",
 			"previewBorderColor": "#B8D8E866",
+			"playerCardTextColor": "#F5F8FA",
 			"playerAreaColor": "#661a2680",
 			"middleTextColor": "#33333380",
 			"middleTextBoxSize": 7,

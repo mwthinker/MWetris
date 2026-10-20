@@ -213,6 +213,10 @@
 				"font": { "type": "string", "minLength": 1 },
 				"squareSize": { "type": "number" },
 				"borderSize": { "type": "number", "minimum": 0, "maximum": 20 },
+				"colorScheme": {
+					"type": "string",
+					"enum": ["frostedBlue", "classicCrimson", "warmSand", "highContrast", "custom"]
+				},
 				"sprites": {
 					"type": "object",
 					"properties": {
@@ -237,13 +241,14 @@
 				"sidebarBorderColor": { "$ref": "#/definitions/Color" },
 				"previewBackgroundColor": { "$ref": "#/definitions/Color" },
 				"previewBorderColor": { "$ref": "#/definitions/Color" },
+				"playerCardTextColor": { "$ref": "#/definitions/Color" },
 				"playerAreaColor": { "$ref": "#/definitions/Color" },
 				"middleTextColor": { "$ref": "#/definitions/Color" },
 				"middleTextBoxSize": { "type": "integer" },
 				"showDownBlock": { "type": "boolean" },
 				"downBlockColor": { "$ref": "#/definitions/Color" }
 			},
-			"required": ["font", "squareSize", "borderSize", "sprites", "borderColor", "startAreaColor", "outerSquareColor", "innerSquareColor", "playerCardBackgroundColor", "playerCardBorderColor", "sidebarBackgroundColor", "sidebarBorderColor", "previewBackgroundColor", "previewBorderColor", "playerAreaColor", "middleTextColor", "middleTextBoxSize", "showDownBlock", "downBlockColor"],
+			"required": ["font", "squareSize", "borderSize", "colorScheme", "sprites", "borderColor", "startAreaColor", "outerSquareColor", "innerSquareColor", "playerCardBackgroundColor", "playerCardBorderColor", "sidebarBackgroundColor", "sidebarBorderColor", "previewBackgroundColor", "previewBorderColor", "playerCardTextColor", "playerAreaColor", "middleTextColor", "middleTextBoxSize", "showDownBlock", "downBlockColor"],
 			"additionalProperties": false
 		},
 		"Highscore": {

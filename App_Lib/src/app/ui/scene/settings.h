@@ -30,6 +30,7 @@ namespace app::ui::scene {
 		void switchedFrom() override;
 		void drawBasicSettings();
 		void drawAdvancedSettings();
+		void drawColorSchemeSelector();
 		void drawAiSelectors();
 		void drawCustomAis();
 		void apply();

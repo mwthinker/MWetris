@@ -17,7 +17,9 @@
 #include <array>
 #include <expected>
 #include <memory>
+#include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace app {
@@ -76,6 +78,7 @@ namespace app {
 		struct BoardSettings {
 			float borderSize = 0.f;
 			bool showDownBlock = true;
+			std::string colorScheme = "custom";
 			std::string outerSquareColor;
 			std::string innerSquareColor;
 			std::string startAreaColor;
@@ -87,8 +90,14 @@ namespace app {
 			std::string sidebarBorderColor;
 			std::string previewBackgroundColor;
 			std::string previewBorderColor;
+			std::string playerCardTextColor;
 
 			bool operator==(const BoardSettings&) const = default;
+		};
+
+		struct ColorSchemeInfo {
+			std::string_view id;
+			std::string_view name;
 		};
 
 		struct AppearanceSettings {
@@ -172,6 +181,11 @@ namespace app {
 		sdl::Color getSidebarBorderColor() const;
 		sdl::Color getPreviewBackgroundColor() const;
 		sdl::Color getPreviewBorderColor() const;
+		sdl::Color getPlayerCardTextColor() const;
+
+		static std::span<const ColorSchemeInfo> getColorSchemes();
+		static void applyColorScheme(BoardSettings& settings, std::string_view id);
+		static std::string detectColorScheme(const BoardSettings& settings);
 
 		float getTetrisSquareSize() const;
 		float getTetrisBorderSize() const;

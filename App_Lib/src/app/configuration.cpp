@@ -270,6 +270,55 @@ namespace app {
 			"squareI", "squareJ", "squareL", "squareO", "squareS", "squareT", "squareZ"
 		};
 
+		struct ColorSchemePreset {
+			Configuration::ColorSchemeInfo info;
+			const char* border;
+			const char* startArea;
+			const char* outerSquare;
+			const char* innerSquare;
+			const char* downBlock;
+			const char* playerCard;
+			const char* playerCardBorder;
+			const char* sidebar;
+			const char* sidebarBorder;
+			const char* preview;
+			const char* previewBorder;
+			const char* text;
+		};
+
+		constexpr std::array ColorSchemePresets{
+			ColorSchemePreset{{"frostedBlue", "Frosted Blue"}, "#D0E8F2", "#7199B580", "#40566BB3", "#71889F66", "#FFFFFF26", "#536A80B3", "#B8D8E8CC", "#607A92CC", "#B8D8E866", "#40566BB3", "#B8D8E866", "#F5F8FA"},
+			ColorSchemePreset{{"classicCrimson", "Classic Crimson"}, "#F0A3B0", "#A3293D80", "#741A2AB3", "#C64C6466", "#FFFFFF26", "#4A202AB3", "#E8A0ACCC", "#61303ACC", "#E8A0AC66", "#391720B3", "#E8A0AC66", "#FFF5F7"},
+			ColorSchemePreset{{"warmSand", "Warm Sand"}, "#FFF0C7", "#D9B66F80", "#8A704AB3", "#DBC89A66", "#FFFFFF33", "#C9AD78D9", "#FFF1CCDD", "#DEC99AE6", "#FFF1CC99", "#B89B68CC", "#FFF1CC99", "#2A241B"},
+			ColorSchemePreset{{"highContrast", "High Contrast"}, "#FFFFFF", "#FFE60080", "#111111E6", "#66666699", "#FFFFFF66", "#080808F2", "#FFE600", "#181818F2", "#FFFFFFCC", "#000000F2", "#FFE600CC", "#FFFFFF"},
+		};
+
+		const ColorSchemePreset* findColorScheme(std::string_view id) {
+			auto found = std::ranges::find(ColorSchemePresets, id, [](const ColorSchemePreset& preset) {
+				return preset.info.id;
+			});
+			return found == ColorSchemePresets.end() ? nullptr : &*found;
+		}
+
+		bool sameColor(const std::string& left, const char* right) {
+			return sdl::Color{left} == sdl::Color{right};
+		}
+
+		bool matchesColorScheme(const Configuration::BoardSettings& settings, const ColorSchemePreset& preset) {
+			return sameColor(settings.borderColor, preset.border)
+				&& sameColor(settings.startAreaColor, preset.startArea)
+				&& sameColor(settings.outerSquareColor, preset.outerSquare)
+				&& sameColor(settings.innerSquareColor, preset.innerSquare)
+				&& sameColor(settings.downBlockColor, preset.downBlock)
+				&& sameColor(settings.playerCardBackgroundColor, preset.playerCard)
+				&& sameColor(settings.playerCardBorderColor, preset.playerCardBorder)
+				&& sameColor(settings.sidebarBackgroundColor, preset.sidebar)
+				&& sameColor(settings.sidebarBorderColor, preset.sidebarBorder)
+				&& sameColor(settings.previewBackgroundColor, preset.preview)
+				&& sameColor(settings.previewBorderColor, preset.previewBorder)
+				&& sameColor(settings.playerCardTextColor, preset.text);
+		}
+
 		Configuration::EditableSettings editableSettingsFromJson(const json& document) {
 			const auto& window = document.at("window");
 			const auto& board = window.at("tetrisBoard");
@@ -293,6 +342,7 @@ namespace app {
 				.board = {
 					.borderSize = board.at("borderSize").get<float>(),
 					.showDownBlock = board.at("showDownBlock").get<bool>(),
+					.colorScheme = board.value("colorScheme", "custom"),
 					.outerSquareColor = board.at("outerSquareColor").get<std::string>(),
 					.innerSquareColor = board.at("innerSquareColor").get<std::string>(),
 					.startAreaColor = board.at("startAreaColor").get<std::string>(),
@@ -304,6 +354,7 @@ namespace app {
 					.sidebarBorderColor = board.value("sidebarBorderColor", "#B8D8E866"),
 					.previewBackgroundColor = board.value("previewBackgroundColor", "#40566BB3"),
 					.previewBorderColor = board.value("previewBorderColor", "#B8D8E866"),
+					.playerCardTextColor = board.value("playerCardTextColor", "#F5F8FA"),
 				},
 				.appearance = {
 					.labelTextColor = window.at("label").at("textColor").get<std::string>(),
@@ -336,6 +387,7 @@ namespace app {
 					.valueFunction = definition.at("valueFunction").get<std::string>(),
 				});
 			}
+			settings.board.colorScheme = Configuration::detectColorScheme(settings.board);
 			return settings;
 		}
 
@@ -357,6 +409,7 @@ namespace app {
 			window["uiScale"] = settings.window.uiScale;
 			board["borderSize"] = settings.board.borderSize;
 			board["showDownBlock"] = settings.board.showDownBlock;
+			board["colorScheme"] = Configuration::detectColorScheme(settings.board);
 			board["outerSquareColor"] = settings.board.outerSquareColor;
 			board["innerSquareColor"] = settings.board.innerSquareColor;
 			board["startAreaColor"] = settings.board.startAreaColor;
@@ -368,6 +421,7 @@ namespace app {
 			board["sidebarBorderColor"] = settings.board.sidebarBorderColor;
 			board["previewBackgroundColor"] = settings.board.previewBackgroundColor;
 			board["previewBorderColor"] = settings.board.previewBorderColor;
+			board["playerCardTextColor"] = settings.board.playerCardTextColor;
 			window["label"]["textColor"] = settings.appearance.labelTextColor;
 			auto& button = window["button"];
 			button["focusColor"] = settings.appearance.buttonFocusColor;
@@ -785,6 +839,49 @@ namespace app {
 		return impl_->jsonObject["window"]["tetrisBoard"].value("previewBorderColor", sdl::Color{"#B8D8E866"});
 	}
 
+	sdl::Color Configuration::getPlayerCardTextColor() const {
+		return impl_->jsonObject["window"]["tetrisBoard"].value("playerCardTextColor", sdl::Color{"#F5F8FA"});
+	}
+
+	std::span<const Configuration::ColorSchemeInfo> Configuration::getColorSchemes() {
+		static const auto schemes = [] {
+			std::array<ColorSchemeInfo, ColorSchemePresets.size()> result;
+			std::ranges::transform(ColorSchemePresets, result.begin(), [](const ColorSchemePreset& preset) {
+				return preset.info;
+			});
+			return result;
+		}();
+		return schemes;
+	}
+
+	void Configuration::applyColorScheme(BoardSettings& settings, std::string_view id) {
+		const auto* preset = findColorScheme(id);
+		if (!preset) {
+			settings.colorScheme = "custom";
+			return;
+		}
+		settings.colorScheme = preset->info.id;
+		settings.borderColor = preset->border;
+		settings.startAreaColor = preset->startArea;
+		settings.outerSquareColor = preset->outerSquare;
+		settings.innerSquareColor = preset->innerSquare;
+		settings.downBlockColor = preset->downBlock;
+		settings.playerCardBackgroundColor = preset->playerCard;
+		settings.playerCardBorderColor = preset->playerCardBorder;
+		settings.sidebarBackgroundColor = preset->sidebar;
+		settings.sidebarBorderColor = preset->sidebarBorder;
+		settings.previewBackgroundColor = preset->preview;
+		settings.previewBorderColor = preset->previewBorder;
+		settings.playerCardTextColor = preset->text;
+	}
+
+	std::string Configuration::detectColorScheme(const BoardSettings& settings) {
+		auto found = std::ranges::find_if(ColorSchemePresets, [&](const ColorSchemePreset& preset) {
+			return matchesColorScheme(settings, preset);
+		});
+		return found == ColorSchemePresets.end() ? "custom" : std::string{found->info.id};
+	}
+
 	bool Configuration::isShowDownBlock() const {
 		try {
 			return impl_->jsonObject.at("window").at("tetrisBoard").at("showDownBlock").get<bool>();
@@ -1071,6 +1168,7 @@ namespace app {
 			candidate.board.playerCardBackgroundColor, candidate.board.playerCardBorderColor,
 			candidate.board.sidebarBackgroundColor, candidate.board.sidebarBorderColor,
 			candidate.board.previewBackgroundColor, candidate.board.previewBorderColor,
+			candidate.board.playerCardTextColor,
 			candidate.appearance.labelTextColor, candidate.appearance.buttonFocusColor,
 			candidate.appearance.buttonTextColor, candidate.appearance.buttonHoverColor,
 			candidate.appearance.buttonBackgroundColor,
@@ -1078,6 +1176,9 @@ namespace app {
 		};
 		if (std::ranges::any_of(colors, [](const std::string& color) { return !sdl::color::isValidHexColor(color); })) {
 			return std::unexpected{"Colors must use #RGB, #RGBA, #RRGGBB, or #RRGGBBAA syntax."};
+		}
+		if (candidate.board.colorScheme != "custom" && !findColorScheme(candidate.board.colorScheme)) {
+			return std::unexpected{"Unknown color scheme."};
 		}
 
 		const std::array paths{

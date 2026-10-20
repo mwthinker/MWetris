@@ -283,6 +283,8 @@ namespace app::graphic {
 			Configuration::getInstance().getPlayerCardBackgroundColor().toImU32());
 		ImGui::PushStyleColor(ImGuiCol_Border,
 			Configuration::getInstance().getPlayerCardBorderColor().toImU32());
+		ImGui::PushStyleColor(ImGuiCol_Text,
+			Configuration::getInstance().getPlayerCardTextColor().toImU32());
 		if (ImGui::BeginChild("PlayerCard", {width, height}, true,
 			ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
 			width = ImGui::GetContentRegionAvail().x;
@@ -412,7 +414,7 @@ namespace app::graphic {
 			}
 		}
 		ImGui::EndChild();
-		ImGui::PopStyleColor(2);
+		ImGui::PopStyleColor(3);
 		ImGui::PopStyleVar(3);
 		ImGui::PopID();
 	}

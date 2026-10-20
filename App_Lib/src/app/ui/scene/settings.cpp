@@ -143,8 +143,31 @@ namespace app::ui::scene {
 		}
 	}
 
+	void Settings::drawColorSchemeSelector() {
+		auto schemes = Configuration::getColorSchemes();
+		auto selected = std::ranges::find(schemes, draft_.board.colorScheme, &Configuration::ColorSchemeInfo::id);
+		const char* preview = selected == schemes.end() ? "Custom" : selected->name.data();
+
+		ImGui::PushItemWidth(260.f);
+		ImGui::ComboScoped("Color scheme", preview, [&]() {
+			for (const auto& scheme : schemes) {
+				bool isSelected = draft_.board.colorScheme == scheme.id;
+				if (ImGui::Selectable(scheme.name.data(), isSelected)) {
+					Configuration::applyColorScheme(draft_.board, scheme.id);
+				}
+				if (isSelected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+		});
+		ImGui::PopItemWidth();
+		ImGui::SecondaryText("Individual color changes create a Custom scheme.");
+		ImGui::Separator();
+	}
+
 	void Settings::drawBasicSettings() {
 		const auto* defaults = defaults_ ? &*defaults_ : nullptr;
+		drawColorSchemeSelector();
 		if (ImGui::SemiBoldCollapsingHeader("General / Display", ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::SliderFloat("UI scale", &draft_.window.uiScale, 0.5f, 2.f, "%.2fx", ImGuiSliderFlags_AlwaysClamp);
 			if (defaults) {
@@ -164,6 +187,7 @@ namespace app::ui::scene {
 			}
 			if (draft_.board.showDownBlock) {
 				colorEdit("Ghost block color", draft_.board.downBlockColor, defaults ? &defaults->board.downBlockColor : nullptr);
+				draft_.board.colorScheme = Configuration::detectColorScheme(draft_.board);
 			}
 		}
 		drawAiSelectors();
@@ -276,6 +300,8 @@ namespace app::ui::scene {
 			colorEdit("Sidebar border", draft_.board.sidebarBorderColor, defaults ? &defaults->board.sidebarBorderColor : nullptr);
 			colorEdit("Next preview", draft_.board.previewBackgroundColor, defaults ? &defaults->board.previewBackgroundColor : nullptr);
 			colorEdit("Next preview border", draft_.board.previewBorderColor, defaults ? &defaults->board.previewBorderColor : nullptr);
+			colorEdit("Player text", draft_.board.playerCardTextColor, defaults ? &defaults->board.playerCardTextColor : nullptr);
+			draft_.board.colorScheme = Configuration::detectColorScheme(draft_.board);
 		}
 
 		if (ImGui::SemiBoldCollapsingHeader("Network")) {

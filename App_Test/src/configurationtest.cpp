@@ -363,4 +363,16 @@ namespace app {
 		std::filesystem::remove_all(testDirectory);
 	}
 
+	TEST(ConfigurationTest, appliesAndDetectsColorSchemes) {
+		Configuration::BoardSettings settings;
+		Configuration::applyColorScheme(settings, "warmSand");
+
+		EXPECT_EQ(settings.colorScheme, "warmSand");
+		EXPECT_EQ(Configuration::detectColorScheme(settings), "warmSand");
+		EXPECT_EQ(settings.playerCardTextColor, "#2A241B");
+
+		settings.sidebarBackgroundColor = "#000000";
+		EXPECT_EQ(Configuration::detectColorScheme(settings), "custom");
+	}
+
 }
