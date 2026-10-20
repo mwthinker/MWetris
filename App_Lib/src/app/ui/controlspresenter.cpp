@@ -358,9 +358,27 @@ namespace app::ui {
 	void ControlsPresenter::drawDeviceProfileSelection(const std::shared_ptr<game::Player>& player, float width) {
 		auto playerDevice = player->getDevice();
 		auto deviceGuid = playerDevice ? playerDevice->getGuid() : std::string{};
+		auto& configuration = Configuration::getInstance();
+		auto textColor = configuration.getPlayerCardTextColor().toImU32();
+		auto controlColor = configuration.getPreviewBackgroundColor().toImU32();
+		auto hoverColor = configuration.getSidebarBackgroundColor().toImU32();
+		auto activeColor = configuration.getPlayerCardBackgroundColor().toImU32();
+		auto borderColor = configuration.getPreviewBorderColor().toImU32();
 
 		ImGui::PushID(player.get());
-		ImGui::PushFont(Configuration::getInstance().getImGuiRegularSmallFont(), 0.f);
+		ImGui::PushStyleColor(ImGuiCol_Text, textColor);
+		ImGui::PushStyleColor(ImGuiCol_FrameBg, controlColor);
+		ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, hoverColor);
+		ImGui::PushStyleColor(ImGuiCol_FrameBgActive, activeColor);
+		ImGui::PushStyleColor(ImGuiCol_PopupBg, configuration.getSidebarBackgroundColor().toImU32());
+		ImGui::PushStyleColor(ImGuiCol_Header, controlColor);
+		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, activeColor);
+		ImGui::PushStyleColor(ImGuiCol_HeaderActive, controlColor);
+		ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
+		ImGui::PushStyleColor(ImGuiCol_Button, controlColor);
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, hoverColor);
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, activeColor);
+		ImGui::PushFont(configuration.getImGuiRegularSmallFont(), 0.f);
 		ImGui::TextUnformatted("Device");
 		ImGui::PopFont();
 		ImGui::PushItemWidth(width);
@@ -368,11 +386,12 @@ namespace app::ui {
 		if (drawDeviceCombo(deviceGuid, connectedDevices, "##Device", true)) {
 			player->setDevice(deviceManager_->findDevice(deviceGuid));
 		}
-		ImGui::PushFont(Configuration::getInstance().getImGuiRegularSmallFont(), 0.f);
+		ImGui::PushFont(configuration.getImGuiRegularSmallFont(), 0.f);
 		ImGui::TextUnformatted("Profile");
 		ImGui::PopFont();
 		drawPlayerProfileCombo(*player, "##Profile");
 		ImGui::PopItemWidth();
+		ImGui::PopStyleColor(12);
 		ImGui::PopID();
 	}
 
