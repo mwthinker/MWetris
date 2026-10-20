@@ -270,6 +270,12 @@ namespace app::ui::scene {
 			colorEdit("Start area", draft_.board.startAreaColor, defaults ? &defaults->board.startAreaColor : nullptr);
 			colorEdit("Outer squares", draft_.board.outerSquareColor, defaults ? &defaults->board.outerSquareColor : nullptr);
 			colorEdit("Inner squares", draft_.board.innerSquareColor, defaults ? &defaults->board.innerSquareColor : nullptr);
+			colorEdit("Player card", draft_.board.playerCardBackgroundColor, defaults ? &defaults->board.playerCardBackgroundColor : nullptr);
+			colorEdit("Player card border", draft_.board.playerCardBorderColor, defaults ? &defaults->board.playerCardBorderColor : nullptr);
+			colorEdit("Sidebar", draft_.board.sidebarBackgroundColor, defaults ? &defaults->board.sidebarBackgroundColor : nullptr);
+			colorEdit("Sidebar border", draft_.board.sidebarBorderColor, defaults ? &defaults->board.sidebarBorderColor : nullptr);
+			colorEdit("Next preview", draft_.board.previewBackgroundColor, defaults ? &defaults->board.previewBackgroundColor : nullptr);
+			colorEdit("Next preview border", draft_.board.previewBorderColor, defaults ? &defaults->board.previewBorderColor : nullptr);
 		}
 
 		if (ImGui::SemiBoldCollapsingHeader("Network")) {

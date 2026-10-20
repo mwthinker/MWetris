@@ -231,13 +231,19 @@
 				"startAreaColor": { "$ref": "#/definitions/Color" },
 				"outerSquareColor": { "$ref": "#/definitions/Color" },
 				"innerSquareColor": { "$ref": "#/definitions/Color" },
+				"playerCardBackgroundColor": { "$ref": "#/definitions/Color" },
+				"playerCardBorderColor": { "$ref": "#/definitions/Color" },
+				"sidebarBackgroundColor": { "$ref": "#/definitions/Color" },
+				"sidebarBorderColor": { "$ref": "#/definitions/Color" },
+				"previewBackgroundColor": { "$ref": "#/definitions/Color" },
+				"previewBorderColor": { "$ref": "#/definitions/Color" },
 				"playerAreaColor": { "$ref": "#/definitions/Color" },
 				"middleTextColor": { "$ref": "#/definitions/Color" },
 				"middleTextBoxSize": { "type": "integer" },
 				"showDownBlock": { "type": "boolean" },
 				"downBlockColor": { "$ref": "#/definitions/Color" }
 			},
-			"required": ["font", "squareSize", "borderSize", "sprites", "borderColor", "startAreaColor", "outerSquareColor" ,"innerSquareColor", "playerAreaColor", "middleTextColor", "middleTextBoxSize", "showDownBlock", "downBlockColor"],
+			"required": ["font", "squareSize", "borderSize", "sprites", "borderColor", "startAreaColor", "outerSquareColor", "innerSquareColor", "playerCardBackgroundColor", "playerCardBorderColor", "sidebarBackgroundColor", "sidebarBorderColor", "previewBackgroundColor", "previewBorderColor", "playerAreaColor", "middleTextColor", "middleTextBoxSize", "showDownBlock", "downBlockColor"],
 			"additionalProperties": false
 		},
 		"Highscore": {

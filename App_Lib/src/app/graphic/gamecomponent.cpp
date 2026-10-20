@@ -33,8 +33,6 @@ namespace app::graphic {
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, Vec2{0.f, 0.f});
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, Vec2{0.f, 0.f});
 
-		ImGui::PushStyleColor(ImGuiCol_Border, sdl::color::html::Red);
-
 		float width = windowWidth;
 		if (imguiBoards_.size() > 1) {
 			width = windowWidth / imguiBoards_.size();
@@ -65,7 +63,6 @@ namespace app::graphic {
 			ImGui::PopFont();
 		}
 
-		ImGui::PopStyleColor(1);
 		ImGui::PopStyleVar(2);
 
 		ImGui::SetCursorPos(cursorPos);

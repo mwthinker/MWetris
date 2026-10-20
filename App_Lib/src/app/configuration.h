@@ -81,6 +81,12 @@ namespace app {
 			std::string startAreaColor;
 			std::string borderColor;
 			std::string downBlockColor;
+			std::string playerCardBackgroundColor;
+			std::string playerCardBorderColor;
+			std::string sidebarBackgroundColor;
+			std::string sidebarBorderColor;
+			std::string previewBackgroundColor;
+			std::string previewBorderColor;
 
 			bool operator==(const BoardSettings&) const = default;
 		};
@@ -160,6 +166,12 @@ namespace app {
 		sdl::Color getStartAreaColor() const;
 		sdl::Color getPlayerAreaColor() const;
 		sdl::Color getBorderColor() const;
+		sdl::Color getPlayerCardBackgroundColor() const;
+		sdl::Color getPlayerCardBorderColor() const;
+		sdl::Color getSidebarBackgroundColor() const;
+		sdl::Color getSidebarBorderColor() const;
+		sdl::Color getPreviewBackgroundColor() const;
+		sdl::Color getPreviewBorderColor() const;
 
 		float getTetrisSquareSize() const;
 		float getTetrisBorderSize() const;

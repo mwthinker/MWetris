@@ -298,6 +298,12 @@ namespace app {
 					.startAreaColor = board.at("startAreaColor").get<std::string>(),
 					.borderColor = board.at("borderColor").get<std::string>(),
 					.downBlockColor = board.at("downBlockColor").get<std::string>(),
+					.playerCardBackgroundColor = board.value("playerCardBackgroundColor", "#536A80B3"),
+					.playerCardBorderColor = board.value("playerCardBorderColor", "#B8D8E8CC"),
+					.sidebarBackgroundColor = board.value("sidebarBackgroundColor", "#607A92CC"),
+					.sidebarBorderColor = board.value("sidebarBorderColor", "#B8D8E866"),
+					.previewBackgroundColor = board.value("previewBackgroundColor", "#40566BB3"),
+					.previewBorderColor = board.value("previewBorderColor", "#B8D8E866"),
 				},
 				.appearance = {
 					.labelTextColor = window.at("label").at("textColor").get<std::string>(),
@@ -356,6 +362,12 @@ namespace app {
 			board["startAreaColor"] = settings.board.startAreaColor;
 			board["borderColor"] = settings.board.borderColor;
 			board["downBlockColor"] = settings.board.downBlockColor;
+			board["playerCardBackgroundColor"] = settings.board.playerCardBackgroundColor;
+			board["playerCardBorderColor"] = settings.board.playerCardBorderColor;
+			board["sidebarBackgroundColor"] = settings.board.sidebarBackgroundColor;
+			board["sidebarBorderColor"] = settings.board.sidebarBorderColor;
+			board["previewBackgroundColor"] = settings.board.previewBackgroundColor;
+			board["previewBorderColor"] = settings.board.previewBorderColor;
 			window["label"]["textColor"] = settings.appearance.labelTextColor;
 			auto& button = window["button"];
 			button["focusColor"] = settings.appearance.buttonFocusColor;
@@ -749,6 +761,30 @@ namespace app {
 		return impl_->jsonObject["window"]["tetrisBoard"]["borderColor"].get<sdl::Color>();
 	}
 
+	sdl::Color Configuration::getPlayerCardBackgroundColor() const {
+		return impl_->jsonObject["window"]["tetrisBoard"].value("playerCardBackgroundColor", sdl::Color{"#536A80B3"});
+	}
+
+	sdl::Color Configuration::getPlayerCardBorderColor() const {
+		return impl_->jsonObject["window"]["tetrisBoard"].value("playerCardBorderColor", sdl::Color{"#B8D8E8CC"});
+	}
+
+	sdl::Color Configuration::getSidebarBackgroundColor() const {
+		return impl_->jsonObject["window"]["tetrisBoard"].value("sidebarBackgroundColor", sdl::Color{"#607A92CC"});
+	}
+
+	sdl::Color Configuration::getSidebarBorderColor() const {
+		return impl_->jsonObject["window"]["tetrisBoard"].value("sidebarBorderColor", sdl::Color{"#B8D8E866"});
+	}
+
+	sdl::Color Configuration::getPreviewBackgroundColor() const {
+		return impl_->jsonObject["window"]["tetrisBoard"].value("previewBackgroundColor", sdl::Color{"#40566BB3"});
+	}
+
+	sdl::Color Configuration::getPreviewBorderColor() const {
+		return impl_->jsonObject["window"]["tetrisBoard"].value("previewBorderColor", sdl::Color{"#B8D8E866"});
+	}
+
 	bool Configuration::isShowDownBlock() const {
 		try {
 			return impl_->jsonObject.at("window").at("tetrisBoard").at("showDownBlock").get<bool>();
@@ -1032,6 +1068,9 @@ namespace app {
 		const std::array colors{
 			candidate.board.outerSquareColor, candidate.board.innerSquareColor, candidate.board.startAreaColor,
 			candidate.board.borderColor, candidate.board.downBlockColor,
+			candidate.board.playerCardBackgroundColor, candidate.board.playerCardBorderColor,
+			candidate.board.sidebarBackgroundColor, candidate.board.sidebarBorderColor,
+			candidate.board.previewBackgroundColor, candidate.board.previewBorderColor,
 			candidate.appearance.labelTextColor, candidate.appearance.buttonFocusColor,
 			candidate.appearance.buttonTextColor, candidate.appearance.buttonHoverColor,
 			candidate.appearance.buttonBackgroundColor,

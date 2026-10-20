@@ -43,10 +43,6 @@ namespace app::graphic {
 		constexpr float middleDistance = 5.f;
 		constexpr float rightDistance = 5.f;
 
-		Color setAlpha(Color color, float alpha) {
-			return color * Color{1.f, 1.f, 1.f, alpha};
-		}
-
 		constexpr float NormalizedPreviewSize = 5.f;
 		constexpr float SidebarGap = 4.f;
 		constexpr float SidebarPadding = 10.f;
@@ -199,9 +195,9 @@ namespace app::graphic {
 
 		Vec2 previewSize{width, width};
 		drawList->AddRectFilled(pos, pos + previewSize,
-			ImGui::GetColorU32(ImGuiCol_FrameBg), PreviewRounding);
+			Configuration::getInstance().getPreviewBackgroundColor().toImU32(), PreviewRounding);
 		drawList->AddRect(pos, pos + previewSize,
-			ImGui::GetColorU32(ImGuiCol_Border), PreviewRounding);
+			Configuration::getInstance().getPreviewBorderColor().toImU32(), PreviewRounding);
 
 		const Vec2 blockOffset = previewSize * 0.5f - Vec2{1.5f * squareSize_};
 		drawBlock(tetris::Block{type, 0, 0}, pos + blockOffset, true);
@@ -283,11 +279,10 @@ namespace app::graphic {
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, PlayerCardRounding);
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 2.f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Vec2{PlayerCardPadding, PlayerCardPadding});
-		auto playerCardBackground = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
-		playerCardBackground.w = 0.65f;
-		ImGui::PushStyleColor(ImGuiCol_ChildBg, playerCardBackground);
+		ImGui::PushStyleColor(ImGuiCol_ChildBg,
+			Configuration::getInstance().getPlayerCardBackgroundColor().toImU32());
 		ImGui::PushStyleColor(ImGuiCol_Border,
-			setAlpha(Configuration::getInstance().getBorderColor(), 0.8f).toImU32());
+			Configuration::getInstance().getPlayerCardBorderColor().toImU32());
 		if (ImGui::BeginChild("PlayerCard", {width, height}, true,
 			ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
 			width = ImGui::GetContentRegionAvail().x;
@@ -323,11 +318,10 @@ namespace app::graphic {
 			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, SidebarRounding);
 			ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 1.f);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Vec2{SidebarPadding, SidebarPadding});
-			auto sidebarBackground = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
-			sidebarBackground.w = 0.85f;
-			ImGui::PushStyleColor(ImGuiCol_ChildBg, sidebarBackground);
+			ImGui::PushStyleColor(ImGuiCol_ChildBg,
+				Configuration::getInstance().getSidebarBackgroundColor().toImU32());
 			ImGui::PushStyleColor(ImGuiCol_Border,
-				setAlpha(Configuration::getInstance().getBorderColor(), 0.4f).toImU32());
+				Configuration::getInstance().getSidebarBorderColor().toImU32());
 			if (ImGui::BeginChild("Sidebar", {sidebarWidth, height_}, true,
 				ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
 				ImGui::PushFont(Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
