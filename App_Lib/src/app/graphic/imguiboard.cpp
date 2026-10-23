@@ -56,19 +56,19 @@ namespace app::graphic {
 		constexpr float SidebarSectionSpacing = 8.f;
 		constexpr float PlayerCardPadding = 10.f;
 		constexpr float PlayerCardRounding = 8.f;
-		constexpr float PauseOverlayMinFontSize = 36.f;
-		constexpr float PauseOverlayMaxFontSize = 64.f;
+		constexpr float StatusOverlayMinFontSize = 36.f;
+		constexpr float StatusOverlayMaxFontSize = 64.f;
 
 		const char* gamePosition(int position) {
 			switch (position) {
 				case 1:
-					return "1:st place!";
+					return "1ST PLACE!";
 				case 2:
-					return "2:nd place!";
+					return "2ND PLACE!";
 				case 3:
-					return "3:rd place!";
+					return "3RD PLACE!";
 				default:
-					return "Game Over!";
+					return "GAME OVER!";
 			}
 		}
 
@@ -307,8 +307,6 @@ namespace app::graphic {
 
 			bool blankSideUpAndDown = (width / normalizedWidth) < (height / normalizedHeight);
 
-			const Vec2 startPosition = ImGui::GetCursorPos();
-
 			if (blankSideUpAndDown) {
 				squareSize_ = width / normalizedWidth;
 				height_ = rows * squareSize_;
@@ -408,23 +406,15 @@ namespace app::graphic {
 			}
 
 			if (player_->isGameOver()) {
-				auto cursorPos = ImGui::GetCursorPos();
-
 				int gameOverPosition = 0;
 				if (auto playerData = std::get_if<game::DefaultPlayerData>(&player_->getPlayerData())) {
 					gameOverPosition = playerData->position;
 				} else if (auto playerData = std::get_if<game::SurvivalPlayerData>(&player_->getPlayerData())) {
 					gameOverPosition = playerData->position;
 				}
-				const char* text = gamePosition(gameOverPosition);
-				Vec2 delta = ImGui::CalcTextSize(text);
-
-				ImGui::SetCursorPos(startPosition + Vec2{width * 0.5f, height * 0.5f} - delta * 0.5f);
-				ImGui::Text("%s", text);
-				
-				ImGui::SetCursorPos(cursorPos);
-			}
-			if (pause.pause) {
+				drawStatusOverlay(gamePosition(gameOverPosition),
+					Configuration::getInstance().getPlayerCardTextColor());
+			} else if (pause.pause) {
 				drawPauseOverlay(pause);
 			}
 		}
@@ -441,13 +431,22 @@ namespace app::graphic {
 
 	void ImGuiBoard::drawPauseOverlay(const game::GamePause& pause) const {
 		const auto text = pause.countDown > 0 ? std::to_string(pause.countDown) : std::string{"PAUSED"};
-		float fontSize = std::clamp(boardSize_.x * 0.16f, PauseOverlayMinFontSize, PauseOverlayMaxFontSize);
+		auto& configuration = Configuration::getInstance();
+		drawStatusOverlay(text, pause.countDown > 0
+			? configuration.getPlayerCardBorderColor()
+			: configuration.getPlayerCardTextColor());
+	}
+
+	void ImGuiBoard::drawStatusOverlay(std::string_view text, Color textColor) const {
+		float fontSize = std::clamp(boardSize_.x * 0.16f, StatusOverlayMinFontSize, StatusOverlayMaxFontSize);
 		auto font = Configuration::getInstance().getImGuiScoreFont();
-		Vec2 textSize = font->CalcTextSizeA(fontSize, std::numeric_limits<float>::max(), 0.f, text.c_str());
+		Vec2 textSize = font->CalcTextSizeA(fontSize, std::numeric_limits<float>::max(), 0.f,
+			text.data(), text.data() + text.size());
 		const float initialPanelWidth = textSize.x + fontSize * 0.9f;
 		if (initialPanelWidth > boardSize_.x * 0.9f) {
 			fontSize *= boardSize_.x * 0.9f / initialPanelWidth;
-			textSize = font->CalcTextSizeA(fontSize, std::numeric_limits<float>::max(), 0.f, text.c_str());
+			textSize = font->CalcTextSizeA(fontSize, std::numeric_limits<float>::max(), 0.f,
+				text.data(), text.data() + text.size());
 		}
 		const Vec2 padding{fontSize * 0.45f, fontSize * 0.3f};
 		const Vec2 panelMin = boardCenter_ - textSize * 0.5f - padding;
@@ -463,10 +462,7 @@ namespace app::graphic {
 		drawList->AddRect(panelMin, panelMax,
 			configuration.getPlayerCardBorderColor().toImU32(), 10.f, 1.5f, ImDrawFlags_None);
 		drawList->AddText(font, fontSize, boardCenter_ - textSize * 0.5f,
-			(pause.countDown > 0
-				? configuration.getPlayerCardBorderColor()
-				: configuration.getPlayerCardTextColor()).toImU32(),
-			text.c_str());
+			textColor.toImU32(), text.data(), text.data() + text.size());
 	}
 
 	app::TextureView ImGuiBoard::getSprite(tetris::BlockType blockType) const {

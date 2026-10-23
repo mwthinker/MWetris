@@ -9,6 +9,7 @@
 #include "textureview.h"
 
 #include <functional>
+#include <string_view>
 #include <vector>
 
 namespace app::game {
@@ -42,6 +43,7 @@ namespace app::graphic {
 		void drawBoardSquares(double deltaTime);
 		void drawGrid(int columns, int rows);
 		void drawPreviewBlock(tetris::BlockType type, float width);
+		void drawStatusOverlay(std::string_view text, Color textColor) const;
 		void drawPauseOverlay(const game::GamePause& pause) const;
 
 		app::TextureView getSprite(tetris::BlockType blockType) const;
