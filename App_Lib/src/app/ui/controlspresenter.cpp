@@ -7,6 +7,7 @@
 #include "game/player.h"
 
 #include <imgui.h>
+#include <IconsFontAwesome6.h>
 
 #include <algorithm>
 #include <optional>
@@ -155,7 +156,8 @@ namespace app::ui {
 	void ControlsPresenter::openProfileDialog(
 		ProfileDialogAction action,
 		const InputProfile& profile,
-		std::string deviceGuid) {
+		std::string deviceGuid,
+		std::weak_ptr<game::Player> player) {
 		dialog_ = {
 			.action = action,
 			.profileId = profile.id,
@@ -163,6 +165,7 @@ namespace app::ui {
 			.profileName = profile.name,
 			.name = profile.name,
 			.timing = profile.timing,
+			.player = std::move(player),
 			.openRequested = true,
 		};
 		if (action == ProfileDialogAction::Duplicate) {
@@ -180,11 +183,34 @@ namespace app::ui {
 		ImGui::CloseCurrentPopup();
 	}
 
+	void ControlsPresenter::openBindingDialog(const game::DevicePtr& device) {
+		if (!device || !device->isConnected()) {
+			return;
+		}
+		if (bindingDialog_.device) {
+			bindingDialog_.device->cancelMapping();
+		}
+		bindingDialog_ = {
+			.device = device,
+			.openRequested = true,
+		};
+		device->beginMapping();
+	}
+
+	void ControlsPresenter::closeBindingDialog() {
+		if (bindingDialog_.device) {
+			bindingDialog_.device->cancelMapping();
+		}
+		bindingDialog_ = {};
+		ImGui::CloseCurrentPopup();
+	}
+
 	ControlsPresenter::ControlsPresenter(
 		std::string windowName,
 		std::shared_ptr<game::DeviceManager> deviceManager,
 		std::shared_ptr<ControlProfiles> controlProfiles)
-		: popupIdSuffix_{"###ControlProfileDialog-" + std::move(windowName)}
+		: popupIdSuffix_{"###ControlProfileDialog-" + windowName}
+		, bindingPopupIdSuffix_{"###DeviceBindingDialog-" + std::move(windowName)}
 		, deviceManager_{std::move(deviceManager)}
 		, controlProfiles_{std::move(controlProfiles)} {
 	}
@@ -366,6 +392,9 @@ namespace app::ui {
 					dialog.name,
 					dialog.timing);
 				if (result) {
+					if (auto player = dialog.player.lock()) {
+						player->setProfileId(*result);
+					}
 					closeProfileDialog();
 				} else {
 					dialog.error = result.error().message;
@@ -381,6 +410,126 @@ namespace app::ui {
 					dialog.error = result.error().message;
 				}
 			}
+		}
+		ImGui::EndPopup();
+		ImGui::PopStyleVar(3);
+	}
+
+	void ControlsPresenter::drawBindingDialog() {
+		auto& dialog = bindingDialog_;
+		const auto popupId = std::string{"Configure controls"} + bindingPopupIdSuffix_;
+		if (dialog.openRequested) {
+			dialog.openRequested = false;
+			ImGui::OpenPopup(popupId.c_str());
+		}
+		if (!dialog.device) {
+			return;
+		}
+
+		auto status = dialog.device->getMappingStatus();
+		if (!status) {
+			if (ImGui::BeginPopupModal(popupId.c_str(), nullptr, ImGuiWindowFlags_NoTitleBar)) {
+				ImGui::CloseCurrentPopup();
+				ImGui::EndPopup();
+			}
+			dialog = {};
+			return;
+		}
+		const float scale = std::clamp(ImGui::GetFontSize() / 17.f, 0.5f, 2.f);
+		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, {0.5f, 0.5f});
+		ImGui::SetNextWindowSize({520.f * scale, 420.f * scale}, ImGuiCond_Always);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {24.f * scale, 20.f * scale});
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {10.f * scale, 10.f * scale});
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.f * scale, 6.f * scale});
+		if (!ImGui::BeginPopupModal(popupId.c_str(), nullptr,
+			ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar
+				| ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+			ImGui::PopStyleVar(3);
+			dialog.device->cancelMapping();
+			dialog = {};
+			return;
+		}
+
+		ImGui::PushFont(Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
+		ImGui::Text("Configure %s", dialog.device->getName().c_str());
+		ImGui::PopFont();
+		ImGui::Separator();
+		ImGui::Dummy({0.f, 4.f * scale});
+		ImGui::SecondaryText("Mapping is active. Enter each control in order.");
+		if (status->completed < status->total) {
+			const char* inputName = status->acceptedInput == game::InputKind::KeyboardKey ? "key" : "gamepad button";
+			ImGui::Text("Press a %s for %s", inputName, game::getInputActionName(status->awaiting));
+		} else {
+			ImGui::TextUnformatted("All actions captured. Review and save.");
+		}
+		auto labels = dialog.device->getMappingLabels();
+		ImGui::FormTable("Input bindings", [&]() {
+			for (int index = 0; index < std::ssize(game::InputActions); ++index) {
+				const bool active = status->completed < status->total
+					&& game::InputActions[index] == status->awaiting;
+				const bool completed = index < status->completed;
+				ImGui::TableNextRow(ImGuiTableRowFlags_None, ImGui::GetFrameHeight());
+				if (active) {
+					ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, ImGui::GetColorU32(ImGuiCol_HeaderHovered));
+					ImGui::PushFont(Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
+				} else if (completed) {
+					ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+				}
+
+				ImGui::TableNextColumn();
+				ImGui::AlignTextToFramePadding();
+				if (active) {
+					ImGui::Text(">  %s", game::getInputActionName(game::InputActions[index]));
+				} else if (completed) {
+					ImGui::Text("[x]  %s", game::getInputActionName(game::InputActions[index]));
+				} else {
+					ImGui::TextUnformatted(game::getInputActionName(game::InputActions[index]));
+				}
+				ImGui::TableNextColumn();
+				ImGui::AlignTextToFramePadding();
+				ImGui::TextUnformatted(active ? "Press now" : labels[index].c_str());
+
+				if (active) {
+					ImGui::PopFont();
+				} else if (completed) {
+					ImGui::PopStyleColor();
+				}
+			}
+		}, 130.f * scale);
+
+		if (!dialog.error.empty()) {
+			ImGui::TextColored({1.f, 0.35f, 0.35f, 1.f}, "%s", dialog.error.c_str());
+		}
+		ImGui::Dummy({0.f, 4.f * scale});
+		ImGui::Separator();
+		ImGui::Dummy({0.f, 4.f * scale});
+		if (ImGui::MediumButton("Start over", {110.f * scale, 30.f * scale})) {
+			dialog.device->beginMapping();
+			dialog.error.clear();
+		}
+		ImGui::SameLine();
+		if (ImGui::MediumButton("Defaults", {90.f * scale, 30.f * scale})) {
+			dialog.device->resetMapping();
+			dialog.error.clear();
+		}
+		ImGui::Dummy({0.f, 4.f * scale});
+		const float actionWidth = 190.f * scale + ImGui::GetStyle().ItemSpacing.x;
+		ImGui::AlignNextItemRight(actionWidth);
+		if (ImGui::MediumButton("Cancel", {90.f * scale, 30.f * scale})) {
+			closeBindingDialog();
+		} else {
+			ImGui::SameLine();
+			ImGui::BeginDisabled(status->completed < status->total);
+			if (ImGui::ConfirmationButton("Save", {90.f * scale, 30.f * scale})) {
+				auto result = deviceManager_->saveMapping(*dialog.device);
+				if (result) {
+					dialog = {};
+					ImGui::CloseCurrentPopup();
+				} else {
+					dialog.error = result.error();
+				}
+			}
+			ImGui::EndDisabled();
 		}
 		ImGui::EndPopup();
 		ImGui::PopStyleVar(3);
@@ -412,16 +561,45 @@ namespace app::ui {
 		ImGui::PushFont(configuration.getImGuiRegularSmallFont(), 0.f);
 		ImGui::TextUnformatted("Device");
 		ImGui::PopFont();
-		ImGui::PushItemWidth(width);
 		auto connectedDevices = getConnectedDevices();
+		const float buttonWidth = ImGui::GetFrameHeight();
+		const float comboWidth = std::max(1.f, width - buttonWidth - ImGui::GetStyle().ItemSpacing.x);
+		ImGui::PushItemWidth(comboWidth);
 		if (drawDeviceCombo(deviceGuid, connectedDevices, "##Device", true)) {
 			player->setDevice(deviceManager_->findDevice(deviceGuid));
+		}
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		playerDevice = player->getDevice();
+		ImGui::BeginDisabled(!playerDevice || !playerDevice->isConnected());
+		if (ImGui::Button(ICON_FA_WRENCH "##ConfigureDevice", {buttonWidth, 0.f})) {
+			openBindingDialog(playerDevice);
+		}
+		ImGui::EndDisabled();
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+			ImGui::SetTooltip("Configure controls");
 		}
 		ImGui::PushFont(configuration.getImGuiRegularSmallFont(), 0.f);
 		ImGui::TextUnformatted("Profile");
 		ImGui::PopFont();
+		ImGui::PushItemWidth(comboWidth);
 		drawPlayerProfileCombo(*player, "##Profile");
 		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		auto profileId = player->getProfileId();
+		auto profile = profileId ? controlProfiles_->getProfile(*profileId) : std::nullopt;
+		ImGui::BeginDisabled(!profile);
+		if (ImGui::Button(ICON_FA_WRENCH "##ConfigureProfile", {buttonWidth, 0.f}) && profile) {
+			openProfileDialog(
+				profile->builtIn ? ProfileDialogAction::Duplicate : ProfileDialogAction::Edit,
+				*profile,
+				playerDevice ? playerDevice->getGuid() : std::string{},
+				player);
+		}
+		ImGui::EndDisabled();
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+			ImGui::SetTooltip(profile && profile->builtIn ? "Duplicate built-in profile" : "Edit profile");
+		}
 		ImGui::PopStyleColor(12);
 		ImGui::PopID();
 	}

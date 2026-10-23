@@ -71,7 +71,17 @@ void MainWindow::preLoop() {
 		[](const app::ControlProfilesState& state) {
 			return app::Configuration::getInstance().persistControlProfiles(state);
 		});
-	deviceManager_ = std::make_shared<app::game::DeviceManager>();
+	auto deviceBindings = configuration.loadDeviceBindings()
+		.or_else([](const std::string& error) -> app::DeviceBindingsLoadResult {
+			spdlog::error("Could not load device bindings: {}", error);
+			return std::vector<app::game::DeviceBinding>{};
+		})
+		.value();
+	deviceManager_ = std::make_shared<app::game::DeviceManager>(
+		std::move(deviceBindings),
+		[](const std::vector<app::game::DeviceBinding>& state) {
+			return app::Configuration::getInstance().persistDeviceBindings(state);
+		});
 
 	switch (config_.network) {
 		case Network::SingleTcpClient:
@@ -257,7 +267,9 @@ void MainWindow::processWindowMouseActions() {
 }
 
 void MainWindow::processEvent(const SDL_Event& windowEvent) {
-	deviceManager_->eventUpdate(windowEvent);
+	if (deviceManager_->eventUpdate(windowEvent)) {
+		return;
+	}
 
 	switch (windowEvent.type) {
 		case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:

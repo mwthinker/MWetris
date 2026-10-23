@@ -19,82 +19,109 @@ namespace app::game {
 
 	}
 
-	class KeyboardTest : public ::testing::Test {
-	protected:
+	TEST(KeyboardTest, beginMappingClearsInputAndAwaitsLeft) {
+		// Given
+		Keyboard keyboard{"Keyboard 1", getDefaultKeyboardBindings(1)};
+		keyboard.eventUpdate(createKeyboardEvent(SDLK_LEFT, SDL_EVENT_KEY_DOWN));
+		ASSERT_TRUE(keyboard.getInput().left.held);
 
-		KeyboardTest() {}
+		// When
+		keyboard.beginMapping();
 
-		~KeyboardTest() override {}
+		// Then
+		EXPECT_EQ(keyboard.getInput(), Input{});
+		ASSERT_TRUE(keyboard.getMappingStatus());
+		EXPECT_EQ(keyboard.getMappingStatus()->awaiting, InputAction::Left);
+	}
 
-		void SetUp() override {
-			
+	TEST(KeyboardTest, captureSwapsDuplicateBindingInDraft) {
+		// Given
+		Keyboard keyboard{"Keyboard 1", getDefaultKeyboardBindings(1)};
+		keyboard.beginMapping();
+
+		// When
+		auto consumed = keyboard.captureMappingEvent(createKeyboardEvent(SDLK_RIGHT, SDL_EVENT_KEY_DOWN));
+
+		// Then
+		EXPECT_TRUE(consumed);
+		auto draft = keyboard.getDraftBindings();
+		ASSERT_TRUE(draft);
+		EXPECT_EQ(draft->left, SDLK_RIGHT);
+		EXPECT_EQ(draft->right, SDLK_LEFT);
+	}
+
+	TEST(KeyboardTest, commitAppliesCompleteDraft) {
+		// Given
+		Keyboard keyboard{"Keyboard 1", getDefaultKeyboardBindings(1)};
+		keyboard.beginMapping();
+		const std::array keys{SDLK_RIGHT, SDLK_J, SDLK_K, SDLK_L, SDLK_SPACE};
+		for (auto key : keys) {
+			ASSERT_TRUE(keyboard.captureMappingEvent(createKeyboardEvent(key, SDL_EVENT_KEY_DOWN)));
 		}
 
-		void TearDown() override {}
-	};
-
-	TEST_F(KeyboardTest, keyPressedOneFrame) {
-		// Given
-		Keyboard keyboard{"keyboard", KeyboardMapping{
-			.down=SDLK_DOWN,
-			.right=SDLK_RIGHT,
-			.left=SDLK_LEFT,
-			.rotate=SDLK_UP,
-			.downGround=SDLK_RCTRL
-		}};
-
 		// When
-		keyboard.eventUpdate(createKeyboardEvent(SDLK_DOWN, SDL_EVENT_KEY_DOWN));
+		auto result = keyboard.commitMapping();
 
 		// Then
-		auto down = keyboard.getInput().down;
-		ASSERT_TRUE(down.pressed);
-		ASSERT_TRUE(down.held);
-		ASSERT_FALSE(down.released);
+		ASSERT_TRUE(result);
+		EXPECT_EQ(keyboard.getBindings(), (KeyboardBindings{
+			.left = SDLK_RIGHT,
+			.right = SDLK_J,
+			.softDrop = SDLK_K,
+			.rotate = SDLK_L,
+			.hardDrop = SDLK_SPACE,
+		}));
+		EXPECT_FALSE(keyboard.getMappingStatus());
 	}
 
-	TEST_F(KeyboardTest, keyPressedTwoFrames) {
+	TEST(KeyboardTest, committedMappingHandlesGameplayInput) {
 		// Given
-		Keyboard keyboard{"keyboard", KeyboardMapping{
-			.down=SDLK_DOWN,
-			.right=SDLK_RIGHT,
-			.left=SDLK_LEFT,
-			.rotate=SDLK_UP,
-			.downGround=SDLK_RCTRL
-		}};
+		Keyboard keyboard{"Keyboard 1", getDefaultKeyboardBindings(1)};
+		keyboard.beginMapping();
+
+		const std::array keys{SDLK_RIGHT, SDLK_J, SDLK_K, SDLK_L, SDLK_SPACE};
+		for (auto key : keys) {
+			ASSERT_TRUE(keyboard.captureMappingEvent(createKeyboardEvent(key, SDL_EVENT_KEY_DOWN)));
+		}
+		ASSERT_TRUE(keyboard.commitMapping());
 
 		// When
-		keyboard.eventUpdate(createKeyboardEvent(SDLK_DOWN, SDL_EVENT_KEY_DOWN));
-		keyboard.tick();
+		keyboard.eventUpdate(createKeyboardEvent(SDLK_RIGHT, SDL_EVENT_KEY_DOWN));
 
 		// Then
-		auto down = keyboard.getInput().down;
-		ASSERT_FALSE(down.pressed);
-		ASSERT_TRUE(down.held);
-		ASSERT_FALSE(down.released);
+		EXPECT_TRUE(keyboard.getInput().left.pressed);
+		EXPECT_FALSE(keyboard.getInput().right.pressed);
 	}
 
-	TEST_F(KeyboardTest, keyReleased) {
+	TEST(KeyboardTest, repeatedKeyDoesNotAdvanceMapping) {
 		// Given
-		Keyboard keyboard{"keyboard", KeyboardMapping{
-			.down=SDLK_DOWN,
-			.right=SDLK_RIGHT,
-			.left=SDLK_LEFT,
-			.rotate=SDLK_UP,
-			.downGround=SDLK_RCTRL
-		}};
-		keyboard.eventUpdate(createKeyboardEvent(SDLK_DOWN, SDL_EVENT_KEY_DOWN));
-		keyboard.tick();
-		keyboard.tick();
-		keyboard.eventUpdate(createKeyboardEvent(SDLK_DOWN, SDL_EVENT_KEY_UP));
+		Keyboard keyboard{"Keyboard 1", getDefaultKeyboardBindings(1)};
+		keyboard.beginMapping();
+		auto repeated = createKeyboardEvent(SDLK_A, SDL_EVENT_KEY_DOWN);
+		repeated.key.repeat = 1;
 
 		// When
+		auto consumed = keyboard.captureMappingEvent(repeated);
 
 		// Then
-		auto down = keyboard.getInput().down;
-		ASSERT_FALSE(down.pressed);
-		ASSERT_FALSE(down.held);
-		ASSERT_TRUE(down.released);
+		EXPECT_TRUE(consumed);
+		ASSERT_TRUE(keyboard.getMappingStatus());
+		EXPECT_EQ(keyboard.getMappingStatus()->completed, 0);
+	}
+
+	TEST(KeyboardTest, cancelKeepsActiveMapping) {
+		// Given
+		auto defaults = getDefaultKeyboardBindings(1);
+		Keyboard keyboard{"Keyboard 1", defaults};
+		keyboard.beginMapping();
+		keyboard.captureMappingEvent(createKeyboardEvent(SDLK_A, SDL_EVENT_KEY_DOWN));
+
+		// When
+		keyboard.cancelMapping();
+
+		// Then
+		EXPECT_EQ(keyboard.getBindings(), defaults);
+		EXPECT_FALSE(keyboard.getMappingStatus());
 	}
 
 }

@@ -108,11 +108,27 @@
 	"devices": [
 		{
 			"guid": "Keyboard 1",
-			"inputProfileId": "balanced"
+			"inputProfileId": "balanced",
+			"bindings": {
+				"type": "keyboard",
+				"left": "Left",
+				"right": "Right",
+				"softDrop": "Down",
+				"rotate": "Up",
+				"hardDrop": "Right Ctrl"
+			}
 		},
 		{
 			"guid": "Keyboard 2",
-			"inputProfileId": "balanced"
+			"inputProfileId": "balanced",
+			"bindings": {
+				"type": "keyboard",
+				"left": "A",
+				"right": "D",
+				"softDrop": "S",
+				"rotate": "W",
+				"hardDrop": "Left Ctrl"
+			}
 		}
 	],
 	"ai1": "Default",

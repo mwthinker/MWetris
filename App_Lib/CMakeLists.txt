@@ -27,6 +27,7 @@ set(SOURCES_LIB
 	src/app/game/devicemanager.h
 	src/app/game/device.h
 	src/app/game/input.h
+	src/app/game/inputbindings.h
 	src/app/game/gamepad.cpp
 	src/app/game/gamepad.h
 	src/app/game/gamerules.h

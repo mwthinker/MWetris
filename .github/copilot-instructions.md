@@ -19,3 +19,10 @@
 - For nested namespaces, use the compact syntax `namespace a::b::c { … }`.
 - Prefer signed integers for values, counters, and arithmetic; use unsigned only for bit manipulation, intentional modular arithmetic, or API-required types (ES.101, ES.102).
 - Prefer keeping method parameters on the same line; wrap them only when needed for readability.
+
+# Tests
+- Give each test a descriptive name that states the observable behavior being verified.
+- Structure each test with `// Given`, `// When`, and `// Then` sections.
+- Test one behavior per test and prefer one Given/When/Then sequence. Split tests that require multiple independent sequences.
+- Put shared setup and cleanup in fixtures or focused helper functions, while keeping scenario-specific setup visible in the test.
+- Keep actions in `When` and assertions in `Then`; setup precondition assertions may remain in `Given`.

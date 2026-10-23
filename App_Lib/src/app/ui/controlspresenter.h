@@ -27,6 +27,7 @@ namespace app::ui {
 
 		void drawMenu();
 		void drawProfileDialog();
+		void drawBindingDialog();
 		void drawDeviceProfileSelection(const std::shared_ptr<game::Player>& player, float width);
 
 	private:
@@ -45,6 +46,13 @@ namespace app::ui {
 			std::string name;
 			InputTiming timing;
 			std::string error;
+			std::weak_ptr<game::Player> player;
+			bool openRequested = false;
+		};
+
+		struct BindingDialogState {
+			game::DevicePtr device;
+			std::string error;
 			bool openRequested = false;
 		};
 
@@ -59,13 +67,18 @@ namespace app::ui {
 		void drawAssignedProfileCombo(const std::string& deviceGuid, const char* label, std::string& error) const;
 		void drawPlayerProfileCombo(game::Player& player, const char* label) const;
 		
-		void openProfileDialog(ProfileDialogAction action, const InputProfile& profile, std::string deviceGuid = {});
+		void openProfileDialog(ProfileDialogAction action, const InputProfile& profile,
+			std::string deviceGuid = {}, std::weak_ptr<game::Player> player = {});
 		void closeProfileDialog();
+		void openBindingDialog(const game::DevicePtr& device);
+		void closeBindingDialog();
 
 		std::string selectedOptionsDeviceGuid_;
 		std::string optionsError_;
 		DialogState dialog_;
+		BindingDialogState bindingDialog_;
 		std::string popupIdSuffix_;
+		std::string bindingPopupIdSuffix_;
 		std::shared_ptr<game::DeviceManager> deviceManager_;
 		std::shared_ptr<ControlProfiles> controlProfiles_;
 	};

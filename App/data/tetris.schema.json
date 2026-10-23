@@ -309,11 +309,25 @@
 				"type": "object",
 				"properties": {
 					"guid": { "type": "string", "minLength": 1 },
-					"inputProfileId": { "type": "string", "minLength": 1 }
+					"inputProfileId": { "type": "string", "minLength": 1 },
+					"bindings": { "$ref": "#/definitions/InputBindings" }
 				},
 				"required": ["guid", "inputProfileId"],
 				"additionalProperties": false
 			}
+		},
+		"InputBindings": {
+			"type": "object",
+			"properties": {
+				"type": { "type": "string", "enum": ["keyboard", "gamepad"] },
+				"left": { "type": "string", "minLength": 1 },
+				"right": { "type": "string", "minLength": 1 },
+				"softDrop": { "type": "string", "minLength": 1 },
+				"rotate": { "type": "string", "minLength": 1 },
+				"hardDrop": { "type": "string", "minLength": 1 }
+			},
+			"required": ["type", "left", "right", "softDrop", "rotate", "hardDrop"],
+			"additionalProperties": false
 		}
 	}
 }

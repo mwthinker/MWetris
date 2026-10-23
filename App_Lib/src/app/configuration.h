@@ -7,6 +7,7 @@
 #include <nlohmann/json.hpp>
 
 #include "controlprofiles.h"
+#include "game/inputbindings.h"
 #include "textureview.h"
 #include <sdl/color.h>
 
@@ -24,6 +25,7 @@
 
 namespace app {
 	using ControlProfilesLoadResult = std::expected<ControlProfilesState, std::string>;
+	using DeviceBindingsLoadResult = std::expected<std::vector<game::DeviceBinding>, std::string>;
 
 	constexpr tetris::BlockType charToBlockType(char key);
 	constexpr const char* blockTypeToString(tetris::BlockType blocktype);
@@ -308,6 +310,9 @@ namespace app {
 		ControlProfilesLoadResult loadControlProfiles();
 		ControlProfilesPersistenceResult persistControlProfiles(const ControlProfilesState& state);
 		static ControlProfilesState normalizeControlProfiles(nlohmann::json& jsonObject);
+		DeviceBindingsLoadResult loadDeviceBindings();
+		game::DeviceBindingsPersistenceResult persistDeviceBindings(const std::vector<game::DeviceBinding>& state);
+		static std::vector<game::DeviceBinding> normalizeDeviceBindings(nlohmann::json& jsonObject);
 
 		// Every TextureView is bound to the atlas texture
 		ImTextureID getTextureAtlasBinding() {

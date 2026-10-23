@@ -630,6 +630,118 @@ namespace app {
 			return devices;
 		}
 
+		constexpr const char* bindingJsonKey(game::InputAction action) {
+			switch (action) {
+				case game::InputAction::Left: return "left";
+				case game::InputAction::Right: return "right";
+				case game::InputAction::SoftDrop: return "softDrop";
+				case game::InputAction::Rotate: return "rotate";
+				case game::InputAction::HardDrop: return "hardDrop";
+			}
+			return "left";
+		}
+
+		json serializeBindings(const game::KeyboardBindings& bindings) {
+			json result{{"type", "keyboard"}};
+			for (auto action : game::InputActions) {
+				result[bindingJsonKey(action)] = SDL_GetKeyName(game::getBinding(bindings, action));
+			}
+			return result;
+		}
+
+		json serializeBindings(const game::GamepadBindings& bindings) {
+			json result{{"type", "gamepad"}};
+			for (auto action : game::InputActions) {
+				result[bindingJsonKey(action)] = SDL_GetGamepadStringForButton(game::getBinding(bindings, action));
+			}
+			return result;
+		}
+
+		json serializeBindings(const game::BindingSet& bindings) {
+			return std::visit([](const auto& value) { return serializeBindings(value); }, bindings);
+		}
+
+		game::BindingSet defaultBindingsForGuid(std::string_view guid) {
+			if (guid == "Keyboard 1") {
+				return game::getDefaultKeyboardBindings(1);
+			}
+			if (guid == "Keyboard 2") {
+				return game::getDefaultKeyboardBindings(2);
+			}
+			return game::getDefaultGamepadBindings();
+		}
+
+		std::optional<game::KeyboardBindings> parseKeyboardBindings(const json& value) {
+			if (!value.is_object() || value.value("type", std::string{}) != "keyboard") {
+				return std::nullopt;
+			}
+			game::KeyboardBindings bindings;
+			for (auto action : game::InputActions) {
+				auto found = value.find(bindingJsonKey(action));
+				if (found == value.end() || !found->is_string()) {
+					return std::nullopt;
+				}
+				game::setBinding(bindings, action, SDL_GetKeyFromName(found->get_ref<const std::string&>().c_str()));
+			}
+			return game::validateBindings(bindings) ? std::optional{bindings} : std::nullopt;
+		}
+
+		std::optional<game::GamepadBindings> parseGamepadBindings(const json& value) {
+			if (!value.is_object() || value.value("type", std::string{}) != "gamepad") {
+				return std::nullopt;
+			}
+			game::GamepadBindings bindings;
+			for (auto action : game::InputActions) {
+				auto found = value.find(bindingJsonKey(action));
+				if (found == value.end() || !found->is_string()) {
+					return std::nullopt;
+				}
+				game::setBinding(bindings, action, SDL_GetGamepadButtonFromString(found->get_ref<const std::string&>().c_str()));
+			}
+			return game::validateBindings(bindings) ? std::optional{bindings} : std::nullopt;
+		}
+
+		game::BindingSet parseBindingsOrDefault(const json& value, std::string_view guid) {
+			auto defaultBindings = defaultBindingsForGuid(guid);
+			auto type = value.is_object() ? value.value("type", std::string{}) : std::string{};
+			if (type == "keyboard") {
+				if (auto bindings = parseKeyboardBindings(value)) {
+					return *bindings;
+				}
+				return std::holds_alternative<game::KeyboardBindings>(defaultBindings)
+					? defaultBindings
+					: game::BindingSet{game::getDefaultKeyboardBindings(1)};
+			}
+			if (type == "gamepad") {
+				if (auto bindings = parseGamepadBindings(value)) {
+					return *bindings;
+				}
+				return game::getDefaultGamepadBindings();
+			}
+			return defaultBindings;
+		}
+
+		json serializeDeviceAssignments(const ControlProfilesState& state, const json& currentDocument) {
+			auto devices = serializeDeviceAssignments(state);
+			auto currentDevices = currentDocument.find("devices");
+			if (currentDevices == currentDocument.end() || !currentDevices->is_array()) {
+				return devices;
+			}
+			for (auto& device : devices) {
+				auto guid = device.at("guid").get<std::string>();
+				auto current = std::ranges::find_if(*currentDevices, [&](const json& value) {
+					return value.is_object() && normalizeDeviceGuid(value.value("guid", std::string{})) == guid;
+				});
+				if (current != currentDevices->end()) {
+					auto bindings = current->find("bindings");
+					if (bindings != current->end()) {
+						device["bindings"] = *bindings;
+					}
+				}
+			}
+			return devices;
+		}
+
 		ControlProfilesPersistenceResult replaceJsonFile(const std::string& path, const json& jsonObject) {
 			std::string temporaryPath;
 			std::ofstream stream;
@@ -1447,7 +1559,7 @@ namespace app {
 		}
 
 		auto normalizedProfiles = serializeInputProfiles(state);
-		auto normalizedDevices = serializeDeviceAssignments(state);
+		auto normalizedDevices = serializeDeviceAssignments(state, jsonObject);
 		jsonObject["inputProfiles"] = std::move(normalizedProfiles);
 		jsonObject["devices"] = std::move(normalizedDevices);
 		return state;
@@ -1474,10 +1586,99 @@ namespace app {
 		try {
 			auto candidate = impl_->jsonObject;
 			candidate["inputProfiles"] = serializeInputProfiles(state);
-			candidate["devices"] = serializeDeviceAssignments(state);
+			candidate["devices"] = serializeDeviceAssignments(state, impl_->jsonObject);
 			auto result = replaceJsonFile(impl_->jsonPath, candidate);
 			if (!result) {
 				return result;
+			}
+			impl_->jsonObject = std::move(candidate);
+			return {};
+		} catch (const std::exception& exception) {
+			return std::unexpected{exception.what()};
+		}
+	}
+
+	std::vector<game::DeviceBinding> Configuration::normalizeDeviceBindings(json& jsonObject) {
+		if (!jsonObject.is_object()) {
+			jsonObject = json::object();
+		}
+		if (!jsonObject.contains("devices") || !jsonObject["devices"].is_array()) {
+			jsonObject["devices"] = json::array();
+		}
+
+		std::vector<game::DeviceBinding> state;
+		for (auto& value : jsonObject["devices"]) {
+			if (!value.is_object()) {
+				continue;
+			}
+			auto guidValue = value.find("guid");
+			if (guidValue == value.end() || !guidValue->is_string()) {
+				continue;
+			}
+			auto guid = normalizeDeviceGuid(guidValue->get<std::string>());
+			if (guid.empty() || std::ranges::find(state, guid, &game::DeviceBinding::deviceGuid) != state.end()) {
+				continue;
+			}
+			value["guid"] = guid;
+			auto bindingsValue = value.find("bindings");
+			auto bindings = parseBindingsOrDefault(
+				bindingsValue == value.end() ? json{} : *bindingsValue,
+				guid);
+			value["bindings"] = serializeBindings(bindings);
+			state.push_back({std::move(guid), std::move(bindings)});
+		}
+		return state;
+	}
+
+	DeviceBindingsLoadResult Configuration::loadDeviceBindings() {
+		try {
+			auto candidate = impl_->jsonObject;
+			auto state = normalizeDeviceBindings(candidate);
+			if (candidate != impl_->jsonObject) {
+				auto result = replaceJsonFile(impl_->jsonPath, candidate);
+				if (!result) {
+					return std::unexpected{result.error()};
+				}
+				impl_->jsonObject = std::move(candidate);
+			}
+			return state;
+		} catch (const std::exception& exception) {
+			return std::unexpected{exception.what()};
+		}
+	}
+
+	game::DeviceBindingsPersistenceResult Configuration::persistDeviceBindings(const std::vector<game::DeviceBinding>& state) {
+		try {
+			auto candidate = impl_->jsonObject;
+			if (!candidate.contains("devices") || !candidate["devices"].is_array()) {
+				candidate["devices"] = json::array();
+			}
+			std::vector<std::string> guids;
+			for (const auto& entry : state) {
+				if (entry.deviceGuid.empty() || std::ranges::find(guids, entry.deviceGuid) != guids.end()) {
+					return std::unexpected{"Device binding GUIDs must be non-empty and unique."};
+				}
+				auto validation = std::visit([](const auto& bindings) { return game::validateBindings(bindings); }, entry.bindings);
+				if (!validation) {
+					return std::unexpected{validation.error()};
+				}
+				guids.push_back(entry.deviceGuid);
+				auto found = std::ranges::find_if(candidate["devices"], [&](const json& value) {
+					return value.is_object() && value.value("guid", std::string{}) == entry.deviceGuid;
+				});
+				if (found == candidate["devices"].end()) {
+					candidate["devices"].push_back({
+						{"guid", entry.deviceGuid},
+						{"inputProfileId", ControlProfiles::BalancedProfileId.value},
+						{"bindings", serializeBindings(entry.bindings)},
+					});
+				} else {
+					(*found)["bindings"] = serializeBindings(entry.bindings);
+				}
+			}
+			auto result = replaceJsonFile(impl_->jsonPath, candidate);
+			if (!result) {
+				return std::unexpected{result.error()};
 			}
 			impl_->jsonObject = std::move(candidate);
 			return {};

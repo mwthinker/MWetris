@@ -9,6 +9,8 @@ namespace app::game {
 		bool held = false;
 		bool pressed = false;
 		bool released = false;
+
+		friend constexpr auto operator<=>(const KeyState&, const KeyState&) = default;
 	};
 
 	struct Input {

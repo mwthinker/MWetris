@@ -8,6 +8,7 @@
 #include <chrono>
 #include <filesystem>
 #include <fstream>
+#include <memory>
 #include <string>
 
 namespace app {
@@ -107,27 +108,111 @@ namespace app {
 			return count;
 		}
 
+		nlohmann::json readConfigurationFile() {
+			nlohmann::json document;
+			std::ifstream stream{"tetris.json"};
+			stream >> document;
+			return document;
+		}
+
 	}
 
-	TEST(ConfigurationTest, normalizesControlProfilesFromSuppliedJson) {
-		auto document = legacyConfiguration();
-		auto state = Configuration::normalizeControlProfiles(document);
-		ASSERT_EQ(state.profiles.size(), 6);
-		ASSERT_EQ(state.assignments.size(), 6);
+	class ConfigurationPersistenceTest : public ::testing::Test {
+	protected:
+		static void SetUpTestSuite() {
+			const auto unique = std::chrono::steady_clock::now().time_since_epoch().count();
+			testDirectory_ = std::filesystem::temp_directory_path()
+				/ ("mwetris-configuration-test-" + std::to_string(unique));
+			std::filesystem::create_directories(testDirectory_);
+			currentPathGuard_ = std::make_unique<CurrentPathGuard>();
+			std::filesystem::current_path(testDirectory_);
 
+			auto document = legacyConfiguration();
+			std::ofstream{"USE_APPLICATION_JSON"} << true;
+			std::ofstream{"tetris.json"} << document.dump();
+			document["window"]["width"] = 1024;
+			std::ofstream{"tetris.defaults.json"} << document.dump();
+
+			configuration_ = &Configuration::getInstance();
+			baselineSettings_ = configuration_->getEditableSettings();
+			auto profilesDocument = legacyConfiguration();
+			baselineProfiles_ = Configuration::normalizeControlProfiles(profilesDocument);
+			auto bindingsDocument = legacyConfiguration();
+			baselineBindings_ = Configuration::normalizeDeviceBindings(bindingsDocument);
+		}
+
+		static void TearDownTestSuite() {
+			configuration_->resetRuntimeResources();
+			currentPathGuard_.reset();
+			std::filesystem::remove_all(testDirectory_);
+		}
+
+		void SetUp() override {
+			restoreConfigurationFile();
+			configuration_->resetRuntimeResources();
+			ASSERT_TRUE(configuration_->persistEditableSettings(baselineSettings_));
+			ASSERT_TRUE(configuration_->persistControlProfiles(baselineProfiles_));
+			ASSERT_TRUE(configuration_->persistDeviceBindings(baselineBindings_));
+			configuration_->resetRuntimeResources();
+		}
+
+		void TearDown() override {
+			restoreConfigurationFile();
+			configuration_->resetRuntimeResources();
+		}
+
+		void blockConfigurationFileReplacement() {
+			std::filesystem::rename("tetris.json", "tetris.json.backup");
+			std::filesystem::create_directory("tetris.json");
+		}
+
+		void restoreConfigurationFile() {
+			if (!std::filesystem::exists("tetris.json.backup")) {
+				return;
+			}
+			std::filesystem::remove_all("tetris.json");
+			std::filesystem::rename("tetris.json.backup", "tetris.json");
+		}
+
+		static inline std::filesystem::path testDirectory_;
+		static inline std::unique_ptr<CurrentPathGuard> currentPathGuard_;
+		static inline Configuration* configuration_ = nullptr;
+		static inline Configuration::EditableSettings baselineSettings_;
+		static inline ControlProfilesState baselineProfiles_;
+		static inline std::vector<game::DeviceBinding> baselineBindings_;
+	};
+
+	TEST(ConfigurationTest, normalizesLegacyControlProfiles) {
+		// Given
+		auto document = legacyConfiguration();
+
+		// When
+		auto state = Configuration::normalizeControlProfiles(document);
+
+		// Then
+		ASSERT_EQ(state.profiles.size(), 6);
 		auto userProfile = std::ranges::find(state.profiles, ProfileId{"user-profile"}, &InputProfile::id);
 		ASSERT_NE(userProfile, state.profiles.end());
 		EXPECT_EQ(userProfile->name, "User");
 		EXPECT_EQ(userProfile->timing, (InputTiming{140, 25}));
 		EXPECT_FALSE(userProfile->builtIn);
-
 		auto repairedProfile = std::ranges::find(state.profiles, ProfileId{"migrated-1"}, &InputProfile::id);
 		ASSERT_NE(repairedProfile, state.profiles.end());
 		EXPECT_EQ(repairedProfile->name, "Balanced Copy");
 		auto legacyProfile = std::ranges::find(state.profiles, ProfileId{"migrated-2"}, &InputProfile::id);
 		ASSERT_NE(legacyProfile, state.profiles.end());
 		EXPECT_EQ(legacyProfile->timing, (InputTiming{140, 25}));
+	}
 
+	TEST(ConfigurationTest, normalizesLegacyProfileAssignments) {
+		// Given
+		auto document = legacyConfiguration();
+
+		// When
+		auto state = Configuration::normalizeControlProfiles(document);
+
+		// Then
+		ASSERT_EQ(state.assignments.size(), 6);
 		ControlProfiles profiles{state};
 		EXPECT_EQ(profiles.getAssignedProfileId("Keyboard 1"), ControlProfiles::BalancedProfileId);
 		EXPECT_EQ(profiles.getAssignedProfileId("Keyboard 2"), ControlProfiles::FastProfileId);
@@ -137,7 +222,16 @@ namespace app {
 		EXPECT_EQ(profiles.getAssignedProfileId("pad-2"), ProfileId{"migrated-2"});
 		EXPECT_EQ(profiles.getAssignedProfileId("missing"), ControlProfiles::BalancedProfileId);
 		EXPECT_EQ(profiles.getAssignedProfileId("user-device"), ProfileId{"user-profile"});
+	}
 
+	TEST(ConfigurationTest, rewritesLegacyControlProfileJson) {
+		// Given
+		auto document = legacyConfiguration();
+
+		// When
+		Configuration::normalizeControlProfiles(document);
+
+		// Then
 		EXPECT_EQ(document.at("sentinel"), 42);
 		ASSERT_EQ(document.at("inputProfiles").size(), 3);
 		for (const auto& profile : document.at("inputProfiles")) {
@@ -148,155 +242,212 @@ namespace app {
 			EXPECT_FALSE(device.contains("das"));
 			EXPECT_FALSE(device.contains("arr"));
 		}
+	}
 
+	TEST(ConfigurationTest, controlProfileNormalizationIsIdempotent) {
+		// Given
+		auto document = legacyConfiguration();
+		auto state = Configuration::normalizeControlProfiles(document);
 		auto normalizedDocument = document;
+
+		// When
 		auto normalizedState = Configuration::normalizeControlProfiles(normalizedDocument);
+
+		// Then
 		EXPECT_EQ(normalizedDocument, document);
 		EXPECT_EQ(normalizedState.profiles, state.profiles);
 		EXPECT_EQ(normalizedState.assignments, state.assignments);
-
-		nlohmann::json invalidRoot = 42;
-		auto defaultState = Configuration::normalizeControlProfiles(invalidRoot);
-		EXPECT_TRUE(invalidRoot.is_object());
-		EXPECT_EQ(defaultState.profiles, ControlProfiles::createDefaultState().profiles);
-		EXPECT_TRUE(defaultState.assignments.empty());
 	}
 
-	TEST(ConfigurationTest, persistsCandidateOnlyAfterSuccessfulReplacement) {
-		const auto unique = std::chrono::steady_clock::now().time_since_epoch().count();
-		const auto testDirectory = std::filesystem::temp_directory_path()
-			/ ("mwetris-configuration-test-" + std::to_string(unique));
-		std::filesystem::create_directories(testDirectory);
-		CurrentPathGuard currentPathGuard;
-		std::filesystem::current_path(testDirectory);
+	TEST(ConfigurationTest, invalidControlProfileRootProducesDefaults) {
+		// Given
+		nlohmann::json document = 42;
 
-		const auto initialDocument = legacyConfiguration();
-		{
-			std::ofstream selection{"USE_APPLICATION_JSON"};
-			selection << true;
-			std::ofstream configuration{"tetris.json"};
-			configuration << initialDocument.dump();
-			std::ofstream defaults{"tetris.defaults.json"};
-			auto defaultDocument = initialDocument;
-			defaultDocument["window"]["width"] = 1024;
-			defaults << defaultDocument.dump();
-		}
+		// When
+		auto state = Configuration::normalizeControlProfiles(document);
 
-		auto& configuration = Configuration::getInstance();
-		auto loaded = configuration.loadControlProfiles();
-		ASSERT_TRUE(loaded);
+		// Then
+		EXPECT_TRUE(document.is_object());
+		EXPECT_EQ(state.profiles, ControlProfiles::createDefaultState().profiles);
+		EXPECT_TRUE(state.assignments.empty());
+	}
+
+	TEST(ConfigurationTest, normalizesDeviceBindings) {
+		// Given
+		auto document = nlohmann::json{{"devices", {
+			{{"guid", "keyboard1"}, {"inputProfileId", "fast"}},
+			{{"guid", "pad"}, {"inputProfileId", "balanced"}, {"bindings", {
+				{"type", "gamepad"},
+				{"left", SDL_GetGamepadStringForButton(SDL_GAMEPAD_BUTTON_WEST)},
+				{"right", SDL_GetGamepadStringForButton(SDL_GAMEPAD_BUTTON_EAST)},
+				{"softDrop", SDL_GetGamepadStringForButton(SDL_GAMEPAD_BUTTON_DPAD_DOWN)},
+				{"rotate", SDL_GetGamepadStringForButton(SDL_GAMEPAD_BUTTON_NORTH)},
+				{"hardDrop", SDL_GetGamepadStringForButton(SDL_GAMEPAD_BUTTON_SOUTH)},
+			}}},
+			{{"guid", "broken"}, {"inputProfileId", "balanced"}, {"bindings", {
+				{"type", "keyboard"},
+				{"left", "A"}, {"right", "A"}, {"softDrop", "S"}, {"rotate", "W"}, {"hardDrop", "Left Ctrl"},
+			}}},
+		}}};
+
+		// When
+		auto state = Configuration::normalizeDeviceBindings(document);
+
+		// Then
+		ASSERT_EQ(state.size(), 3);
+		EXPECT_EQ(state[0].deviceGuid, "Keyboard 1");
+		ASSERT_TRUE(std::holds_alternative<game::KeyboardBindings>(state[0].bindings));
+		EXPECT_EQ(std::get<game::KeyboardBindings>(state[0].bindings), game::getDefaultKeyboardBindings(1));
+		ASSERT_TRUE(std::holds_alternative<game::GamepadBindings>(state[1].bindings));
+		EXPECT_TRUE(game::validateBindings(std::get<game::GamepadBindings>(state[1].bindings)));
+		EXPECT_EQ(std::get<game::GamepadBindings>(state[1].bindings).left, SDL_GAMEPAD_BUTTON_WEST);
+		ASSERT_TRUE(std::holds_alternative<game::KeyboardBindings>(state[2].bindings));
+		EXPECT_EQ(std::get<game::KeyboardBindings>(state[2].bindings), game::getDefaultKeyboardBindings(1));
+		EXPECT_EQ(document["devices"][0]["inputProfileId"], "fast");
+		EXPECT_EQ(document["devices"][0]["bindings"]["type"], "keyboard");
+	}
+
+	TEST(ConfigurationTest, deviceBindingNormalizationIsIdempotent) {
+		// Given
+		auto document = legacyConfiguration();
+		auto state = Configuration::normalizeDeviceBindings(document);
+		auto normalized = document;
+
+		// When
+		auto roundTrip = Configuration::normalizeDeviceBindings(normalized);
+
+		// Then
+		EXPECT_EQ(normalized, document);
+		EXPECT_EQ(roundTrip, state);
+	}
+
+	TEST_F(ConfigurationPersistenceTest, persistsDeviceBindings) {
+		// Given
+		auto bindings = configuration_->loadDeviceBindings();
+		ASSERT_TRUE(bindings);
+		auto keyboard = std::ranges::find(*bindings, "Keyboard 1", &game::DeviceBinding::deviceGuid);
+		ASSERT_NE(keyboard, bindings->end());
+		auto customized = std::get<game::KeyboardBindings>(keyboard->bindings);
+		customized.hardDrop = SDLK_SPACE;
+		keyboard->bindings = customized;
+
+		// When
+		auto result = configuration_->persistDeviceBindings(*bindings);
+
+		// Then
+		ASSERT_TRUE(result);
+		auto roundTrip = configuration_->loadDeviceBindings();
+		ASSERT_TRUE(roundTrip);
+		EXPECT_EQ(*roundTrip, *bindings);
 		EXPECT_EQ(temporaryConfigurationFileCount(), 0);
-		nlohmann::json migrated;
-		{
-			std::ifstream stream{"tetris.json"};
-			stream >> migrated;
-		}
-		EXPECT_TRUE(migrated.at("devices").at(0).contains("inputProfileId"));
-		EXPECT_FALSE(migrated.at("devices").at(0).contains("das"));
+		auto persisted = readConfigurationFile();
+		auto persistedKeyboard = std::ranges::find(
+			persisted.at("devices"), "Keyboard 1", [](const nlohmann::json& value) {
+				return value.at("guid").get<std::string>();
+			});
+		ASSERT_NE(persistedKeyboard, persisted.at("devices").end());
+		EXPECT_EQ(persistedKeyboard->at("bindings").at("hardDrop"), "Space");
+	}
 
-		ControlProfiles profiles{*loaded, [&configuration](const ControlProfilesState& candidate) {
-			return configuration.persistControlProfiles(candidate);
+	TEST_F(ConfigurationPersistenceTest, persistsControlProfileAssignment) {
+		// Given
+		auto state = configuration_->loadControlProfiles();
+		ASSERT_TRUE(state);
+		ControlProfiles profiles{*state, [this](const ControlProfilesState& candidate) {
+			return configuration_->persistControlProfiles(candidate);
 		}};
 
-		auto assignResult = profiles.assignProfile("user-device", ControlProfiles::ClassicProfileId);
-		ASSERT_TRUE(assignResult);
-		auto roundTripProfileId = profiles.duplicateProfile(
-			"round-trip-device",
-			ControlProfiles::BalancedProfileId,
-			"Round Trip",
-			{321, 45});
-		ASSERT_TRUE(roundTripProfileId);
-		EXPECT_EQ(temporaryConfigurationFileCount(), 0);
+		// When
+		auto result = profiles.assignProfile("user-device", ControlProfiles::ClassicProfileId);
 
-		nlohmann::json persisted;
-		{
-			std::ifstream stream{"tetris.json"};
-			stream >> persisted;
-		}
-		EXPECT_EQ(persisted.at("sentinel"), 42);
-		auto persistedUserAssignment = std::ranges::find(
-			persisted.at("devices"),
-			"user-device",
-			[](const nlohmann::json& assignment) {
-				return assignment.at("guid").get<std::string>();
+		// Then
+		ASSERT_TRUE(result);
+		auto persisted = readConfigurationFile();
+		auto assignment = std::ranges::find(
+			persisted.at("devices"), "user-device", [](const nlohmann::json& value) {
+				return value.at("guid").get<std::string>();
 			});
-		ASSERT_NE(persistedUserAssignment, persisted.at("devices").end());
-		EXPECT_EQ(persistedUserAssignment->at("inputProfileId"), "classic");
-		auto persistedRoundTripProfile = std::ranges::find(
-			persisted.at("inputProfiles"),
-			roundTripProfileId->value,
-			[](const nlohmann::json& profile) {
-				return profile.at("id").get<std::string>();
-			});
-		ASSERT_NE(persistedRoundTripProfile, persisted.at("inputProfiles").end());
-		EXPECT_EQ(persistedRoundTripProfile->at("name"), "Round Trip");
-		EXPECT_EQ(persistedRoundTripProfile->at("das"), 321);
-		EXPECT_EQ(persistedRoundTripProfile->at("arr"), 45);
-		EXPECT_FALSE(persistedRoundTripProfile->contains("builtIn"));
+		ASSERT_NE(assignment, persisted.at("devices").end());
+		EXPECT_EQ(assignment->at("inputProfileId"), "classic");
+	}
 
-		auto committed = configuration.loadControlProfiles();
-		ASSERT_TRUE(committed);
-		ControlProfiles roundTrippedProfiles{*committed};
-		auto roundTrippedProfile = roundTrippedProfiles.getProfile(*roundTripProfileId);
-		ASSERT_TRUE(roundTrippedProfile);
-		EXPECT_EQ(roundTrippedProfile->name, "Round Trip");
-		EXPECT_EQ(roundTrippedProfile->timing, (InputTiming{321, 45}));
-		EXPECT_FALSE(roundTrippedProfile->builtIn);
-		EXPECT_EQ(roundTrippedProfiles.getAssignedProfileId("round-trip-device"), *roundTripProfileId);
-		auto failedCandidate = *committed;
+	TEST_F(ConfigurationPersistenceTest, persistsDuplicatedControlProfile) {
+		// Given
+		auto state = configuration_->loadControlProfiles();
+		ASSERT_TRUE(state);
+		ControlProfiles profiles{*state, [this](const ControlProfilesState& candidate) {
+			return configuration_->persistControlProfiles(candidate);
+		}};
+
+		// When
+		auto profileId = profiles.duplicateProfile(
+			"round-trip-device", ControlProfiles::BalancedProfileId, "Round Trip", {321, 45});
+
+		// Then
+		ASSERT_TRUE(profileId);
+		auto roundTrip = configuration_->loadControlProfiles();
+		ASSERT_TRUE(roundTrip);
+		ControlProfiles roundTrippedProfiles{*roundTrip};
+		auto profile = roundTrippedProfiles.getProfile(*profileId);
+		ASSERT_TRUE(profile);
+		EXPECT_EQ(profile->name, "Round Trip");
+		EXPECT_EQ(profile->timing, (InputTiming{321, 45}));
+		EXPECT_FALSE(profile->builtIn);
+		EXPECT_EQ(roundTrippedProfiles.getAssignedProfileId("round-trip-device"), *profileId);
+	}
+
+	TEST_F(ConfigurationPersistenceTest, failedControlProfilePersistenceKeepsCommittedState) {
+		// Given
+		auto state = configuration_->loadControlProfiles();
+		ASSERT_TRUE(state);
 		auto userAssignment = std::ranges::find(
-			failedCandidate.assignments,
-			"user-device",
-			&DeviceProfileAssignment::deviceGuid);
-		ASSERT_NE(userAssignment, failedCandidate.assignments.end());
+			state->assignments, "user-device", &DeviceProfileAssignment::deviceGuid);
+		ASSERT_NE(userAssignment, state->assignments.end());
+		userAssignment->profileId = ControlProfiles::ClassicProfileId;
+		ASSERT_TRUE(configuration_->persistControlProfiles(*state));
 		userAssignment->profileId = ControlProfiles::FastProfileId;
-		std::filesystem::rename("tetris.json", "tetris.json.backup");
-		std::filesystem::create_directory("tetris.json");
-		auto failedSave = configuration.persistControlProfiles(failedCandidate);
-		ASSERT_FALSE(failedSave);
-		EXPECT_NE(failedSave.error().find("replace configuration file"), std::string::npos);
+		blockConfigurationFileReplacement();
+
+		// When
+		auto result = configuration_->persistControlProfiles(*state);
+
+		// Then
+		ASSERT_FALSE(result);
+		EXPECT_NE(result.error().find("replace configuration file"), std::string::npos);
 		EXPECT_EQ(temporaryConfigurationFileCount(), 0);
-		std::filesystem::remove("tetris.json");
-		std::filesystem::rename("tetris.json.backup", "tetris.json");
-
-		{
-			std::ifstream stream{"tetris.json"};
-			stream >> persisted;
-		}
-		persistedUserAssignment = std::ranges::find(
-			persisted.at("devices"),
-			"user-device",
-			[](const nlohmann::json& assignment) {
-				return assignment.at("guid").get<std::string>();
+		restoreConfigurationFile();
+		auto persisted = readConfigurationFile();
+		auto persistedAssignment = std::ranges::find(
+			persisted.at("devices"), "user-device", [](const nlohmann::json& value) {
+				return value.at("guid").get<std::string>();
 			});
-		ASSERT_NE(persistedUserAssignment, persisted.at("devices").end());
-		EXPECT_EQ(persistedUserAssignment->at("inputProfileId"), "classic");
-		auto afterFailure = configuration.loadControlProfiles();
-		ASSERT_TRUE(afterFailure);
-		auto committedUserAssignment = std::ranges::find(
-			afterFailure->assignments,
-			"user-device",
-			&DeviceProfileAssignment::deviceGuid);
-		ASSERT_NE(committedUserAssignment, afterFailure->assignments.end());
-		EXPECT_EQ(committedUserAssignment->profileId, ControlProfiles::ClassicProfileId);
+		ASSERT_NE(persistedAssignment, persisted.at("devices").end());
+		EXPECT_EQ(persistedAssignment->at("inputProfileId"), "classic");
+		auto committed = configuration_->loadControlProfiles();
+		ASSERT_TRUE(committed);
+		auto committedAssignment = std::ranges::find(
+			committed->assignments, "user-device", &DeviceProfileAssignment::deviceGuid);
+		ASSERT_NE(committedAssignment, committed->assignments.end());
+		EXPECT_EQ(committedAssignment->profileId, ControlProfiles::ClassicProfileId);
+	}
 
-		auto settings = configuration.getEditableSettings();
-		EXPECT_EQ(settings.window.width, 860);
-		EXPECT_FLOAT_EQ(settings.window.uiScale, 1.f);
-		EXPECT_EQ(settings.ais.size(), 1);
+	TEST_F(ConfigurationPersistenceTest, persistsEditableSettingsWithoutRestart) {
+		// Given
+		auto settings = configuration_->getEditableSettings();
 		settings.window.width = 900;
 		settings.window.uiScale = 1.25f;
 		settings.board.showDownBlock = false;
 		settings.activeAiNames[2] = "Careful";
 		settings.ais.push_back({"Aggressive", "-0.5*holes - landingHeight"});
-		auto settingsSave = configuration.persistEditableSettings(settings);
-		ASSERT_TRUE(settingsSave);
-		EXPECT_FALSE(settingsSave->restartRequired);
 
-		{
-			std::ifstream stream{"tetris.json"};
-			stream >> persisted;
-		}
+		// When
+		auto result = configuration_->persistEditableSettings(settings);
+
+		// Then
+		ASSERT_TRUE(result);
+		EXPECT_FALSE(result->restartRequired);
+		EXPECT_EQ(configuration_->getEditableSettings(), settings);
+		auto persisted = readConfigurationFile();
 		EXPECT_EQ(persisted.at("sentinel"), 42);
 		EXPECT_EQ(persisted.at("window").at("width"), 900);
 		EXPECT_FLOAT_EQ(persisted.at("window").at("uiScale").get<float>(), 1.25f);
@@ -304,75 +455,138 @@ namespace app {
 		EXPECT_EQ(persisted.at("ai3"), "Careful");
 		EXPECT_TRUE(persisted.contains("devices"));
 		EXPECT_TRUE(persisted.contains("inputProfiles"));
-
-		auto restartSettings = settings;
-		restartSettings.network.server.ip = "127.0.0.2";
-		auto restartSave = configuration.persistEditableSettings(restartSettings);
-		ASSERT_TRUE(restartSave);
-		EXPECT_TRUE(restartSave->restartRequired);
-		EXPECT_EQ(restartSave->restartReasons, std::vector<std::string>{"Network endpoints"});
-
-		configuration.resetRuntimeResources();
-		configuration.resetRuntimeResources();
-		EXPECT_EQ(configuration.getEditableSettings(), restartSettings);
-		auto postRestartSave = configuration.persistEditableSettings(restartSettings);
-		ASSERT_TRUE(postRestartSave);
-		EXPECT_FALSE(postRestartSave->restartRequired);
-		EXPECT_TRUE(postRestartSave->restartReasons.empty());
-
-		auto revertRestartSetting = configuration.persistEditableSettings(settings);
-		ASSERT_TRUE(revertRestartSetting);
-		EXPECT_TRUE(revertRestartSetting->restartRequired);
-		EXPECT_EQ(revertRestartSetting->restartReasons, std::vector<std::string>{"Network endpoints"});
-		configuration.resetRuntimeResources();
-		auto resetBaselineSave = configuration.persistEditableSettings(settings);
-		ASSERT_TRUE(resetBaselineSave);
-		EXPECT_FALSE(resetBaselineSave->restartRequired);
-
-		auto invalidSettings = settings;
-		invalidSettings.network.server.port = 70000;
-		auto invalidSave = configuration.persistEditableSettings(invalidSettings);
-		ASSERT_FALSE(invalidSave);
-		EXPECT_NE(invalidSave.error().find("ports"), std::string::npos);
-		EXPECT_EQ(configuration.getEditableSettings(), settings);
-
-		invalidSettings = settings;
-		invalidSettings.window.uiScale = 0.25f;
-		invalidSave = configuration.persistEditableSettings(invalidSettings);
-		ASSERT_FALSE(invalidSave);
-		EXPECT_NE(invalidSave.error().find("UI scale"), std::string::npos);
-		EXPECT_EQ(configuration.getEditableSettings(), settings);
-
-		auto defaults = configuration.getDefaultEditableSettings();
-		ASSERT_TRUE(defaults);
-		EXPECT_EQ(defaults->window.width, 1024);
-		EXPECT_EQ(configuration.getEditableSettings().window.width, 900);
-
-		auto failedSettings = settings;
-		failedSettings.window.width = 1000;
-		std::filesystem::rename("tetris.json", "tetris.json.backup");
-		std::filesystem::create_directory("tetris.json");
-		auto failedSettingsSave = configuration.persistEditableSettings(failedSettings);
-		ASSERT_FALSE(failedSettingsSave);
-		EXPECT_EQ(configuration.getEditableSettings(), settings);
-		EXPECT_EQ(temporaryConfigurationFileCount(), 0);
-		std::filesystem::remove("tetris.json");
-		std::filesystem::rename("tetris.json.backup", "tetris.json");
-
-		std::filesystem::current_path(std::filesystem::temp_directory_path());
-		std::filesystem::remove_all(testDirectory);
 	}
 
-	TEST(ConfigurationTest, appliesAndDetectsColorSchemes) {
+	TEST_F(ConfigurationPersistenceTest, networkChangeRequiresRestart) {
+		// Given
+		auto settings = configuration_->getEditableSettings();
+		settings.network.server.ip = "127.0.0.2";
+
+		// When
+		auto result = configuration_->persistEditableSettings(settings);
+
+		// Then
+		ASSERT_TRUE(result);
+		EXPECT_TRUE(result->restartRequired);
+		EXPECT_EQ(result->restartReasons, std::vector<std::string>{"Network endpoints"});
+	}
+
+	TEST_F(ConfigurationPersistenceTest, runtimeResetAcceptsCurrentSettingsAsRestartBaseline) {
+		// Given
+		auto settings = configuration_->getEditableSettings();
+		settings.network.server.ip = "127.0.0.2";
+		ASSERT_TRUE(configuration_->persistEditableSettings(settings));
+
+		// When
+		configuration_->resetRuntimeResources();
+		auto result = configuration_->persistEditableSettings(settings);
+
+		// Then
+		ASSERT_TRUE(result);
+		EXPECT_FALSE(result->restartRequired);
+		EXPECT_TRUE(result->restartReasons.empty());
+	}
+
+	TEST_F(ConfigurationPersistenceTest, revertingNetworkChangeStillRequiresRestart) {
+		// Given
+		auto original = configuration_->getEditableSettings();
+		auto changed = original;
+		changed.network.server.ip = "127.0.0.2";
+		ASSERT_TRUE(configuration_->persistEditableSettings(changed));
+		configuration_->resetRuntimeResources();
+		ASSERT_TRUE(configuration_->persistEditableSettings(changed));
+
+		// When
+		auto result = configuration_->persistEditableSettings(original);
+
+		// Then
+		ASSERT_TRUE(result);
+		EXPECT_TRUE(result->restartRequired);
+		EXPECT_EQ(result->restartReasons, std::vector<std::string>{"Network endpoints"});
+	}
+
+	TEST_F(ConfigurationPersistenceTest, rejectsInvalidNetworkPortWithoutChangingSettings) {
+		// Given
+		auto original = configuration_->getEditableSettings();
+		auto invalid = original;
+		invalid.network.server.port = 70000;
+
+		// When
+		auto result = configuration_->persistEditableSettings(invalid);
+
+		// Then
+		ASSERT_FALSE(result);
+		EXPECT_NE(result.error().find("ports"), std::string::npos);
+		EXPECT_EQ(configuration_->getEditableSettings(), original);
+	}
+
+	TEST_F(ConfigurationPersistenceTest, rejectsInvalidUiScaleWithoutChangingSettings) {
+		// Given
+		auto original = configuration_->getEditableSettings();
+		auto invalid = original;
+		invalid.window.uiScale = 0.25f;
+
+		// When
+		auto result = configuration_->persistEditableSettings(invalid);
+
+		// Then
+		ASSERT_FALSE(result);
+		EXPECT_NE(result.error().find("UI scale"), std::string::npos);
+		EXPECT_EQ(configuration_->getEditableSettings(), original);
+	}
+
+	TEST_F(ConfigurationPersistenceTest, loadsEditableDefaultsFromDefaultsFile) {
+		// Given
+		ASSERT_EQ(configuration_->getEditableSettings().window.width, 860);
+
+		// When
+		auto defaults = configuration_->getDefaultEditableSettings();
+
+		// Then
+		ASSERT_TRUE(defaults);
+		EXPECT_EQ(defaults->window.width, 1024);
+	}
+
+	TEST_F(ConfigurationPersistenceTest, failedSettingsPersistenceKeepsCurrentSettings) {
+		// Given
+		auto original = configuration_->getEditableSettings();
+		auto candidate = original;
+		candidate.window.width = 1000;
+		blockConfigurationFileReplacement();
+
+		// When
+		auto result = configuration_->persistEditableSettings(candidate);
+
+		// Then
+		ASSERT_FALSE(result);
+		EXPECT_EQ(configuration_->getEditableSettings(), original);
+		EXPECT_EQ(temporaryConfigurationFileCount(), 0);
+	}
+
+	TEST(ConfigurationTest, appliesColorScheme) {
+		// Given
 		Configuration::BoardSettings settings;
+
+		// When
 		Configuration::applyColorScheme(settings, "warmSand");
 
+		// Then
 		EXPECT_EQ(settings.colorScheme, "warmSand");
 		EXPECT_EQ(Configuration::detectColorScheme(settings), "warmSand");
 		EXPECT_EQ(settings.playerCardTextColor, "#2A241B");
+	}
 
+	TEST(ConfigurationTest, detectsModifiedColorSchemeAsCustom) {
+		// Given
+		Configuration::BoardSettings settings;
+		Configuration::applyColorScheme(settings, "warmSand");
 		settings.sidebarBackgroundColor = "#000000";
-		EXPECT_EQ(Configuration::detectColorScheme(settings), "custom");
+
+		// When
+		auto scheme = Configuration::detectColorScheme(settings);
+
+		// Then
+		EXPECT_EQ(scheme, "custom");
 	}
 
 }

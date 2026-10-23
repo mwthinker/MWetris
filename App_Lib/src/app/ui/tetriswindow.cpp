@@ -371,6 +371,7 @@ namespace app::ui {
 			});
 			ImGui::PopStyleVar(2);
 			controlsPresenter_->drawProfileDialog();
+			controlsPresenter_->drawBindingDialog();
 			
 			mainStateMachine_.imGuiUpdate(deltaTime);
 		});
