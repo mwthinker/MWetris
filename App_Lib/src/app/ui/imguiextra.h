@@ -16,6 +16,7 @@ namespace ImGui {
 	void PopButtonStyle();
 	bool MediumButton(const char* label, const ImVec2& size = {});
 	bool MediumSmallButton(const char* label);
+	bool LinkButton(const char* label);
 	bool SemiBoldCollapsingHeader(const char* label, ImGuiTreeNodeFlags flags = 0);
 	void SecondaryText(const char* format, ...);
 

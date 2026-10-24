@@ -20,7 +20,7 @@ namespace app::ui::scene {
 		ImGui::NewLine();
 		ImGui::Text("An open source inspired Tetris game.");
 		constexpr auto Url = "https://github.com/mwthinker/MWetris";
-		if (ImGui::MediumButton(Url)) {
+		if (ImGui::LinkButton(Url)) {
 			if (SDL_OpenURL(Url) != 0) {
 				spdlog::error("[SceneStateMachine] Failed to open URL: {}", SDL_GetError());
 			}

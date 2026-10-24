@@ -188,10 +188,16 @@ namespace app::ui {
 
 	void TetrisWindow::refreshSettings() {
 		auto& configuration = Configuration::getInstance();
-		ImGui::GetStyle().Colors[ImGuiCol_Button] = configuration.getButtonBackgroundColor();
-		ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered] = configuration.getButtonHoverColor();
-		ImGui::GetStyle().Colors[ImGuiCol_ButtonActive] = configuration.getButtonFocusColor();
-		ImGui::GetStyle().Colors[ImGuiCol_CheckMark] = configuration.getChecboxCheckColor();
+		auto& style = ImGui::GetStyle();
+		style.Colors[ImGuiCol_Button] = configuration.getButtonBackgroundColor();
+		style.Colors[ImGuiCol_ButtonHovered] = configuration.getButtonHoverColor();
+		style.Colors[ImGuiCol_ButtonActive] = configuration.getButtonFocusColor();
+		style.Colors[ImGuiCol_FrameBg] = configuration.getComboBoxBackgroundColor();
+		style.Colors[ImGuiCol_FrameBgHovered] = configuration.getComboBoxFocusColor();
+		style.Colors[ImGuiCol_FrameBgActive] = configuration.getComboBoxFocusColor();
+		style.Colors[ImGuiCol_Border] = configuration.getComboBoxBorderColor();
+		style.Colors[ImGuiCol_CheckMark] = configuration.getChecboxCheckColor();
+		style.FrameBorderSize = 1.f;
 	}
 
 	void TetrisWindow::pauseOnFocusLost() {

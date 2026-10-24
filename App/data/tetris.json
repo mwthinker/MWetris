@@ -34,19 +34,19 @@
 		},
 		"button": {
 			"focusColor": "#cc1a004d",
-			"textColor": "#ff1a1a",
+			"textColor": "#ffffffff",
 			"hoverColor": "#991a1a",
 			"pushColor": "#cc0000b3",
 			"backgroundColor": "#ffffff00",
-			"borderColor": "#ffffffff"
+			"borderColor": "#8a8f98cc"
 		},
 		"comboBox": {
 			"textColor": "#ffffff",
-			"focusColor": "#cc1a004d",
-			"backgroundColor": "#361f4a",
+			"focusColor": "#3b4048ff",
+			"backgroundColor": "#292d33ff",
 			"selectedTextColor": "#ffffff",
 			"selectedBackgroundColor": "#991a1a",
-			"borderColor": "#ffffffff",
+			"borderColor": "#8a8f98cc",
 			"showDropDownColor": "#ffffff"
 		},
 		"font": "fonts/inter/Inter_18pt-Regular.ttf",

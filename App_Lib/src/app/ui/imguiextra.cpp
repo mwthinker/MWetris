@@ -19,6 +19,7 @@ namespace ImGui {
 
 	void PushButtonStyle() {
 		ImGui::PushFont(app::Configuration::getInstance().getImGuiMediumFont(), 0.f);
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
 		ImGui::PushStyleColor(ImGuiCol_Text, app::Configuration::getInstance().getButtonTextColor().toImU32());
 		ImGui::PushStyleColor(ImGuiCol_Border, app::Configuration::getInstance().getButtonBorderColor().toImU32());
 		ImGui::PushStyleColor(ImGuiCol_Button, app::Configuration::getInstance().getButtonBackgroundColor().toImU32());
@@ -28,20 +29,49 @@ namespace ImGui {
 
 	void PopButtonStyle() {
 		ImGui::PopStyleColor(5);
+		ImGui::PopStyleVar();
 		ImGui::PopFont();
 	}
 
 	bool MediumButton(const char* label, const ImVec2& size) {
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiMediumFont(), 0.f);
+		PushButtonStyle();
 		bool result = ImGui::Button(label, size);
-		ImGui::PopFont();
+		PopButtonStyle();
 		return result;
 	}
 
 	bool MediumSmallButton(const char* label) {
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiMediumFont(), 0.f);
+		PushButtonStyle();
 		bool result = ImGui::SmallButton(label);
-		ImGui::PopFont();
+		PopButtonStyle();
+		return result;
+	}
+
+	bool LinkButton(const char* label) {
+		const ImVec4 linkColor{0.30f, 0.65f, 1.0f, 1.0f};
+		const ImVec4 linkHoverColor{0.50f, 0.78f, 1.0f, 1.0f};
+		const ImVec4 transparent{0.f, 0.f, 0.f, 0.f};
+
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.f);
+		ImGui::PushStyleColor(ImGuiCol_Text, linkColor);
+		ImGui::PushStyleColor(ImGuiCol_Button, transparent);
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, transparent);
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, transparent);
+		const bool result = ImGui::Button(label);
+		ImGui::PopStyleColor(4);
+		ImGui::PopStyleVar();
+
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+			const auto min = ImGui::GetItemRectMin();
+			const auto max = ImGui::GetItemRectMax();
+			const float padding = ImGui::GetStyle().FramePadding.x;
+			ImGui::GetWindowDrawList()->AddLine(
+				{min.x + padding, max.y - ImGui::GetStyle().FramePadding.y},
+				{max.x - padding, max.y - ImGui::GetStyle().FramePadding.y},
+				ImGui::ColorConvertFloat4ToU32(linkHoverColor));
+		}
+
 		return result;
 	}
 
@@ -88,20 +118,20 @@ namespace ImGui {
 	}
 
 	bool ConfirmationButton(const char* label, const ImVec2& size) {
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiMediumFont(), 0.f);
+		PushButtonStyle();
 		ImGui::PushStyleColor(ImGuiCol_Button, sdl::color::Green);
 		bool result = ImGui::Button(label, size);
 		ImGui::PopStyleColor();
-		ImGui::PopFont();
+		PopButtonStyle();
 		return result;
 	}
 
 	bool AbortButton(const char* label, const ImVec2& size) {
-		ImGui::PushFont(app::Configuration::getInstance().getImGuiMediumFont(), 0.f);
+		PushButtonStyle();
 		ImGui::PushStyleColor(ImGuiCol_Button, sdl::color::Red);
 		bool result = ImGui::Button(label, size);
 		ImGui::PopStyleColor();
-		ImGui::PopFont();
+		PopButtonStyle();
 		return result;
 	}
 
