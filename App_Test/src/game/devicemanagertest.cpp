@@ -220,14 +220,14 @@ namespace app::game {
 		DeviceManager manager;
 		auto device1 = manager.getDefaultDevice1();
 		auto device2 = manager.getDefaultDevice2();
-		device1->beginMapping();
+		manager.beginMapping(*device1);
 
 		// When
 		EXPECT_TRUE(manager.eventUpdate(keyboardEvent(SDLK_A)));
 
 		// Then
-		ASSERT_TRUE(device1->getMappingStatus());
-		EXPECT_EQ(device1->getMappingStatus()->completed, 1);
+		ASSERT_TRUE(manager.getMappingStatus(*device1));
+		EXPECT_EQ(manager.getMappingStatus(*device1)->completed, 1);
 		EXPECT_EQ(device1->getInput(), Input{});
 		EXPECT_EQ(device2->getInput(), Input{});
 	}
@@ -236,17 +236,17 @@ namespace app::game {
 		// Given
 		DeviceManager manager;
 		auto device = manager.getDefaultDevice1();
-		device->beginMapping();
+		manager.beginMapping(*device);
 		manager.eventUpdate(keyboardEvent(SDLK_Q));
 		manager.eventUpdate(keyboardEvent(SDLK_E));
-		ASSERT_EQ(device->getMappingStatus()->completed, 2);
+		ASSERT_EQ(manager.getMappingStatus(*device)->completed, 2);
 
 		// When
-		device->beginMapping();
+		manager.beginMapping(*device);
 
 		// Then
-		ASSERT_TRUE(device->getMappingStatus());
-		EXPECT_EQ(device->getMappingStatus()->completed, 0);
+		ASSERT_TRUE(manager.getMappingStatus(*device));
+		EXPECT_EQ(manager.getMappingStatus(*device)->completed, 0);
 	}
 
 	TEST(DeviceManagerTest, savesCompleteDraftAfterPersistence) {
@@ -259,9 +259,9 @@ namespace app::game {
 			return {};
 		}};
 		auto device = manager.getDefaultDevice1();
-		device->beginMapping();
+		manager.beginMapping(*device);
 		captureCompleteKeyboardMapping(manager, {SDLK_J, SDLK_L, SDLK_K, SDLK_I, SDLK_SPACE});
-		ASSERT_EQ(device->getMappingStatus()->completed, 5);
+		ASSERT_EQ(manager.getMappingStatus(*device)->completed, 5);
 
 		// When
 		auto result = manager.saveMapping(*device);
@@ -271,14 +271,14 @@ namespace app::game {
 		EXPECT_EQ(persistenceCalls, 1);
 		ASSERT_EQ(persisted.size(), 1);
 		EXPECT_EQ(persisted.front().deviceGuid, "Keyboard 1");
-		EXPECT_FALSE(device->getMappingStatus());
+		EXPECT_FALSE(manager.getMappingStatus(*device));
 	}
 
 	TEST(DeviceManagerTest, savedMappingUpdatesGameplayInput) {
 		// Given
 		DeviceManager manager;
 		auto device = manager.getDefaultDevice1();
-		device->beginMapping();
+		manager.beginMapping(*device);
 		captureCompleteKeyboardMapping(manager, {SDLK_J, SDLK_L, SDLK_K, SDLK_I, SDLK_SPACE});
 		ASSERT_TRUE(manager.saveMapping(*device));
 
@@ -296,7 +296,7 @@ namespace app::game {
 			return std::unexpected{"disk full"};
 		}};
 		auto device = manager.getDefaultDevice1();
-		device->beginMapping();
+		manager.beginMapping(*device);
 		captureCompleteKeyboardMapping(manager, {SDLK_J, SDLK_L, SDLK_K, SDLK_I, SDLK_SPACE});
 
 		// When
@@ -305,7 +305,7 @@ namespace app::game {
 		// Then
 		ASSERT_FALSE(result);
 		EXPECT_EQ(result.error(), "disk full");
-		EXPECT_TRUE(device->getMappingStatus());
+		EXPECT_TRUE(manager.getMappingStatus(*device));
 	}
 
 	TEST(DeviceManagerTest, persistenceFailureDoesNotApplyDraft) {
@@ -314,10 +314,10 @@ namespace app::game {
 			return std::unexpected{"disk full"};
 		}};
 		auto device = manager.getDefaultDevice1();
-		device->beginMapping();
+		manager.beginMapping(*device);
 		captureCompleteKeyboardMapping(manager, {SDLK_J, SDLK_L, SDLK_K, SDLK_I, SDLK_SPACE});
 		ASSERT_FALSE(manager.saveMapping(*device));
-		device->cancelMapping();
+		manager.cancelMapping(*device);
 
 		// When
 		manager.eventUpdate(keyboardEvent(SDLK_LEFT));
@@ -348,10 +348,10 @@ namespace app::game {
 		custom.left = SDLK_J;
 		DeviceManager manager{{DeviceBinding{"Keyboard 1", custom}}};
 		auto device = manager.getDefaultDevice1();
-		device->beginMapping();
+		manager.beginMapping(*device);
 
 		// When
-		device->resetMapping();
+		manager.resetMapping(*device);
 		auto result = manager.saveMapping(*device);
 		manager.tick();
 		manager.eventUpdate(keyboardEvent(SDLK_LEFT));
@@ -365,13 +365,13 @@ namespace app::game {
 		// Given
 		DeviceManager manager;
 		auto device = manager.getDefaultDevice1();
-		device->beginMapping();
+		manager.beginMapping(*device);
 
 		// When
 		EXPECT_TRUE(manager.eventUpdate(keyboardEvent(SDLK_ESCAPE)));
 
 		// Then
-		EXPECT_FALSE(device->getMappingStatus());
+		EXPECT_FALSE(manager.getMappingStatus(*device));
 	}
 
 	class GamepadDeviceManagerTest : public ::testing::Test {
@@ -456,15 +456,15 @@ namespace app::game {
 
 	TEST_F(GamepadDeviceManagerTest, capturesMappingWithoutGameplayInput) {
 		// Given
-		device_->beginMapping();
+		manager_->beginMapping(*device_);
 
 		// When
 		auto consumed = captureDefaultMapping();
 
 		// Then
 		EXPECT_TRUE(consumed);
-		ASSERT_TRUE(device_->getMappingStatus());
-		EXPECT_EQ(device_->getMappingStatus()->completed, 5);
+		ASSERT_TRUE(manager_->getMappingStatus(*device_));
+		EXPECT_EQ(manager_->getMappingStatus(*device_)->completed, 5);
 		EXPECT_EQ(device_->getInput(), Input{});
 	}
 
@@ -482,7 +482,7 @@ namespace app::game {
 
 	TEST_F(GamepadDeviceManagerTest, reusesDeviceAndMappingAfterReconnect) {
 		// Given
-		device_->beginMapping();
+		manager_->beginMapping(*device_);
 		ASSERT_TRUE(captureDefaultMapping());
 		ASSERT_TRUE(manager_->saveMapping(*device_));
 		ASSERT_TRUE(disconnectGamepad());

@@ -2,14 +2,9 @@
 #define APP_GAME_DEVICE_H
 
 #include "input.h"
-#include "inputbindings.h"
-
 #include <mw/signal.h>
 
-#include <array>
-#include <functional>
 #include <memory>
-#include <optional>
 #include <string>
 
 namespace app::game {
@@ -44,32 +39,6 @@ namespace app::game {
 			return connected_;
 		}
 
-		void beginMapping() {
-			if (beginMapping_) {
-				beginMapping_();
-			}
-		}
-
-		void resetMapping() {
-			if (resetMapping_) {
-				resetMapping_();
-			}
-		}
-
-		void cancelMapping() {
-			if (cancelMapping_) {
-				cancelMapping_();
-			}
-		}
-
-		std::optional<MappingStatus> getMappingStatus() const {
-			return getMappingStatus_ ? getMappingStatus_() : std::nullopt;
-		}
-
-		std::array<std::string, 5> getMappingLabels() const {
-			return getMappingLabels_ ? getMappingLabels_() : std::array<std::string, 5>{};
-		}
-
 	private:
 		void invokeConnection(bool connected) {
 			connected_ = connected;
@@ -80,11 +49,6 @@ namespace app::game {
 		bool connected_ = false;
 		std::string name_;
 		std::string guid_;
-		std::function<void()> beginMapping_;
-		std::function<void()> resetMapping_;
-		std::function<void()> cancelMapping_;
-		std::function<std::optional<MappingStatus>()> getMappingStatus_;
-		std::function<std::array<std::string, 5>()> getMappingLabels_;
 	};
 
 }

@@ -29,21 +29,6 @@ namespace app::game {
 				: getDefaultKeyboardBindings(2)));
 	}
 
-	DeviceManager::~DeviceManager() {
-		auto clearCallbacks = [](const DevicePtr& device) {
-			device->beginMapping_ = {};
-			device->resetMapping_ = {};
-			device->cancelMapping_ = {};
-			device->getMappingStatus_ = {};
-			device->getMappingLabels_ = {};
-		};
-		clearCallbacks(keyboard1_.device);
-		clearCallbacks(keyboard2_.device);
-		for (const auto& pair : devices_) {
-			clearCallbacks(pair.device);
-		}
-	}
-
 	DeviceManager::KeyboardDevice DeviceManager::createKeyboardDevice(std::unique_ptr<Keyboard> keyboard) {
 		KeyboardDevice keyboardDevice;
 		keyboardDevice.keyboard = std::move(keyboard);
@@ -52,38 +37,7 @@ namespace app::game {
 		keyboardDevice.device->name_ = keyboardDevice.keyboard->getName();
 		keyboardDevice.device->connected_ = true;
 		keyboardDevice.device->input_ = {};
-		configureMappingCallbacks(*keyboardDevice.device);
 		return keyboardDevice;
-	}
-
-	void DeviceManager::configureMappingCallbacks(Device& device) {
-		device.beginMapping_ = [this, &device]() {
-			beginMapping(device);
-		};
-		device.resetMapping_ = [this, &device]() {
-			resetMapping(device);
-		};
-		device.cancelMapping_ = [this, &device]() {
-			cancelMapping(device);
-		};
-		device.getMappingStatus_ = [this, &device]() -> std::optional<MappingStatus> {
-			if (auto* keyboard = findKeyboardBackend(device)) {
-				return keyboard->getMappingStatus();
-			}
-			if (auto* gamePad = findGamepadBackend(device)) {
-				return gamePad->getMappingStatus();
-			}
-			return std::nullopt;
-		};
-		device.getMappingLabels_ = [this, &device]() {
-			if (auto* keyboard = findKeyboardBackend(device)) {
-				return keyboard->getMappingLabels();
-			}
-			if (auto* gamePad = findGamepadBackend(device)) {
-				return gamePad->getMappingLabels();
-			}
-			return std::array<std::string, 5>{};
-		};
 	}
 
 	void DeviceManager::beginMapping(Device& device) {
@@ -130,6 +84,26 @@ namespace app::game {
 			device.input_ = gamePad->getInput();
 		}
 		mappingDevice_ = nullptr;
+	}
+
+	std::optional<MappingStatus> DeviceManager::getMappingStatus(Device& device) const {
+		if (auto* keyboard = findKeyboardBackend(device)) {
+			return keyboard->getMappingStatus();
+		}
+		if (auto* gamePad = findGamepadBackend(device)) {
+			return gamePad->getMappingStatus();
+		}
+		return std::nullopt;
+	}
+
+	std::array<std::string, 5> DeviceManager::getMappingLabels(Device& device) const {
+		if (auto* keyboard = findKeyboardBackend(device)) {
+			return keyboard->getMappingLabels();
+		}
+		if (auto* gamePad = findGamepadBackend(device)) {
+			return gamePad->getMappingLabels();
+		}
+		return {};
 	}
 
 	Keyboard* DeviceManager::findKeyboardBackend(Device& device) const {
@@ -271,7 +245,7 @@ namespace app::game {
 		if (!draft) {
 			return std::unexpected{"No binding draft is available."};
 		}
-		auto status = device.getMappingStatus();
+		auto status = getMappingStatus(device);
 		if (!status || status->completed < status->total) {
 			return std::unexpected{"Capture all five actions before saving."};
 		}
@@ -340,7 +314,6 @@ namespace app::game {
 		pair.device->guid_ = pair.gamePad->getGuid();
 		pair.device->input_ = {};
 		pair.device->name_ = pair.gamePad->getName();
-		configureMappingCallbacks(*pair.device);
 		spdlog::info("GamePad added: {} {} {}", pair.gamePad->getInstanceId(), pair.gamePad->getGuid(), pair.gamePad->getName());
 		deviceConnected(pair.device);
 	}

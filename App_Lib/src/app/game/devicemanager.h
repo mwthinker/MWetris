@@ -10,20 +10,21 @@
 
 #include <SDL3/SDL.h>
 
+#include <array>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace app::game {
 
-	class DeviceManager : public std::enable_shared_from_this<DeviceManager> {
+	class DeviceManager {
 	public:
 		using PersistenceCallback = std::function<DeviceBindingsPersistenceResult(const std::vector<DeviceBinding>&)>;
 
 		mw::PublicSignal<DeviceManager, DevicePtr> deviceConnected;
 
 		explicit DeviceManager(std::vector<DeviceBinding> bindings = {}, PersistenceCallback persist = {});
-		~DeviceManager();
 
 		bool eventUpdate(const SDL_Event& windowEvent);
 		void tick();
@@ -32,6 +33,11 @@ namespace app::game {
 		DevicePtr getDefaultDevice1() const;
 		DevicePtr getDefaultDevice2() const;
 		DevicePtr findDevice(const std::string& guid) const;
+		void beginMapping(Device& device);
+		void resetMapping(Device& device);
+		void cancelMapping(Device& device);
+		std::optional<MappingStatus> getMappingStatus(Device& device) const;
+		std::array<std::string, 5> getMappingLabels(Device& device) const;
 		DeviceBindingsPersistenceResult saveMapping(Device& device);
 
 	private:
@@ -47,10 +53,6 @@ namespace app::game {
 		};
 
 		KeyboardDevice createKeyboardDevice(std::unique_ptr<Keyboard> keyboard);
-		void configureMappingCallbacks(Device& device);
-		void beginMapping(Device& device);
-		void resetMapping(Device& device);
-		void cancelMapping(Device& device);
 		Keyboard* findKeyboardBackend(Device& device) const;
 		GamePad* findGamepadBackend(Device& device) const;
 		BindingSet getConfiguredBindings(const std::string& guid, BindingSet defaults) const;

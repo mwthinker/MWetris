@@ -188,18 +188,18 @@ namespace app::ui {
 			return;
 		}
 		if (bindingDialog_.device) {
-			bindingDialog_.device->cancelMapping();
+			deviceManager_->cancelMapping(*bindingDialog_.device);
 		}
 		bindingDialog_ = {
 			.device = device,
 			.openRequested = true,
 		};
-		device->beginMapping();
+		deviceManager_->beginMapping(*device);
 	}
 
 	void ControlsPresenter::closeBindingDialog() {
 		if (bindingDialog_.device) {
-			bindingDialog_.device->cancelMapping();
+			deviceManager_->cancelMapping(*bindingDialog_.device);
 		}
 		bindingDialog_ = {};
 		ImGui::CloseCurrentPopup();
@@ -426,7 +426,7 @@ namespace app::ui {
 			return;
 		}
 
-		auto status = dialog.device->getMappingStatus();
+		auto status = deviceManager_->getMappingStatus(*dialog.device);
 		if (!status) {
 			if (ImGui::BeginPopupModal(popupId.c_str(), nullptr, ImGuiWindowFlags_NoTitleBar)) {
 				ImGui::CloseCurrentPopup();
@@ -445,7 +445,7 @@ namespace app::ui {
 			ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar
 				| ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
 			ImGui::PopStyleVar(3);
-			dialog.device->cancelMapping();
+			deviceManager_->cancelMapping(*dialog.device);
 			dialog = {};
 			return;
 		}
@@ -462,7 +462,7 @@ namespace app::ui {
 		} else {
 			ImGui::TextUnformatted("All actions captured. Review and save.");
 		}
-		auto labels = dialog.device->getMappingLabels();
+		auto labels = deviceManager_->getMappingLabels(*dialog.device);
 		ImGui::FormTable("Input bindings", [&]() {
 			for (int index = 0; index < std::ssize(game::InputActions); ++index) {
 				const bool active = status->completed < status->total
@@ -504,12 +504,12 @@ namespace app::ui {
 		ImGui::Separator();
 		ImGui::Dummy({0.f, 4.f * scale});
 		if (ImGui::MediumButton("Start over", {110.f * scale, 30.f * scale})) {
-			dialog.device->beginMapping();
+			deviceManager_->beginMapping(*dialog.device);
 			dialog.error.clear();
 		}
 		ImGui::SameLine();
 		if (ImGui::MediumButton("Defaults", {90.f * scale, 30.f * scale})) {
-			dialog.device->resetMapping();
+			deviceManager_->resetMapping(*dialog.device);
 			dialog.error.clear();
 		}
 		ImGui::Dummy({0.f, 4.f * scale});
