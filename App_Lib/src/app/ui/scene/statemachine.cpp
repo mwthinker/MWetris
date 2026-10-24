@@ -32,6 +32,7 @@ namespace app::ui::scene {
 					ImGui::SetNextWindowSize({800, 800}, ImGuiCond_Appearing);
 				}
 			}
+			ImGui::PushContentStyle();
 			ImGui::PopupModal(popUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
 				auto pos = ImGui::GetCursorScreenPos();
 				auto size = ImVec2{30.f, 30.f};
@@ -54,6 +55,7 @@ namespace app::ui::scene {
 					scenes_[currentKey_]->imGuiUpdate(deltaTime);
 				}
 			});
+			ImGui::PopContentStyle();
 			if (closeRequested_) {
 				closeRequested_ = false;
 				switchTo<EmptyScene>();

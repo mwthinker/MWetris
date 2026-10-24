@@ -14,6 +14,10 @@ namespace ImGui {
 	void PushButtonStyle();
 
 	void PopButtonStyle();
+
+	void PushContentStyle();
+
+	void PopContentStyle();
 	bool MediumButton(const char* label, const ImVec2& size = {});
 	bool MediumSmallButton(const char* label);
 	bool LinkButton(const char* label);

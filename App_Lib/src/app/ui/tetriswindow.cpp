@@ -389,7 +389,16 @@ namespace app::ui {
 			controlsPresenter_->drawProfileDialog();
 			controlsPresenter_->drawBindingDialog();
 			
-			mainStateMachine_.imGuiUpdate(deltaTime);
+			if (mainStateMachine_.isCurrentScene<scene::Play>()) {
+				mainStateMachine_.imGuiUpdate(deltaTime);
+			} else {
+				ImGui::PushContentStyle();
+				if (ImGui::BeginChild("Page content", {0.f, 0.f}, ImGuiChildFlags_AlwaysUseWindowPadding)) {
+					mainStateMachine_.imGuiUpdate(deltaTime);
+				}
+				ImGui::EndChild();
+				ImGui::PopContentStyle();
+			}
 		});
 	}
 

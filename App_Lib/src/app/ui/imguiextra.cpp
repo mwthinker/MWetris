@@ -33,6 +33,17 @@ namespace ImGui {
 		ImGui::PopFont();
 	}
 
+	void PushContentStyle() {
+		const float scale = std::clamp(ImGui::GetFontSize() / 17.f, 0.5f, 2.f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {24.f * scale, 20.f * scale});
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {10.f * scale, 10.f * scale});
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.f * scale, 6.f * scale});
+	}
+
+	void PopContentStyle() {
+		ImGui::PopStyleVar(3);
+	}
+
 	bool MediumButton(const char* label, const ImVec2& size) {
 		PushButtonStyle();
 		bool result = ImGui::Button(label, size);

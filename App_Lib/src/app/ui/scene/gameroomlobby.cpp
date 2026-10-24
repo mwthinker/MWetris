@@ -88,11 +88,6 @@ namespace app::ui::scene {
 	void GameRoomLooby::imGuiUpdate(const DeltaTime& deltaTime) {
 		const bool networkLobby = gameRoomSceneData_.type == GameRoomLoobyData::Type::Network;
 		const float backButtonWidth = 90.f;
-		constexpr float horizontalPadding = 14.f;
-
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + horizontalPadding);
-		ImGui::BeginChild("Lobby page", {-horizontalPadding, 0.f});
-		ImGui::Dummy({0.f, 8.f});
 
 		ImGui::PushFont(Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
 		ImGui::TextUnformatted(networkLobby ? "Online Lobby" : "Local Multiplayer");
@@ -253,6 +248,7 @@ namespace app::ui::scene {
 		}
 		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, {0.5f, 0.5f});
 		ImGui::SetNextWindowSize(addPlayer_->getSize(), ImGuiCond_Appearing);
+		ImGui::PushContentStyle();
 		ImGui::PopupModal(PopUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
 			auto pos = ImGui::GetCursorScreenPos();
 			const ImVec2 closeButtonSize{30.f, 30.f};
@@ -266,7 +262,7 @@ namespace app::ui::scene {
 			ImGui::SetCursorScreenPos(pos);
 			addPlayer_->imGuiUpdate(deltaTime);
 		});
-		ImGui::EndChild();
+		ImGui::PopContentStyle();
 	}
 
 	void GameRoomLooby::switchedTo(const SceneData& sceneData) {

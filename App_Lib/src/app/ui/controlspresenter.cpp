@@ -280,14 +280,12 @@ namespace app::ui {
 		const bool deleteDialog = dialog.action == ProfileDialogAction::Delete;
 		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, {0.5f, 0.5f});
 		ImGui::SetNextWindowSize(deleteDialog ? ImVec2{520.f, 240.f} : ImVec2{520.f, 420.f}, ImGuiCond_Always);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {24.f, 20.f});
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {10.f, 10.f});
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.f, 6.f});
+		ImGui::PushContentStyle();
 
 		if (!ImGui::BeginPopupModal(popupId.c_str(), nullptr,
 			ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar
 				| ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
-			ImGui::PopStyleVar(3);
+			ImGui::PopContentStyle();
 			return;
 		}
 
@@ -329,7 +327,7 @@ namespace app::ui {
 				}
 			}
 			ImGui::EndPopup();
-			ImGui::PopStyleVar(3);
+			ImGui::PopContentStyle();
 			return;
 		}
 
@@ -412,7 +410,7 @@ namespace app::ui {
 			}
 		}
 		ImGui::EndPopup();
-		ImGui::PopStyleVar(3);
+		ImGui::PopContentStyle();
 	}
 
 	void ControlsPresenter::drawBindingDialog() {
@@ -438,13 +436,11 @@ namespace app::ui {
 		const float scale = std::clamp(ImGui::GetFontSize() / 17.f, 0.5f, 2.f);
 		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, {0.5f, 0.5f});
 		ImGui::SetNextWindowSize({520.f * scale, 420.f * scale}, ImGuiCond_Always);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {24.f * scale, 20.f * scale});
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {10.f * scale, 10.f * scale});
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.f * scale, 6.f * scale});
+		ImGui::PushContentStyle();
 		if (!ImGui::BeginPopupModal(popupId.c_str(), nullptr,
 			ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar
 				| ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
-			ImGui::PopStyleVar(3);
+			ImGui::PopContentStyle();
 			deviceManager_->cancelMapping(*dialog.device);
 			dialog = {};
 			return;
@@ -532,7 +528,7 @@ namespace app::ui {
 			ImGui::EndDisabled();
 		}
 		ImGui::EndPopup();
-		ImGui::PopStyleVar(3);
+		ImGui::PopContentStyle();
 	}
 
 	void ControlsPresenter::drawDeviceProfileSelection(const std::shared_ptr<game::Player>& player, float width) {
