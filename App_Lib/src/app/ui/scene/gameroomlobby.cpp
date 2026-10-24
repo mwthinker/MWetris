@@ -10,6 +10,7 @@
 
 #include <sdl/color.h>
 
+#include <algorithm>
 #include <array>
 #include <string>
 #include <map>
@@ -19,10 +20,6 @@
 namespace app::ui::scene {
 
 	namespace {
-
-		int acceptNameInput(ImGuiInputTextCallbackData* data) {
-			return data->BufTextLen < 30;
-		}
 
 		constexpr auto PopUpId = "CreatePopup";
 
@@ -36,15 +33,6 @@ namespace app::ui::scene {
 				}
 			}
 			return players;
-		}
-
-		void imGuiGameRulesConfigUpdate(game::DefaultGameRules::Config& config) {
-			ImGui::Text("DefaultGameRules");
-			//ImGui::InputInt("Level Up Nbr", &gameRulesConfig.levelUpNbr);
-		}
-
-		void imGuiGameRulesConfigUpdate(game::SurvivalGameRules::Config& config) {
-			ImGui::Text("SurvivalGameRules");
 		}
 
 		std::vector<game::DevicePtr> getUsedDevices(const std::vector<game::PlayerSlot>& playerSlots) {
@@ -98,138 +86,158 @@ namespace app::ui::scene {
 	}
 
 	void GameRoomLooby::imGuiUpdate(const DeltaTime& deltaTime) {
-		float width = ImGui::GetWindowWidth();
+		const bool networkLobby = gameRoomSceneData_.type == GameRoomLoobyData::Type::Network;
+		const float backButtonWidth = 90.f;
+		constexpr float horizontalPadding = 14.f;
 
-		float sideX = 10.f;
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + horizontalPadding);
+		ImGui::BeginChild("Lobby page", {-horizontalPadding, 0.f});
+		ImGui::Dummy({0.f, 8.f});
 
-		float slotSize = 100.f;
-		float deltaX = 10.f;
-		if (playerSlots_.size() > 1) {
-			width = (width - playerSlots_.size() * slotSize) / (playerSlots_.size() + 1);
+		ImGui::PushFont(Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
+		ImGui::TextUnformatted(networkLobby ? "Online Lobby" : "Local Multiplayer");
+		ImGui::PopFont();
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(ImGui::GetWindowWidth() - backButtonWidth - ImGui::GetStyle().WindowPadding.x);
+		if (ImGui::MediumButton("Back", {backButtonWidth, 30.f})) {
+			tetrisController_->leaveGameRoom();
 		}
+		ImGui::Spacing();
+		ImGui::SecondaryText(networkLobby ? "Invite players and configure the match." : "Add local players and configure the match.");
+		ImGui::Dummy({0.f, 4.f});
+		ImGui::Separator();
+		ImGui::Dummy({0.f, 6.f});
 
-		auto pos = ImGui::GetCursorScreenPos();
-		pos.y += 10.f;
-		pos.x += deltaX;
+		auto drawPlayerCards = [&]() {
+			ImGui::PushFont(Configuration::getInstance().getImGuiMediumFont(), 0.f);
+			ImGui::TextUnformatted("Player Layout");
+			ImGui::PopFont();
+			ImGui::SecondaryText("Players appear in this left-to-right order during the game.");
+			ImGui::Dummy({0.f, 6.f});
 
-		for (int i = 0; i < playerSlots_.size(); ++i) {
-			auto& playerSlot = playerSlots_[i];
-
-			ImGui::PushID(i + 1);
-			pos.x += width;
-			ImGui::SetCursorScreenPos(pos);
-			pos.x += slotSize;
-
-			ImGui::BeginGroup();
-			std::visit([&](auto&& slot) mutable {
-				using T = std::decay_t<decltype(slot)>;
-				if constexpr (std::is_same_v<T, game::Human>) {
-					ImGui::Text("game::Human");
-					ImGui::Text("Player name: %s", slot.name.c_str());
-					if (ImGui::AbortButton("Remove")) {
-						playerSlot = game::OpenSlot{};
-						tetrisController_->setPlayerSlot(playerSlot, i);
+			const int columns = static_cast<int>(playerSlots_.size());
+			const bool compactCards = ImGui::GetContentRegionAvail().x / columns < 150.f;
+			if (ImGui::BeginTable("Player cards", columns, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_PadOuterX)) {
+				for (int i = 0; i < playerSlots_.size(); ++i) {
+					auto& playerSlot = playerSlots_[i];
+					ImGui::TableNextColumn();
+					ImGui::PushID(i);
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {12.f, 10.f});
+					if (ImGui::BeginChild("Player card", {0.f, 125.f}, true, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+						ImGui::Text(compactCards ? "P%d" : "Player %d", i + 1);
+						ImGui::Separator();
+						ImGui::Spacing();
+						std::visit([&](auto&& slot) {
+							using T = std::decay_t<decltype(slot)>;
+							if constexpr (std::is_same_v<T, game::Human>) {
+								ImGui::TextUnformatted(slot.name.c_str());
+								const char* deviceName = slot.device ? slot.device->getName().c_str() : "No device";
+								ImGui::SecondaryText("Human - %s", deviceName);
+								if (ImGui::MediumButton(compactCards ? "Remove##Human" : "Remove", {-1.f, 28.f})) {
+									playerSlot = game::OpenSlot{};
+									tetrisController_->setPlayerSlot(playerSlot, i);
+								}
+							} else if constexpr (std::is_same_v<T, game::Ai>) {
+								ImGui::TextUnformatted(slot.name.c_str());
+								ImGui::SecondaryText("Computer player");
+								if (ImGui::MediumButton(compactCards ? "Remove##Ai" : "Remove", {-1.f, 28.f})) {
+									playerSlot = game::OpenSlot{};
+									tetrisController_->setPlayerSlot(playerSlot, i);
+								}
+							} else if constexpr (std::is_same_v<T, game::Remote>) {
+								ImGui::TextUnformatted(slot.name.c_str());
+								ImGui::SecondaryText(slot.ai ? "Remote computer" : "Remote player");
+								if (ImGui::MediumButton(compactCards ? "Remove##Remote" : "Remove", {-1.f, 28.f})) {
+									playerSlot = game::OpenSlot{};
+									tetrisController_->setPlayerSlot(playerSlot, i);
+								}
+							} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
+								ImGui::BeginDisabled();
+								ImGui::MediumButton("Closed", {-1.f, 65.f});
+								ImGui::EndDisabled();
+							} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
+								if (ImGui::MediumButton(compactCards ? "+ Add" : "+ Add Player", {-1.f, 65.f})) {
+									AddPlayerData data{};
+									data.index = i;
+									data.usedDevices = getUsedDevices(playerSlots_);
+									addPlayer_->switchedTo(data);
+									openPopUp_ = true;
+								}
+							} else {
+								static_assert(util::always_false_v<T>, "non-exhaustive visitor!");
+							}
+						}, playerSlot);
 					}
-				} else if constexpr (std::is_same_v<T, game::Ai>) {
-					ImGui::Text("game::Ai");
-					ImGui::Text("Player name: %s", slot.name.c_str());
-					if (ImGui::AbortButton("Remove")) {
-						playerSlot = game::OpenSlot{};
-						tetrisController_->setPlayerSlot(playerSlot, i);
-					}
-				} else if constexpr (std::is_same_v<T, game::Remote>) {
-					ImGui::Text("game::Remote");
-					if (ImGui::AbortButton("Remove")) {
-						playerSlot = game::OpenSlot{};
-						tetrisController_->setPlayerSlot(playerSlot, i);
-					}
-				} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
-					// Skip.
-				} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
-					if (ImGui::MediumButton("Open Slot", {slotSize, slotSize})) {
-						scene::AddPlayerData data{};
-						data.index = i;
-						data.usedDevices = getUsedDevices(playerSlots_);
-						addPlayer_->switchedTo(data);
-
-						ImGui::OpenPopup(PopUpId);
-						ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, {0.5f, 0.5f});
-						auto size = addPlayer_->getSize();
-						if (size.x > 0 && size.y > 0) {
-							ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
-						} else {
-							ImGui::SetNextWindowSize({800, 800}, ImGuiCond_Appearing);
-						}
-					}
-				} else {
-					static_assert(util::always_false_v<T>, "non-exhaustive visitor!");
+					ImGui::EndChild();
+					ImGui::PopStyleVar();
+					ImGui::PopID();
 				}
-			}, playerSlot);
-			ImGui::EndGroup();
+				ImGui::EndTable();
+			}
+		};
 
-			ImGui::SetCursorPosY(150);
-
-			ImGui::Table("Highscore", 2, ImGuiTableFlags_Borders, {500, 0}, [&]() {
-				ImGui::TableSetupColumn("Connection", ImGuiTableColumnFlags_WidthFixed, 90);
-				ImGui::TableSetupColumn("Id");
-
-				ImGui::TableHeadersRow();
-				for (const auto& client : tetrisController_->getGameRoomClients()) {
-					ImGui::TableNextRow();
-					ImGui::TableNextColumn(); ImGui::TextWithBackgroundColor(client.connectionId, getColor(client.connectionId));
-					ImGui::TableNextColumn(); ImGui::Text("%s", client.clientId.c_str());
-				}
-			});
-
-			static int gameRulesConfigIndex = 0;
-			if (ImGui::RadioButton("Default Game rules", &gameRulesConfigIndex, 0)) {
+		auto drawGameSettings = [&]() {
+			ImGui::PushFont(Configuration::getInstance().getImGuiMediumFont(), 0.f);
+			ImGui::TextUnformatted("Game Settings");
+			ImGui::PopFont();
+			int rulesIndex = std::holds_alternative<game::DefaultGameRules::Config>(gameRulesConfig_) ? 0 : 1;
+			if (ImGui::RadioButton("Classic", &rulesIndex, 0)) {
 				gameRulesConfig_ = game::DefaultGameRules::Config{};
 			}
-			if (ImGui::RadioButton("Survival Game rules", &gameRulesConfigIndex, 1)) {
+			ImGui::SecondaryText("Clear lines and increase your score.");
+			if (ImGui::RadioButton("Survival", &rulesIndex, 1)) {
 				gameRulesConfig_ = game::SurvivalGameRules::Config{};
 			}
-			std::visit([&](auto&& config) mutable {
-				imGuiGameRulesConfigUpdate(config);
-			}, gameRulesConfig_);
+			ImGui::SecondaryText("Outlast the other players.");
 
-			ImGui::PopupModal(PopUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
-				auto pos = ImGui::GetCursorScreenPos();
-				auto size = ImVec2{30.f, 30.f};
-
-				ImGui::SetCursorPosX(ImGui::GetWindowWidth() - size.x - ImGui::GetStyle().WindowPadding.x);
-				if (ImGui::MediumButton("X", size) || ImGui::IsKeyDown(ImGuiKey_Escape)) {
-					ImGui::CloseCurrentPopup();
+			if (networkLobby) {
+				gameRoomId_ = tetrisController_->getGameRoomId();
+				ImGui::Spacing();
+				ImGui::SeparatorText("Room");
+				if (!gameRoomId_.empty()) {
+					ImGui::SetNextItemWidth(std::max(80.f, ImGui::GetContentRegionAvail().x - 70.f));
+					ImGui::InputText("##RoomId", &gameRoomId_, ImGuiInputTextFlags_ReadOnly);
+					ImGui::SameLine();
+					if (ImGui::MediumButton("Copy", {60.f, 0.f})) {
+						ImGui::SetClipboardText(gameRoomId_.c_str());
+					}
 				}
-				if (ImGui::IsItemHovered()) {
-					ImGui::SetTooltip("Close");
+
+				const auto& clients = tetrisController_->getGameRoomClients();
+				ImGui::Text("Connected: %d", static_cast<int>(clients.size()));
+				for (const auto& client : clients) {
+					ImGui::TextWithBackgroundColor(client.connectionId, getColor(client.connectionId), {3.f, 1.f});
+					ImGui::SameLine();
+					ImGui::TextUnformatted(client.clientId.c_str());
 				}
-				ImGui::SetCursorScreenPos(pos);
-
-				addPlayer_->imGuiUpdate(deltaTime);
-			});
-
-			ImGui::PopID();
-		}
-		if (gameRoomSceneData_.type == GameRoomLoobyData::Type::Network) {
-			gameRoomId_ = tetrisController_->getGameRoomId();
-			if (!gameRoomId_.empty()) {
-				ImGui::SetCursorPosY(250);
-				ImGui::Separator();
-				ImGui::Text("Server Id: ");
-				ImGui::SameLine();
-				ImGui::InputText("##ServerId", &gameRoomId_, ImGuiInputTextFlags_ReadOnly);
 			}
+		};
+
+		if (ImGui::BeginChild("Lobby content", {0.f, -65.f})) {
+			drawPlayerCards();
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+			drawGameSettings();
 		}
+		ImGui::EndChild();
 
-		width = ImGui::GetWindowWidth() - 2 * ImGui::GetCursorPosX();
-		float height = 100.f;
-		float y = ImGui::GetWindowHeight() - height - ImGui::GetStyle().WindowPadding.y;
-
-		ImGui::BeginDisabled(playersInSlots(playerSlots_) == 0);
-		ImGui::SetCursorPosY(y);
-
-		if (ImGui::ConfirmationButton("Create Game", {width, height})) {
-			if (!gameRoomId_.empty() && gameRoomSceneData_.type == GameRoomLoobyData::Type::Network) {
+		ImGui::Separator();
+		const int playerCount = playersInSlots(playerSlots_);
+		const bool waitingForRoom = networkLobby && gameRoomId_.empty();
+		const bool canStart = playerCount > 0 && !waitingForRoom;
+		if (waitingForRoom) {
+			ImGui::SecondaryText("Waiting for the online room...");
+		} else if (playerCount == 0) {
+			ImGui::SecondaryText("Add at least one player to start.");
+		} else {
+			ImGui::Text("%d player%s ready", playerCount, playerCount == 1 ? "" : "s");
+		}
+		ImGui::SameLine();
+		ImGui::AlignNextItemRight(140.f);
+		ImGui::BeginDisabled(!canStart);
+		if (ImGui::ConfirmationButton("Start Game", {140.f, 40.f})) {
+			if (networkLobby) {
 				spdlog::info("[CreateGame] Starting network game.");
 				tetrisController_->startNetworkGame(gameRulesConfig_, game::TetrisWidth, game::TetrisHeight);
 			} else {
@@ -238,6 +246,27 @@ namespace app::ui::scene {
 			}
 		}
 		ImGui::EndDisabled();
+
+		if (openPopUp_) {
+			openPopUp_ = false;
+			ImGui::OpenPopup(PopUpId);
+		}
+		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, {0.5f, 0.5f});
+		ImGui::SetNextWindowSize(addPlayer_->getSize(), ImGuiCond_Appearing);
+		ImGui::PopupModal(PopUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
+			auto pos = ImGui::GetCursorScreenPos();
+			const ImVec2 closeButtonSize{30.f, 30.f};
+			ImGui::SetCursorPosX(ImGui::GetWindowWidth() - closeButtonSize.x - ImGui::GetStyle().WindowPadding.x);
+			if (ImGui::MediumButton("X", closeButtonSize) || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+				ImGui::CloseCurrentPopup();
+			}
+			if (ImGui::IsItemHovered()) {
+				ImGui::SetTooltip("Close");
+			}
+			ImGui::SetCursorScreenPos(pos);
+			addPlayer_->imGuiUpdate(deltaTime);
+		});
+		ImGui::EndChild();
 	}
 
 	void GameRoomLooby::switchedTo(const SceneData& sceneData) {

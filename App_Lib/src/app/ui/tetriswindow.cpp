@@ -238,7 +238,7 @@ namespace app::ui {
 		scene::GameRoomLoobyData data;
 		switch (createGameRoomEvent.type) {
 			case GameRoomType::LocalGameRoomLooby:
-				data.type = scene::GameRoomLoobyData::Type::Network;
+				data.type = scene::GameRoomLoobyData::Type::Local;
 				modalStateMachine_.switchTo<scene::EmptyScene>();
 				mainStateMachine_.switchTo<scene::GameRoomLooby>(data);
 				break;
