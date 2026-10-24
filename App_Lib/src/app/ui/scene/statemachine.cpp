@@ -37,14 +37,12 @@ namespace app::ui::scene {
 			ImGui::PopupModal(popUpId, nullptr,
 				ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | sceneFlags, [&]() {
 				auto pos = ImGui::GetCursorScreenPos();
-				auto size = ImVec2{30.f, 30.f};
+				const auto closeButtonLength = ImGui::GetFrameHeight();
+				const auto size = ImVec2{closeButtonLength, closeButtonLength};
 
 				ImGui::SetCursorPosX(ImGui::GetWindowWidth() - size.x - ImGui::GetStyle().WindowPadding.x);
-				if (ImGui::MediumButton("X", size) || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+				if (ImGui::CloseIconButton(size) || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
 					requestClose();
-				}
-				if (ImGui::IsItemHovered()) {
-					ImGui::SetTooltip("Close");
 				}
 				if (closePopUp_) {
 					closePopUp_ = false;

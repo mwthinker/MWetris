@@ -251,13 +251,11 @@ namespace app::ui::scene {
 		ImGui::PushContentStyle();
 		ImGui::PopupModal(PopUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
 			auto pos = ImGui::GetCursorScreenPos();
-			const ImVec2 closeButtonSize{30.f, 30.f};
+			const auto closeButtonLength = ImGui::GetFrameHeight();
+			const ImVec2 closeButtonSize{closeButtonLength, closeButtonLength};
 			ImGui::SetCursorPosX(ImGui::GetWindowWidth() - closeButtonSize.x - ImGui::GetStyle().WindowPadding.x);
-			if (ImGui::MediumButton("X", closeButtonSize) || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+			if (ImGui::CloseIconButton(closeButtonSize) || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
 				ImGui::CloseCurrentPopup();
-			}
-			if (ImGui::IsItemHovered()) {
-				ImGui::SetTooltip("Close");
 			}
 			ImGui::SetCursorScreenPos(pos);
 			addPlayer_->imGuiUpdate(deltaTime);

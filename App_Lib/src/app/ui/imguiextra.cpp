@@ -1,5 +1,7 @@
 #include "imguiextra.h"
 
+#include <IconsFontAwesome6.h>
+
 #include <cstdarg>
 #include <utility>
 
@@ -71,6 +73,49 @@ namespace ImGui {
 		PushButtonStyle();
 		bool result = ImGui::Button(label, size);
 		PopButtonStyle();
+		return result;
+	}
+
+	bool CloseIconButton(const ImVec2& size) {
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiDefaultFont(), 0.f);
+		const auto position = ImGui::GetCursorScreenPos();
+		const ImVec2 buttonSize{
+			size.x > 0.f ? size.x : ImGui::GetFrameHeight(),
+			size.y > 0.f ? size.y : ImGui::GetFrameHeight()
+		};
+		const bool result = ImGui::InvisibleButton("##Close", buttonSize);
+		const bool hovered = ImGui::IsItemHovered();
+		const bool active = ImGui::IsItemActive();
+		auto* drawList = ImGui::GetWindowDrawList();
+
+		if (hovered || active) {
+			const auto backgroundColor = active
+				? app::Configuration::getInstance().getButtonPushColor().toImU32()
+				: app::Configuration::getInstance().getButtonHoverColor().toImU32();
+			drawList->AddRectFilled(
+				position,
+				{position.x + buttonSize.x, position.y + buttonSize.y},
+				backgroundColor,
+				std::min(buttonSize.x, buttonSize.y) * 0.2f);
+		}
+
+		constexpr ImWchar xmarkCodepoint = 0xf00d;
+		const auto* glyph = ImGui::GetFontBaked()->FindGlyphNoFallback(xmarkCodepoint);
+		const auto iconSize = ImGui::CalcTextSize(ICON_FA_XMARK);
+		const ImVec2 iconPosition = glyph
+			? ImVec2{
+				position.x + buttonSize.x * 0.5f - (glyph->X0 + glyph->X1) * 0.5f,
+				position.y + buttonSize.y * 0.5f - (glyph->Y0 + glyph->Y1) * 0.5f
+			}
+			: ImVec2{
+				position.x + (buttonSize.x - iconSize.x) * 0.5f,
+				position.y + (buttonSize.y - iconSize.y) * 0.5f
+			};
+		const auto iconColor = hovered || active
+			? app::Configuration::getInstance().getButtonTextColor().toImU32()
+			: ImGui::GetColorU32(ImGuiCol_TextDisabled);
+		drawList->AddText(iconPosition, iconColor, ICON_FA_XMARK);
+		ImGui::PopFont();
 		return result;
 	}
 

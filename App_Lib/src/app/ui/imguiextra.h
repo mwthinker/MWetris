@@ -27,6 +27,7 @@ namespace ImGui {
 
 	void EndModalBody();
 	bool MediumButton(const char* label, const ImVec2& size = {});
+	bool CloseIconButton(const ImVec2& size = {});
 	bool MediumSmallButton(const char* label);
 	bool LinkButton(const char* label);
 	bool SemiBoldCollapsingHeader(const char* label, ImGuiTreeNodeFlags flags = 0);
