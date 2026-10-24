@@ -13,7 +13,7 @@ namespace app::ui::scene {
 	class About : public Scene {
 	public:
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
-		ImVec2 getSize() const override { return {700.f, 400.f}; }
+		ImVec2 getSize() const override { return {760.f, 520.f}; }
 	};
 
 }

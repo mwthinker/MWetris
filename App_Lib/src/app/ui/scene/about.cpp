@@ -4,9 +4,40 @@
 #include <SDL3/SDL_misc.h>
 #include <spdlog/spdlog.h>
 
-namespace app::ui::scene {
+#include <string>
+#include <string_view>
 
-	void About::imGuiUpdate(const DeltaTime& deltaTime) {
+namespace app::ui::scene {
+	namespace {
+		void detailRow(const char* label, std::string_view value, bool selectable = false) {
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			ImGui::AlignTextToFramePadding();
+			ImGui::TextUnformatted(label);
+			ImGui::TableNextColumn();
+			if (selectable) {
+				auto text = std::string{value};
+				ImGui::SetNextItemWidth(-FLT_MIN);
+				ImGui::PushID(label);
+				ImGui::InputText("##Value", &text, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_AutoSelectAll);
+				ImGui::PopID();
+			} else {
+				ImGui::AlignTextToFramePadding();
+				ImGui::TextUnformatted(value.data(), value.data() + value.size());
+			}
+		}
+
+		void detailsTable(const char* id, std::invocable auto&& rows) {
+			if (ImGui::BeginTable(id, 2, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_NoSavedSettings)) {
+				ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 170.f);
+				ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+				rows();
+				ImGui::EndTable();
+			}
+		}
+	}
+
+	void About::imGuiUpdate(const DeltaTime&) {
 		auto labelColor = app::Configuration::getInstance().getLabelTextColor();
 
 		ImGui::PushFont(app::Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
@@ -15,22 +46,31 @@ namespace app::ui::scene {
 
 		ImGui::PushFont(app::Configuration::getInstance().getImGuiDefaultFont(), 0.f);
 
-		ImGui::NewLine();
-		ImGui::Text("MWetris is created by Marcus Welander (mwthinker).");
-		ImGui::NewLine();
-		ImGui::Text("An open source inspired Tetris game.");
+		ImGui::Spacing();
+		ImGui::TextUnformatted("An open-source, Tetris-inspired game created by Marcus Welander (mwthinker).");
 		constexpr auto Url = "https://github.com/mwthinker/MWetris";
 		if (ImGui::LinkButton(Url)) {
 			if (SDL_OpenURL(Url) != 0) {
 				spdlog::error("[SceneStateMachine] Failed to open URL: {}", SDL_GetError());
 			}
 		}
-		ImGui::NewLine();
-		ImGui::Text("Version:  v%s", PROJECT_VERSION);
-		ImGui::Text("Git hash: %s  date:  %s", GIT_VERSION, GIT_DATE);
-		ImGui::Text("Vcpkg hash: %s  date:  %s", VCPKG_HASH, VCPKG_DATE);
-		ImGui::NewLine();
-		ImGui::Text("GUID: %s", MWETRIS_GUID);
+
+		ImGui::Spacing();
+		ImGui::SeparatorText("Release");
+		detailsTable("ReleaseDetails", [&]() {
+			detailRow("Version", "v" PROJECT_VERSION);
+			detailRow("License", "MIT");
+			detailRow("Source date", GIT_DATE);
+			detailRow("Dependencies date", VCPKG_DATE);
+		});
+
+		ImGui::Spacing();
+		ImGui::SeparatorText("Build identifiers");
+		detailsTable("BuildIdentifiers", [&]() {
+			detailRow("Git commit", GIT_VERSION, true);
+			detailRow("vcpkg commit", VCPKG_HASH, true);
+			detailRow("Build GUID", MWETRIS_GUID, true);
+		});
 
 		ImGui::PopFont();
 	}
