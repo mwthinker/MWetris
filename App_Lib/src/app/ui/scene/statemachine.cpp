@@ -23,17 +23,19 @@ namespace app::ui::scene {
 			if (openPopUp_) {
 				openPopUp_ = false;
 				ImGui::OpenPopup(popUpId);
-				ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, {0.5f, 0.5f});
+				ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetWorkCenter(), ImGuiCond_Appearing, {0.5f, 0.5f});
 				
 				auto size = currentKey_ ? scenes_[currentKey_]->getSize() : ImVec2{};
 				if (size.x > 0 && size.y > 0) {
-					ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
+					ImGui::SetNextWindowSize(ImGui::ModalSize(size), ImGuiCond_Appearing);
 				} else {
-					ImGui::SetNextWindowSize({800, 800}, ImGuiCond_Appearing);
+					ImGui::SetNextWindowSize(ImGui::ModalSize({800.f, 800.f}), ImGuiCond_Appearing);
 				}
 			}
 			ImGui::PushContentStyle();
-			ImGui::PopupModal(popUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
+			const ImGuiWindowFlags sceneFlags = currentKey_ ? scenes_[currentKey_]->getWindowFlags() : ImGuiWindowFlags_None;
+			ImGui::PopupModal(popUpId, nullptr,
+				ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | sceneFlags, [&]() {
 				auto pos = ImGui::GetCursorScreenPos();
 				auto size = ImVec2{30.f, 30.f};
 

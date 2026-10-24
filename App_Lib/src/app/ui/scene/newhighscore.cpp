@@ -15,9 +15,7 @@ namespace app::ui::scene {
 	}
 
 	void NewHighScore::imGuiUpdate(const DeltaTime& deltaTime) {
-		if (ImGui::IsWindowAppearing()) {
-			ImGui::SetKeyboardFocusHere(0); // Set focus on input field
-		}
+		const bool focusName = ImGui::IsWindowAppearing();
 
 		ImGui::PushFont(app::Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
 		ImGui::Text("Place %d", game::getHighScorePlacement(data_.points));
@@ -25,16 +23,21 @@ namespace app::ui::scene {
 
 		if (data_.points > 0) {
 			bool submitted = false;
+			ImGui::BeginModalBody("High score content");
 			ImGui::FormTable("High score form", [&]() {
 				ImGui::FormRow("Player name", [&]() {
+					if (focusName) {
+						ImGui::SetKeyboardFocusHere();
+					}
 					submitted = ImGui::InputText("##Value", &data_.name,
 						ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CallbackAlways,
 						acceptNameInput);
 				});
 			});
+			ImGui::EndModalBody();
 
 			ImGui::AlignNextItemRight(100.f);
-			if ((ImGui::ConfirmationButton("Save", {100.f, 30.f}) || submitted) && !data_.name.empty()) {
+			if ((ImGui::ConfirmationButton("Save", {100.f, 0.f}) || submitted) && !data_.name.empty()) {
 				save();
 			}
 		}

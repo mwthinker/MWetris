@@ -278,8 +278,8 @@ namespace app::ui {
 			ImGui::OpenPopup(popupId.c_str());
 		}
 		const bool deleteDialog = dialog.action == ProfileDialogAction::Delete;
-		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, {0.5f, 0.5f});
-		ImGui::SetNextWindowSize(deleteDialog ? ImVec2{520.f, 240.f} : ImVec2{520.f, 420.f}, ImGuiCond_Always);
+		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetWorkCenter(), ImGuiCond_Always, {0.5f, 0.5f});
+		ImGui::SetNextWindowSize(ImGui::ModalSize(deleteDialog ? ImVec2{560.f, 260.f} : ImVec2{560.f, 440.f}), ImGuiCond_Always);
 		ImGui::PushContentStyle();
 
 		if (!ImGui::BeginPopupModal(popupId.c_str(), nullptr,
@@ -293,7 +293,7 @@ namespace app::ui {
 		ImGui::TextUnformatted(dialogTitle(dialog.action));
 		ImGui::PopFont();
 		ImGui::Separator();
-		ImGui::Dummy({0.f, 4.f});
+		ImGui::BeginModalBody("Profile content");
 
 		if (deleteDialog) {
 			ImGui::Text("Delete profile '%s'?", dialog.profileName.c_str());
@@ -309,16 +309,14 @@ namespace app::ui {
 			if (!dialog.error.empty()) {
 				ImGui::TextColored({1.f, 0.35f, 0.35f, 1.f}, "%s", dialog.error.c_str());
 			}
-			ImGui::Dummy({0.f, 6.f});
-			ImGui::Separator();
-			ImGui::Dummy({0.f, 6.f});
+			ImGui::EndModalBody();
 			const float actionWidth = 180.f + ImGui::GetStyle().ItemSpacing.x;
 			ImGui::AlignNextItemRight(actionWidth);
-			if (ImGui::MediumButton("Cancel", {90.f, 30.f}) || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+			if (ImGui::MediumButton("Cancel", {90.f, 0.f}) || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
 				closeProfileDialog();
 			}
 			ImGui::SameLine();
-			if (ImGui::AbortButton("Delete", {90.f, 30.f})) {
+			if (ImGui::AbortButton("Delete", {90.f, 0.f})) {
 				auto result = controlProfiles_->deleteProfile(dialog.profileId);
 				if (result) {
 					closeProfileDialog();
@@ -373,16 +371,14 @@ namespace app::ui {
 		}
 
 		const char* confirmationLabel = duplicate ? "Create" : "Save";
-		ImGui::Dummy({0.f, 6.f});
-		ImGui::Separator();
-		ImGui::Dummy({0.f, 6.f});
+		ImGui::EndModalBody();
 		const float actionWidth = 180.f + ImGui::GetStyle().ItemSpacing.x;
 		ImGui::AlignNextItemRight(actionWidth);
-		if (ImGui::MediumButton("Cancel", {90.f, 30.f}) || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+		if (ImGui::MediumButton("Cancel", {90.f, 0.f}) || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
 			closeProfileDialog();
 		}
 		ImGui::SameLine();
-		if (ImGui::ConfirmationButton(confirmationLabel, {90.f, 30.f}) || submitted) {
+		if (ImGui::ConfirmationButton(confirmationLabel, {90.f, 0.f}) || submitted) {
 			if (duplicate) {
 				auto result = controlProfiles_->duplicateProfile(
 					dialog.deviceGuid,
@@ -434,8 +430,8 @@ namespace app::ui {
 			return;
 		}
 		const float scale = std::clamp(ImGui::GetFontSize() / 17.f, 0.5f, 2.f);
-		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, {0.5f, 0.5f});
-		ImGui::SetNextWindowSize({520.f * scale, 420.f * scale}, ImGuiCond_Always);
+		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetWorkCenter(), ImGuiCond_Always, {0.5f, 0.5f});
+		ImGui::SetNextWindowSize(ImGui::ModalSize({620.f, 600.f}), ImGuiCond_Always);
 		ImGui::PushContentStyle();
 		if (!ImGui::BeginPopupModal(popupId.c_str(), nullptr,
 			ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar
@@ -458,6 +454,7 @@ namespace app::ui {
 		} else {
 			ImGui::TextUnformatted("All actions captured. Review and save.");
 		}
+		ImGui::BeginModalBody("Binding content", true);
 		auto labels = deviceManager_->getMappingLabels(*dialog.device);
 		ImGui::FormTable("Input bindings", [&]() {
 			for (int index = 0; index < std::ssize(game::InputActions); ++index) {
@@ -496,27 +493,26 @@ namespace app::ui {
 		if (!dialog.error.empty()) {
 			ImGui::TextColored({1.f, 0.35f, 0.35f, 1.f}, "%s", dialog.error.c_str());
 		}
-		ImGui::Dummy({0.f, 4.f * scale});
-		ImGui::Separator();
-		ImGui::Dummy({0.f, 4.f * scale});
-		if (ImGui::MediumButton("Start over", {110.f * scale, 30.f * scale})) {
+		ImGui::EndModalBody();
+		if (ImGui::MediumButton("Start over", {110.f * scale, 0.f})) {
 			deviceManager_->beginMapping(*dialog.device);
 			dialog.error.clear();
 		}
 		ImGui::SameLine();
-		if (ImGui::MediumButton("Defaults", {90.f * scale, 30.f * scale})) {
+		if (ImGui::MediumButton("Defaults", {90.f * scale, 0.f})) {
 			deviceManager_->resetMapping(*dialog.device);
 			dialog.error.clear();
 		}
-		ImGui::Dummy({0.f, 4.f * scale});
+		ImGui::SameLine();
 		const float actionWidth = 190.f * scale + ImGui::GetStyle().ItemSpacing.x;
-		ImGui::AlignNextItemRight(actionWidth);
-		if (ImGui::MediumButton("Cancel", {90.f * scale, 30.f * scale})) {
+		const float rightStart = ImGui::GetWindowWidth() - ImGui::GetStyle().WindowPadding.x - actionWidth;
+		ImGui::SetCursorPosX(std::max(ImGui::GetCursorPosX(), rightStart));
+		if (ImGui::MediumButton("Cancel", {90.f * scale, 0.f})) {
 			closeBindingDialog();
 		} else {
 			ImGui::SameLine();
 			ImGui::BeginDisabled(status->completed < status->total);
-			if (ImGui::ConfirmationButton("Save", {90.f * scale, 30.f * scale})) {
+			if (ImGui::ConfirmationButton("Save", {90.f * scale, 0.f})) {
 				auto result = deviceManager_->saveMapping(*dialog.device);
 				if (result) {
 					dialog = {};

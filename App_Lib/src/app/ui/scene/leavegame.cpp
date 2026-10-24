@@ -22,6 +22,7 @@ namespace app::ui::scene {
 			: singlePlayerGame ? "Leave single-player game?"
 			: "Leave local game?");
 		ImGui::PopFont();
+		ImGui::BeginModalBody("Leave game content");
 		ImGui::Spacing();
 
 		if (networkGame) {
@@ -37,20 +38,20 @@ namespace app::ui::scene {
 				? "MWetris will close and end the game for all local players. The current game cannot be continued."
 				: "This will end the game for all local players. The current game cannot be continued.");
 		}
+		ImGui::EndModalBody();
 
 		const float buttonWidth = 150.f;
 		const float actionWidth = buttonWidth * 2.f + ImGui::GetStyle().ItemSpacing.x;
-		ImGui::SetCursorPosY(ImGui::GetWindowHeight() - 50.f - ImGui::GetStyle().WindowPadding.y);
 		ImGui::AlignNextItemRight(actionWidth);
 
 		ImGui::BeginDisabled(leaving_);
-		if (ImGui::MediumButton("Keep Playing", {buttonWidth, 40.f})) {
+		if (ImGui::MediumButton("Keep Playing", {buttonWidth, 0.f})) {
 			close();
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
 		const char* destructiveLabel = quitAfterConfirmation_ ? "Quit MWetris" : leaving_ ? "Leaving..." : "Leave Game";
-		if (ImGui::AbortButton(destructiveLabel, {buttonWidth, 40.f})) {
+		if (ImGui::AbortButton(destructiveLabel, {buttonWidth, 0.f})) {
 			leaving_ = true;
 			if (quitAfterConfirmation_) {
 				quitApplication_();

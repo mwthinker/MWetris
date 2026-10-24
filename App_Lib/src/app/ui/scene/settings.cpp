@@ -162,8 +162,7 @@ namespace app::ui::scene {
 	}
 
 	ImVec2 Settings::getSize() const {
-		auto viewportSize = ImGui::GetMainViewport()->WorkSize;
-		return {std::min(820.f, viewportSize.x - 20.f), std::min(760.f, viewportSize.y - 20.f)};
+		return {860.f, 760.f};
 	}
 
 	void Settings::drawAiSelectors() {
@@ -408,12 +407,11 @@ namespace app::ui::scene {
 		ImGui::Checkbox("Show advanced settings", &showAdvanced_);
 		ImGui::Separator();
 		auto draftBeforeRendering = draft_;
-		ImGui::BeginChild("SettingsContent", {0.f, -160.f}, true);
+		ImGui::BeginModalBody("SettingsContent", true);
 		drawBasicSettings();
 		if (showAdvanced_) {
 			drawAdvancedSettings();
 		}
-		ImGui::EndChild();
 		if (draft_ != draftBeforeRendering) {
 			error_.clear();
 		}
@@ -438,13 +436,14 @@ namespace app::ui::scene {
 				ImGui::BulletText("%s", reason.c_str());
 			}
 		}
+		ImGui::EndModalBody();
 
 		constexpr float restoreButtonWidth = 140.f;
 		constexpr float applyButtonWidth = 100.f;
 		const float actionWidth = restoreButtonWidth + applyButtonWidth + ImGui::GetStyle().ItemSpacing.x;
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + std::max(0.f, ImGui::GetContentRegionAvail().x - actionWidth));
 		ImGui::BeginDisabled(!defaults_);
-		if (ImGui::MediumButton("Restore Defaults", {restoreButtonWidth, 30.f})) {
+		if (ImGui::MediumButton("Restore Defaults", {restoreButtonWidth, 0.f})) {
 			draft_ = *defaults_;
 			error_.clear();
 		}
@@ -456,7 +455,7 @@ namespace app::ui::scene {
 		}
 		ImGui::SameLine();
 		ImGui::BeginDisabled(!dirty || !validation);
-		if (ImGui::ConfirmationButton("Apply", {applyButtonWidth, 30.f})) {
+		if (ImGui::ConfirmationButton("Apply", {applyButtonWidth, 0.f})) {
 			apply();
 		}
 		ImGui::EndDisabled();

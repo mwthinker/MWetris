@@ -32,6 +32,10 @@ namespace app::ui::scene {
 			return {};
 		}
 
+		virtual ImGuiWindowFlags getWindowFlags() const {
+			return ImGuiWindowFlags_None;
+		}
+
 	protected:
 		void close();
 

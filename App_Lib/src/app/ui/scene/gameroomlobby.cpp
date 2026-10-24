@@ -246,8 +246,8 @@ namespace app::ui::scene {
 			openPopUp_ = false;
 			ImGui::OpenPopup(PopUpId);
 		}
-		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, {0.5f, 0.5f});
-		ImGui::SetNextWindowSize(addPlayer_->getSize(), ImGuiCond_Appearing);
+		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetWorkCenter(), ImGuiCond_Appearing, {0.5f, 0.5f});
+		ImGui::SetNextWindowSize(ImGui::ModalSize(addPlayer_->getSize()), ImGuiCond_Appearing);
 		ImGui::PushContentStyle();
 		ImGui::PopupModal(PopUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
 			auto pos = ImGui::GetCursorScreenPos();

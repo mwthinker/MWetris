@@ -18,6 +18,14 @@ namespace ImGui {
 	void PushContentStyle();
 
 	void PopContentStyle();
+
+	ImVec2 ModalSize(const ImVec2& logicalSize, float viewportFraction = 0.9f);
+
+	float ModalFooterHeight();
+
+	bool BeginModalBody(const char* id, bool border = false);
+
+	void EndModalBody();
 	bool MediumButton(const char* label, const ImVec2& size = {});
 	bool MediumSmallButton(const char* label);
 	bool LinkButton(const char* label);

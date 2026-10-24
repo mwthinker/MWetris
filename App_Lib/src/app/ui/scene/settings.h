@@ -24,6 +24,9 @@ namespace app::ui::scene {
 
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
 		ImVec2 getSize() const override;
+		ImGuiWindowFlags getWindowFlags() const override {
+			return ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+		}
 
 	private:
 		void switchedTo(const SceneData& data) override;

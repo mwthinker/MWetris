@@ -45,6 +45,7 @@ namespace app::ui::scene {
 		ImGui::Text("Create Game Room");
 		ImGui::PopFont();
 
+		ImGui::BeginModalBody("Create game room content");
 		ImGui::FormTable("Create game room form", [&]() {
 			ImGui::FormRow("Name", [&]() {
 				InputText("##Value", &serverName_);
@@ -59,11 +60,12 @@ namespace app::ui::scene {
 				ImGui::Checkbox("##Value", &public_);
 			});
 		});
+		ImGui::EndModalBody();
 
 		bool validName = serverName_.size() > 5 && serverName_.size() < 30;
 		ImGui::AlignNextItemRight(100.f);
 		ImGui::BeginDisabled(!validName);
-		if (ImGui::ConfirmationButton("Create", {100.f, 30.f})) { // TODO! Handle lag and show a spinner.
+		if (ImGui::ConfirmationButton("Create", {100.f, 0.f})) { // TODO! Handle lag and show a spinner.
 			tetrisController_->createNetworkGameRoom(serverName_, public_);
 		}
 		ImGui::EndDisabled();

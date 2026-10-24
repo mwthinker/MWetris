@@ -44,6 +44,29 @@ namespace ImGui {
 		ImGui::PopStyleVar(3);
 	}
 
+	ImVec2 ModalSize(const ImVec2& logicalSize, float viewportFraction) {
+		const float scale = std::clamp(ImGui::GetFontSize() / 17.f, 0.5f, 2.f);
+		const auto viewportSize = ImGui::GetMainViewport()->WorkSize;
+		return {
+			std::min(logicalSize.x * scale, viewportSize.x * viewportFraction),
+			std::min(logicalSize.y * scale, viewportSize.y * viewportFraction)
+		};
+	}
+
+	float ModalFooterHeight() {
+		return ImGui::GetFrameHeight() + ImGui::GetStyle().ItemSpacing.y * 2.f + 1.f;
+	}
+
+	bool BeginModalBody(const char* id, bool border) {
+		return ImGui::BeginChild(id, {0.f, -ModalFooterHeight()}, border);
+	}
+
+	void EndModalBody() {
+		ImGui::EndChild();
+		ImGui::Separator();
+		ImGui::Spacing();
+	}
+
 	bool MediumButton(const char* label, const ImVec2& size) {
 		PushButtonStyle();
 		bool result = ImGui::Button(label, size);

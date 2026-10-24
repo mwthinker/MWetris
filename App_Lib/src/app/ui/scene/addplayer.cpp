@@ -77,6 +77,7 @@ namespace app::ui::scene {
 		ImGui::Text("Add Player");
 		ImGui::PopFont();
 		
+		ImGui::BeginModalBody("Add player content");
 		ImGui::FormTable("Add player form", [&]() {
 			ImGui::FormRow("Player type", [&]() {
 				playerTypesCombo_.imGuiCombo("##Value");
@@ -102,9 +103,10 @@ namespace app::ui::scene {
 				ImGui::InputText("##Value", &playerName_);
 			});
 		});
+		ImGui::EndModalBody();
 
 		ImGui::AlignNextItemRight(100.f);
-		if (ImGui::ConfirmationButton("Add", {100.f, 30.f})) {
+		if (ImGui::ConfirmationButton("Add", {100.f, 0.f})) {
 			addCallback_(*this);
 			ImGui::CloseCurrentPopup();
 		}
