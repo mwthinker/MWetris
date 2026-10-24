@@ -2,7 +2,6 @@
 #define APP_UI_SCENE_PLAY_H
 
 #include "scene.h"
-#include "resume.h"
 #include "tetriscontroller.h"
 
 #include "game/devicemanager.h"

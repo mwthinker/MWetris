@@ -106,13 +106,6 @@ namespace app::ui::scene {
 	void StateMachine::switchTo() {
 		SceneData sceneData;
 		switchTo<Type>(sceneData);
-		if (isCurrentScene<EmptyScene>()) {
-			openPopUp_ = false;
-			closePopUp_ = true;
-		} else {
-			openPopUp_ = true;
-			closePopUp_ = false;
-		}
 	}
 
 	template <typename Type> requires DerivedFromScene<Type>
@@ -130,6 +123,16 @@ namespace app::ui::scene {
 			scenes_[currentKey_]->switchedTo(sceneData);
 		} else {
 			spdlog::warn("[SceneStateMachine] Failed to switch to scene {}={} .", typeid(Type).name(), getKey<Type>());
+		}
+
+		if (stateType_ == StateType::Modal) {
+			if (isCurrentScene<EmptyScene>()) {
+				openPopUp_ = false;
+				closePopUp_ = true;
+			} else {
+				openPopUp_ = true;
+				closePopUp_ = false;
+			}
 		}
 	}
 

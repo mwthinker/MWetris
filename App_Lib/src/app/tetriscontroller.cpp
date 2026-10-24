@@ -222,6 +222,9 @@ namespace app {
 		if (network_->isInsideGameRoom()) {
 			network_->leaveGameRoom();
 		} else {
+			if (isDefaultGame()) {
+				saveDefaultGame();
+			}
 			setGameRoomType(GameRoomType::OutsideGameRoom);
 		}
 	}
@@ -296,7 +299,7 @@ namespace app {
 		const auto& player = *players.front();
 
 		if (player.isLocal()) {
-			return player.isLocal();
+			return true;
 		}
 
 		if (player.getRows() != game::TetrisHeight) {

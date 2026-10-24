@@ -10,9 +10,10 @@
 #include "scene/highscore.h"
 #include "scene/newhighscore.h"
 #include "scene/addplayer.h"
-#include "scene/resume.h"
+#include "scene/gamelauncher.h"
 #include "scene/play.h"
 #include "scene/joingameroom.h"
+#include "scene/leavegame.h"
 #include "scene/gameroomlobby.h"
 #include "scene/networkerror.h"
 #include "game/serialize.h"
@@ -148,7 +149,9 @@ namespace app::ui {
 		background_ = Configuration::getInstance().getBackgroundSprite();
 
 		mainStateMachine_.emplace<scene::GameRoomLooby>(tetrisController_, deviceManager_, controlProfiles_);
-		mainStateMachine_.emplace<scene::Resume>(tetrisController_, deviceManager_);
+		mainStateMachine_.emplace<scene::GameLauncher>(tetrisController_, deviceManager_,
+			[this]() { modalStateMachine_.switchTo<scene::CreateGameRoom>(); },
+			[this]() { modalStateMachine_.switchTo<scene::JoinGameRoom>(); });
 		mainStateMachine_.emplace<scene::Play>(tetrisController_);
 		
 		modalStateMachine_.emplace<scene::JoinGameRoom>(tetrisController_);
@@ -160,6 +163,7 @@ namespace app::ui {
 		});
 		modalStateMachine_.emplace<scene::About>();
 		modalStateMachine_.emplace<scene::NetworkError>();
+		modalStateMachine_.emplace<scene::LeaveGame>(tetrisController_, [this]() { window_.quit(); });
 
 		connections_ += tetrisController_->tetrisEvent.connect([this](const TetrisEvent& tetrisEvent) {
 			std::visit([&](auto&& event) {
@@ -239,7 +243,7 @@ namespace app::ui {
 				break;
 			case GameRoomType::OutsideGameRoom:
 				modalStateMachine_.switchTo<scene::EmptyScene>();
-				mainStateMachine_.switchTo<scene::Resume>();
+				mainStateMachine_.switchTo<scene::GameLauncher>();
 				break;
 			case GameRoomType::GameSession:
 				modalStateMachine_.switchTo<scene::EmptyScene>();
@@ -324,7 +328,7 @@ namespace app::ui {
 					ImGui::EndDisabled();
 					ImGui::BeginDisabled(!insideGameRoom);
 					if (ImGui::MenuItem("Leave game")) {
-						tetrisController_->leaveGameRoom();
+						modalStateMachine_.switchTo<scene::LeaveGame>();
 					}
 					ImGui::EndDisabled();
 					ImGui::Separator();
@@ -335,8 +339,14 @@ namespace app::ui {
 					if (ImGui::MenuItem("Preferences")) {
 						modalStateMachine_.switchTo<scene::Settings>();
 					}
-					if (ImGui::MenuItem("Quit", "ESQ")) {
-						window_.quit();
+					if (ImGui::MenuItem("Quit")) {
+						if (insideGameRoom) {
+							scene::LeaveGameData data;
+							data.quitApplication = true;
+							modalStateMachine_.switchTo<scene::LeaveGame>(data);
+						} else {
+							window_.quit();
+						}
 					}
 				});
 				menu("Current", [&]() {
@@ -386,14 +396,29 @@ namespace app::ui {
 			case SDL_EVENT_KEY_DOWN:
 				switch (windowEvent.key.key) {
 					case SDLK_F1:
-						tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
+						if (!tetrisController_->isGameRoomSession()
+							&& modalStateMachine_.isCurrentScene<scene::EmptyScene>()) {
+							tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
+						}
 						break;
 					case SDLK_F5:
-						tetrisController_->restartGame();
+						if (tetrisController_->isGameRoomSession()
+							&& modalStateMachine_.isCurrentScene<scene::EmptyScene>()) {
+							tetrisController_->restartGame();
+						}
 						break;
 					case SDLK_P: [[fallthrough]];
 					case SDLK_PAUSE:
-						tetrisController_->pause();
+						if (tetrisController_->isGameRoomSession()
+							&& modalStateMachine_.isCurrentScene<scene::EmptyScene>()) {
+							tetrisController_->pause();
+						}
+						break;
+					case SDLK_ESCAPE:
+						if (tetrisController_->isGameRoomSession()
+							&& modalStateMachine_.isCurrentScene<scene::EmptyScene>()) {
+							tetrisController_->pause();
+						}
 						break;
 				}
 				break;

@@ -63,14 +63,16 @@ set(SOURCES_LIB
 	src/app/ui/scene/highscore.h
 	src/app/ui/scene/joingameroom.cpp
 	src/app/ui/scene/joingameroom.h
+	src/app/ui/scene/leavegame.cpp
+	src/app/ui/scene/leavegame.h
 	src/app/ui/scene/networkerror.cpp
 	src/app/ui/scene/networkerror.h
 	src/app/ui/scene/newhighscore.cpp
 	src/app/ui/scene/newhighscore.h
 	src/app/ui/scene/play.cpp
 	src/app/ui/scene/play.h
-	src/app/ui/scene/resume.cpp
-	src/app/ui/scene/resume.h
+	src/app/ui/scene/gamelauncher.cpp
+	src/app/ui/scene/gamelauncher.h
 	src/app/ui/scene/scene.h
 	src/app/ui/scene/settings.cpp
 	src/app/ui/scene/settings.h
