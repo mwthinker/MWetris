@@ -55,6 +55,13 @@ namespace ImGui {
 		};
 	}
 
+	void SetNextModalWindow(const ImVec2& logicalSize) {
+		auto viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::SetNextWindowPos(viewport->GetWorkCenter(), ImGuiCond_Always, {0.5f, 0.5f});
+		ImGui::SetNextWindowSize(ImGui::ModalSize(logicalSize), ImGuiCond_Always);
+	}
+
 	float ModalFooterHeight() {
 		return ImGui::GetFrameHeight() + ImGui::GetStyle().ItemSpacing.y * 2.f + 1.f;
 	}

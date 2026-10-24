@@ -23,15 +23,9 @@ namespace app::ui::scene {
 			if (openPopUp_) {
 				openPopUp_ = false;
 				ImGui::OpenPopup(popUpId);
-				ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetWorkCenter(), ImGuiCond_Appearing, {0.5f, 0.5f});
-				
-				auto size = currentKey_ ? scenes_[currentKey_]->getSize() : ImVec2{};
-				if (size.x > 0 && size.y > 0) {
-					ImGui::SetNextWindowSize(ImGui::ModalSize(size), ImGuiCond_Appearing);
-				} else {
-					ImGui::SetNextWindowSize(ImGui::ModalSize({800.f, 800.f}), ImGuiCond_Appearing);
-				}
 			}
+			auto size = currentKey_ ? scenes_[currentKey_]->getSize() : ImVec2{};
+			ImGui::SetNextModalWindow(size.x > 0 && size.y > 0 ? size : ImVec2{800.f, 800.f});
 			ImGui::PushContentStyle();
 			const ImGuiWindowFlags sceneFlags = currentKey_ ? scenes_[currentKey_]->getWindowFlags() : ImGuiWindowFlags_None;
 			ImGui::PopupModal(popUpId, nullptr,

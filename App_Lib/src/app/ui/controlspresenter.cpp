@@ -278,8 +278,7 @@ namespace app::ui {
 			ImGui::OpenPopup(popupId.c_str());
 		}
 		const bool deleteDialog = dialog.action == ProfileDialogAction::Delete;
-		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetWorkCenter(), ImGuiCond_Always, {0.5f, 0.5f});
-		ImGui::SetNextWindowSize(ImGui::ModalSize(deleteDialog ? ImVec2{560.f, 260.f} : ImVec2{560.f, 440.f}), ImGuiCond_Always);
+		ImGui::SetNextModalWindow(deleteDialog ? ImVec2{560.f, 260.f} : ImVec2{560.f, 440.f});
 		ImGui::PushContentStyle();
 
 		if (!ImGui::BeginPopupModal(popupId.c_str(), nullptr,
@@ -422,6 +421,7 @@ namespace app::ui {
 
 		auto status = deviceManager_->getMappingStatus(*dialog.device);
 		if (!status) {
+			ImGui::SetNextModalWindow({620.f, 600.f});
 			if (ImGui::BeginPopupModal(popupId.c_str(), nullptr, ImGuiWindowFlags_NoTitleBar)) {
 				ImGui::CloseCurrentPopup();
 				ImGui::EndPopup();
@@ -430,8 +430,7 @@ namespace app::ui {
 			return;
 		}
 		const float scale = std::clamp(ImGui::GetFontSize() / 17.f, 0.5f, 2.f);
-		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetWorkCenter(), ImGuiCond_Always, {0.5f, 0.5f});
-		ImGui::SetNextWindowSize(ImGui::ModalSize({620.f, 600.f}), ImGuiCond_Always);
+		ImGui::SetNextModalWindow({620.f, 600.f});
 		ImGui::PushContentStyle();
 		if (!ImGui::BeginPopupModal(popupId.c_str(), nullptr,
 			ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar

@@ -20,6 +20,7 @@ namespace ImGui {
 	void PopContentStyle();
 
 	ImVec2 ModalSize(const ImVec2& logicalSize, float viewportFraction = 0.9f);
+	void SetNextModalWindow(const ImVec2& logicalSize);
 
 	float ModalFooterHeight();
 
