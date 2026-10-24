@@ -153,6 +153,7 @@ namespace app {
 			ASSERT_TRUE(configuration_->persistEditableSettings(baselineSettings_));
 			ASSERT_TRUE(configuration_->persistControlProfiles(baselineProfiles_));
 			ASSERT_TRUE(configuration_->persistDeviceBindings(baselineBindings_));
+			ASSERT_TRUE(configuration_->persistLastSinglePlayerControls({}));
 			configuration_->resetRuntimeResources();
 		}
 
@@ -347,6 +348,23 @@ namespace app {
 			});
 		ASSERT_NE(persistedKeyboard, persisted.at("devices").end());
 		EXPECT_EQ(persistedKeyboard->at("bindings").at("hardDrop"), "Space");
+	}
+
+	TEST_F(ConfigurationPersistenceTest, persistsLastSinglePlayerControls) {
+		// When
+		Configuration::SinglePlayerControls controls{
+			.deviceGuid = "Keyboard 2",
+			.profileId = ControlProfiles::FastProfileId,
+		};
+		auto result = configuration_->persistLastSinglePlayerControls(controls);
+
+		// Then
+		ASSERT_TRUE(result);
+		EXPECT_EQ(configuration_->getLastSinglePlayerControls(), controls);
+		auto persisted = readConfigurationFile().at("lastSinglePlayerControls");
+		EXPECT_EQ(persisted.at("deviceGuid"), "Keyboard 2");
+		EXPECT_EQ(persisted.at("profileId"), "fast");
+		EXPECT_EQ(temporaryConfigurationFileCount(), 0);
 	}
 
 	TEST_F(ConfigurationPersistenceTest, persistsControlProfileAssignment) {

@@ -2,6 +2,7 @@
 #define APP_UI_TETRISWINDOW_H
 
 #include "../timerhandler.h"
+#include "../configuration.h"
 #include "scene/scene.h"
 #include "scene/statemachine.h"
 #include "scene/addplayer.h"
@@ -69,6 +70,9 @@ namespace app::ui {
 
 		void initPreLoop();
 		void refreshSettings();
+		game::DevicePtr getSinglePlayerDevice() const;
+		void startSinglePlayer();
+		void rememberSinglePlayerControls();
 		int getCurrentMonitorHz() const;
 
 		void imGuiMainWindow(const sdl::DeltaTime& deltaTime);
@@ -87,6 +91,7 @@ namespace app::ui {
 
 		TimeHandler timeHandler_;
 		std::string pauseMenuText_;
+		Configuration::SinglePlayerControls singlePlayerControls_;
 
 		Type type_ = Type::MainWindow;
 		std::string windowName_;

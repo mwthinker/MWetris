@@ -218,18 +218,18 @@ namespace app::ui {
 
 	void ControlsPresenter::drawMenu() {
 		auto connectedDevices = getConnectedDevices();
-		ImGui::TextUnformatted("Controls");
-		ImGui::Separator();
 
 		ImGui::PushItemWidth(180.f);
+		ImGui::TextUnformatted("Configure controls for");
 		if (drawDeviceCombo(
 			selectedOptionsDeviceGuid_,
 			connectedDevices,
-			"Device",
+			"##ControlsDevice",
 			false)) {
 			optionsError_.clear();
 		}
-		drawAssignedProfileCombo(selectedOptionsDeviceGuid_, "Profile", optionsError_);
+		ImGui::TextUnformatted("Movement profile");
+		drawAssignedProfileCombo(selectedOptionsDeviceGuid_, "##MovementProfile", optionsError_);
 		ImGui::PopItemWidth();
 
 		if (selectedOptionsDeviceGuid_.empty()) {
@@ -241,6 +241,12 @@ namespace app::ui {
 
 		auto profileId = controlProfiles_->getAssignedProfileId(selectedOptionsDeviceGuid_);
 		auto profile = controlProfiles_->getProfile(profileId);
+		auto selectedDevice = resolveDevice(selectedOptionsDeviceGuid_, connectedDevices, false);
+		ImGui::BeginDisabled(!selectedDevice);
+		if (ImGui::MediumButton("Button mapping...")) {
+			openBindingDialog(selectedDevice);
+		}
+		ImGui::EndDisabled();
 		if (!profile) {
 			ImGui::SecondaryText("The assigned profile is unavailable.");
 			return;

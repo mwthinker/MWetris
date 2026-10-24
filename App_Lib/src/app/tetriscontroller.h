@@ -90,7 +90,7 @@ namespace app {
 
 		bool isNetworkGame() const;
 
-		void createDefaultGame(game::DevicePtr device);
+		void createDefaultGame(game::DevicePtr device, const ProfileId& profileId);
 		void createLocalGameRoom();
 		void createNetworkGameRoom(const std::string& name, bool isPublic);
 
@@ -109,6 +109,7 @@ namespace app {
 		void refreshGameRoomList();
 
 		bool isDefaultGame() const;
+		game::PlayerPtr getDefaultPlayer() const;
 
 		const std::vector<network::GameRoomClient>& getGameRoomClients() const;
 

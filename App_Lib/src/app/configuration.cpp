@@ -1687,4 +1687,47 @@ namespace app {
 		}
 	}
 
+	Configuration::SinglePlayerControls Configuration::getLastSinglePlayerControls() const {
+		SinglePlayerControls controls;
+		auto value = impl_->jsonObject.find("lastSinglePlayerControls");
+		if (value == impl_->jsonObject.end() || !value->is_object()) {
+			return controls;
+		}
+		if (auto guid = value->find("deviceGuid"); guid != value->end() && guid->is_string()) {
+			auto normalized = normalizeDeviceGuid(guid->get<std::string>());
+			if (!normalized.empty()) {
+				controls.deviceGuid = std::move(normalized);
+			}
+		}
+		if (auto profileId = value->find("profileId"); profileId != value->end() && profileId->is_string()) {
+			auto parsed = profileId->get<std::string>();
+			if (!parsed.empty()) {
+				controls.profileId = ProfileId{std::move(parsed)};
+			}
+		}
+		return controls;
+	}
+
+	std::expected<void, std::string> Configuration::persistLastSinglePlayerControls(const SinglePlayerControls& controls) {
+		try {
+			auto guid = normalizeDeviceGuid(controls.deviceGuid);
+			if (guid.empty() || controls.profileId.value.empty()) {
+				return std::unexpected{"The single-player device and profile IDs cannot be empty."};
+			}
+			auto candidate = impl_->jsonObject;
+			candidate["lastSinglePlayerControls"] = {
+				{"deviceGuid", guid},
+				{"profileId", controls.profileId.value},
+			};
+			auto result = replaceJsonFile(impl_->jsonPath, candidate);
+			if (!result) {
+				return result;
+			}
+			impl_->jsonObject = std::move(candidate);
+			return {};
+		} catch (const std::exception& exception) {
+			return std::unexpected{exception.what()};
+		}
+	}
+
 }

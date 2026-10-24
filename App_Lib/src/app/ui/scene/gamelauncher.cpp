@@ -8,10 +8,11 @@
 
 namespace app::ui::scene {
 
-	GameLauncher::GameLauncher(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager,
+	GameLauncher::GameLauncher(std::shared_ptr<TetrisController> tetrisController,
+		std::function<void()> startSinglePlayer,
 		std::function<void()> createNetworkGame, std::function<void()> joinNetworkGame)
 		: tetrisController_{std::move(tetrisController)}
-		, deviceManager_{std::move(deviceManager)}
+		, startSinglePlayer_{std::move(startSinglePlayer)}
 		, createNetworkGame_{std::move(createNetworkGame)}
 		, joinNetworkGame_{std::move(joinNetworkGame)} {
 	}
@@ -31,9 +32,9 @@ namespace app::ui::scene {
 		ImGui::SecondaryText("Continue on your own or start a game with others.");
 		ImGui::Spacing();
 
-		const char* singlePlayerLabel = game::hasSavedGame() ? "Continue Single Player   F1" : "Start Single Player   F1";
+		const char* singlePlayerLabel = game::hasSavedGame() ? "Resume Single Player   F1" : "Start Single Player   F1";
 		if (ImGui::MediumButton(singlePlayerLabel, {contentWidth, buttonHeight})) {
-			tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
+			startSinglePlayer_();
 		}
 
 		if (ImGui::MediumButton("Local Multiplayer", {contentWidth, buttonHeight})) {

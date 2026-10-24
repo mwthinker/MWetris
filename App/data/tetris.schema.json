@@ -8,6 +8,15 @@
 		"window": { "$ref": "#/definitions/Window" },
 		"inputProfiles": { "$ref": "#/definitions/InputProfiles" },
 		"devices": { "$ref": "#/definitions/Devices" },
+		"lastSinglePlayerControls": {
+			"type": "object",
+			"properties": {
+				"deviceGuid": { "type": "string", "minLength": 1 },
+				"profileId": { "type": "string", "minLength": 1 }
+			},
+			"required": ["deviceGuid", "profileId"],
+			"additionalProperties": false
+		},
 		"network": { "$ref": "#/definitions/Network" },
 		"ai1": { "type": "string", "minLength": 1 },
 		"ai2": { "type": "string", "minLength": 1 },

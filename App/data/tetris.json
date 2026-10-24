@@ -105,6 +105,10 @@
 		}
 	},
 	"inputProfiles": [],
+	"lastSinglePlayerControls": {
+		"deviceGuid": "Keyboard 1",
+		"profileId": "balanced"
+	},
 	"devices": [
 		{
 			"guid": "Keyboard 1",

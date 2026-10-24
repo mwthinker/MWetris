@@ -4,15 +4,14 @@
 #include "scene.h"
 #include "tetriscontroller.h"
 
-#include "game/devicemanager.h"
-
 #include <functional>
 
 namespace app::ui::scene {
 
 	class GameLauncher : public Scene {
 	public:
-		GameLauncher(std::shared_ptr<TetrisController> tetrisController, std::shared_ptr<game::DeviceManager> deviceManager,
+		GameLauncher(std::shared_ptr<TetrisController> tetrisController,
+			std::function<void()> startSinglePlayer,
 			std::function<void()> createNetworkGame, std::function<void()> joinNetworkGame);
 
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
@@ -20,7 +19,7 @@ namespace app::ui::scene {
 
 	private:
 		std::shared_ptr<TetrisController> tetrisController_;
-		std::shared_ptr<game::DeviceManager> deviceManager_;
+		std::function<void()> startSinglePlayer_;
 		std::function<void()> createNetworkGame_;
 		std::function<void()> joinNetworkGame_;
 	};

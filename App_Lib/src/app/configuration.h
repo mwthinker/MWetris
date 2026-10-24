@@ -147,6 +147,13 @@ namespace app {
 			std::vector<std::string> restartReasons;
 		};
 
+		struct SinglePlayerControls {
+			std::string deviceGuid = "Keyboard 1";
+			ProfileId profileId = ControlProfiles::BalancedProfileId;
+
+			bool operator==(const SinglePlayerControls&) const = default;
+		};
+
 		using SettingsValidationResult = std::expected<void, std::string>;
 		using SettingsPersistenceResult = std::expected<SettingsApplyResult, std::string>;
 
@@ -313,6 +320,8 @@ namespace app {
 		DeviceBindingsLoadResult loadDeviceBindings();
 		game::DeviceBindingsPersistenceResult persistDeviceBindings(const std::vector<game::DeviceBinding>& state);
 		static std::vector<game::DeviceBinding> normalizeDeviceBindings(nlohmann::json& jsonObject);
+		SinglePlayerControls getLastSinglePlayerControls() const;
+		std::expected<void, std::string> persistLastSinglePlayerControls(const SinglePlayerControls& controls);
 
 		// Every TextureView is bound to the atlas texture
 		ImTextureID getTextureAtlasBinding() {

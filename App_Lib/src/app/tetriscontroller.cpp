@@ -119,7 +119,7 @@ namespace app {
 		gameComponent_->draw(width, height, deltaTime);
 	}
 
-	void TetrisController::createDefaultGame(game::DevicePtr device) {
+	void TetrisController::createDefaultGame(game::DevicePtr device, const ProfileId& profileId) {
 		if (network_->isInsideGameRoom()) {
 			network_->leaveGameRoom();
 		}
@@ -133,6 +133,7 @@ namespace app {
 			tetris::TetrisBoard tetrisBoard{game::TetrisWidth, game::TetrisHeight, tetris::randomBlockType(), tetris::randomBlockType()};
 			player = createHumanPlayer(device, controlProfiles_, playerData, std::move(tetrisBoard));
 		}
+		player->setProfileId(profileId);
 		connections_ += player->playerBoardUpdate.connect([](const game::PlayerBoardEvent& playerBoardEvent) {
 			game::clearSavedGame();
 		});
@@ -315,6 +316,13 @@ namespace app {
 		}
 
 		return player.isHuman();
+	}
+
+	game::PlayerPtr TetrisController::getDefaultPlayer() const {
+		if (!isDefaultGame()) {
+			return nullptr;
+		}
+		return tetrisGame_.getPlayers().front();
 	}
 
 	const std::vector<network::GameRoomClient>& TetrisController::getGameRoomClients() const {

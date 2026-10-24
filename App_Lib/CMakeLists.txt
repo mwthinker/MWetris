@@ -57,10 +57,14 @@ set(SOURCES_LIB
 	src/app/ui/scene/addplayer.h
 	src/app/ui/scene/creategameroom.cpp
 	src/app/ui/scene/creategameroom.h
+	src/app/ui/scene/controls.cpp
+	src/app/ui/scene/controls.h
 	src/app/ui/scene/gameroomlobby.cpp
 	src/app/ui/scene/gameroomlobby.h
 	src/app/ui/scene/highscore.cpp
 	src/app/ui/scene/highscore.h
+	src/app/ui/scene/help.cpp
+	src/app/ui/scene/help.h
 	src/app/ui/scene/joingameroom.cpp
 	src/app/ui/scene/joingameroom.h
 	src/app/ui/scene/leavegame.cpp

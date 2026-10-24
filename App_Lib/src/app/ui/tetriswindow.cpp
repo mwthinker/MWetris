@@ -7,6 +7,8 @@
 
 #include "scene/about.h"
 #include "scene/creategameroom.h"
+#include "scene/controls.h"
+#include "scene/help.h"
 #include "scene/settings.h"
 #include "scene/highscore.h"
 #include "scene/newhighscore.h"
@@ -108,6 +110,7 @@ namespace app::ui {
 		, controlsPresenter_{std::make_shared<ControlsPresenter>(windowName, deviceManager, controlProfiles_)}
 		, requestRestart_{std::move(requestRestart)}
 		, modalStateMachine_{ui::scene::StateMachine::StateType::Modal}
+		, singlePlayerControls_{Configuration::getInstance().getLastSinglePlayerControls()}
 		, type_{type}
 		, windowName_{windowName} {
 
@@ -150,7 +153,8 @@ namespace app::ui {
 		background_ = Configuration::getInstance().getBackgroundSprite();
 
 		mainStateMachine_.emplace<scene::GameRoomLooby>(tetrisController_, deviceManager_, controlProfiles_);
-		mainStateMachine_.emplace<scene::GameLauncher>(tetrisController_, deviceManager_,
+		mainStateMachine_.emplace<scene::GameLauncher>(tetrisController_,
+			[this]() { startSinglePlayer(); },
 			[this]() { modalStateMachine_.switchTo<scene::CreateGameRoom>(); },
 			[this]() { modalStateMachine_.switchTo<scene::JoinGameRoom>(); });
 		mainStateMachine_.emplace<scene::Play>(tetrisController_);
@@ -158,11 +162,14 @@ namespace app::ui {
 		modalStateMachine_.emplace<scene::JoinGameRoom>(tetrisController_);
 		modalStateMachine_.emplace<scene::CreateGameRoom>(tetrisController_);
 		modalStateMachine_.emplace<scene::Settings>(controlsPresenter_, requestRestart_);
+		modalStateMachine_.emplace<scene::Controls>(controlsPresenter_);
 		modalStateMachine_.emplace<scene::HighScore>();
 		modalStateMachine_.emplace<scene::NewHighScore>([this]() {
 			modalStateMachine_.switchTo<scene::HighScore>();
 		});
 		modalStateMachine_.emplace<scene::About>();
+		modalStateMachine_.emplace<scene::HowToPlay>();
+		modalStateMachine_.emplace<scene::KeyboardShortcuts>();
 		modalStateMachine_.emplace<scene::NetworkError>();
 		modalStateMachine_.emplace<scene::LeaveGame>(tetrisController_, [this]() { window_.quit(); });
 
@@ -203,6 +210,46 @@ namespace app::ui {
 		style.Colors[ImGuiCol_Border] = configuration.getComboBoxBorderColor();
 		style.Colors[ImGuiCol_CheckMark] = configuration.getChecboxCheckColor();
 		style.FrameBorderSize = 1.f;
+	}
+
+	game::DevicePtr TetrisWindow::getSinglePlayerDevice() const {
+		auto device = deviceManager_->findDevice(singlePlayerControls_.deviceGuid);
+		if (device && device->isConnected()) {
+			return device;
+		}
+		auto devices = deviceManager_->getAllDevicesAvailable();
+		return devices.empty() ? nullptr : devices.front();
+	}
+
+	void TetrisWindow::startSinglePlayer() {
+		auto device = getSinglePlayerDevice();
+		if (!device) {
+			return;
+		}
+		auto profileId = singlePlayerControls_.profileId;
+		if (!controlProfiles_->getProfile(profileId)) {
+			profileId = controlProfiles_->getAssignedProfileId(device->getGuid());
+		}
+		tetrisController_->createDefaultGame(std::move(device), profileId);
+		rememberSinglePlayerControls();
+	}
+
+	void TetrisWindow::rememberSinglePlayerControls() {
+		auto player = tetrisController_->getDefaultPlayer();
+		if (!player || !player->getDevice() || !player->getProfileId()) {
+			return;
+		}
+		Configuration::SinglePlayerControls controls{
+			.deviceGuid = player->getDevice()->getGuid(),
+			.profileId = *player->getProfileId(),
+		};
+		if (controls == singlePlayerControls_) {
+			return;
+		}
+		singlePlayerControls_ = controls;
+		if (auto result = Configuration::getInstance().persistLastSinglePlayerControls(controls); !result) {
+			spdlog::warn("Could not remember the single-player controls: {}", result.error());
+		}
 	}
 
 	void TetrisWindow::pauseOnFocusLost() {
@@ -322,37 +369,43 @@ namespace app::ui {
 					ImGui::PopStyleColor();
 				};
 				menu("Game", [&]() {
-					bool insideGameRoom = tetrisController_->isGameRoomSession();
+					const bool insideGameRoom = tetrisController_->isGameRoomSession();
 					ImGui::BeginDisabled(insideGameRoom);
 					if (ImGui::MenuItem(game::hasSavedGame() ? "Resume Single Player" : "New Single Player", "F1")) {
-						tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
+						startSinglePlayer();
 					}
-					ImGui::Separator();
 					if (ImGui::MenuItem("Create Local Game")) {
 						tetrisController_->createLocalGameRoom();
 					}
 					ImGui::BeginDisabled(!tetrisController_->isConnectedToServer());
-					if (ImGui::MenuItem("Create Network Game")) {
-						modalStateMachine_.switchTo<scene::CreateGameRoom>();
-					}
-					if (ImGui::MenuItem("Join Network Game")) {
-						modalStateMachine_.switchTo<scene::JoinGameRoom>();
+					if (ImGui::BeginMenu("Online")) {
+						if (ImGui::MenuItem("Create Network Game")) {
+							modalStateMachine_.switchTo<scene::CreateGameRoom>();
+						}
+						if (ImGui::MenuItem("Join Network Game")) {
+							modalStateMachine_.switchTo<scene::JoinGameRoom>();
+						}
+						ImGui::EndMenu();
 					}
 					ImGui::EndDisabled();
 					ImGui::EndDisabled();
+					ImGui::Separator();
 					ImGui::BeginDisabled(!insideGameRoom);
-					if (ImGui::MenuItem("Leave game")) {
+					if (ImGui::MenuItem(pauseMenuText_.c_str(), "P")) {
+						tetrisController_->pause();
+					}
+					if (ImGui::MenuItem("Restart", "F5")) {
+						tetrisController_->restartGame();
+					}
+					if (ImGui::MenuItem("Leave Game")) {
 						modalStateMachine_.switchTo<scene::LeaveGame>();
 					}
 					ImGui::EndDisabled();
 					ImGui::Separator();
-					if (ImGui::MenuItem("Highscore")) {
-						tetrisController_->pause();
+					if (ImGui::MenuItem("High Scores")) {
 						modalStateMachine_.switchTo<scene::HighScore>();
 					}
-					if (ImGui::MenuItem("Preferences")) {
-						modalStateMachine_.switchTo<scene::Settings>();
-					}
+					ImGui::Separator();
 					if (ImGui::MenuItem("Quit")) {
 						if (insideGameRoom) {
 							scene::LeaveGameData data;
@@ -363,19 +416,23 @@ namespace app::ui {
 						}
 					}
 				});
-				menu("Current", [&]() {
-					if (ImGui::MenuItem(pauseMenuText_.c_str(), "P")) {
-						tetrisController_->pause();
+				menu("Settings", [&]() {
+					if (ImGui::MenuItem("Preferences...")) {
+						modalStateMachine_.switchTo<scene::Settings>();
 					}
-					if (ImGui::MenuItem("Restart", "F5")) {
-						tetrisController_->restartGame();
+					if (ImGui::MenuItem("Controls...")) {
+						modalStateMachine_.switchTo<scene::Controls>();
 					}
-				});
-				menu("Options", [&]() {
-					controlsPresenter_->drawMenu();
 				});
 				menu("Help", [&]() {
-					if (ImGui::MenuItem("About")) {
+					if (ImGui::MenuItem("How to Play...")) {
+						modalStateMachine_.switchTo<scene::HowToPlay>();
+					}
+					if (ImGui::MenuItem("Keyboard Shortcuts...")) {
+						modalStateMachine_.switchTo<scene::KeyboardShortcuts>();
+					}
+					ImGui::Separator();
+					if (ImGui::MenuItem("About...")) {
 						modalStateMachine_.switchTo<scene::About>();
 					}
 				});
@@ -409,6 +466,7 @@ namespace app::ui {
 				ImGui::PopContentStyle();
 			}
 		});
+		rememberSinglePlayerControls();
 	}
 
 	void TetrisWindow::imGuiEventUpdate(const SDL_Event& windowEvent) {
@@ -422,7 +480,7 @@ namespace app::ui {
 					case SDLK_F1:
 						if (!tetrisController_->isGameRoomSession()
 							&& modalStateMachine_.isCurrentScene<scene::EmptyScene>()) {
-							tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
+							startSinglePlayer();
 						}
 						break;
 					case SDLK_F5:
