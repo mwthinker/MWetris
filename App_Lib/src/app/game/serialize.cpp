@@ -27,6 +27,24 @@ namespace app::game {
 		const std::string SavedGameFile{"savedGame.mw"};
 		const std::string SavedHighScoreFile{"highScore.mw"};
 
+		bool loadCachedGame() {
+			if (gameLoaded) {
+				return true;
+			}
+
+			gameLoaded = true;
+			if (!std::filesystem::exists(std::filesystem::path{SavedGameFile})) {
+				spdlog::info("[Serialize] Game save file {} does not exist", SavedGameFile);
+				return false;
+			}
+
+			if (!loadFromFile(cachedGame, SavedGameFile)) {
+				spdlog::warn("[Serialize] Game failed to be loaded: {}", SavedGameFile);
+				return false;
+			}
+			return true;
+		}
+
 		template <tetris::BlockType type, tp::BlockType tpType, char chr>
 		consteval void staticAssertBlockType() {
 			static_assert(static_cast<char>(type) == static_cast<char>(tpType));
@@ -106,7 +124,7 @@ namespace app::game {
 	}
 
 	bool hasSavedGame() {
-		return cachedGame.last_played().seconds() != 0;
+		return loadCachedGame() && cachedGame.last_played().seconds() != 0;
 	}
 
 	void clearSavedGame() {
@@ -128,18 +146,8 @@ namespace app::game {
 	}
 
 	PlayerPtr loadGame(DevicePtr devicePtr, std::shared_ptr<ControlProfiles> controlProfiles) {
-		if (!gameLoaded) {
-			gameLoaded = true;
-			
-			if (!std::filesystem::exists(std::filesystem::path{SavedGameFile})) {
-				spdlog::info("[Serialize] Game save file {} does not exist", SavedGameFile);
-				return nullptr;
-			}
-
-			if (!loadFromFile(cachedGame, SavedGameFile)) {
-				spdlog::warn("[Serialize] Game failed to be loaded: {}");
-				return nullptr;
-			}
+		if (!loadCachedGame()) {
+			return nullptr;
 		}
 		if (cachedGame.has_player_board()) {
 			return createPlayer(devicePtr, std::move(controlProfiles), cachedGame.player_board());

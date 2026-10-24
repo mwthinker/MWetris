@@ -177,8 +177,7 @@ namespace app::ui {
 			tetrisController_->setFixTimestep(1.0 / getCurrentMonitorHz());
 		}, util::toSeconds(CheckRefreshRateInterval), std::numeric_limits<int>::max());
 
-		tetrisController_->createDefaultGame(deviceManager_->getDefaultDevice1());
-		tetrisController_->pause();
+		mainStateMachine_.switchTo<scene::GameLauncher>();
 
 		refreshSettings();
 		connections_ += Configuration::getInstance().settingsChanged.connect([this](const auto&, const auto&) {

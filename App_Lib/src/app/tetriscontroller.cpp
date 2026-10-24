@@ -123,6 +123,7 @@ namespace app {
 		if (network_->isInsideGameRoom()) {
 			network_->leaveGameRoom();
 		}
+		const bool resumeSavedGame = game::hasSavedGame();
 		game::PlayerPtr player = loadGame(device, controlProfiles_);
 		if (!player) {
 			game::DefaultPlayerData playerData{
@@ -131,16 +132,15 @@ namespace app {
 			};
 			tetris::TetrisBoard tetrisBoard{game::TetrisWidth, game::TetrisHeight, tetris::randomBlockType(), tetris::randomBlockType()};
 			player = createHumanPlayer(device, controlProfiles_, playerData, std::move(tetrisBoard));
-			tetrisGame_.setPause(true);
-		} else {
-			// Only restart game if is not a new game.
-			tetrisGame_.restart();
 		}
 		connections_ += player->playerBoardUpdate.connect([](const game::PlayerBoardEvent& playerBoardEvent) {
 			game::clearSavedGame();
 		});
 		gameRoomType_ = GameRoomType::GameSession;
 		createGame({player}, game::DefaultGameRules::Config{});
+		if (resumeSavedGame) {
+			tetrisGame_.setPause(true);
+		}
 		saveDefaultGame();
 	}
 
