@@ -1,4 +1,5 @@
 #include "imguiextra.h"
+#include "theme.h"
 
 #include <IconsFontAwesome6.h>
 
@@ -134,15 +135,11 @@ namespace ImGui {
 	}
 
 	bool LinkButton(const char* label) {
-		const ImVec4 linkColor{0.30f, 0.65f, 1.0f, 1.0f};
-		const ImVec4 linkHoverColor{0.50f, 0.78f, 1.0f, 1.0f};
-		const ImVec4 transparent{0.f, 0.f, 0.f, 0.f};
-
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.f);
-		ImGui::PushStyleColor(ImGuiCol_Text, linkColor);
-		ImGui::PushStyleColor(ImGuiCol_Button, transparent);
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, transparent);
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, transparent);
+		ImGui::PushStyleColor(ImGuiCol_Text, app::ui::theme::Link.toImU32());
+		ImGui::PushStyleColor(ImGuiCol_Button, sdl::color::Transparent.toImU32());
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, sdl::color::Transparent.toImU32());
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, sdl::color::Transparent.toImU32());
 		const bool result = ImGui::Button(label);
 		ImGui::PopStyleColor(4);
 		ImGui::PopStyleVar();
@@ -155,7 +152,7 @@ namespace ImGui {
 			ImGui::GetWindowDrawList()->AddLine(
 				{min.x + padding, max.y - ImGui::GetStyle().FramePadding.y},
 				{max.x - padding, max.y - ImGui::GetStyle().FramePadding.y},
-				ImGui::ColorConvertFloat4ToU32(linkHoverColor));
+				app::ui::theme::LinkHovered.toImU32());
 		}
 
 		return result;
@@ -205,18 +202,22 @@ namespace ImGui {
 
 	bool ConfirmationButton(const char* label, const ImVec2& size) {
 		PushButtonStyle();
-		ImGui::PushStyleColor(ImGuiCol_Button, sdl::color::Green);
+		ImGui::PushStyleColor(ImGuiCol_Button, app::ui::theme::Success.toImU32());
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, app::ui::theme::SuccessHovered.toImU32());
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, app::ui::theme::SuccessActive.toImU32());
 		bool result = ImGui::Button(label, size);
-		ImGui::PopStyleColor();
+		ImGui::PopStyleColor(3);
 		PopButtonStyle();
 		return result;
 	}
 
 	bool AbortButton(const char* label, const ImVec2& size) {
 		PushButtonStyle();
-		ImGui::PushStyleColor(ImGuiCol_Button, sdl::color::Red);
+		ImGui::PushStyleColor(ImGuiCol_Button, app::ui::theme::Danger.toImU32());
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, app::ui::theme::DangerHovered.toImU32());
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, app::ui::theme::DangerActive.toImU32());
 		bool result = ImGui::Button(label, size);
-		ImGui::PopStyleColor();
+		ImGui::PopStyleColor(3);
 		PopButtonStyle();
 		return result;
 	}

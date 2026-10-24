@@ -86,6 +86,7 @@ set(SOURCES_LIB
 	src/app/ui/networkdebugwindow.cpp
 	src/app/ui/networkdebugwindow.h
 	src/app/ui/subwindow.h
+	src/app/ui/theme.h
 	src/app/ui/tetriswindow.cpp
 	src/app/ui/tetriswindow.h
 

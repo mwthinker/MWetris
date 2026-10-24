@@ -33,10 +33,10 @@
 			"boxColor": "#ffffff"
 		},
 		"button": {
-			"focusColor": "#cc1a004d",
+			"focusColor": "#4a515bff",
 			"textColor": "#ffffffff",
-			"hoverColor": "#991a1a",
-			"pushColor": "#cc0000b3",
+			"hoverColor": "#3b4048ff",
+			"pushColor": "#4a515bff",
 			"backgroundColor": "#ffffff00",
 			"borderColor": "#8a8f98cc"
 		},
@@ -45,7 +45,7 @@
 			"focusColor": "#3b4048ff",
 			"backgroundColor": "#292d33ff",
 			"selectedTextColor": "#ffffff",
-			"selectedBackgroundColor": "#991a1a",
+			"selectedBackgroundColor": "#3b4048ff",
 			"borderColor": "#8a8f98cc",
 			"showDropDownColor": "#ffffff"
 		},

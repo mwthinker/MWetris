@@ -6,6 +6,7 @@
 #include "game/tetrisgame.h"
 #include "cnetwork/network.h"
 #include "ui/imguiextra.h"
+#include "ui/theme.h"
 #include "util/auxiliary.h"
 
 #include <sdl/color.h>
@@ -176,6 +177,7 @@ namespace app::ui::scene {
 			ImGui::TextUnformatted("Game Settings");
 			ImGui::PopFont();
 			int rulesIndex = std::holds_alternative<game::DefaultGameRules::Config>(gameRulesConfig_) ? 0 : 1;
+			ImGui::PushStyleColor(ImGuiCol_CheckMark, theme::Success.toImU32());
 			if (ImGui::RadioButton("Classic", &rulesIndex, 0)) {
 				gameRulesConfig_ = game::DefaultGameRules::Config{};
 			}
@@ -183,6 +185,7 @@ namespace app::ui::scene {
 			if (ImGui::RadioButton("Survival", &rulesIndex, 1)) {
 				gameRulesConfig_ = game::SurvivalGameRules::Config{};
 			}
+			ImGui::PopStyleColor();
 			ImGui::SecondaryText("Outlast the other players.");
 
 			if (networkLobby) {
@@ -248,7 +251,9 @@ namespace app::ui::scene {
 		}
 		ImGui::SetNextModalWindow(addPlayer_->getSize());
 		ImGui::PushContentStyle();
-		ImGui::PopupModal(PopUpId, nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar, [&]() {
+		ImGui::PopupModal(PopUpId, nullptr,
+			ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar
+				| ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse, [&]() {
 			auto pos = ImGui::GetCursorScreenPos();
 			const auto closeButtonLength = ImGui::GetFrameHeight();
 			const ImVec2 closeButtonSize{closeButtonLength, closeButtonLength};

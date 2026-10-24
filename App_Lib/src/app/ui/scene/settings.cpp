@@ -3,6 +3,7 @@
 #include "types.h"
 #include "ui/controlspresenter.h"
 #include "ui/imguiextra.h"
+#include "ui/theme.h"
 
 #include <IconsFontAwesome6.h>
 
@@ -418,10 +419,10 @@ namespace app::ui::scene {
 
 		auto validation = Configuration::getInstance().validateEditableSettings(draft_);
 		if (!error_.empty()) {
-			ImGui::TextColored({1.f, 0.35f, 0.35f, 1.f}, "%s", error_.c_str());
+			ImGui::TextColored(theme::ErrorText, "%s", error_.c_str());
 		}
 		if (!validation) {
-			ImGui::TextColored({1.f, 0.35f, 0.35f, 1.f}, "%s", validation.error().c_str());
+			ImGui::TextColored(theme::ErrorText, "%s", validation.error().c_str());
 		}
 		bool dirty = draft_ != committed_;
 		if (!restartReasons_.empty()) {

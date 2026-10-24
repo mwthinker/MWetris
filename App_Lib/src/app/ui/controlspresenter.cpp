@@ -1,6 +1,7 @@
 #include "controlspresenter.h"
 
 #include "imguiextra.h"
+#include "theme.h"
 
 #include "controlprofiles.h"
 #include "game/devicemanager.h"
@@ -306,7 +307,7 @@ namespace app::ui {
 			}
 
 			if (!dialog.error.empty()) {
-				ImGui::TextColored({1.f, 0.35f, 0.35f, 1.f}, "%s", dialog.error.c_str());
+				ImGui::TextColored(theme::ErrorText, "%s", dialog.error.c_str());
 			}
 			ImGui::EndModalBody();
 			const float actionWidth = 180.f + ImGui::GetStyle().ItemSpacing.x;
@@ -366,7 +367,7 @@ namespace app::ui {
 		}
 
 		if (!dialog.error.empty()) {
-			ImGui::TextColored({1.f, 0.35f, 0.35f, 1.f}, "%s", dialog.error.c_str());
+			ImGui::TextColored(theme::ErrorText, "%s", dialog.error.c_str());
 		}
 
 		const char* confirmationLabel = duplicate ? "Create" : "Save";
@@ -490,7 +491,7 @@ namespace app::ui {
 		}, 130.f * scale);
 
 		if (!dialog.error.empty()) {
-			ImGui::TextColored({1.f, 0.35f, 0.35f, 1.f}, "%s", dialog.error.c_str());
+			ImGui::TextColored(theme::ErrorText, "%s", dialog.error.c_str());
 		}
 		ImGui::EndModalBody();
 		if (ImGui::MediumButton("Start over", {110.f * scale, 0.f})) {

@@ -38,7 +38,7 @@ namespace app::ui {
 
 	void NetworkDebugWindow::imGuiUpdate(const sdl::DeltaTime& deltaTime) {
 		ImGui::SetNextWindowSize({650, 650});
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, sdl::color::html::Black);
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, sdl::color::Black.toImU32());
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {10, 10});
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 10.f);
 

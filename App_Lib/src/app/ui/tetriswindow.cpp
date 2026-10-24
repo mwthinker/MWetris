@@ -3,6 +3,7 @@
 #include "imguiextra.h"
 #include "controlspresenter.h"
 #include "configuration.h"
+#include "theme.h"
 
 #include "scene/about.h"
 #include "scene/creategameroom.h"
@@ -191,6 +192,11 @@ namespace app::ui {
 		style.Colors[ImGuiCol_Button] = configuration.getButtonBackgroundColor();
 		style.Colors[ImGuiCol_ButtonHovered] = configuration.getButtonHoverColor();
 		style.Colors[ImGuiCol_ButtonActive] = configuration.getButtonFocusColor();
+		style.Colors[ImGuiCol_Header] = configuration.getButtonBackgroundColor();
+		style.Colors[ImGuiCol_HeaderHovered] = configuration.getButtonHoverColor();
+		auto menuActiveColor = static_cast<ImVec4>(configuration.getButtonHoverColor());
+		menuActiveColor.w *= 0.45f;
+		style.Colors[ImGuiCol_HeaderActive] = menuActiveColor;
 		style.Colors[ImGuiCol_FrameBg] = configuration.getComboBoxBackgroundColor();
 		style.Colors[ImGuiCol_FrameBgHovered] = configuration.getComboBoxFocusColor();
 		style.Colors[ImGuiCol_FrameBgActive] = configuration.getComboBoxFocusColor();
@@ -304,6 +310,8 @@ namespace app::ui {
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 10.f);
 			ImGui::MenuBar([&]() {
 				auto menu = [&](const char* label, std::invocable auto&& content) {
+					ImGui::PushStyleColor(ImGuiCol_Border,
+						Configuration::getInstance().getButtonHoverColor().toImU32());
 					ImGui::PushFont(Configuration::getInstance().getImGuiMediumFont(), 0.f);
 					bool open = ImGui::BeginMenu(label);
 					ImGui::PopFont();
@@ -311,6 +319,7 @@ namespace app::ui {
 						content();
 						ImGui::EndMenu();
 					}
+					ImGui::PopStyleColor();
 				};
 				menu("Game", [&]() {
 					bool insideGameRoom = tetrisController_->isGameRoomSession();
@@ -370,7 +379,8 @@ namespace app::ui {
 						modalStateMachine_.switchTo<scene::About>();
 					}
 				});
-				ImGui::PushStyleColor(ImGuiCol_Text, tetrisController_->isConnectedToServer() ? sdl::color::Green : sdl::color::Red);
+				ImGui::PushStyleColor(ImGuiCol_Text,
+					tetrisController_->isConnectedToServer() ? theme::Success.toImU32() : theme::Danger.toImU32());
 				ImGui::Text(ICON_FA_GLOBE);
 				ImGui::PopStyleColor();
 				if (ImGui::IsItemHovered()) {
