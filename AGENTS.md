@@ -8,6 +8,7 @@
 
 ## Commands
 - Do not rebuild for small changes unless explicitly requested.
+- Store project-specific skills under `.agents/skills`
 - CI debug configure: `cmake --preset=unix -B build_debug -DTetrisEngine_Test=1 -DUSE_WIX_GENERATOR=1 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=1 -DCODE_COVERAGE=1`
 - CI debug build: `cmake --build build_debug --config Debug`
 - CI debug tests: `ctest --rerun-failed --output-on-failure --test-dir build_debug/TetrisEngine/TetrisEngine_Test/` then `ctest --rerun-failed --output-on-failure --test-dir build_debug/App_Test/`

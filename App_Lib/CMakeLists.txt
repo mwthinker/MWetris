@@ -107,6 +107,7 @@ set(SOURCES_LIB
 	src/app/configuration.h
 	src/app/timerhandler.cpp
 	src/app/timerhandler.h
+	src/app/ringbuffer.h
 	src/app/types.h
 
 	src/app/textureview.h

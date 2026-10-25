@@ -5,7 +5,7 @@
 
 namespace network {
 	
-	template<class>
+	template<typename>
 	inline constexpr bool always_false_v = false;
 
 	constexpr double toSeconds(const auto& duration) {

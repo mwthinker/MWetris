@@ -19,6 +19,7 @@ set(SOURCES_TEST
 	src/game/serializetest.cpp
 	src/game/tetrisboardcontrollertest.cpp
 	src/mwetristest.cpp
+	src/ringbuffertest.cpp
 	src/network/gameroomtest.cpp
 	src/network/networktest.cpp
 	src/network/protobufmessagetest.cpp
