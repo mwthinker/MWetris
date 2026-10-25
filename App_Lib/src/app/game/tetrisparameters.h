@@ -16,6 +16,10 @@ namespace app::game {
 	constexpr int RowsToLevelUp = 10;
 	constexpr int CountDownTime = 3;
 
+	constexpr int levelForClearedRows(int clearedRows) {
+		return clearedRows / RowsToLevelUp;
+	}
+
 }
 
 #endif

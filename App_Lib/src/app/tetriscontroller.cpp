@@ -127,7 +127,7 @@ namespace app {
 		game::PlayerPtr player = loadGame(device, controlProfiles_);
 		if (!player) {
 			game::DefaultPlayerData playerData{
-				.level = 1,
+				.level = 0,
 				.points = 0
 			};
 			tetris::TetrisBoard tetrisBoard{game::TetrisWidth, game::TetrisHeight, tetris::randomBlockType(), tetris::randomBlockType()};

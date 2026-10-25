@@ -111,13 +111,14 @@ namespace app::game {
 		
 		PlayerPtr createPlayer(DevicePtr device, std::shared_ptr<ControlProfiles> controlProfiles, const tp::PlayerBoard& tpPlayer) {
 			tetris::TetrisBoard tetrisBoard = toTetrisBoard(tpPlayer);
+			const int level = levelForClearedRows(tpPlayer.cleared_rows());
 			DefaultPlayerData playerData{
-				.level = tpPlayer.level(),
+				.level = level,
 				.points = tpPlayer.points()
 			};
 			auto player = createHumanPlayer(device, std::move(controlProfiles), playerData, std::move(tetrisBoard));
 			player->setClearedRows(tpPlayer.cleared_rows());
-			player->setGravity(calculateGravity(tpPlayer.level()));
+			player->setGravity(calculateGravity(level));
 			return player;
 		}
 

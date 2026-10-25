@@ -9,15 +9,30 @@
 
 #include <spdlog/spdlog.h>
 
+#include <algorithm>
+#include <array>
 #include <vector>
 #include <variant>
 
 namespace app::game {
 
-	constexpr int LevelUpNbr = 10;
+	inline int calculateLineClearPoints(int rows, int level) {
+		static constexpr std::array LineClearPoints{0, 40, 100, 300, 1200};
+		return LineClearPoints.at(rows) * (level + 1);
+	}
 
 	inline double calculateGravity(int level) {
-		return 1 + level * 0.5f;
+		static constexpr std::array GravityFrames{
+			48, 43, 38, 33, 28, 23, 18, 13, 8, 6,
+			5, 5, 5,
+			4, 4, 4,
+			3, 3, 3,
+			2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+			1
+		};
+		constexpr double FramesPerSecond{60.0988};
+		const int gravityLevel{std::clamp(level, 0, static_cast<int>(GravityFrames.size()) - 1)};
+		return FramesPerSecond / GravityFrames.at(gravityLevel);
 	}
 
 	class DefaultGameRules : public GameRules {
@@ -29,7 +44,7 @@ namespace app::game {
 			players_.clear();
 			for (auto& player : players) {
 				auto& info = players_.emplace_back(player, DefaultPlayerData{
-					.level = 1,
+					.level = 0,
 					.points = 0,
 					.position = 0
 				});
@@ -52,7 +67,7 @@ namespace app::game {
 		void restart() override {
 			for (auto& info : players_) {
 				info.data = DefaultPlayerData{
-					.level = 1,
+					.level = 0,
 					.points = 0,
 					.position = 0
 				};
@@ -81,8 +96,9 @@ namespace app::game {
 		void rowsRemove(const PlayerPtr& fromPlayer, int nbr, Info& info) {
 			if (info.player->isLocal()) {
 				spdlog::info("[DefaultGameRules] Game event player: {}", static_cast<char>(info.player->getNextBlockType()));
-				info.data.level = info.player->getClearedRows() / LevelUpNbr + 1;
-				info.data.points += info.data.level * nbr * nbr;
+				const int clearedRows = info.player->getClearedRows() + nbr;
+				info.data.points += calculateLineClearPoints(nbr, info.data.level);
+				info.data.level = levelForClearedRows(clearedRows);
 
 				info.player->updatePlayerData(info.data);
 				info.player->setGravity(calculateGravity(info.data.level));

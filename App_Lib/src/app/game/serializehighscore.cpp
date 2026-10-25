@@ -1,4 +1,5 @@
 #include "serializehighscore.h"
+#include "tetrisparameters.h"
 #include "util/protofile.h"
 
 #include <protocol/high_score.pb.h>
@@ -29,7 +30,7 @@ namespace app::game {
 					.name = result.name(),
 					.points = result.points(),
 					.rows = result.rows(),
-					.level = result.level(),
+					.level = levelForClearedRows(result.rows()),
 					.lastPlayed = ymd
 				});
 			}
