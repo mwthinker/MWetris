@@ -173,4 +173,61 @@ namespace app::game {
 		EXPECT_EQ(gravity, (std::array{ExpectedGravity, ExpectedGravity}));
 	}
 
+	TEST(DefaultGameRulesTest, startsAtConfiguredLevel) {
+		// Given
+		auto player = createPlayerClearingRows(0);
+		DefaultGameRules rules{{.startLevel = 9}};
+
+		// When
+		rules.createGame({player});
+
+		// Then
+		const auto data = std::get<DefaultPlayerData>(player->getPlayerData());
+		EXPECT_EQ(data.level, 9);
+	}
+
+	TEST(DefaultGameRulesTest, restartReturnsToConfiguredLevel) {
+		// Given
+		auto player = createPlayerClearingRows(0);
+		DefaultGameRules rules{{.startLevel = 12}};
+		rules.createGame({player});
+
+		// When
+		rules.restart();
+
+		// Then
+		const auto data = std::get<DefaultPlayerData>(player->getPlayerData());
+		EXPECT_EQ(data.level, 12);
+	}
+
+	TEST(DefaultGameRulesTest, appliesConfiguredFirstLevelTransition) {
+		// Given
+		constexpr int StartLevel{9};
+
+		// When
+		const std::array levels{
+			levelForClearedRows(99, StartLevel),
+			levelForClearedRows(100, StartLevel),
+			levelForClearedRows(110, StartLevel)
+		};
+
+		// Then
+		EXPECT_EQ(levels, (std::array{9, 10, 11}));
+	}
+
+	TEST(DefaultGameRulesTest, scoresBoundaryClearAtConfiguredStartingLevel) {
+		// Given
+		auto player = createPlayerClearingRows(1, 99);
+		DefaultGameRules rules{{.startLevel = 9}};
+		rules.createGame({player});
+
+		// When
+		player->updateMove(tetris::Move::DownGravity);
+
+		// Then
+		const auto data = std::get<DefaultPlayerData>(player->getPlayerData());
+		EXPECT_EQ(data.points, 400);
+		EXPECT_EQ(data.level, 10);
+	}
+
 }

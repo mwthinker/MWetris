@@ -1,5 +1,6 @@
 #include "configuration.h"
 
+#include "game/tetrisparameters.h"
 #include "util/uuid.h"
 
 #include <sdl/imageatlas.h>
@@ -1705,6 +1706,9 @@ namespace app {
 				controls.profileId = ProfileId{std::move(parsed)};
 			}
 		}
+		if (auto startLevel = value->find("startLevel"); startLevel != value->end() && startLevel->is_number_integer()) {
+			controls.startLevel = game::clampStartLevel(startLevel->get<int>());
+		}
 		return controls;
 	}
 
@@ -1718,6 +1722,7 @@ namespace app {
 			candidate["lastSinglePlayerControls"] = {
 				{"deviceGuid", guid},
 				{"profileId", controls.profileId.value},
+				{"startLevel", game::clampStartLevel(controls.startLevel)},
 			};
 			auto result = replaceJsonFile(impl_->jsonPath, candidate);
 			if (!result) {

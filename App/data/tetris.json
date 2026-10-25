@@ -107,7 +107,8 @@
 	"inputProfiles": [],
 	"lastSinglePlayerControls": {
 		"deviceGuid": "Keyboard 1",
-		"profileId": "balanced"
+		"profileId": "balanced",
+		"startLevel": 0
 	},
 	"devices": [
 		{

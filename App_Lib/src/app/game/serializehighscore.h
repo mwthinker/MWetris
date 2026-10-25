@@ -12,6 +12,7 @@ namespace app::game {
 		int points = 0;
 		int rows = 0;
 		int level = 0;
+		int startLevel = 0;
 		std::chrono::year_month_day lastPlayed;
 	};
 
@@ -21,7 +22,7 @@ namespace app::game {
 
 	std::vector<HighScoreResult> loadHighScore();
 
-	void saveHighScore(const std::string& name, int points, int rows, int level);
+	void saveHighScore(const std::string& name, int points, int rows, int level, int startLevel = 0);
 
 }
 

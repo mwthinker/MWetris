@@ -171,4 +171,31 @@ namespace network {
 	TEST_F(GameRoomTest, receiveRemoveClient_thenSendRemoveClient) {
 	}
 
+	TEST_F(GameRoomTest, broadcastsConfiguredStartingLevelWhenGameStarts) {
+		// Given
+		auto createGameRoom = wrapperFromClient.mutable_create_game_room();
+		createGameRoom->set_name("name");
+		gameRoom_->receiveMessage(mockServer_, ClientId{"client uuid 0"}, wrapperFromClient);
+		wrapperFromClient.Clear();
+		auto startGame = wrapperFromClient.mutable_start_game();
+		startGame->set_ready(true);
+		startGame->mutable_game_rules()->mutable_default_game_rules()->set_start_level(12);
+		tp_s2c::Wrapper sentWrapper;
+		EXPECT_CALL(mockServer_, sendToClient(ClientId{"client uuid 0"}, _)).WillOnce(
+			[&](const ClientId&, const google::protobuf::MessageLite& message) {
+				sentWrapper = dynamic_cast<const tp_s2c::Wrapper&>(message);
+			});
+
+		// When
+		gameRoom_->receiveMessage(mockServer_, ClientId{"client uuid 0"}, wrapperFromClient);
+
+		// Then
+		ASSERT_TRUE(sentWrapper.has_create_game());
+		ASSERT_TRUE(sentWrapper.create_game().game_rules().has_default_game_rules());
+		const auto& rules = sentWrapper.create_game().game_rules().default_game_rules();
+		EXPECT_EQ(rules.start_level(), 12);
+		EXPECT_EQ(rules.lines_per_level(), 10);
+		EXPECT_EQ(rules.max_level(), 40);
+	}
+
 }

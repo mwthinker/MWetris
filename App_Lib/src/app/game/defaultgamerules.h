@@ -37,17 +37,40 @@ namespace app::game {
 
 	class DefaultGameRules : public GameRules {
 	public:
-		struct Config {};
+		struct Config {
+			int startLevel = 0;
+			bool resume = false;
+
+			bool operator==(const Config&) const = default;
+		};
+
+		explicit DefaultGameRules(Config config = {})
+			: config_{config} {
+			config_.startLevel = clampStartLevel(config_.startLevel);
+		}
+
+		void setConfig(const Config& config) {
+			config_ = config;
+			config_.startLevel = clampStartLevel(config_.startLevel);
+			config_.resume = false;
+		}
 
 		void createGame(const std::vector<PlayerPtr>& players) override {
 			connections_.clear();
 			players_.clear();
 			for (auto& player : players) {
-				auto& info = players_.emplace_back(player, DefaultPlayerData{
-					.level = 0,
+				DefaultPlayerData playerData{
+					.level = config_.startLevel,
 					.points = 0,
-					.position = 0
-				});
+					.position = 0,
+					.startLevel = config_.startLevel
+				};
+				if (config_.resume) {
+					if (const auto* savedData = std::get_if<DefaultPlayerData>(&player->getPlayerData())) {
+						playerData = *savedData;
+					}
+				}
+				auto& info = players_.emplace_back(player, playerData);
 				info.player->updatePlayerData(info.data);
 				info.player->setGravity(calculateGravity(info.data.level));
 
@@ -62,14 +85,16 @@ namespace app::game {
 					}
 				});
 			}
+			config_.resume = false;
 		}
 
 		void restart() override {
 			for (auto& info : players_) {
 				info.data = DefaultPlayerData{
-					.level = 0,
+					.level = config_.startLevel,
 					.points = 0,
-					.position = 0
+					.position = 0,
+					.startLevel = config_.startLevel
 				};
 				info.player->updatePlayerData(info.data);
 				info.player->setGravity(calculateGravity(info.data.level));
@@ -98,7 +123,7 @@ namespace app::game {
 				spdlog::info("[DefaultGameRules] Game event player: {}", static_cast<char>(info.player->getNextBlockType()));
 				const int clearedRows = info.player->getClearedRows() + nbr;
 				info.data.points += calculateLineClearPoints(nbr, info.data.level);
-				info.data.level = levelForClearedRows(clearedRows);
+				info.data.level = levelForClearedRows(clearedRows, config_.startLevel);
 
 				info.player->updatePlayerData(info.data);
 				info.player->setGravity(calculateGravity(info.data.level));
@@ -131,6 +156,7 @@ namespace app::game {
 
 		std::vector<Info> players_;
 		mw::signals::ScopedConnections connections_;
+		Config config_;
 	};
 
 	class SurvivalGameRules : public GameRules {

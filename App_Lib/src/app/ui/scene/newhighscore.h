@@ -16,6 +16,7 @@ namespace app::ui::scene {
 		int points;
 		int clearedRows;
 		int level;
+		int startLevel;
 	};
 
 	class NewHighScore : public Scene {

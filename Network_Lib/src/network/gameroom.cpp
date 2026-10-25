@@ -8,6 +8,8 @@
 
 #include <spdlog/spdlog.h>
 
+#include <algorithm>
+
 namespace network {
 
 	namespace {
@@ -242,10 +244,20 @@ namespace network {
 	}
 
 	void GameRoom::handleStartGame(Server& server, const ClientId& clientId, const tp_c2s::StartGame& startGame) {
+		constexpr int MaxLevel{40};
+		constexpr int LinesPerLevel{10};
 		auto createGame = wrapperToClient_.mutable_create_game();
 		createGame->set_width(10);
 		createGame->set_height(24);
 		gameRules_.CopyFrom(startGame.game_rules());
+		int startLevel{0};
+		if (gameRules_.has_default_game_rules()) {
+			auto* rules = gameRules_.mutable_default_game_rules();
+			startLevel = std::clamp(rules->start_level(), 0, MaxLevel);
+			rules->set_start_level(startLevel);
+			rules->set_lines_per_level(LinesPerLevel);
+			rules->set_max_level(MaxLevel);
+		}
 		createGame->mutable_game_rules()->CopyFrom(gameRules_);
 
 		auto current = tetris::randomBlockType();
@@ -257,7 +269,7 @@ namespace network {
 				fromCppToProto(slot.clientId, *tpRemotePlayer->mutable_client_id());
 				fromCppToProto(slot.playerId, *tpRemotePlayer->mutable_player_id());
 				tpRemotePlayer->set_name(slot.name);
-				tpRemotePlayer->set_level(0);
+				tpRemotePlayer->set_level(startLevel);
 				tpRemotePlayer->set_points(0);
 				tpRemotePlayer->set_ai(slot.ai);
 				tpRemotePlayer->set_current(static_cast<tp::BlockType>(current));

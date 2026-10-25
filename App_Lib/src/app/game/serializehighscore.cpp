@@ -26,11 +26,13 @@ namespace app::game {
 			for (const auto& result : repeatedField) {
 				auto timePoint = std::chrono::system_clock::from_time_t(result.last_played().seconds());
 				auto ymd = std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(timePoint)};
+				const int startLevel{clampStartLevel(result.start_level())};
 				results.push_back(HighScoreResult{
 					.name = result.name(),
 					.points = result.points(),
 					.rows = result.rows(),
-					.level = levelForClearedRows(result.rows()),
+					.level = levelForClearedRows(result.rows(), startLevel),
+					.startLevel = startLevel,
 					.lastPlayed = ymd
 				});
 			}
@@ -79,7 +81,7 @@ namespace app::game {
 		return getIndexForNewResult(results, points) < NbrHighScoreResults;
 	}
 
-	void saveHighScore(const std::string& name, int points, int rows, int level) {
+	void saveHighScore(const std::string& name, int points, int rows, int level, int startLevel) {
 		tp::HighScore highScore;
 		loadFromFile(highScore, SavedHighScoreFile);
 
@@ -88,6 +90,7 @@ namespace app::game {
 		result->set_points(points);
 		result->set_rows(rows);
 		result->set_level(level);
+		result->set_start_level(clampStartLevel(startLevel));
 		result->mutable_last_played()->CopyFrom(google::protobuf::util::TimeUtil::GetCurrentTime());
 
 		auto highScoreResults = toHighScoreResults(highScore.results());

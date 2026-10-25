@@ -90,7 +90,9 @@ namespace app {
 
 		bool isNetworkGame() const;
 
-		void createDefaultGame(game::DevicePtr device, const ProfileId& profileId);
+		void createDefaultGame(game::DevicePtr device, const ProfileId& profileId, int startLevel);
+		void setDefaultStartLevel(int startLevel);
+		int getDefaultStartLevel() const;
 		void createLocalGameRoom();
 		void createNetworkGameRoom(const std::string& name, bool isPublic);
 

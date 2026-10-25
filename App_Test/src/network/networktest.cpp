@@ -345,6 +345,7 @@ namespace app::cnetwork {
 		auto createGame = wrapperFromServer.mutable_create_game();
 		createGame->set_width(10);
 		createGame->set_height(20);
+		createGame->mutable_game_rules()->mutable_default_game_rules()->set_start_level(12);
 		addCreateGamePlayer(*createGame, network::ClientId{"client id 0"}, "name 0", true);
 		addCreateGamePlayer(*createGame, network::ClientId{"client id 1"}, "name 1", true);
 		expectCallClientReceive(wrapperFromServer);
@@ -365,9 +366,32 @@ namespace app::cnetwork {
 		if (actualCreateGameEvent.players.size() == 2) {
 			EXPECT_EQ(actualCreateGameEvent.players[0]->isLocal(), true);
 			EXPECT_EQ(actualCreateGameEvent.players[1]->isRemote(), true);
+			EXPECT_EQ(std::get<game::DefaultPlayerData>(actualCreateGameEvent.players[0]->getPlayerData()).startLevel, 12);
+			EXPECT_EQ(std::get<game::DefaultPlayerData>(actualCreateGameEvent.players[1]->getPlayerData()).startLevel, 12);
 		} else {
 			FAIL() << "actualCreateGameEvent.players.size() is not 2";
 		}
+		const auto* config = std::get_if<game::DefaultGameRules::Config>(&actualCreateGameEvent.gameRulesConfig);
+		ASSERT_NE(config, nullptr);
+		EXPECT_EQ(config->startLevel, 12);
+	}
+
+	TEST_F(NetworkTest, sendsConfiguredStartingLevelWhenStartingGame) {
+		// Given
+		mockReceiveGameRoomJoined(network::GameRoomId{"server id"}, network::ClientId{"client id 0"});
+		pollOne();
+		tp_c2s::Wrapper sentWrapper;
+		EXPECT_CALL(*mockClient_, send(_)).WillOnce([&](network::ProtobufMessage&& message) {
+			message.parseBodyInto(sentWrapper);
+		});
+
+		// When
+		network_->startGame(game::DefaultGameRules::Config{.startLevel = 12});
+
+		// Then
+		ASSERT_TRUE(sentWrapper.has_start_game());
+		ASSERT_TRUE(sentWrapper.start_game().game_rules().has_default_game_rules());
+		EXPECT_EQ(sentWrapper.start_game().game_rules().default_game_rules().start_level(), 12);
 	}
 
 }

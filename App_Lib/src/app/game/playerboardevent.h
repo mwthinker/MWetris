@@ -12,6 +12,7 @@ namespace app::game {
 		int level;
 		int points;
 		int position;
+		int startLevel;
 	};
 
 	struct SurvivalPlayerData {

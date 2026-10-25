@@ -26,7 +26,9 @@ namespace app::cnetwork {
 			game::GameRulesConfig gameRoomConfig;
 			if (createGame.has_game_rules()) {
 				if (createGame.game_rules().has_default_game_rules()) {
-					gameRoomConfig = game::DefaultGameRules::Config{};
+					gameRoomConfig = game::DefaultGameRules::Config{
+						.startLevel = game::clampStartLevel(createGame.game_rules().default_game_rules().start_level())
+					};
 				} else if (createGame.game_rules().has_survival_game_rules()) {
 					gameRoomConfig = game::SurvivalGameRules::Config{};
 				}
@@ -39,12 +41,12 @@ namespace app::cnetwork {
 				using T = std::decay_t<decltype(config)>;
 				if constexpr (std::is_same_v<T, game::DefaultGameRules::Config>) {
 					tpGameRules.mutable_default_game_rules()->set_lines_per_level(10);
-					tpGameRules.mutable_default_game_rules()->set_start_level(1);
-					tpGameRules.mutable_default_game_rules()->set_max_level(10);
+					tpGameRules.mutable_default_game_rules()->set_start_level(game::clampStartLevel(config.startLevel));
+					tpGameRules.mutable_default_game_rules()->set_max_level(game::TetrisMaxLevel);
 				} else if constexpr (std::is_same_v<T, game::SurvivalGameRules::Config>) {
 					tpGameRules.mutable_survival_game_rules()->set_lines_per_level(10);
-					tpGameRules.mutable_survival_game_rules()->set_start_level(1);
-					tpGameRules.mutable_survival_game_rules()->set_max_level(10);
+					tpGameRules.mutable_survival_game_rules()->set_start_level(0);
+					tpGameRules.mutable_survival_game_rules()->set_max_level(game::TetrisMaxLevel);
 				} else {
 					static_assert(util::always_false_v<T>, "non-exhaustive visitor!");
 				}
@@ -459,14 +461,15 @@ namespace app::cnetwork {
 		}
 	}
 
-	void Network::handleCreateGame(int width, int height, const tp_s2c::CreateGame_Player& tpPlayer, const NetworkSlot& networkSlot) {
+	void Network::handleCreateGame(int width, int height, int startLevel, const tp_s2c::CreateGame_Player& tpPlayer, const NetworkSlot& networkSlot) {
 		auto current = static_cast<tetris::BlockType>(tpPlayer.current());
 		auto next = static_cast<tetris::BlockType>(tpPlayer.next());
 
 		tetris::TetrisBoard tetrisBoard{width, height, current, next};
 		game::DefaultPlayerData playerData{
 			.level = tpPlayer.level(),
-			.points = tpPlayer.points()
+			.points = tpPlayer.points(),
+			.startLevel = game::clampStartLevel(startLevel)
 		};
 		NetworkPlayer networkPlayer;
 		if (auto human = std::get_if<game::Human>(&networkSlot.playerSlot); human) {
@@ -513,7 +516,11 @@ namespace app::cnetwork {
 		players_.clear();
 		fillSlotsWithDevicesAndAis();
 
-		const auto& tpPlayers = createGame.players();
+		const auto gameRulesConfig{createGameRulesConfig(createGame)};
+		int startLevel{0};
+		if (const auto* config = std::get_if<game::DefaultGameRules::Config>(&gameRulesConfig)) {
+			startLevel = config->startLevel;
+		}
 
 		int index = 0;
 		for (const auto& tpPlayer : createGame.players()) {
@@ -521,16 +528,8 @@ namespace app::cnetwork {
 				// TODO! Handle error!
 				break;
 			}
-			handleCreateGame(createGame.width(), createGame.height(), tpPlayer, networkSlots_[index]);
+			handleCreateGame(createGame.width(), createGame.height(), startLevel, tpPlayer, networkSlots_[index]);
 			++index;
-		}
-		game::GameRoomConfigEvent gameRoomConfigEvent;
-		if (createGame.has_game_rules()) {
-			if (createGame.game_rules().has_default_game_rules()) {
-				gameRoomConfigEvent.gameRulesConfig = game::DefaultGameRules::Config{};
-			} else if (createGame.game_rules().has_survival_game_rules()) {
-				gameRoomConfigEvent.gameRulesConfig = game::SurvivalGameRules::Config{};
-			}
 		}
 		std::vector<game::PlayerPtr> players;
 		for (auto& player : players_) {
@@ -538,7 +537,7 @@ namespace app::cnetwork {
 		}
 		networkEvent(CreateGameEvent{
 			.players = std::move(players),
-			.gameRulesConfig = createGameRulesConfig(createGame)
+			.gameRulesConfig = gameRulesConfig
 		});
 	}
 

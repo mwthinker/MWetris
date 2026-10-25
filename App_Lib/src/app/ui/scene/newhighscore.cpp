@@ -44,7 +44,7 @@ namespace app::ui::scene {
 	}
 
 	void NewHighScore::save() {
-		game::saveHighScore(data_.name, data_.points, data_.clearedRows, data_.level);
+		game::saveHighScore(data_.name, data_.points, data_.clearedRows, data_.level, data_.startLevel);
 		data_ = {};
 		closeFunction_();
 	}

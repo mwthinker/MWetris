@@ -150,6 +150,7 @@ namespace app {
 		struct SinglePlayerControls {
 			std::string deviceGuid = "Keyboard 1";
 			ProfileId profileId = ControlProfiles::BalancedProfileId;
+			int startLevel = 0;
 
 			bool operator==(const SinglePlayerControls&) const = default;
 		};

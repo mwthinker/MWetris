@@ -230,7 +230,8 @@ namespace app::ui {
 		if (!controlProfiles_->getProfile(profileId)) {
 			profileId = controlProfiles_->getAssignedProfileId(device->getGuid());
 		}
-		tetrisController_->createDefaultGame(std::move(device), profileId);
+		tetrisController_->createDefaultGame(std::move(device), profileId, singlePlayerControls_.startLevel);
+		singlePlayerControls_.startLevel = tetrisController_->getDefaultStartLevel();
 		rememberSinglePlayerControls();
 	}
 
@@ -242,6 +243,7 @@ namespace app::ui {
 		Configuration::SinglePlayerControls controls{
 			.deviceGuid = player->getDevice()->getGuid(),
 			.profileId = *player->getProfileId(),
+			.startLevel = singlePlayerControls_.startLevel,
 		};
 		if (controls == singlePlayerControls_) {
 			return;
@@ -267,18 +269,19 @@ namespace app::ui {
 	}
 
 	void TetrisWindow::onTetrisEvent(const game::GameOver& gameOver) {
-		game::DefaultPlayerData data{};
-		if (const auto playerData{std::get_if<game::DefaultPlayerData>(&gameOver.player->getPlayerData())}; playerData) {
-			data = *playerData;
+		game::DefaultPlayerData playerData{};
+		if (const auto data{std::get_if<game::DefaultPlayerData>(&gameOver.player->getPlayerData())}; data) {
+			playerData = *data;
 		}
 
-		if (const auto& player = gameOver.player;  tetrisController_->isDefaultGame() && game::isNewHighScore(data.points)) {
-			scene::NewHighScoreData data;
-			data.name = "Name"; // TODO! Get name from player
-			data.points = data.points;
-			data.clearedRows = player->getClearedRows();
-			data.level = data.level;
-			modalStateMachine_.switchTo<scene::NewHighScore>(data);
+		if (const auto& player = gameOver.player;  tetrisController_->isDefaultGame() && game::isNewHighScore(playerData.points)) {
+			scene::NewHighScoreData highScoreData;
+			highScoreData.name = "Name"; // TODO! Get name from player
+			highScoreData.points = playerData.points;
+			highScoreData.clearedRows = player->getClearedRows();
+			highScoreData.level = playerData.level;
+			highScoreData.startLevel = playerData.startLevel;
+			modalStateMachine_.switchTo<scene::NewHighScore>(highScoreData);
 		}
 	}
 
@@ -389,6 +392,23 @@ namespace app::ui {
 					}
 					ImGui::EndDisabled();
 					ImGui::EndDisabled();
+					if (ImGui::BeginMenu("Single Player Starting Level")) {
+						int startLevel{singlePlayerControls_.startLevel};
+						ImGui::SetNextItemWidth(180.f);
+						if (ImGui::SliderInt("##SinglePlayerStartLevel", &startLevel, 0, game::TetrisMaxLevel, "Level %d")) {
+							singlePlayerControls_.startLevel = game::clampStartLevel(startLevel);
+						}
+						if (ImGui::IsItemDeactivatedAfterEdit()) {
+							if (tetrisController_->isDefaultGame()) {
+								tetrisController_->setDefaultStartLevel(singlePlayerControls_.startLevel);
+							}
+							if (auto result = Configuration::getInstance().persistLastSinglePlayerControls(singlePlayerControls_); !result) {
+								spdlog::warn("Could not remember the single-player starting level: {}", result.error());
+							}
+						}
+						ImGui::TextDisabled("Applies to the next new game or restart.");
+						ImGui::EndMenu();
+					}
 					ImGui::Separator();
 					ImGui::BeginDisabled(!insideGameRoom);
 					if (ImGui::MenuItem(pauseMenuText_.c_str(), "P")) {

@@ -93,7 +93,7 @@ namespace app::cnetwork {
 
 		void handleConnections(const tp_s2c::Connections& connections);
 
-		void handleCreateGame(int width, int height, const tp_s2c::CreateGame_Player& tpPlayer, const NetworkSlot& networkSlot);
+		void handleCreateGame(int width, int height, int startLevel, const tp_s2c::CreateGame_Player& tpPlayer, const NetworkSlot& networkSlot);
 
 		void handleCreateGame(const tp_s2c::CreateGame& createGame);
 

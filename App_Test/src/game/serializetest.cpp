@@ -86,6 +86,27 @@ namespace app::game {
 		EXPECT_EQ(std::get<DefaultPlayerData>(roundTrippedPlayer->getPlayerData()).level, 2);
 	}
 
+	TEST_F(SerilizeTest, restoresStartingLevelFromSavedGame) {
+		// Given
+		auto profiles = std::make_shared<ControlProfiles>();
+		DeviceManager devices;
+		auto savedPlayer = createHumanPlayer(
+			devices.getDefaultDevice1(),
+			profiles,
+			DefaultPlayerData{.level = 9, .points = 1234, .startLevel = 9});
+		savedPlayer->setClearedRows(50);
+		saveGame(*savedPlayer);
+
+		// When
+		auto loadedPlayer = loadGame(devices.getDefaultDevice1(), profiles);
+
+		// Then
+		ASSERT_TRUE(loadedPlayer);
+		const auto data = std::get<DefaultPlayerData>(loadedPlayer->getPlayerData());
+		EXPECT_EQ(data.startLevel, 9);
+		EXPECT_EQ(data.level, 9);
+	}
+
 	TEST_F(SerilizeTest, derivesHighScoreLevelFromClearedRows) {
 		// Given
 		saveHighScore("Legacy", 1234, 27, 3);
@@ -101,7 +122,7 @@ namespace app::game {
 
 	TEST_F(SerilizeTest, preservesZeroBasedHighScoreLevelThroughRoundTrip) {
 		// Given
-		saveHighScore("Current", 1234, 27, 2);
+		saveHighScore("Current", 1234, 100, 10, 9);
 
 		// When
 		const auto roundTrippedResults = loadHighScore();
@@ -109,7 +130,8 @@ namespace app::game {
 		// Then
 		ASSERT_FALSE(roundTrippedResults.empty());
 		EXPECT_EQ(roundTrippedResults.front().name, "Current");
-		EXPECT_EQ(roundTrippedResults.front().level, 2);
+		EXPECT_EQ(roundTrippedResults.front().level, 10);
+		EXPECT_EQ(roundTrippedResults.front().startLevel, 9);
 	}
 
 }

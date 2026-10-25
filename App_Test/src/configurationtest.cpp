@@ -351,11 +351,14 @@ namespace app {
 	}
 
 	TEST_F(ConfigurationPersistenceTest, persistsLastSinglePlayerControls) {
-		// When
+		// Given
 		Configuration::SinglePlayerControls controls{
 			.deviceGuid = "Keyboard 2",
 			.profileId = ControlProfiles::FastProfileId,
+			.startLevel = 12,
 		};
+
+		// When
 		auto result = configuration_->persistLastSinglePlayerControls(controls);
 
 		// Then
@@ -364,6 +367,7 @@ namespace app {
 		auto persisted = readConfigurationFile().at("lastSinglePlayerControls");
 		EXPECT_EQ(persisted.at("deviceGuid"), "Keyboard 2");
 		EXPECT_EQ(persisted.at("profileId"), "fast");
+		EXPECT_EQ(persisted.at("startLevel"), 12);
 		EXPECT_EQ(temporaryConfigurationFileCount(), 0);
 	}
 

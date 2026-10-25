@@ -187,6 +187,11 @@ namespace app::ui::scene {
 			}
 			ImGui::PopStyleColor();
 			ImGui::SecondaryText("Outlast the other players.");
+			if (auto* config = std::get_if<game::DefaultGameRules::Config>(&gameRulesConfig_)) {
+				ImGui::Spacing();
+				ImGui::SetNextItemWidth(220.f);
+				ImGui::SliderInt("Starting level", &config->startLevel, 0, game::TetrisMaxLevel);
+			}
 
 			if (networkLobby) {
 				gameRoomId_ = tetrisController_->getGameRoomId();

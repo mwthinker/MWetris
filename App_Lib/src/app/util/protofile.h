@@ -15,7 +15,7 @@ namespace app {
 
 	template <MessageLite Message>
 	bool loadFromFile(Message& type, const std::string& file) {
-		std::ifstream input{file};
+		std::ifstream input{file, std::ios::binary};
 		if (input.fail()) {
 			return false;
 		}
@@ -24,7 +24,7 @@ namespace app {
 
 	template <MessageLite Message>
 	void saveToFile(const Message& type, const std::string& file) {
-		std::ofstream output{file};
+		std::ofstream output{file, std::ios::binary};
 		type.SerializePartialToOstream(&output);
 	}
 

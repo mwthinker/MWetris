@@ -15,7 +15,7 @@ namespace app {
 	namespace {
 
 		std::unique_ptr<game::GameRules> createGameRulesInstance(const game::DefaultGameRules::Config& config) {
-			return std::make_unique<game::DefaultGameRules>();
+			return std::make_unique<game::DefaultGameRules>(config);
 		}
 
 		std::unique_ptr<game::GameRules> createGameRulesInstance(const game::SurvivalGameRules::Config& config) {
@@ -119,12 +119,12 @@ namespace app {
 		gameComponent_->draw(width, height, deltaTime);
 	}
 
-	void TetrisController::createDefaultGame(game::DevicePtr device, const ProfileId& profileId) {
+	void TetrisController::createDefaultGame(game::DevicePtr device, const ProfileId& profileId, int startLevel) {
 		if (network_->isInsideGameRoom()) {
 			network_->leaveGameRoom();
 		}
 		const bool resumeSavedGame = game::hasSavedGame();
-		game::PlayerPtr player = loadGame(device, controlProfiles_);
+		game::PlayerPtr player = resumeSavedGame ? loadGame(device, controlProfiles_) : nullptr;
 		if (!player) {
 			game::DefaultPlayerData playerData{
 				.level = 0,
@@ -138,11 +138,38 @@ namespace app {
 			game::clearSavedGame();
 		});
 		gameRoomType_ = GameRoomType::GameSession;
-		createGame({player}, game::DefaultGameRules::Config{});
+		int configuredStartLevel{game::clampStartLevel(startLevel)};
+		if (resumeSavedGame) {
+			if (const auto* data = std::get_if<game::DefaultPlayerData>(&player->getPlayerData())) {
+				configuredStartLevel = data->startLevel;
+			}
+		}
+		createGame({player}, game::DefaultGameRules::Config{
+			.startLevel = configuredStartLevel,
+			.resume = resumeSavedGame
+		});
 		if (resumeSavedGame) {
 			tetrisGame_.setPause(true);
 		}
 		saveDefaultGame();
+	}
+
+	void TetrisController::setDefaultStartLevel(int startLevel) {
+		if (gameRoomType_ != GameRoomType::GameSession || !isDefaultGame()) {
+			return;
+		}
+		auto config = game::DefaultGameRules::Config{.startLevel = game::clampStartLevel(startLevel)};
+		gameRulesConfig_ = config;
+		if (auto* rules = dynamic_cast<game::DefaultGameRules*>(rules_.get())) {
+			rules->setConfig(config);
+		}
+	}
+
+	int TetrisController::getDefaultStartLevel() const {
+		if (const auto* config = std::get_if<game::DefaultGameRules::Config>(&gameRulesConfig_)) {
+			return config->startLevel;
+		}
+		return 0;
 	}
 
 	void TetrisController::startNetworkGame(const game::GameRulesConfig& gameRulesConfig, int w, int h) {

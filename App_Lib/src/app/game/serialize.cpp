@@ -97,6 +97,7 @@ namespace app::game {
 			tpPlayerBoard.set_ai(false);
 			tpPlayerBoard.set_level(playerData.level);
 			tpPlayerBoard.set_points(playerData.points);
+			tpPlayerBoard.set_start_level(playerData.startLevel);
 
 			tpPlayerBoard.set_next(static_cast<tp::BlockType>(player.getNextBlockType()));
 			tpPlayerBoard.set_cleared_rows(player.getClearedRows());
@@ -111,10 +112,12 @@ namespace app::game {
 		
 		PlayerPtr createPlayer(DevicePtr device, std::shared_ptr<ControlProfiles> controlProfiles, const tp::PlayerBoard& tpPlayer) {
 			tetris::TetrisBoard tetrisBoard = toTetrisBoard(tpPlayer);
-			const int level = levelForClearedRows(tpPlayer.cleared_rows());
+			const int startLevel{clampStartLevel(tpPlayer.start_level())};
+			const int level{levelForClearedRows(tpPlayer.cleared_rows(), startLevel)};
 			DefaultPlayerData playerData{
 				.level = level,
-				.points = tpPlayer.points()
+				.points = tpPlayer.points(),
+				.startLevel = startLevel
 			};
 			auto player = createHumanPlayer(device, std::move(controlProfiles), playerData, std::move(tetrisBoard));
 			player->setClearedRows(tpPlayer.cleared_rows());

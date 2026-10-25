@@ -4,8 +4,10 @@
 #include <SDL3/SDL.h>
 
 #include <array>
+#include <concepts>
 #include <expected>
 #include <string>
+#include <type_traits>
 #include <variant>
 
 namespace app::game {
@@ -58,6 +60,30 @@ namespace app::game {
 		bool operator==(const GamepadBindings&) const = default;
 	};
 
+	template<class T>
+	concept Bindings = requires(T bindings, const T constBindings) {
+		bindings.left;
+		bindings.right;
+		bindings.softDrop;
+		bindings.rotate;
+		bindings.hardDrop;
+
+		requires std::same_as<
+			std::remove_cvref_t<decltype(bindings.left)>,
+			std::remove_cvref_t<decltype(bindings.right)>>;
+		requires std::same_as<
+			std::remove_cvref_t<decltype(bindings.left)>,
+			std::remove_cvref_t<decltype(bindings.softDrop)>>;
+		requires std::same_as<
+			std::remove_cvref_t<decltype(bindings.left)>,
+			std::remove_cvref_t<decltype(bindings.rotate)>>;
+		requires std::same_as<
+			std::remove_cvref_t<decltype(bindings.left)>,
+			std::remove_cvref_t<decltype(bindings.hardDrop)>>;
+
+		{ constBindings == constBindings } -> std::convertible_to<bool>;
+	};
+
 	using BindingSet = std::variant<KeyboardBindings, GamepadBindings>;
 	using BindingsValidationResult = std::expected<void, std::string>;
 
@@ -98,8 +124,7 @@ namespace app::game {
 		return {};
 	}
 
-	template<class Bindings>
-	constexpr auto getBinding(const Bindings& bindings, InputAction action) {
+	constexpr auto getBinding(const Bindings auto& bindings, InputAction action) {
 		switch (action) {
 			case InputAction::Left: return bindings.left;
 			case InputAction::Right: return bindings.right;
@@ -110,8 +135,7 @@ namespace app::game {
 		return bindings.left;
 	}
 
-	template<class Bindings, class Value>
-	constexpr void setBinding(Bindings& bindings, InputAction action, Value value) {
+	constexpr void setBinding(Bindings auto& bindings, InputAction action, auto value) {
 		switch (action) {
 			case InputAction::Left: bindings.left = value; break;
 			case InputAction::Right: bindings.right = value; break;
@@ -121,8 +145,7 @@ namespace app::game {
 		}
 	}
 
-	template<class Bindings, class Value>
-	constexpr void assignBindingWithSwap(Bindings& bindings, InputAction action, Value value) {
+	constexpr void assignBindingWithSwap(Bindings auto& bindings, InputAction action, auto value) {
 		const auto previous = getBinding(bindings, action);
 		for (auto candidate : InputActions) {
 			if (candidate != action && getBinding(bindings, candidate) == value) {
@@ -133,8 +156,7 @@ namespace app::game {
 		setBinding(bindings, action, value);
 	}
 
-	template<class Bindings>
-	BindingsValidationResult validateUniqueBindings(const Bindings& bindings) {
+	BindingsValidationResult validateUniqueBindings(const Bindings auto& bindings) {
 		for (int first = 0; first < std::ssize(InputActions); ++first) {
 			for (int second = first + 1; second < std::ssize(InputActions); ++second) {
 				if (getBinding(bindings, InputActions[first]) == getBinding(bindings, InputActions[second])) {
