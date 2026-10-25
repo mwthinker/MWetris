@@ -52,11 +52,8 @@ namespace app::ui {
 			| ImGuiWindowFlags_MenuBar;
 
 		constexpr ImGuiWindowFlags ImguiSecondaryWindow
-			= ImGuiWindowFlags_NoTitleBar
-			| ImGuiWindowFlags_NoBringToFrontOnFocus
-			| ImGuiWindowFlags_NoDocking
+			= ImGuiWindowFlags_NoDocking
 			| ImGuiWindowFlags_NoScrollbar
-			| ImGuiWindowFlags_NoBackground
 			| ImGuiWindowFlags_NoScrollWithMouse
 			| ImGuiWindowFlags_MenuBar;
 		
@@ -68,7 +65,8 @@ namespace app::ui {
 			if (subWindow.getType() == TetrisWindow::Type::MainWindow) {
 				ImGui::MainWindow(subWindow.getName().c_str(), ImguiMainWindow, t);
 			} else {
-				ImGui::SetNextWindowSize({400, 600});
+				ImGui::SetNextWindowPos({60, 60}, ImGuiCond_FirstUseEver);
+				ImGui::SetNextWindowSize({400, 600}, ImGuiCond_FirstUseEver);
 				ImGui::Window(subWindow.getName().c_str(), nullptr, ImguiSecondaryWindow, t);
 			}
 		}
