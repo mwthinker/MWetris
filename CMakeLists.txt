@@ -8,6 +8,12 @@ project(MWetris
 		CXX
 )
 
+file(GLOB_RECURSE PROJECT_SKILL_FILES CONFIGURE_DEPENDS
+	"${CMAKE_CURRENT_SOURCE_DIR}/.agents/skills/*"
+)
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.agents" PREFIX ".agents" FILES
+	${PROJECT_SKILL_FILES}
+)
 source_group(".github" FILES
 	"${CMAKE_CURRENT_SOURCE_DIR}/.github/copilot-instructions.md"
 )
@@ -24,6 +30,7 @@ source_group("Docker" FILES
 )
 
 set_property(DIRECTORY APPEND PROPERTY VS_SOLUTION_ITEMS
+	${PROJECT_SKILL_FILES}
 	"${CMAKE_CURRENT_SOURCE_DIR}/.gitattributes"
 	"${CMAKE_CURRENT_SOURCE_DIR}/.github/copilot-instructions.md"
 	"${CMAKE_CURRENT_SOURCE_DIR}/.github/workflows/ci.yml"
