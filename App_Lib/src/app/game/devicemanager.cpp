@@ -38,6 +38,27 @@ namespace app::game {
 		return keyboardDevice;
 	}
 
+	DeviceManager::GamepadDevice DeviceManager::createGamepadDevice(sdl::GameController&& gameController) {
+		const auto guid = gameController.getGuid();
+		const auto guidString = sdl::guidToString(guid);
+		const auto defaults = getDefaultGamepadBindings();
+		const auto configured = getConfiguredBindings(guidString, defaults);
+		const auto* bindings = std::get_if<GamepadBindings>(&configured);
+
+		GamepadDevice gamepadDevice{
+			.gamePad = std::make_unique<GamePad>(
+				std::move(gameController),
+				bindings ? *bindings : defaults),
+			.device = std::make_shared<Device>(),
+			.guid = guid,
+		};
+		gamepadDevice.device->connected_ = true;
+		gamepadDevice.device->guid_ = gamepadDevice.gamePad->getGuid();
+		gamepadDevice.device->name_ = gamepadDevice.gamePad->getName();
+		gamepadDevice.device->input_ = {};
+		return gamepadDevice;
+	}
+
 	void DeviceManager::beginMapping(Device& device) {
 		if (!device.isConnected()) {
 			return;
@@ -322,21 +343,7 @@ namespace app::game {
 			return;
 		}
 
-		auto guid = gameController.getGuid();
-		auto guidString = sdl::guidToString(guid);
-		auto configured = getConfiguredBindings(guidString, getDefaultGamepadBindings());
-		auto bindings = std::holds_alternative<GamepadBindings>(configured)
-			? std::get<GamepadBindings>(configured)
-			: getDefaultGamepadBindings();
-		auto& pair = devices_.emplace_back(GamepadDevice{
-			.gamePad = std::make_unique<GamePad>(std::move(gameController), bindings),
-			.device = std::make_shared<Device>(),
-			.guid = guid,
-		});
-		pair.device->connected_ = true;
-		pair.device->guid_ = pair.gamePad->getGuid();
-		pair.device->input_ = {};
-		pair.device->name_ = pair.gamePad->getName();
+		auto& pair = devices_.emplace_back(createGamepadDevice(std::move(gameController)));
 		spdlog::info("GamePad added: {} {} {}", pair.gamePad->getInstanceId(), pair.gamePad->getGuid(), pair.gamePad->getName());
 		deviceConnected(pair.device);
 	}

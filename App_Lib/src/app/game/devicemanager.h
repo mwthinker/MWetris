@@ -54,6 +54,7 @@ namespace app::game {
 		};
 
 		KeyboardDevice createKeyboardDevice(const std::string& name, KeyboardBindings defaults);
+		GamepadDevice createGamepadDevice(sdl::GameController&& gameController);
 		Keyboard* findKeyboardBackend(Device& device) const;
 		GamePad* findGamepadBackend(Device& device) const;
 		BindingSet getConfiguredBindings(const std::string& guid, BindingSet defaults) const;
