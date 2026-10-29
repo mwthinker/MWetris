@@ -18,14 +18,12 @@ namespace app::game {
 	public:
 		GamePad(sdl::GameController&& gameController, GamepadBindings bindings = getDefaultGamepadBindings());
 
-		Input getInput() const;
 		const char* getName() const;
 		int getInstanceId() const;
 		const std::string& getGuid() const;
 
-		bool eventUpdate(const SDL_Event& windowEvent, std::optional<InputCommand>& command);
+		std::optional<InputEvent> eventUpdate(const SDL_Event& windowEvent) const;
 		bool captureMappingEvent(const SDL_Event& windowEvent);
-		void resetInput();
 
 		void beginMapping();
 		void resetMapping();
@@ -36,17 +34,11 @@ namespace app::game {
 		const GamepadBindings& getBindings() const;
 		std::optional<GamepadBindings> getDraftBindings() const;
 
-		bool isActive() const {
-			return true;
-		}
-
 		void setGameController(sdl::GameController&& gameController);
 
 	private:
-		std::optional<InputAction> updateInput(SDL_GamepadButton button, bool state);
-		void clearInput();
+		std::optional<InputAction> getAction(SDL_GamepadButton button) const;
 
-		Input input_{};
 		sdl::GameController gameController_;
 		GamepadBindings bindings_{};
 		GamepadBindings defaults_{};

@@ -9,6 +9,8 @@
 #include <network/tcpclient.h>
 #include <network/tcpserver.h>
 
+#include <sdl/sdlexception.h>
+
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -52,6 +54,10 @@ void MainWindow::requestRestart() {
 }
 
 void MainWindow::preLoop() {
+	if (!SDL_InitSubSystem(SDL_INIT_GAMEPAD)) {
+		throw sdl::SdlException{"Could not initialize SDL gamepad subsystem"};
+	}
+
 	auto& configuration = app::Configuration::getInstance();
 	baseImGuiStyle_ = ImGui::GetStyle();
 	applyCommittedSettings(configuration.getEditableSettings());

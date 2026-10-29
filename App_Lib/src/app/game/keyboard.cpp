@@ -7,14 +7,6 @@
 
 namespace app::game {
 
-	namespace {
-
-		void handleKey(bool& held, bool isDown) {
-			held = isDown;
-		}
-
-	}
-
 	Keyboard::Keyboard(
 		const std::string& name,
 		const KeyboardMapping& keyboardMapping,
@@ -24,52 +16,39 @@ namespace app::game {
 		, defaults_{defaultMapping} {
 	}
 
-	Input Keyboard::getInput() const {
-		return input_;
-	}
-
 	const char* Keyboard::getName() const {
 		return name_.c_str();
 	}
 
-	bool Keyboard::eventUpdate(const SDL_Event& windowEvent, std::optional<InputCommand>& command) {
-		command.reset();
+	std::optional<InputEvent> Keyboard::eventUpdate(const SDL_Event& windowEvent) const {
 		if (windowEvent.type != SDL_EVENT_KEY_DOWN && windowEvent.type != SDL_EVENT_KEY_UP) {
-			return false;
+			return std::nullopt;
 		}
 		if (windowEvent.key.repeat != 0) {
-			return false;
+			return std::nullopt;
 		}
 
 		const bool isDown = windowEvent.type == SDL_EVENT_KEY_DOWN;
 		const auto key = windowEvent.key.key;
 		InputAction action;
 		if (key == bindings_.left) {
-			handleKey(input_.left, isDown);
 			action = InputAction::Left;
 		} else if (key == bindings_.right) {
-			handleKey(input_.right, isDown);
 			action = InputAction::Right;
 		} else if (key == bindings_.softDrop) {
-			handleKey(input_.down, isDown);
 			action = InputAction::SoftDrop;
 		} else if (key == bindings_.rotate) {
-			handleKey(input_.rotate, isDown);
 			action = InputAction::Rotate;
 		} else if (key == bindings_.hardDrop) {
-			handleKey(input_.downGround, isDown);
 			action = InputAction::HardDrop;
 		} else {
-			return false;
+			return std::nullopt;
 		}
-		if (isDown) {
-			command = InputCommand{action, windowEvent.common.timestamp};
-		}
-		return true;
-	}
-
-	void Keyboard::resetInput() {
-		clearInput();
+		return InputEvent{
+			.action = action,
+			.state = isDown ? InputState::Pressed : InputState::Released,
+			.timestamp = windowEvent.common.timestamp,
+		};
 	}
 
 	bool Keyboard::captureMappingEvent(const SDL_Event& windowEvent) {
@@ -87,7 +66,6 @@ namespace app::game {
 		}
 		assignBindingWithSwap(*draft_, InputActions[mappingIndex_], windowEvent.key.key);
 		++mappingIndex_;
-		clearInput();
 		return true;
 	}
 
@@ -117,7 +95,6 @@ namespace app::game {
 		}
 		assignBindingWithSwap(*draft_, InputActions[mappingIndex_], key);
 		++mappingIndex_;
-		clearInput();
 		return MappingPollResult::Captured;
 	}
 
@@ -128,21 +105,18 @@ namespace app::game {
 		const auto* keyState = SDL_GetKeyboardState(&keyCount);
 		mappingKeyState_.fill(false);
 		std::copy_n(keyState, std::min(keyCount, static_cast<int>(SDL_SCANCODE_COUNT)), mappingKeyState_.begin());
-		clearInput();
 	}
 
 	void Keyboard::resetMapping() {
 		if (draft_) {
 			draft_ = defaults_;
 			mappingIndex_ = static_cast<int>(InputActions.size());
-			clearInput();
 		}
 	}
 
 	void Keyboard::cancelMapping() {
 		draft_.reset();
 		mappingIndex_ = 0;
-		clearInput();
 	}
 
 	BindingsValidationResult Keyboard::commitMapping() {
@@ -184,10 +158,6 @@ namespace app::game {
 
 	std::optional<KeyboardBindings> Keyboard::getDraftBindings() const {
 		return draft_;
-	}
-
-	void Keyboard::clearInput() {
-		input_ = {};
 	}
 
 }

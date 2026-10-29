@@ -7,6 +7,19 @@
 
 namespace app::game {
 
+	enum class InputState {
+		Pressed,
+		Released,
+	};
+
+	struct InputEvent {
+		InputAction action = InputAction::Left;
+		InputState state = InputState::Released;
+		std::uint64_t timestamp = 0;
+
+		friend constexpr bool operator==(const InputEvent&, const InputEvent&) = default;
+	};
+
 	struct InputCommand {
 		InputAction action = InputAction::Left;
 		std::uint64_t timestamp = 0;

@@ -42,13 +42,23 @@ namespace app::game {
 		}
 
 	private:
+		void apply(const InputEvent& event) {
+			const bool pressed = event.state == InputState::Pressed;
+			switch (event.action) {
+				case InputAction::Left: input_.left = pressed; break;
+				case InputAction::Right: input_.right = pressed; break;
+				case InputAction::SoftDrop: input_.down = pressed; break;
+				case InputAction::Rotate: input_.rotate = pressed; break;
+				case InputAction::HardDrop: input_.downGround = pressed; break;
+			}
+			if (pressed) {
+				command.invoke(InputCommand{event.action, event.timestamp});
+			}
+		}
+
 		void invokeConnection(bool connected) {
 			connected_ = connected;
 			connection.invoke(connected);
-		}
-
-		void invokeCommand(const InputCommand& inputCommand) {
-			command.invoke(inputCommand);
 		}
 
 		void invokeInputReset() {

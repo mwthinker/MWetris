@@ -8,6 +8,7 @@
 #include <chrono>
 #include <cfloat>
 #include <concepts>
+#include <utility>
 
 namespace ImGui {
 
@@ -82,6 +83,10 @@ namespace ImGui {
 	public:
 		explicit ComboVector(const std::vector<Type>& items)
 			: items_{items} {}
+
+		void addItem(Type item) {
+			items_.push_back(std::move(item));
+		}
 
 		bool imGuiCombo(const char* label, ImGuiComboFlags flags = 0) {
 			return ImGui::ComboScoped(label, items_[selected_].name.c_str(), flags, [&]() {

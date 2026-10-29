@@ -69,14 +69,13 @@ namespace app::game {
 		mappingDevice_ = &device;
 		if (auto* keyboard = findKeyboardBackend(device)) {
 			keyboard->beginMapping();
-			device.input_ = keyboard->getInput();
 		} else if (auto* gamePad = findGamepadBackend(device)) {
 			gamePad->beginMapping();
-			device.input_ = gamePad->getInput();
 		} else {
 			mappingDevice_ = nullptr;
 			return;
 		}
+		device.input_ = {};
 		device.invokeInputReset();
 	}
 
@@ -86,11 +85,10 @@ namespace app::game {
 		}
 		if (auto* keyboard = findKeyboardBackend(device)) {
 			keyboard->resetMapping();
-			device.input_ = keyboard->getInput();
 		} else if (auto* gamePad = findGamepadBackend(device)) {
 			gamePad->resetMapping();
-			device.input_ = gamePad->getInput();
 		}
+		device.input_ = {};
 	}
 
 	void DeviceManager::cancelMapping(Device& device) {
@@ -99,11 +97,10 @@ namespace app::game {
 		}
 		if (auto* keyboard = findKeyboardBackend(device)) {
 			keyboard->cancelMapping();
-			device.input_ = keyboard->getInput();
 		} else if (auto* gamePad = findGamepadBackend(device)) {
 			gamePad->cancelMapping();
-			device.input_ = gamePad->getInput();
 		}
+		device.input_ = {};
 		mappingDevice_ = nullptr;
 	}
 
@@ -166,34 +163,22 @@ namespace app::game {
 				return true;
 			}
 			if (auto* keyboard = findKeyboardBackend(*mappingDevice); keyboard && keyboard->captureMappingEvent(windowEvent)) {
-				mappingDevice->input_ = keyboard->getInput();
 				return true;
 			}
 			if (auto* gamePad = findGamepadBackend(*mappingDevice); gamePad && gamePad->captureMappingEvent(windowEvent)) {
-				mappingDevice->input_ = gamePad->getInput();
 				return true;
 			}
 		}
 
-		std::optional<InputCommand> command;
-		if (keyboard1_.keyboard->eventUpdate(windowEvent, command)) {
-			keyboard1_.device->input_ = keyboard1_.keyboard->getInput();
-			if (command) {
-				keyboard1_.device->invokeCommand(*command);
-			}
+		if (auto event = keyboard1_.keyboard->eventUpdate(windowEvent)) {
+			keyboard1_.device->apply(*event);
 		}
-		if (keyboard2_.keyboard->eventUpdate(windowEvent, command)) {
-			keyboard2_.device->input_ = keyboard2_.keyboard->getInput();
-			if (command) {
-				keyboard2_.device->invokeCommand(*command);
-			}
+		if (auto event = keyboard2_.keyboard->eventUpdate(windowEvent)) {
+			keyboard2_.device->apply(*event);
 		}
 		for (auto& [gamePad, device, guid] : devices_) {
-			if (gamePad->eventUpdate(windowEvent, command)) {
-				device->input_ = gamePad->getInput();
-				if (command) {
-					device->invokeCommand(*command);
-				}
+			if (auto event = gamePad->eventUpdate(windowEvent)) {
+				device->apply(*event);
 			}
 		}
 		return false;
@@ -203,8 +188,7 @@ namespace app::game {
 		if (auto* mappingDevice = mappingDevice_) {
 			if (auto* keyboard = findKeyboardBackend(*mappingDevice)) {
 				switch (keyboard->pollMappingInput()) {
-					case MappingPollResult::Captured:
-						mappingDevice->input_ = keyboard->getInput();
+				case MappingPollResult::Captured:
 						break;
 					case MappingPollResult::CancelRequested:
 						cancelMapping(*mappingDevice);
@@ -217,14 +201,12 @@ namespace app::game {
 	}
 
 	void DeviceManager::clearInput(KeyboardDevice& keyboardDevice) {
-		keyboardDevice.keyboard->resetInput();
-		keyboardDevice.device->input_ = keyboardDevice.keyboard->getInput();
+		keyboardDevice.device->input_ = {};
 		keyboardDevice.device->invokeInputReset();
 	}
 
 	void DeviceManager::clearInput(GamepadDevice& gamepadDevice) {
-		gamepadDevice.gamePad->resetInput();
-		gamepadDevice.device->input_ = gamepadDevice.gamePad->getInput();
+		gamepadDevice.device->input_ = {};
 		gamepadDevice.device->invokeInputReset();
 	}
 
@@ -313,12 +295,12 @@ namespace app::game {
 		BindingsValidationResult commit;
 		if (auto* keyboard = findKeyboardBackend(device)) {
 			commit = keyboard->commitMapping();
-			device.input_ = keyboard->getInput();
+			device.input_ = {};
 		} else {
 			auto* gamePad = findGamepadBackend(device);
 			commit = gamePad ? gamePad->commitMapping() : BindingsValidationResult{std::unexpected{"Device backend is unavailable."}};
 			if (gamePad) {
-				device.input_ = gamePad->getInput();
+				device.input_ = {};
 			}
 		}
 		if (!commit) {

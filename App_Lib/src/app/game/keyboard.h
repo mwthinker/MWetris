@@ -26,14 +26,12 @@ namespace app::game {
 			const KeyboardMapping& keyboardMapping,
 			const KeyboardMapping& defaultMapping);
 
-		Input getInput() const;
 		const char* getName() const;
 
-		bool eventUpdate(const SDL_Event& windowEvent, std::optional<InputCommand>& command);
+		std::optional<InputEvent> eventUpdate(const SDL_Event& windowEvent) const;
 		bool captureMappingEvent(const SDL_Event& windowEvent);
 		MappingPollResult pollMappingInput();
 
-		void resetInput();
 		void beginMapping();
 		void resetMapping();
 		void cancelMapping();
@@ -44,9 +42,6 @@ namespace app::game {
 		std::optional<KeyboardBindings> getDraftBindings() const;
 
 	private:
-		void clearInput();
-
-		Input input_{};
 		std::string name_;
 		KeyboardBindings bindings_{};
 		KeyboardBindings defaults_{};

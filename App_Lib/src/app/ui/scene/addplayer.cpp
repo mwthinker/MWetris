@@ -69,7 +69,20 @@ namespace app::ui::scene {
 	}
 
 	void AddPlayer::deviceConnected(game::DevicePtr device) {
-		allDevices_.emplace_back(device->getName(), device);
+		if (std::find(data_.usedDevices.begin(), data_.usedDevices.end(), device) != data_.usedDevices.end()) {
+			return;
+		}
+
+		const bool firstDevice = allDevices_.empty();
+		auto human = game::Human{device->getName(), device};
+		allDevices_.push_back(human);
+		humansCombo_.addItem(human);
+
+		if (firstDevice) {
+			playerTypesCombo_ = ImGui::ComboVector<PlayerType>{getPlayerTypes(false)};
+			human.name = playerName_;
+			player_ = std::move(human);
+		}
 	}
 
 	void AddPlayer::imGuiUpdate(const DeltaTime& deltaTime) {

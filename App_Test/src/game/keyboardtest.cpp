@@ -19,18 +19,14 @@ namespace app::game {
 
 	}
 
-	TEST(KeyboardTest, beginMappingClearsInputAndAwaitsLeft) {
+	TEST(KeyboardTest, beginMappingAwaitsLeft) {
 		// Given
 		Keyboard keyboard{"Keyboard 1", getDefaultKeyboard1Bindings(), getDefaultKeyboard1Bindings()};
-		std::optional<InputCommand> command;
-		keyboard.eventUpdate(createKeyboardEvent(SDLK_LEFT, SDL_EVENT_KEY_DOWN), command);
-		ASSERT_TRUE(keyboard.getInput().left);
 
 		// When
 		keyboard.beginMapping();
 
 		// Then
-		EXPECT_EQ(keyboard.getInput(), Input{});
 		ASSERT_TRUE(keyboard.getMappingStatus());
 		EXPECT_EQ(keyboard.getMappingStatus()->awaiting, InputAction::Left);
 	}
@@ -87,14 +83,12 @@ namespace app::game {
 		ASSERT_TRUE(keyboard.commitMapping());
 
 		// When
-		std::optional<InputCommand> command;
-		keyboard.eventUpdate(createKeyboardEvent(SDLK_RIGHT, SDL_EVENT_KEY_DOWN), command);
+		auto event = keyboard.eventUpdate(createKeyboardEvent(SDLK_RIGHT, SDL_EVENT_KEY_DOWN));
 
 		// Then
-		EXPECT_TRUE(keyboard.getInput().left);
-		EXPECT_FALSE(keyboard.getInput().right);
-		ASSERT_TRUE(command);
-		EXPECT_EQ(command->action, InputAction::Left);
+		ASSERT_TRUE(event);
+		EXPECT_EQ(event->action, InputAction::Left);
+		EXPECT_EQ(event->state, InputState::Pressed);
 	}
 
 	TEST(KeyboardTest, repeatedKeyDoesNotAdvanceMapping) {
@@ -128,20 +122,20 @@ namespace app::game {
 		EXPECT_FALSE(keyboard.getMappingStatus());
 	}
 
-	TEST(KeyboardTest, commandRetainsEventTimestamp) {
+	TEST(KeyboardTest, inputEventRetainsSdlTimestamp) {
 		// Given
 		Keyboard keyboard{"Keyboard 1", getDefaultKeyboard1Bindings(), getDefaultKeyboard1Bindings()};
 		auto event = createKeyboardEvent(SDLK_UP, SDL_EVENT_KEY_DOWN);
 		event.common.timestamp = 12345;
-		std::optional<InputCommand> command;
 
 		// When
-		keyboard.eventUpdate(event, command);
+		auto inputEvent = keyboard.eventUpdate(event);
 
 		// Then
-		ASSERT_TRUE(command);
-		EXPECT_EQ(command->action, InputAction::Rotate);
-		EXPECT_EQ(command->timestamp, 12345);
+		ASSERT_TRUE(inputEvent);
+		EXPECT_EQ(inputEvent->action, InputAction::Rotate);
+		EXPECT_EQ(inputEvent->state, InputState::Pressed);
+		EXPECT_EQ(inputEvent->timestamp, 12345);
 	}
 
 }

@@ -6,22 +6,10 @@
 
 namespace app::game {
 
-	namespace {
-
-		void handleButton(bool& held, bool isDown) {
-			held = isDown;
-		}
-
-	}
-
 	GamePad::GamePad(sdl::GameController&& gameController, GamepadBindings bindings)
 		: gameController_{std::move(gameController)}
 		, bindings_{bindings}
 		, defaults_{getDefaultGamepadBindings()} {
-	}
-
-	Input GamePad::getInput() const {
-		return input_;
 	}
 
 	const char* GamePad::getName() const {
@@ -39,20 +27,22 @@ namespace app::game {
 		return guid_;
 	}
 
-	bool GamePad::eventUpdate(const SDL_Event& windowEvent, std::optional<InputCommand>& command) {
-		command.reset();
+	std::optional<InputEvent> GamePad::eventUpdate(const SDL_Event& windowEvent) const {
 		if ((windowEvent.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN || windowEvent.type == SDL_EVENT_GAMEPAD_BUTTON_UP)
 			&& gameController_.isAttached()
 			&& windowEvent.gbutton.which == gameController_.getInstanceId()) {
-			auto action = updateInput(
-				static_cast<SDL_GamepadButton>(windowEvent.gbutton.button),
-				windowEvent.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN);
-			if (action && windowEvent.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
-				command = InputCommand{*action, windowEvent.common.timestamp};
+			auto action = getAction(static_cast<SDL_GamepadButton>(windowEvent.gbutton.button));
+			if (action) {
+				return InputEvent{
+					.action = *action,
+					.state = windowEvent.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN
+						? InputState::Pressed
+						: InputState::Released,
+					.timestamp = windowEvent.common.timestamp,
+				};
 			}
-			return action.has_value();
 		}
-		return false;
+		return std::nullopt;
 	}
 
 	bool GamePad::captureMappingEvent(const SDL_Event& windowEvent) {
@@ -69,34 +59,23 @@ namespace app::game {
 		}
 		assignBindingWithSwap(*draft_, InputActions[mappingIndex_], button);
 		++mappingIndex_;
-		clearInput();
 		return true;
-	}
-
-	void GamePad::resetInput() {
-		clearInput();
 	}
 
 	void GamePad::setGameController(sdl::GameController&& gameController) {
 		gameController_ = std::move(gameController);
-		clearInput();
 	}
 
-	std::optional<InputAction> GamePad::updateInput(SDL_GamepadButton button, bool state) {
+	std::optional<InputAction> GamePad::getAction(SDL_GamepadButton button) const {
 		if (button == bindings_.left) {
-			handleButton(input_.left, state);
 			return InputAction::Left;
 		} else if (button == bindings_.right) {
-			handleButton(input_.right, state);
 			return InputAction::Right;
 		} else if (button == bindings_.softDrop) {
-			handleButton(input_.down, state);
 			return InputAction::SoftDrop;
 		} else if (button == bindings_.rotate) {
-			handleButton(input_.rotate, state);
 			return InputAction::Rotate;
 		} else if (button == bindings_.hardDrop) {
-			handleButton(input_.downGround, state);
 			return InputAction::HardDrop;
 		} else {
 			return std::nullopt;
@@ -106,21 +85,18 @@ namespace app::game {
 	void GamePad::beginMapping() {
 		draft_ = bindings_;
 		mappingIndex_ = 0;
-		clearInput();
 	}
 
 	void GamePad::resetMapping() {
 		if (draft_) {
 			draft_ = defaults_;
 			mappingIndex_ = static_cast<int>(InputActions.size());
-			clearInput();
 		}
 	}
 
 	void GamePad::cancelMapping() {
 		draft_.reset();
 		mappingIndex_ = 0;
-		clearInput();
 	}
 
 	BindingsValidationResult GamePad::commitMapping() {
@@ -162,10 +138,6 @@ namespace app::game {
 
 	std::optional<GamepadBindings> GamePad::getDraftBindings() const {
 		return draft_;
-	}
-
-	void GamePad::clearInput() {
-		input_ = {};
 	}
 
 }
