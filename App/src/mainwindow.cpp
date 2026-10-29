@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <cstdint>
 
 using namespace std::chrono_literals;
 
@@ -222,6 +223,7 @@ void MainWindow::initDebugServer() {
 }
 
 void MainWindow::renderImGui(const sdl::DeltaTime& deltaTime) {
+	recordFrameTiming(deltaTime);
 	if (uiScaleDirty_) {
 		applyUiScale();
 	}
@@ -232,6 +234,34 @@ void MainWindow::renderImGui(const sdl::DeltaTime& deltaTime) {
 	processWindowMouseActions();
 	ioContext_.poll();
 	deviceManager_->tick();
+}
+
+void MainWindow::recordFrameTiming(const sdl::DeltaTime& deltaTime) {
+	constexpr std::uint64_t ReportInterval = 5'000'000'000;
+	constexpr double NanosecondsPerMillisecond = 1'000'000.0;
+	constexpr double NanosecondsPerSecond = 1'000'000'000.0;
+
+	const auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(deltaTime).count();
+	if (duration <= 0) {
+		return;
+	}
+	const auto frameDuration = static_cast<std::uint64_t>(duration);
+	frameDurationTotal_ += frameDuration;
+	frameDurationMaximum_ = std::max(frameDurationMaximum_, frameDuration);
+	++frameSamples_;
+	if (frameDurationTotal_ < ReportInterval) {
+		return;
+	}
+
+	spdlog::info(
+		"[FrameTiming] samples={}, average={:.3f}ms, maximum={:.3f}ms, fps={:.1f}",
+		frameSamples_,
+		static_cast<double>(frameDurationTotal_) / static_cast<double>(frameSamples_) / NanosecondsPerMillisecond,
+		static_cast<double>(frameDurationMaximum_) / NanosecondsPerMillisecond,
+		static_cast<double>(frameSamples_) * NanosecondsPerSecond / static_cast<double>(frameDurationTotal_));
+	frameDurationTotal_ = 0;
+	frameDurationMaximum_ = 0;
+	frameSamples_ = 0;
 }
 
 void MainWindow::processWindowMouseActions() {
@@ -266,7 +296,47 @@ void MainWindow::processWindowMouseActions() {
 	}
 }
 
+void MainWindow::recordInputDelay(const SDL_Event& windowEvent) {
+	constexpr std::uint64_t ReportInterval = 5'000'000'000;
+	constexpr double NanosecondsPerMillisecond = 1'000'000.0;
+
+	const bool keyboardPress = windowEvent.type == SDL_EVENT_KEY_DOWN && windowEvent.key.repeat == 0;
+	const bool gamepadPress = windowEvent.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN;
+	if ((!keyboardPress && !gamepadPress) || windowEvent.common.timestamp == 0) {
+		return;
+	}
+
+	const auto now = SDL_GetTicksNS();
+	if (now < windowEvent.common.timestamp) {
+		return;
+	}
+
+	const auto delay = now - windowEvent.common.timestamp;
+	inputDelayTotal_ += delay;
+	inputDelayMaximum_ = std::max(inputDelayMaximum_, delay);
+	++inputDelaySamples_;
+
+	if (inputDelayReportStart_ == 0) {
+		inputDelayReportStart_ = now;
+		return;
+	}
+	if (now - inputDelayReportStart_ < ReportInterval) {
+		return;
+	}
+
+	spdlog::info(
+		"[InputDelay] event-to-handler samples={}, average={:.3f}ms, maximum={:.3f}ms",
+		inputDelaySamples_,
+		static_cast<double>(inputDelayTotal_) / static_cast<double>(inputDelaySamples_) / NanosecondsPerMillisecond,
+		static_cast<double>(inputDelayMaximum_) / NanosecondsPerMillisecond);
+	inputDelayReportStart_ = now;
+	inputDelayTotal_ = 0;
+	inputDelayMaximum_ = 0;
+	inputDelaySamples_ = 0;
+}
+
 void MainWindow::processEvent(const SDL_Event& windowEvent) {
+	recordInputDelay(windowEvent);
 	if (deviceManager_->eventUpdate(windowEvent)) {
 		return;
 	}
@@ -278,6 +348,7 @@ void MainWindow::processEvent(const SDL_Event& windowEvent) {
 			}
 			break;
 		case SDL_EVENT_WINDOW_FOCUS_LOST:
+			deviceManager_->clearInput();
 			if (app::Configuration::getInstance().isWindowPauseOnLostFocus()) {
 				for (auto& subWindow : subWindows_) {
 					if (auto* tetrisWindow = dynamic_cast<app::ui::TetrisWindow*>(subWindow.get())) {

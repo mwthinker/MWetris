@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
 #include <app/game/devicemanager.h>
+#include <app/game/player.h>
+#include <app/controlprofiles.h>
 
 #include <ostream>
 
@@ -61,6 +63,7 @@ namespace app::game {
 			if (GetParam() == InputDeviceType::Keyboard) {
 				manager_ = std::make_unique<DeviceManager>();
 				device_ = manager_->getDefaultDevice1();
+				connectCommandSignal();
 				return;
 			}
 
@@ -80,6 +83,7 @@ namespace app::game {
 			auto guid = sdl::guidToString(SDL_GetJoystickGUIDForID(gamepadInstanceId_));
 			device_ = manager_->findDevice(guid);
 			ASSERT_TRUE(device_);
+			connectCommandSignal();
 		}
 
 		void TearDown() override {
@@ -93,29 +97,45 @@ namespace app::game {
 		}
 
 		void sendLeftDown() {
-			if (GetParam() == InputDeviceType::Keyboard) {
-				manager_->eventUpdate(keyboardEvent(SDLK_LEFT));
-			} else {
-				manager_->eventUpdate(gamepadButtonEvent(gamepadInstanceId_, SDL_GAMEPAD_BUTTON_DPAD_LEFT));
-			}
+			send(InputAction::Left, true);
 		}
 
 		void sendLeftUp() {
+			send(InputAction::Left, false);
+		}
+
+		void send(InputAction action, bool down) {
+			SDL_Event event;
 			if (GetParam() == InputDeviceType::Keyboard) {
-				manager_->eventUpdate(keyboardEvent(SDLK_LEFT, SDL_EVENT_KEY_UP));
+				event = keyboardEvent(
+					getBinding(getDefaultKeyboard1Bindings(), action),
+					down ? SDL_EVENT_KEY_DOWN : SDL_EVENT_KEY_UP);
 			} else {
-				manager_->eventUpdate(gamepadButtonEvent(
-					gamepadInstanceId_, SDL_GAMEPAD_BUTTON_DPAD_LEFT, SDL_EVENT_GAMEPAD_BUTTON_UP));
+				event = gamepadButtonEvent(
+					gamepadInstanceId_,
+					getBinding(getDefaultGamepadBindings(), action),
+					down ? SDL_EVENT_GAMEPAD_BUTTON_DOWN : SDL_EVENT_GAMEPAD_BUTTON_UP);
 			}
+			event.common.timestamp = nextTimestamp_++;
+			manager_->eventUpdate(event);
+		}
+
+		void connectCommandSignal() {
+			connections_ += device_->command.connect([this](const InputCommand& command) {
+				commands_.push_back(command);
+			});
 		}
 
 		SDL_VirtualJoystickDesc description_{};
 		SDL_JoystickID gamepadInstanceId_ = 0;
 		std::unique_ptr<DeviceManager> manager_;
 		DevicePtr device_;
+		std::vector<InputCommand> commands_;
+		mw::signals::ScopedConnections connections_;
+		std::uint64_t nextTimestamp_ = 1;
 	};
 
-	TEST_P(DeviceInputContractTest, pressCreatesOneFrameTransition) {
+	TEST_P(DeviceInputContractTest, pressPublishesCommandAndSetsHeld) {
 		// Given
 		ASSERT_TRUE(device_);
 
@@ -124,12 +144,12 @@ namespace app::game {
 
 		// Then
 		const auto left = device_->getInput().left;
-		EXPECT_TRUE(left.pressed);
-		EXPECT_TRUE(left.held);
-		EXPECT_FALSE(left.released);
+		EXPECT_TRUE(left);
+		ASSERT_EQ(commands_.size(), 1);
+		EXPECT_EQ(commands_.front().action, InputAction::Left);
 	}
 
-	TEST_P(DeviceInputContractTest, tickKeepsHeldAndClearsPressed) {
+	TEST_P(DeviceInputContractTest, tickKeepsHeldAndDoesNotConsumeCommands) {
 		// Given
 		sendLeftDown();
 
@@ -138,27 +158,28 @@ namespace app::game {
 
 		// Then
 		const auto left = device_->getInput().left;
-		EXPECT_FALSE(left.pressed);
-		EXPECT_TRUE(left.held);
-		EXPECT_FALSE(left.released);
+		EXPECT_TRUE(left);
+		EXPECT_EQ(commands_.size(), 1);
 	}
 
-	TEST_P(DeviceInputContractTest, repeatedDownDoesNotRetriggerPressed) {
+	TEST_P(DeviceInputContractTest, downUpDownPublishesTwoOrderedCommands) {
 		// Given
 		sendLeftDown();
-		manager_->tick();
+		sendLeftUp();
 
 		// When
 		sendLeftDown();
 
 		// Then
 		const auto left = device_->getInput().left;
-		EXPECT_FALSE(left.pressed);
-		EXPECT_TRUE(left.held);
-		EXPECT_FALSE(left.released);
+		EXPECT_TRUE(left);
+		ASSERT_EQ(commands_.size(), 2);
+		EXPECT_EQ(commands_[0].action, InputAction::Left);
+		EXPECT_EQ(commands_[1].action, InputAction::Left);
+		EXPECT_LT(commands_[0].timestamp, commands_[1].timestamp);
 	}
 
-	TEST_P(DeviceInputContractTest, releaseCreatesOneFrameTransition) {
+	TEST_P(DeviceInputContractTest, releaseClearsHeldWithoutPublishingCommand) {
 		// Given
 		sendLeftDown();
 		manager_->tick();
@@ -168,12 +189,11 @@ namespace app::game {
 
 		// Then
 		auto left = device_->getInput().left;
-		EXPECT_FALSE(left.pressed);
-		EXPECT_FALSE(left.held);
-		EXPECT_TRUE(left.released);
+		EXPECT_FALSE(left);
+		EXPECT_EQ(commands_.size(), 1);
 	}
 
-	TEST_P(DeviceInputContractTest, tickClearsReleasedTransition) {
+	TEST_P(DeviceInputContractTest, tickKeepsReleasedState) {
 		// Given
 		sendLeftDown();
 		manager_->tick();
@@ -184,9 +204,26 @@ namespace app::game {
 
 		// Then
 		const auto left = device_->getInput().left;
-		EXPECT_FALSE(left.pressed);
-		EXPECT_FALSE(left.held);
-		EXPECT_FALSE(left.released);
+		EXPECT_FALSE(left);
+		EXPECT_EQ(commands_.size(), 1);
+	}
+
+	TEST_P(DeviceInputContractTest, everyActionPreservesRapidDuplicatePressesInOrder) {
+		// Given / When
+		for (const auto action : InputActions) {
+			send(action, true);
+			send(action, false);
+			send(action, true);
+			send(action, false);
+		}
+
+		// Then
+		ASSERT_EQ(commands_.size(), InputActions.size() * 2);
+		for (int index = 0; index < std::ssize(InputActions); ++index) {
+			EXPECT_EQ(commands_[index * 2].action, InputActions[index]);
+			EXPECT_EQ(commands_[index * 2 + 1].action, InputActions[index]);
+		}
+		EXPECT_EQ(device_->getInput(), Input{});
 	}
 
 	INSTANTIATE_TEST_SUITE_P(
@@ -213,6 +250,43 @@ namespace app::game {
 		EXPECT_NE(device1, device2);
 		EXPECT_NE(device1->getGuid(), device2->getGuid());
 		EXPECT_NE(device1->getName(), device2->getName());
+	}
+
+	TEST(DeviceManagerTest, keyboardRepeatDoesNotPublishCommand) {
+		// Given
+		DeviceManager manager;
+		auto device = manager.getDefaultDevice1();
+		std::vector<InputCommand> commands;
+		mw::signals::ScopedConnection connection = device->command.connect([&](const InputCommand& command) {
+			commands.push_back(command);
+		});
+		auto repeated = keyboardEvent(SDLK_LEFT);
+		repeated.key.repeat = 1;
+
+		// When
+		manager.eventUpdate(repeated);
+
+		// Then
+		EXPECT_TRUE(commands.empty());
+		EXPECT_FALSE(device->getInput().left);
+	}
+
+	TEST(DeviceManagerTest, beginMappingClearsPublishedGameplayState) {
+		// Given
+		DeviceManager manager;
+		auto device = manager.getDefaultDevice1();
+		int resetCount = 0;
+		mw::signals::ScopedConnection connection = device->inputReset.connect([&]() {
+			++resetCount;
+		});
+		manager.eventUpdate(keyboardEvent(SDLK_LEFT));
+
+		// When
+		manager.beginMapping(*device);
+
+		// Then
+		EXPECT_EQ(device->getInput(), Input{});
+		EXPECT_EQ(resetCount, 1);
 	}
 
 	TEST(DeviceManagerTest, selectedDeviceExclusivelyCapturesWithoutGameplayInput) {
@@ -287,7 +361,7 @@ namespace app::game {
 
 		// Then
 		EXPECT_FALSE(consumed);
-		EXPECT_TRUE(device->getInput().left.pressed);
+		EXPECT_TRUE(device->getInput().left);
 	}
 
 	TEST(DeviceManagerTest, persistenceFailureKeepsDraft) {
@@ -323,13 +397,13 @@ namespace app::game {
 		manager.eventUpdate(keyboardEvent(SDLK_LEFT));
 
 		// Then
-		EXPECT_TRUE(device->getInput().left.pressed);
-		EXPECT_FALSE(device->getInput().right.pressed);
+		EXPECT_TRUE(device->getInput().left);
+		EXPECT_FALSE(device->getInput().right);
 	}
 
 	TEST(DeviceManagerTest, loadsCustomMapping) {
 		// Given
-		KeyboardBindings custom = getDefaultKeyboardBindings(1);
+		KeyboardBindings custom = getDefaultKeyboard1Bindings();
 		custom.left = SDLK_J;
 		custom.right = SDLK_L;
 		DeviceManager manager{{DeviceBinding{"Keyboard 1", custom}}};
@@ -339,12 +413,12 @@ namespace app::game {
 		manager.eventUpdate(keyboardEvent(SDLK_J));
 
 		// Then
-		EXPECT_TRUE(device->getInput().left.pressed);
+		EXPECT_TRUE(device->getInput().left);
 	}
 
 	TEST(DeviceManagerTest, resetAndSaveRestoresDefaultMapping) {
 		// Given
-		KeyboardBindings custom = getDefaultKeyboardBindings(1);
+		KeyboardBindings custom = getDefaultKeyboard1Bindings();
 		custom.left = SDLK_J;
 		DeviceManager manager{{DeviceBinding{"Keyboard 1", custom}}};
 		auto device = manager.getDefaultDevice1();
@@ -358,7 +432,7 @@ namespace app::game {
 
 		// Then
 		ASSERT_TRUE(result);
-		EXPECT_TRUE(device->getInput().left.pressed);
+		EXPECT_TRUE(device->getInput().left);
 	}
 
 	TEST(DeviceManagerTest, escapeCancelsMappingAndIsConsumed) {
@@ -451,7 +525,7 @@ namespace app::game {
 		manager_->eventUpdate(gamepadButtonEvent(instanceId_, SDL_GAMEPAD_BUTTON_WEST));
 
 		// Then
-		EXPECT_TRUE(device_->getInput().left.pressed);
+		EXPECT_TRUE(device_->getInput().left);
 	}
 
 	TEST_F(GamepadDeviceManagerTest, capturesMappingWithoutGameplayInput) {
@@ -480,6 +554,25 @@ namespace app::game {
 		EXPECT_FALSE(device_->isConnected());
 	}
 
+	TEST_F(GamepadDeviceManagerTest, disconnectDiscardsQueuedPlayerCommands) {
+		// Given
+		auto player = createHumanPlayer(device_, std::make_shared<ControlProfiles>());
+		int leftMoves = 0;
+		mw::signals::ScopedConnection connection = player->playerBoardUpdate.connect([&](const PlayerBoardEvent& event) {
+			if (const auto* move = std::get_if<UpdateMove>(&event); move && move->move == tetris::Move::Left) {
+				++leftMoves;
+			}
+		});
+		manager_->eventUpdate(gamepadButtonEvent(instanceId_, SDL_GAMEPAD_BUTTON_WEST));
+
+		// When
+		ASSERT_TRUE(disconnectGamepad());
+		player->update(0.0);
+
+		// Then
+		EXPECT_EQ(leftMoves, 0);
+	}
+
 	TEST_F(GamepadDeviceManagerTest, reusesDeviceAndMappingAfterReconnect) {
 		// Given
 		manager_->beginMapping(*device_);
@@ -496,7 +589,7 @@ namespace app::game {
 		// Then
 		EXPECT_EQ(manager_->findDevice(guid_), device_);
 		EXPECT_TRUE(device_->isConnected());
-		EXPECT_TRUE(device_->getInput().left.pressed);
+		EXPECT_TRUE(device_->getInput().left);
 	}
 
 }

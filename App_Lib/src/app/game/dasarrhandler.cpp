@@ -25,49 +25,43 @@ namespace app::game {
 			return;
 		}
 
+		const bool wasActive = active_;
 		das_ = das;
 		arr_ = arr;
 		reset();
+		active_ = wasActive;
 	}
 
-	void DasArrHandler::update(double timeStep, const KeyState& keyState) {
-		time_ += timeStep;
+	void DasArrHandler::press() {
+		time_ = 0.0;
+		inDelayPhase_ = true;
+		active_ = true;
+		actionReady_ = false;
+	}
 
-		if (keyState.pressed && !previouslyHeld_) {
-			actionReady_ = true;
-			lastActionTime_ = time_;
-			inDelayPhase_ = true;
-		} else if (keyState.held) {
-			double elapsed = time_ - lastActionTime_;
-			if (inDelayPhase_) {
-				if (elapsed >= das_) {
-					actionReady_ = true;
-					lastActionTime_ = time_;
-					inDelayPhase_ = false;
-				}
-			} else {
-				if (elapsed >= arr_) {
-					actionReady_ = true;
-					lastActionTime_ = time_;
-				}
-			}
+	void DasArrHandler::update(double timeStep, bool held) {
+		if (!held) {
+			reset();
+			return;
 		}
-
-		if (keyState.released) {
-			inDelayPhase_ = true;
-			previouslyHeld_ = false;
+		if (!active_) {
 			return;
 		}
 
-		previouslyHeld_ = keyState.held;
+		time_ += timeStep;
+		const auto waitingTime = inDelayPhase_ ? das_ : arr_;
+		if (time_ >= waitingTime) {
+			actionReady_ = true;
+			time_ = 0.0;
+			inDelayPhase_ = false;
+		}
 	}
 
 	void DasArrHandler::reset() {
 		time_ = 0.0;
 		inDelayPhase_ = true;
 		actionReady_ = false;
-		previouslyHeld_ = false;
-		lastActionTime_ = 0.0;
+		active_ = false;
 	}
 
 	bool DasArrHandler::doAction() {

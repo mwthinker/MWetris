@@ -80,7 +80,7 @@ namespace app::game {
 		player->update(0.02);
 		EXPECT_EQ(repeatedMoves, 0);
 		player->update(0.08);
-		EXPECT_EQ(repeatedMoves, 1);
+		EXPECT_EQ(repeatedMoves, 0);
 	}
 
 	TEST(PlayerTest, deletedRuntimeProfileFallsBackToBalancedOnUpdate) {
@@ -112,6 +112,26 @@ namespace app::game {
 			EXPECT_FALSE(player->getProfileId());
 			EXPECT_FALSE(player->setProfileId(ControlProfiles::FastProfileId));
 		}
+	}
+
+	TEST(PlayerTest, aiPressTransitionsUseQueuedCommandDispatch) {
+		// Given
+		auto player = createAiPlayer(tetris::Ai{});
+		player->setGravity(1000.0);
+		int softDrops = 0;
+		mw::signals::ScopedConnection connection = player->playerBoardUpdate.connect([&](const PlayerBoardEvent& event) {
+			if (const auto* move = std::get_if<UpdateMove>(&event); move && move->move == tetris::Move::Down) {
+				++softDrops;
+			}
+		});
+
+		// When
+		for (int update = 0; update < 100; ++update) {
+			player->update(0.02);
+		}
+
+		// Then
+		EXPECT_GT(softDrops, 0);
 	}
 
 	TEST(PlayerTest, sharedProfileEditsUpdateTimingForEveryHuman) {
@@ -154,6 +174,73 @@ namespace app::game {
 
 		EXPECT_EQ(player1Moves, 1);
 		EXPECT_EQ(player2Moves, 1);
+	}
+
+	TEST(PlayerTest, rapidPressesAreDeliveredIndependentlyToPlayersSharingDevice) {
+		// Given
+		auto profiles = std::make_shared<ControlProfiles>();
+		DeviceManager devices;
+		auto device = devices.getDefaultDevice1();
+		auto player1 = createHumanPlayer(device, profiles);
+		auto player2 = createHumanPlayer(device, profiles);
+		devices.eventUpdate(keyboardEvent(SDLK_LEFT, SDL_EVENT_KEY_DOWN));
+		devices.eventUpdate(keyboardEvent(SDLK_LEFT, SDL_EVENT_KEY_UP));
+		devices.tick();
+		devices.tick();
+		devices.eventUpdate(keyboardEvent(SDLK_LEFT, SDL_EVENT_KEY_DOWN));
+
+		// When
+		const auto player1Moves = countMoves(*player1, tetris::Move::Left);
+		const auto player2Moves = countMoves(*player2, tetris::Move::Left);
+
+		// Then
+		EXPECT_EQ(player1Moves, 2);
+		EXPECT_EQ(player2Moves, 2);
+	}
+
+	TEST(PlayerTest, restartDiscardsQueuedCommands) {
+		// Given
+		auto profiles = std::make_shared<ControlProfiles>();
+		DeviceManager devices;
+		auto player = createHumanPlayer(devices.getDefaultDevice1(), profiles);
+		devices.eventUpdate(keyboardEvent(SDLK_UP, SDL_EVENT_KEY_DOWN));
+
+		// When
+		player->updateRestart(tetris::BlockType::O, tetris::BlockType::T);
+
+		// Then
+		EXPECT_EQ(countMoves(*player, tetris::Move::RotateLeft), 0);
+	}
+
+	TEST(PlayerTest, inputResetDiscardsQueuedCommands) {
+		// Given
+		auto profiles = std::make_shared<ControlProfiles>();
+		DeviceManager devices;
+		auto player = createHumanPlayer(devices.getDefaultDevice1(), profiles);
+		devices.eventUpdate(keyboardEvent(SDLK_UP, SDL_EVENT_KEY_DOWN));
+
+		// When
+		devices.clearInput();
+
+		// Then
+		EXPECT_EQ(countMoves(*player, tetris::Move::RotateLeft), 0);
+		EXPECT_EQ(devices.getDefaultDevice1()->getInput(), Input{});
+	}
+
+	TEST(PlayerTest, deviceSwitchAndRemappingDiscardQueuedCommands) {
+		// Given
+		auto profiles = std::make_shared<ControlProfiles>();
+		DeviceManager devices;
+		auto player = createHumanPlayer(devices.getDefaultDevice1(), profiles);
+		devices.eventUpdate(keyboardEvent(SDLK_UP, SDL_EVENT_KEY_DOWN));
+
+		// When
+		ASSERT_TRUE(player->setDevice(devices.getDefaultDevice2()));
+		devices.eventUpdate(keyboardEvent(SDLK_W, SDL_EVENT_KEY_DOWN));
+		devices.beginMapping(*devices.getDefaultDevice2());
+
+		// Then
+		EXPECT_EQ(countMoves(*player, tetris::Move::RotateLeft), 0);
 	}
 
 }

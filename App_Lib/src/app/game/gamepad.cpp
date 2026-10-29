@@ -8,18 +8,8 @@ namespace app::game {
 
 	namespace {
 
-		void handleButton(KeyState& keyState, bool isDown) {
-			if (isDown) {
-				if (!keyState.held) {
-					keyState.pressed = true;
-				}
-				keyState.held = true;
-			} else {
-				if (keyState.held) {
-					keyState.released = true;
-				}
-				keyState.held = false;
-			}
+		void handleButton(bool& held, bool isDown) {
+			held = isDown;
 		}
 
 	}
@@ -49,13 +39,18 @@ namespace app::game {
 		return guid_;
 	}
 
-	bool GamePad::eventUpdate(const SDL_Event& windowEvent) {
+	bool GamePad::eventUpdate(const SDL_Event& windowEvent, std::optional<InputCommand>& command) {
+		command.reset();
 		if ((windowEvent.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN || windowEvent.type == SDL_EVENT_GAMEPAD_BUTTON_UP)
 			&& gameController_.isAttached()
 			&& windowEvent.gbutton.which == gameController_.getInstanceId()) {
-			return updateInput(
+			auto action = updateInput(
 				static_cast<SDL_GamepadButton>(windowEvent.gbutton.button),
 				windowEvent.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN);
+			if (action && windowEvent.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
+				command = InputCommand{*action, windowEvent.common.timestamp};
+			}
+			return action.has_value();
 		}
 		return false;
 	}
@@ -78,17 +73,8 @@ namespace app::game {
 		return true;
 	}
 
-	void GamePad::tick() {
-		input_.left.pressed = false;
-		input_.left.released = false;
-		input_.right.pressed = false;
-		input_.right.released = false;
-		input_.down.pressed = false;
-		input_.down.released = false;
-		input_.rotate.pressed = false;
-		input_.rotate.released = false;
-		input_.downGround.pressed = false;
-		input_.downGround.released = false;
+	void GamePad::resetInput() {
+		clearInput();
 	}
 
 	void GamePad::setGameController(sdl::GameController&& gameController) {
@@ -96,21 +82,25 @@ namespace app::game {
 		clearInput();
 	}
 
-	bool GamePad::updateInput(SDL_GamepadButton button, bool state) {
+	std::optional<InputAction> GamePad::updateInput(SDL_GamepadButton button, bool state) {
 		if (button == bindings_.left) {
 			handleButton(input_.left, state);
+			return InputAction::Left;
 		} else if (button == bindings_.right) {
 			handleButton(input_.right, state);
+			return InputAction::Right;
 		} else if (button == bindings_.softDrop) {
 			handleButton(input_.down, state);
+			return InputAction::SoftDrop;
 		} else if (button == bindings_.rotate) {
 			handleButton(input_.rotate, state);
+			return InputAction::Rotate;
 		} else if (button == bindings_.hardDrop) {
 			handleButton(input_.downGround, state);
+			return InputAction::HardDrop;
 		} else {
-			return false;
+			return std::nullopt;
 		}
-		return true;
 	}
 
 	void GamePad::beginMapping() {

@@ -662,12 +662,12 @@ namespace app {
 			return std::visit([](const auto& value) { return serializeBindings(value); }, bindings);
 		}
 
-		game::BindingSet defaultBindingsForGuid(std::string_view guid) {
+		game::BindingSet getDefaultDeviceBindingsForGuid(std::string_view guid) {
 			if (guid == "Keyboard 1") {
-				return game::getDefaultKeyboardBindings(1);
+				return game::getDefaultKeyboard1Bindings();
 			}
 			if (guid == "Keyboard 2") {
-				return game::getDefaultKeyboardBindings(2);
+				return game::getDefaultKeyboard2Bindings();
 			}
 			return game::getDefaultGamepadBindings();
 		}
@@ -703,15 +703,16 @@ namespace app {
 		}
 
 		game::BindingSet parseBindingsOrDefault(const json& value, std::string_view guid) {
-			auto defaultBindings = defaultBindingsForGuid(guid);
+			auto defaultBindings = getDefaultDeviceBindingsForGuid(guid);
+
 			auto type = value.is_object() ? value.value("type", std::string{}) : std::string{};
 			if (type == "keyboard") {
 				if (auto bindings = parseKeyboardBindings(value)) {
 					return *bindings;
 				}
-				return std::holds_alternative<game::KeyboardBindings>(defaultBindings)
-					? defaultBindings
-					: game::BindingSet{game::getDefaultKeyboardBindings(1)};
+				return guid == "Keyboard 1"
+					? game::BindingSet{game::getDefaultKeyboard1Bindings()}
+					: game::BindingSet{game::getDefaultKeyboard2Bindings()};
 			}
 			if (type == "gamepad") {
 				if (auto bindings = parseGamepadBindings(value)) {

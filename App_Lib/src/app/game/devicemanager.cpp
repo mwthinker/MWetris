@@ -15,26 +15,24 @@ namespace app::game {
 		: bindings_{std::move(bindings)}
 		, persist_{std::move(persist)} {
 
-		auto first = getConfiguredBindings("Keyboard 1", getDefaultKeyboardBindings(1));
-		auto second = getConfiguredBindings("Keyboard 2", getDefaultKeyboardBindings(2));
-		keyboard1_ = createKeyboardDevice(std::make_unique<Keyboard>(
-			"Keyboard 1",
-			std::holds_alternative<KeyboardBindings>(first)
-				? std::get<KeyboardBindings>(first)
-				: getDefaultKeyboardBindings(1)));
-		keyboard2_ = createKeyboardDevice(std::make_unique<Keyboard>(
-			"Keyboard 2",
-			std::holds_alternative<KeyboardBindings>(second)
-				? std::get<KeyboardBindings>(second)
-				: getDefaultKeyboardBindings(2)));
+		keyboard1_ = createKeyboardDevice("Keyboard 1", getDefaultKeyboard1Bindings());
+		keyboard2_ = createKeyboardDevice("Keyboard 2", getDefaultKeyboard2Bindings());
 	}
 
-	DeviceManager::KeyboardDevice DeviceManager::createKeyboardDevice(std::unique_ptr<Keyboard> keyboard) {
-		KeyboardDevice keyboardDevice;
-		keyboardDevice.keyboard = std::move(keyboard);
-		keyboardDevice.device = std::make_shared<Device>();
-		keyboardDevice.device->guid_ = keyboardDevice.keyboard->getName();
-		keyboardDevice.device->name_ = keyboardDevice.keyboard->getName();
+	DeviceManager::KeyboardDevice DeviceManager::createKeyboardDevice(const std::string& name, KeyboardBindings defaults) {
+		auto configured = getConfiguredBindings(name, defaults);
+		auto* bindings = std::get_if<KeyboardBindings>(&configured);
+
+		KeyboardDevice keyboardDevice{
+			.keyboard = std::make_unique<Keyboard>(
+				name,
+				bindings ? *bindings : defaults,
+				defaults),
+			.device = std::make_shared<Device>(),
+		};
+
+		keyboardDevice.device->guid_ = name;
+		keyboardDevice.device->name_ = name;
 		keyboardDevice.device->connected_ = true;
 		keyboardDevice.device->input_ = {};
 		return keyboardDevice;
@@ -56,7 +54,9 @@ namespace app::game {
 			device.input_ = gamePad->getInput();
 		} else {
 			mappingDevice_ = nullptr;
+			return;
 		}
+		device.invokeInputReset();
 	}
 
 	void DeviceManager::resetMapping(Device& device) {
@@ -154,15 +154,25 @@ namespace app::game {
 			}
 		}
 
-		if (keyboard1_.keyboard->eventUpdate(windowEvent)) {
+		std::optional<InputCommand> command;
+		if (keyboard1_.keyboard->eventUpdate(windowEvent, command)) {
 			keyboard1_.device->input_ = keyboard1_.keyboard->getInput();
+			if (command) {
+				keyboard1_.device->invokeCommand(*command);
+			}
 		}
-		if (keyboard2_.keyboard->eventUpdate(windowEvent)) {
+		if (keyboard2_.keyboard->eventUpdate(windowEvent, command)) {
 			keyboard2_.device->input_ = keyboard2_.keyboard->getInput();
+			if (command) {
+				keyboard2_.device->invokeCommand(*command);
+			}
 		}
 		for (auto& [gamePad, device, guid] : devices_) {
-			if (gamePad->eventUpdate(windowEvent)) {
+			if (gamePad->eventUpdate(windowEvent, command)) {
 				device->input_ = gamePad->getInput();
+				if (command) {
+					device->invokeCommand(*command);
+				}
 			}
 		}
 		return false;
@@ -183,13 +193,25 @@ namespace app::game {
 				}
 			}
 		}
-		keyboard1_.keyboard->tick();
-		keyboard1_.device->input_ = keyboard1_.keyboard->getInput();
-		keyboard2_.keyboard->tick();
-		keyboard2_.device->input_ = keyboard2_.keyboard->getInput();
-		for (auto& [gamePad, device, guid] : devices_) {
-			gamePad->tick();
-			device->input_ = gamePad->getInput();
+	}
+
+	void DeviceManager::clearInput(KeyboardDevice& keyboardDevice) {
+		keyboardDevice.keyboard->resetInput();
+		keyboardDevice.device->input_ = keyboardDevice.keyboard->getInput();
+		keyboardDevice.device->invokeInputReset();
+	}
+
+	void DeviceManager::clearInput(GamepadDevice& gamepadDevice) {
+		gamepadDevice.gamePad->resetInput();
+		gamepadDevice.device->input_ = gamepadDevice.gamePad->getInput();
+		gamepadDevice.device->invokeInputReset();
+	}
+
+	void DeviceManager::clearInput() {
+		clearInput(keyboard1_);
+		clearInput(keyboard2_);
+		for (auto& gamepadDevice : devices_) {
+			clearInput(gamepadDevice);
 		}
 	}
 
@@ -294,6 +316,7 @@ namespace app::game {
 		if (found != devices_.end()) {
 			found->gamePad->setGameController(std::move(gameController));
 			found->device->input_ = {};
+			found->device->invokeInputReset();
 			spdlog::info("GamePad reconnected: {} {} {}", found->gamePad->getInstanceId(), found->gamePad->getGuid(), found->gamePad->getName());
 			found->device->invokeConnection(true);
 			return;
@@ -324,7 +347,7 @@ namespace app::game {
 		});
 		if (found != devices_.end()) {
 			cancelMapping(*found->device);
-			found->device->input_ = {};
+			clearInput(*found);
 			found->device->invokeConnection(false);
 			spdlog::info("GamePad removed: {} {} {}", found->gamePad->getInstanceId(), found->gamePad->getGuid(), found->gamePad->getName());
 		}

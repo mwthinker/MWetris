@@ -21,9 +21,10 @@ namespace app::game {
 
 	TEST(KeyboardTest, beginMappingClearsInputAndAwaitsLeft) {
 		// Given
-		Keyboard keyboard{"Keyboard 1", getDefaultKeyboardBindings(1)};
-		keyboard.eventUpdate(createKeyboardEvent(SDLK_LEFT, SDL_EVENT_KEY_DOWN));
-		ASSERT_TRUE(keyboard.getInput().left.held);
+		Keyboard keyboard{"Keyboard 1", getDefaultKeyboard1Bindings(), getDefaultKeyboard1Bindings()};
+		std::optional<InputCommand> command;
+		keyboard.eventUpdate(createKeyboardEvent(SDLK_LEFT, SDL_EVENT_KEY_DOWN), command);
+		ASSERT_TRUE(keyboard.getInput().left);
 
 		// When
 		keyboard.beginMapping();
@@ -36,7 +37,7 @@ namespace app::game {
 
 	TEST(KeyboardTest, captureSwapsDuplicateBindingInDraft) {
 		// Given
-		Keyboard keyboard{"Keyboard 1", getDefaultKeyboardBindings(1)};
+		Keyboard keyboard{"Keyboard 1", getDefaultKeyboard1Bindings(), getDefaultKeyboard1Bindings()};
 		keyboard.beginMapping();
 
 		// When
@@ -52,7 +53,7 @@ namespace app::game {
 
 	TEST(KeyboardTest, commitAppliesCompleteDraft) {
 		// Given
-		Keyboard keyboard{"Keyboard 1", getDefaultKeyboardBindings(1)};
+		Keyboard keyboard{"Keyboard 1", getDefaultKeyboard1Bindings(), getDefaultKeyboard1Bindings()};
 		keyboard.beginMapping();
 		const std::array keys{SDLK_RIGHT, SDLK_J, SDLK_K, SDLK_L, SDLK_SPACE};
 		for (auto key : keys) {
@@ -76,7 +77,7 @@ namespace app::game {
 
 	TEST(KeyboardTest, committedMappingHandlesGameplayInput) {
 		// Given
-		Keyboard keyboard{"Keyboard 1", getDefaultKeyboardBindings(1)};
+		Keyboard keyboard{"Keyboard 1", getDefaultKeyboard1Bindings(), getDefaultKeyboard1Bindings()};
 		keyboard.beginMapping();
 
 		const std::array keys{SDLK_RIGHT, SDLK_J, SDLK_K, SDLK_L, SDLK_SPACE};
@@ -86,16 +87,19 @@ namespace app::game {
 		ASSERT_TRUE(keyboard.commitMapping());
 
 		// When
-		keyboard.eventUpdate(createKeyboardEvent(SDLK_RIGHT, SDL_EVENT_KEY_DOWN));
+		std::optional<InputCommand> command;
+		keyboard.eventUpdate(createKeyboardEvent(SDLK_RIGHT, SDL_EVENT_KEY_DOWN), command);
 
 		// Then
-		EXPECT_TRUE(keyboard.getInput().left.pressed);
-		EXPECT_FALSE(keyboard.getInput().right.pressed);
+		EXPECT_TRUE(keyboard.getInput().left);
+		EXPECT_FALSE(keyboard.getInput().right);
+		ASSERT_TRUE(command);
+		EXPECT_EQ(command->action, InputAction::Left);
 	}
 
 	TEST(KeyboardTest, repeatedKeyDoesNotAdvanceMapping) {
 		// Given
-		Keyboard keyboard{"Keyboard 1", getDefaultKeyboardBindings(1)};
+		Keyboard keyboard{"Keyboard 1", getDefaultKeyboard1Bindings(), getDefaultKeyboard1Bindings()};
 		keyboard.beginMapping();
 		auto repeated = createKeyboardEvent(SDLK_A, SDL_EVENT_KEY_DOWN);
 		repeated.key.repeat = 1;
@@ -111,8 +115,8 @@ namespace app::game {
 
 	TEST(KeyboardTest, cancelKeepsActiveMapping) {
 		// Given
-		auto defaults = getDefaultKeyboardBindings(1);
-		Keyboard keyboard{"Keyboard 1", defaults};
+		auto defaults = getDefaultKeyboard1Bindings();
+		Keyboard keyboard{"Keyboard 1", defaults, defaults};
 		keyboard.beginMapping();
 		keyboard.captureMappingEvent(createKeyboardEvent(SDLK_A, SDL_EVENT_KEY_DOWN));
 
@@ -122,6 +126,22 @@ namespace app::game {
 		// Then
 		EXPECT_EQ(keyboard.getBindings(), defaults);
 		EXPECT_FALSE(keyboard.getMappingStatus());
+	}
+
+	TEST(KeyboardTest, commandRetainsEventTimestamp) {
+		// Given
+		Keyboard keyboard{"Keyboard 1", getDefaultKeyboard1Bindings(), getDefaultKeyboard1Bindings()};
+		auto event = createKeyboardEvent(SDLK_UP, SDL_EVENT_KEY_DOWN);
+		event.common.timestamp = 12345;
+		std::optional<InputCommand> command;
+
+		// When
+		keyboard.eventUpdate(event, command);
+
+		// Then
+		ASSERT_TRUE(command);
+		EXPECT_EQ(command->action, InputAction::Rotate);
+		EXPECT_EQ(command->timestamp, 12345);
 	}
 
 }

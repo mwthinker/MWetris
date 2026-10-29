@@ -12,42 +12,45 @@ namespace app::game {
 		EXPECT_DOUBLE_EQ(handler.getDas(), 0.1);
 		EXPECT_DOUBLE_EQ(handler.getArr(), 0.05);
 
-		handler.update(0.0, {.held = true, .pressed = true});
-		EXPECT_TRUE(handler.doAction());
+		handler.press();
+		handler.update(0.0, true);
 		EXPECT_FALSE(handler.doAction());
 
-		handler.update(0.09, {.held = true});
+		handler.update(0.09, true);
 		EXPECT_FALSE(handler.doAction());
-		handler.update(0.02, {.held = true});
+		handler.update(0.02, true);
 		EXPECT_TRUE(handler.doAction());
 
-		handler.update(0.04, {.held = true});
+		handler.update(0.04, true);
 		EXPECT_FALSE(handler.doAction());
-		handler.update(0.02, {.held = true});
+		handler.update(0.02, true);
 		EXPECT_TRUE(handler.doAction());
 
-		handler.update(0.0, {.released = true});
-		handler.update(0.0, {.held = true, .pressed = true});
-		EXPECT_TRUE(handler.doAction());
+		handler.update(0.0, false);
+		handler.press();
+		handler.update(0.0, true);
+		EXPECT_FALSE(handler.doAction());
 	}
 
 	TEST(DasArrHandlerTest, changedTimingClearsPendingAndHeldRepeatState) {
 		DasArrHandler handler{0.2, 0.05};
-		handler.update(0.0, {.held = true, .pressed = true});
+		handler.press();
+		handler.update(0.0, true);
 		handler.setTiming(0.3, 0.1);
 		EXPECT_FALSE(handler.doAction());
 		EXPECT_DOUBLE_EQ(handler.getDas(), 0.3);
 		EXPECT_DOUBLE_EQ(handler.getArr(), 0.1);
 
-		handler.update(0.29, {.held = true});
+		handler.update(0.29, true);
 		EXPECT_FALSE(handler.doAction());
-		handler.update(0.02, {.held = true});
+		handler.update(0.02, true);
 		EXPECT_TRUE(handler.doAction());
 
 		handler.reset();
-		handler.update(0.0, {.held = true, .pressed = true});
+		handler.press();
+		handler.update(0.0, true);
 		handler.setTiming(0.3, 0.1);
-		EXPECT_TRUE(handler.doAction());
+		EXPECT_FALSE(handler.doAction());
 	}
 
 	TEST(DasArrHandlerTest, rejectsNonPositiveAndNonFiniteTiming) {

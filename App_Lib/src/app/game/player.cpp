@@ -6,10 +6,52 @@
 
 #include <tetris/helper.h>
 
+#include <SDL3/SDL_timer.h>
+#include <spdlog/spdlog.h>
+
+#include <algorithm>
+#include <cstdint>
 #include <optional>
 #include <queue>
 
 namespace app::game {
+	namespace {
+		void recordInputToMoveDelay(std::uint64_t eventTimestamp) {
+			constexpr std::uint64_t ReportInterval = 5'000'000'000;
+			constexpr double NanosecondsPerMillisecond = 1'000'000.0;
+			static std::uint64_t reportStart = 0;
+			static std::uint64_t total = 0;
+			static std::uint64_t maximum = 0;
+			static std::uint64_t samples = 0;
+
+			const auto now = SDL_GetTicksNS();
+			if (eventTimestamp == 0 || now < eventTimestamp) {
+				return;
+			}
+			const auto delay = now - eventTimestamp;
+			total += delay;
+			maximum = std::max(maximum, delay);
+			++samples;
+			if (reportStart == 0) {
+				reportStart = now;
+				return;
+			}
+			if (now - reportStart < ReportInterval) {
+				return;
+			}
+
+			spdlog::info(
+				"[InputToMoveDelay] event-to-board-move samples={}, average={:.3f}ms, maximum={:.3f}ms",
+				samples,
+				static_cast<double>(total) / static_cast<double>(samples) / NanosecondsPerMillisecond,
+				static_cast<double>(maximum) / NanosecondsPerMillisecond);
+			reportStart = now;
+			total = 0;
+			maximum = 0;
+			samples = 0;
+		}
+
+	}
 
 	class TetrisBoardMoveController {
 	public:
@@ -36,6 +78,9 @@ namespace app::game {
 		virtual bool setProfileId(const ProfileId& profileId) {
 			return false;
 		}
+
+		virtual void reset() {
+		}
 	};
 
 	class HumanMoveController final : public TetrisBoardMoveController {
@@ -44,6 +89,7 @@ namespace app::game {
 			: device_{std::move(device)}
 			, profileId_{device_ ? controlProfiles->getAssignedProfileId(device_->getGuid()) : ControlProfiles::BalancedProfileId}
 			, controlProfiles_{std::move(controlProfiles)} {
+			connectDevice();
 		}
 
 		void updateMove(tetris::TetrisBoard& tetrisBoard, double deltaTime, PlayerBoardEventInvoker& invoker) override {
@@ -63,6 +109,10 @@ namespace app::game {
 			}
 			tetrisBoardController_.update(tetrisBoard, device_->getInput(), deltaTime, [&](const PlayerBoardEvent& event) {
 				invoker.invokePlayerBoardEvent(event);
+			}, [](const InputCommand& command) {
+				if (!command.deferredUntilNextPiece) {
+					recordInputToMoveDelay(command.timestamp);
+				}
 			});
 		}
 
@@ -80,7 +130,7 @@ namespace app::game {
 			}
 			if (device_ != device) {
 				device_ = std::move(device);
-				tetrisBoardController_.reset();
+				connectDevice();
 			}
 			return true;
 		}
@@ -97,22 +147,49 @@ namespace app::game {
 			return true;
 		}
 
+		void reset() override {
+			tetrisBoardController_.reset();
+		}
+
 	private:
+		void connectDevice() {
+			inputConnections_.clear();
+			tetrisBoardController_.reset();
+			if (!device_) {
+				return;
+			}
+			inputConnections_ += device_->command.connect([this](const InputCommand& command) {
+				(void)tetrisBoardController_.enqueue(command);
+			});
+			inputConnections_ += device_->inputReset.connect([this]() {
+				tetrisBoardController_.reset();
+			});
+			inputConnections_ += device_->connection.connect([this](bool connected) {
+				if (!connected) {
+					tetrisBoardController_.reset();
+				}
+			});
+		}
+
 		DevicePtr device_;
 		ProfileId profileId_;
 		std::shared_ptr<ControlProfiles> controlProfiles_;
 		std::optional<InputTiming> appliedTiming_;
 		TetrisBoardController tetrisBoardController_;
+		mw::signals::ScopedConnections inputConnections_;
 	};
 
 	class AiMoveController : public TetrisBoardMoveController {
 	public:
 		AiMoveController(const tetris::Ai& ai)
-			: computer_{tetris::Ai{}} {
+			: computer_{ai} {
 		}
 
 		void updateMove(tetris::TetrisBoard& tetrisBoard, double deltaTime, PlayerBoardEventInvoker& invoker) override {
-			tetrisBoardController_.update(tetrisBoard, computer_.getInput(), deltaTime, [&](const PlayerBoardEvent& playerBoardEvent) {
+			const auto input = computer_.getInput();
+			enqueuePressTransitions(previousInput_, input);
+			previousInput_ = input;
+			tetrisBoardController_.update(tetrisBoard, input, deltaTime, [&](const PlayerBoardEvent& playerBoardEvent) {
 				invoker.invokePlayerBoardEvent(playerBoardEvent);
 				if (auto tetrisBoardEvent = std::get_if<TetrisBoardEvent>(&playerBoardEvent)) {
 					computer_.onGameboardEvent(tetrisBoard, tetrisBoardEvent->event, tetrisBoardEvent->value);
@@ -124,9 +201,28 @@ namespace app::game {
 			tetrisBoardController_.updateGravity(gravity);
 		}
 
+		void reset() override {
+			tetrisBoardController_.reset();
+			previousInput_ = {};
+		}
+
 	private:
+		void enqueuePressTransitions(const Input& previous, const Input& current) {
+			const auto enqueue = [this](InputAction action, bool before, bool now) {
+				if (now && !before) {
+					(void)tetrisBoardController_.enqueue(InputCommand{action, 0});
+				}
+			};
+			enqueue(InputAction::Left, previous.left, current.left);
+			enqueue(InputAction::Right, previous.right, current.right);
+			enqueue(InputAction::SoftDrop, previous.down, current.down);
+			enqueue(InputAction::Rotate, previous.rotate, current.rotate);
+			enqueue(InputAction::HardDrop, previous.downGround, current.downGround);
+		}
+
 		TetrisBoardController tetrisBoardController_;
 		Computer computer_;
+		Input previousInput_{};
 	};
 
 	PlayerPtr createHumanPlayer(DevicePtr device, std::shared_ptr<ControlProfiles> controlProfiles, const PlayerData& playerData, tetris::TetrisBoard&& tetrisBoard) {
@@ -191,6 +287,7 @@ namespace app::game {
 	}
 
 	void Player::updateRestart(tetris::BlockType current, tetris::BlockType next) {
+		resetInput();
 		externalRows_.clear();
 		clearedRows_ = 0;
 
@@ -200,6 +297,10 @@ namespace app::game {
 		};
 		playerBoardUpdate(updateRestart);
 		tetrisBoard_.restart(current, next);
+	}
+
+	void Player::resetInput() {
+		moveController_->reset();
 	}
 
 	void Player::updatePlayerData(const PlayerData& playerData) {

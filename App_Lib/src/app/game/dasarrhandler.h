@@ -1,10 +1,6 @@
 #ifndef APP_GAME_DASARRHANDLER_H
 #define APP_GAME_DASARRHANDLER_H
 
-#include "input.h"
-
-#include <memory>
-
 namespace app::game {
 
 	class DasArrHandler {
@@ -15,22 +11,20 @@ namespace app::game {
 		double getArr() const;
 		void setTiming(double das, double arr);
 
-		void update(double timeStep, const KeyState& keyState);
+		void press();
+		void update(double timeStep, bool held);
 		bool doAction();
 		void reset();
 
 	private:
 		double das_ = 0.0;           // Delayed Auto Shift (initial delay)
 		double arr_ = 0.0;           // Auto Repeat Rate (repeat interval)
-		double time_ = 0.0;          // Total elapsed time
-		double lastActionTime_ = 0.0;
+		double time_ = 0.0;
 
 		bool inDelayPhase_ = true;
-		bool previouslyHeld_ = false;
+		bool active_ = false;
 		bool actionReady_ = false;
 	};
-
-	using DasArrHandlerPrt = std::shared_ptr<DasArrHandler>;
 
 }
 

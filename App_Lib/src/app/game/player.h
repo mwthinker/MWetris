@@ -72,6 +72,7 @@ namespace app::game {
 		/// @param current
 		/// @param next 
 		void updateRestart(tetris::BlockType current, tetris::BlockType next);
+		void resetInput();
 
 		/// @brief Update the player data.
 		/// @param playerData 

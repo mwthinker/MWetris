@@ -11,6 +11,8 @@
 #include <network/servercore.h>
 #include <mw/signal.h>
 
+#include <cstdint>
+
 namespace app {
 
 	class ControlProfiles;
@@ -54,6 +56,8 @@ private:
 	void initDebugServer();
 
 	void processEvent(const SDL_Event& windowEvent) override;
+	void recordInputDelay(const SDL_Event& windowEvent);
+	void recordFrameTiming(const sdl::DeltaTime& deltaTime);
 	void processWindowMouseActions();
 	void applyCommittedSettings(const app::Configuration::EditableSettings& settings, const app::Configuration::EditableSettings* previous = nullptr);
 	void applyUiScale();
@@ -76,6 +80,13 @@ private:
 	ImGuiStyle baseImGuiStyle_{};
 	float userUiScale_ = 1.f;
 	bool uiScaleDirty_ = true;
+	std::uint64_t inputDelayReportStart_ = 0;
+	std::uint64_t inputDelayTotal_ = 0;
+	std::uint64_t inputDelayMaximum_ = 0;
+	std::uint64_t inputDelaySamples_ = 0;
+	std::uint64_t frameDurationTotal_ = 0;
+	std::uint64_t frameDurationMaximum_ = 0;
+	std::uint64_t frameSamples_ = 0;
 };
 
 #endif

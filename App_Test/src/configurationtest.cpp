@@ -298,12 +298,12 @@ namespace app {
 		ASSERT_EQ(state.size(), 3);
 		EXPECT_EQ(state[0].deviceGuid, "Keyboard 1");
 		ASSERT_TRUE(std::holds_alternative<game::KeyboardBindings>(state[0].bindings));
-		EXPECT_EQ(std::get<game::KeyboardBindings>(state[0].bindings), game::getDefaultKeyboardBindings(1));
+		EXPECT_EQ(std::get<game::KeyboardBindings>(state[0].bindings), game::getDefaultKeyboard1Bindings());
 		ASSERT_TRUE(std::holds_alternative<game::GamepadBindings>(state[1].bindings));
 		EXPECT_TRUE(game::validateBindings(std::get<game::GamepadBindings>(state[1].bindings)));
 		EXPECT_EQ(std::get<game::GamepadBindings>(state[1].bindings).left, SDL_GAMEPAD_BUTTON_WEST);
 		ASSERT_TRUE(std::holds_alternative<game::KeyboardBindings>(state[2].bindings));
-		EXPECT_EQ(std::get<game::KeyboardBindings>(state[2].bindings), game::getDefaultKeyboardBindings(1));
+		EXPECT_EQ(std::get<game::KeyboardBindings>(state[2].bindings), game::getDefaultKeyboard1Bindings());
 		EXPECT_EQ(document["devices"][0]["inputProfileId"], "fast");
 		EXPECT_EQ(document["devices"][0]["bindings"]["type"], "keyboard");
 	}

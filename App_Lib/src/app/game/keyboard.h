@@ -21,16 +21,19 @@ namespace app::game {
 
 	class Keyboard {
 	public:
-		Keyboard(const std::string& name, const KeyboardMapping& keyboardMapping);
+		Keyboard(
+			const std::string& name,
+			const KeyboardMapping& keyboardMapping,
+			const KeyboardMapping& defaultMapping);
 
 		Input getInput() const;
 		const char* getName() const;
 
-		bool eventUpdate(const SDL_Event& windowEvent);
+		bool eventUpdate(const SDL_Event& windowEvent, std::optional<InputCommand>& command);
 		bool captureMappingEvent(const SDL_Event& windowEvent);
 		MappingPollResult pollMappingInput();
 
-		void tick();
+		void resetInput();
 		void beginMapping();
 		void resetMapping();
 		void cancelMapping();

@@ -23,6 +23,9 @@ namespace app::game {
 	void TetrisGame::createGame(const std::vector<PlayerPtr>& players) {
 		countDown_ = players.size() > 1; // Only countdown if multiplayer.
 		players_ = players;
+		for (const auto& player : players_) {
+			player->resetInput();
+		}
 		timeHandler_.reset();
 		paused_ = true;
 		setPause(false);
@@ -53,6 +56,9 @@ namespace app::game {
 	}
 
 	void TetrisGame::unPause() {
+		for (const auto& player : players_) {
+			player->resetInput();
+		}
 		if (countDown_) {
 			paused_ = true;
 			gamePauseEvent(GamePause{
@@ -61,6 +67,9 @@ namespace app::game {
 			});
 			pauseKey_ = timeHandler_.scheduleRepeat([&, nbr = 2]() mutable {
 				if (nbr == 0) {
+					for (const auto& player : players_) {
+						player->resetInput();
+					}
 					paused_ = false;
 					gamePauseEvent(GamePause{
 						.countDown = 0,
@@ -84,6 +93,9 @@ namespace app::game {
 
 	void TetrisGame::pause() {
 		paused_ = true;
+		for (const auto& player : players_) {
+			player->resetInput();
+		}
 		timeHandler_.removeCallback(pauseKey_);
 		gamePauseEvent(GamePause{
 			.countDown = 0,

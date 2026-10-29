@@ -23,9 +23,9 @@ namespace app::game {
 		int getInstanceId() const;
 		const std::string& getGuid() const;
 
-		bool eventUpdate(const SDL_Event& windowEvent);
+		bool eventUpdate(const SDL_Event& windowEvent, std::optional<InputCommand>& command);
 		bool captureMappingEvent(const SDL_Event& windowEvent);
-		void tick();
+		void resetInput();
 
 		void beginMapping();
 		void resetMapping();
@@ -43,7 +43,7 @@ namespace app::game {
 		void setGameController(sdl::GameController&& gameController);
 
 	private:
-		bool updateInput(SDL_GamepadButton button, bool state);
+		std::optional<InputAction> updateInput(SDL_GamepadButton button, bool state);
 		void clearInput();
 
 		Input input_{};

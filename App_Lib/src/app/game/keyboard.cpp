@@ -9,39 +9,19 @@ namespace app::game {
 
 	namespace {
 
-		void handleKey(KeyState& keyState, bool isDown) {
-			if (isDown) {
-				if (!keyState.held) {
-					keyState.pressed = true;
-				}
-				keyState.held = true;
-			} else {
-				if (keyState.held) {
-					keyState.released = true;
-				}
-				keyState.held = false;
-			}
+		void handleKey(bool& held, bool isDown) {
+			held = isDown;
 		}
 
 	}
 
-	void Keyboard::tick() {
-		input_.left.pressed = false;
-		input_.left.released = false;
-		input_.right.pressed = false;
-		input_.right.released = false;
-		input_.down.pressed = false;
-		input_.down.released = false;
-		input_.rotate.pressed = false;
-		input_.rotate.released = false;
-		input_.downGround.pressed = false;
-		input_.downGround.released = false;
-	}
-
-	Keyboard::Keyboard(const std::string& name, const KeyboardMapping& keyboardMapping)
+	Keyboard::Keyboard(
+		const std::string& name,
+		const KeyboardMapping& keyboardMapping,
+		const KeyboardMapping& defaultMapping)
 		: name_{name}
 		, bindings_{keyboardMapping}
-		, defaults_{getDefaultKeyboardBindings(name == "Keyboard 2" ? 2 : 1)} {
+		, defaults_{defaultMapping} {
 	}
 
 	Input Keyboard::getInput() const {
@@ -52,7 +32,8 @@ namespace app::game {
 		return name_.c_str();
 	}
 
-	bool Keyboard::eventUpdate(const SDL_Event& windowEvent) {
+	bool Keyboard::eventUpdate(const SDL_Event& windowEvent, std::optional<InputCommand>& command) {
+		command.reset();
 		if (windowEvent.type != SDL_EVENT_KEY_DOWN && windowEvent.type != SDL_EVENT_KEY_UP) {
 			return false;
 		}
@@ -62,18 +43,33 @@ namespace app::game {
 
 		const bool isDown = windowEvent.type == SDL_EVENT_KEY_DOWN;
 		const auto key = windowEvent.key.key;
+		InputAction action;
 		if (key == bindings_.left) {
 			handleKey(input_.left, isDown);
+			action = InputAction::Left;
 		} else if (key == bindings_.right) {
 			handleKey(input_.right, isDown);
+			action = InputAction::Right;
 		} else if (key == bindings_.softDrop) {
 			handleKey(input_.down, isDown);
+			action = InputAction::SoftDrop;
 		} else if (key == bindings_.rotate) {
 			handleKey(input_.rotate, isDown);
+			action = InputAction::Rotate;
 		} else if (key == bindings_.hardDrop) {
 			handleKey(input_.downGround, isDown);
+			action = InputAction::HardDrop;
+		} else {
+			return false;
+		}
+		if (isDown) {
+			command = InputCommand{action, windowEvent.common.timestamp};
 		}
 		return true;
+	}
+
+	void Keyboard::resetInput() {
+		clearInput();
 	}
 
 	bool Keyboard::captureMappingEvent(const SDL_Event& windowEvent) {

@@ -10,16 +10,8 @@ namespace app::game {
 	namespace {
 
 		// Calculate and return the best input to achieve the current state.
-		Input calculateInput(tetris::Ai::State state, Input current) {
+		Input calculateInput(tetris::Ai::State state) {
 			Input next = {};
-
-			auto updateKey = [](bool nowHeld, const KeyState& prev) -> KeyState {
-				return {
-					.held = nowHeld,
-					.pressed = nowHeld && !prev.held,
-					.released = !nowHeld && prev.held
-				};
-			};
 
 			// Determine target key states
 			bool wantRotate = state.rotationLeft > 0;
@@ -27,13 +19,13 @@ namespace app::game {
 			bool wantRight = state.left < 0;
 			bool wantDown = state.left == 0 && state.rotationLeft == 0;
 
-			next.rotate = updateKey(wantRotate, current.rotate);
-			next.left = updateKey(wantLeft, current.left);
-			next.right = updateKey(wantRight, current.right);
-			next.down = updateKey(wantDown, current.down);
+			next.rotate = wantRotate;
+			next.left = wantLeft;
+			next.right = wantRight;
+			next.down = wantDown;
 
 			// Keep downGround unchanged for now (or add logic if needed)
-			next.downGround = updateKey(false, current.downGround);
+			next.downGround = false;
 			
 			return next;
 		}
@@ -62,7 +54,7 @@ namespace app::game {
 			state_.rotationLeft = 0;
 		}
 
-		input_ = calculateInput(state_, input_);
+		input_ = calculateInput(state_);
 	}
 
 	bool Computer::isHorizontalMoveDone(const tetris::TetrisBoard& board) const {

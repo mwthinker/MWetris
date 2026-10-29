@@ -17,6 +17,8 @@ namespace app::game {
 		friend class DeviceManager;
 
 		mw::PublicSignal<Device, bool> connection;
+		mw::PublicSignal<Device, const InputCommand&> command;
+		mw::PublicSignal<Device> inputReset;
 
 		Input getInput() const {
 			return input_;
@@ -43,6 +45,14 @@ namespace app::game {
 		void invokeConnection(bool connected) {
 			connected_ = connected;
 			connection.invoke(connected);
+		}
+
+		void invokeCommand(const InputCommand& inputCommand) {
+			command.invoke(inputCommand);
+		}
+
+		void invokeInputReset() {
+			inputReset.invoke();
 		}
 
 		Input input_{};

@@ -28,6 +28,7 @@ namespace app::game {
 
 		bool eventUpdate(const SDL_Event& windowEvent);
 		void tick();
+		void clearInput();
 
 		std::vector<DevicePtr> getAllDevicesAvailable() const;
 		DevicePtr getDefaultDevice1() const;
@@ -52,12 +53,14 @@ namespace app::game {
 			SDL_GUID guid;
 		};
 
-		KeyboardDevice createKeyboardDevice(std::unique_ptr<Keyboard> keyboard);
+		KeyboardDevice createKeyboardDevice(const std::string& name, KeyboardBindings defaults);
 		Keyboard* findKeyboardBackend(Device& device) const;
 		GamePad* findGamepadBackend(Device& device) const;
 		BindingSet getConfiguredBindings(const std::string& guid, BindingSet defaults) const;
 		void controllerDeviceAddedEvent(const SDL_GamepadDeviceEvent& deviceEvent);
 		void controllerDeviceRemovedEvent(const SDL_GamepadDeviceEvent& deviceEvent);
+		void clearInput(KeyboardDevice& keyboardDevice);
+		void clearInput(GamepadDevice& gamepadDevice);
 
 		std::vector<DeviceBinding> bindings_;
 		PersistenceCallback persist_;

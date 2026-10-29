@@ -1,26 +1,28 @@
 #ifndef APP_GAME_INPUT_H
 #define APP_GAME_INPUT_H
 
-#include <compare>
+#include "inputbindings.h"
+
+#include <cstdint>
 
 namespace app::game {
 
-	struct KeyState {
-		bool held = false;
-		bool pressed = false;
-		bool released = false;
+	struct InputCommand {
+		InputAction action = InputAction::Left;
+		std::uint64_t timestamp = 0;
+		bool deferredUntilNextPiece = false;
 
-		friend constexpr auto operator<=>(const KeyState&, const KeyState&) = default;
+		friend constexpr bool operator==(const InputCommand&, const InputCommand&) = default;
 	};
 
 	struct Input {
-		KeyState rotate;
-		KeyState down;
-		KeyState downGround;
-		KeyState left;
-		KeyState right;
+		bool rotate = false;
+		bool down = false;
+		bool downGround = false;
+		bool left = false;
+		bool right = false;
 
-		friend constexpr auto operator<=>(const Input&, const Input&) = default;
+		friend constexpr bool operator==(const Input&, const Input&) = default;
 	};
 
 }

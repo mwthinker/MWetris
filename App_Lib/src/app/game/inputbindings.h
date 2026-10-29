@@ -41,11 +41,11 @@ namespace app::game {
 	};
 
 	struct KeyboardBindings {
-		SDL_Keycode left = SDLK_LEFT;
-		SDL_Keycode right = SDLK_RIGHT;
-		SDL_Keycode softDrop = SDLK_DOWN;
-		SDL_Keycode rotate = SDLK_UP;
-		SDL_Keycode hardDrop = SDLK_RCTRL;
+		SDL_Keycode left;
+		SDL_Keycode right;
+		SDL_Keycode softDrop;
+		SDL_Keycode rotate;
+		SDL_Keycode hardDrop;
 
 		bool operator==(const KeyboardBindings&) const = default;
 	};
@@ -60,7 +60,7 @@ namespace app::game {
 		bool operator==(const GamepadBindings&) const = default;
 	};
 
-	template<class T>
+	template<typename T>
 	concept Bindings = requires(T bindings, const T constBindings) {
 		bindings.left;
 		bindings.right;
@@ -107,17 +107,24 @@ namespace app::game {
 		return "Unknown";
 	}
 
-	inline constexpr KeyboardBindings getDefaultKeyboardBindings(int keyboardNumber) {
-		if (keyboardNumber == 2) {
-			return {
-				.left = SDLK_A,
-				.right = SDLK_D,
-				.softDrop = SDLK_S,
-				.rotate = SDLK_W,
-				.hardDrop = SDLK_LCTRL,
-			};
-		}
-		return {};
+	inline constexpr KeyboardBindings getDefaultKeyboard1Bindings() {
+		return {
+			.left = SDLK_LEFT,
+			.right = SDLK_RIGHT,
+			.softDrop = SDLK_DOWN,
+			.rotate = SDLK_UP,
+			.hardDrop = SDLK_RCTRL,
+		};
+	}
+
+	inline constexpr KeyboardBindings getDefaultKeyboard2Bindings() {
+		return {
+			.left = SDLK_A,
+			.right = SDLK_D,
+			.softDrop = SDLK_S,
+			.rotate = SDLK_W,
+			.hardDrop = SDLK_LCTRL,
+		};
 	}
 
 	inline constexpr GamepadBindings getDefaultGamepadBindings() {
