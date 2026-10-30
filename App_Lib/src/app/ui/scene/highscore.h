@@ -14,7 +14,7 @@ namespace app::ui::scene {
 	class HighScore : public Scene {
 	public:
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
-		ImVec2 getSize() const override { return {620.f, 500.f}; }
+		ImVec2 getSize() const override { return {620.f, 400.f}; }
 
 	private:
 		void switchedTo(const SceneData& sceneData) override;

@@ -119,7 +119,7 @@ namespace app::ui::scene {
 					ImGui::TableNextColumn();
 					ImGui::PushID(i);
 					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {12.f, 10.f});
-					if (ImGui::BeginChild("Player card", {0.f, 125.f}, true, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+					if (ImGui::BeginChild("Player card", {0.f, 150.f}, true, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
 						ImGui::Text(compactCards ? "P%d" : "Player %d", i + 1);
 						ImGui::Separator();
 						ImGui::Spacing();
