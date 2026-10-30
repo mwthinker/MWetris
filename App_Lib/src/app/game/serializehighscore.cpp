@@ -5,6 +5,7 @@
 #include <protocol/high_score.pb.h>
 #include <spdlog/spdlog.h>
 
+#include <algorithm>
 #include <concepts>
 #include <filesystem>
 #include <chrono>
@@ -20,6 +21,16 @@ namespace app::game {
 		constexpr int NbrHighScoreResults = 10;
 		const std::string SavedGameFile{"savedGame.mw"};
 		const std::string SavedHighScoreFile{"highScore.mw"};
+
+		bool resultRanksBefore(const tp::HighScore_Result& a, const tp::HighScore_Result& b) {
+			if (a.points() != b.points()) {
+				return a.points() > b.points();
+			}
+			if (a.last_played().seconds() != b.last_played().seconds()) {
+				return a.last_played().seconds() < b.last_played().seconds();
+			}
+			return a.last_played().nanos() < b.last_played().nanos();
+		}
 
 		std::vector<HighScoreResult> toHighScoreResults(const google::protobuf::RepeatedPtrField<tp::HighScore_Result>& repeatedField) {
 			std::vector<HighScoreResult> results;
@@ -93,8 +104,14 @@ namespace app::game {
 		result->set_start_level(clampStartLevel(startLevel));
 		result->mutable_last_played()->CopyFrom(google::protobuf::util::TimeUtil::GetCurrentTime());
 
-		auto highScoreResults = toHighScoreResults(highScore.results());
-		highScoreResults.resize(NbrHighScoreResults);
+		std::vector<tp::HighScore_Result> results{highScore.results().begin(), highScore.results().end()};
+		std::sort(results.begin(), results.end(), resultRanksBefore);
+
+		highScore.clear_results();
+		const auto resultCount = std::min<int>(NbrHighScoreResults, static_cast<int>(results.size()));
+		for (int index = 0; index < resultCount; ++index) {
+			highScore.add_results()->CopyFrom(results[index]);
+		}
 		saveToFile(highScore, SavedHighScoreFile);
 	}
 

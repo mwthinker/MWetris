@@ -55,6 +55,7 @@ namespace app::game {
 		void unPause();
 
 		std::vector<PlayerPtr> players_;
+		mw::signals::ScopedConnections playerConnections_;
 
 		double accumulator_ = 0.0;
 		double fixedTimestep = 1.0 / 60.0;

@@ -4,6 +4,9 @@
 #include <app/game/serializehighscore.h>
 #include <app/game/devicemanager.h>
 #include <app/game/player.h>
+#include <app/util/protofile.h>
+
+#include <protocol/high_score.pb.h>
 
 #include <filesystem>
 
@@ -132,6 +135,23 @@ namespace app::game {
 		EXPECT_EQ(roundTrippedResults.front().name, "Current");
 		EXPECT_EQ(roundTrippedResults.front().level, 10);
 		EXPECT_EQ(roundTrippedResults.front().startLevel, 9);
+	}
+
+	TEST_F(SerilizeTest, persistsOnlyTenHighestScores) {
+		// Given
+		for (int points = 0; points < 12; ++points) {
+			saveHighScore("Player " + std::to_string(points), points, 0, 0);
+		}
+
+		// When
+		tp::HighScore persistedHighScore;
+		ASSERT_TRUE(loadFromFile(persistedHighScore, "highScore.mw"));
+
+		// Then
+		ASSERT_EQ(persistedHighScore.results_size(), 10);
+		for (int index = 0; index < persistedHighScore.results_size(); ++index) {
+			EXPECT_EQ(persistedHighScore.results(index).points(), 11 - index);
+		}
 	}
 
 }

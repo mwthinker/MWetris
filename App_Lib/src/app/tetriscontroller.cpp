@@ -49,6 +49,9 @@ namespace app {
 			tetrisEvent(gamePause);
 			gameComponent_->gamePause(gamePause);
 		});
+		connections_ += tetrisGame_.gameOverEvent.connect([this](const game::GameOver& gameOver) {
+			tetrisEvent(gameOver);
+		});
 	}
 
 	TetrisController::~TetrisController() {

@@ -23,8 +23,15 @@ namespace app::game {
 	void TetrisGame::createGame(const std::vector<PlayerPtr>& players) {
 		countDown_ = players.size() > 1; // Only countdown if multiplayer.
 		players_ = players;
+		playerConnections_.clear();
 		for (const auto& player : players_) {
 			player->resetInput();
+			playerConnections_ += player->playerBoardUpdate.connect([this, player](const PlayerBoardEvent& playerBoardEvent) {
+				const auto* boardEvent = std::get_if<TetrisBoardEvent>(&playerBoardEvent);
+				if (boardEvent && boardEvent->event == tetris::BoardEvent::GameOver) {
+					gameOverEvent(GameOver{player});
+				}
+			});
 		}
 		timeHandler_.reset();
 		paused_ = true;
