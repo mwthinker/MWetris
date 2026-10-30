@@ -44,7 +44,10 @@ namespace app::game {
 			bool operator==(const Config&) const = default;
 		};
 
-		explicit DefaultGameRules(Config config = {})
+		DefaultGameRules()
+			: DefaultGameRules(Config{}) {}
+
+		explicit DefaultGameRules(Config config)
 			: config_{config} {
 			config_.startLevel = clampStartLevel(config_.startLevel);
 		}
