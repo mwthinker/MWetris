@@ -112,6 +112,7 @@ namespace app::cnetwork {
 		void handlePlayerBoardUpdate(const NetworkPlayer& player, const game::UpdateRestart& updateRestart);
 
 		void handlePlayerBoardUpdate(const NetworkPlayer& player, const game::UpdatePlayerData& updatePlayerData);
+		void handlePlayerBoardUpdate(const NetworkPlayer& player, const game::LevelUp& levelUp);
 
 		void handlePlayerBoardUpdate(const NetworkPlayer& player, const game::ExternalRows& externalRows);
 

@@ -9,7 +9,7 @@ find_package(GTest CONFIG REQUIRED)
 enable_testing()
 
 set(SOURCES_TEST
-	src/audio/audioeventroutertest.cpp
+	src/audio/audioeventtest.cpp
 	src/configurationtest.cpp
 	src/controlprofilestest.cpp
 	src/game/classicscorecomparisontest.cpp

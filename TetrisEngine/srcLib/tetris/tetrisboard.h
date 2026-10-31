@@ -9,13 +9,15 @@
 namespace tetris {
 
 	enum class BoardEvent {
-		BlockCollision,
+		BlockLocked,
 		CurrentBlockUpdated,
 		
-		PlayerMovesBlock,
-		GravityMovesBlock,
+		PlayerMovedBlock,
+		PlayerRotatedBlock,
+		PlayerSoftDroppedBlock,
+		PlayerHardDroppedBlock,
+		GravityMovedBlock,
 		
-		RowsRemoved,
 		RowToBeRemoved,
 		GameOver
 	};
@@ -173,14 +175,14 @@ namespace tetris {
 				block.moveLeft();
 				if (!collision(block)) {
 					current_ = block;
-					eventCallback(BoardEvent::PlayerMovesBlock, 0);
+					eventCallback(BoardEvent::PlayerMovedBlock, 0);
 				}
 				break;
 			case Move::Right:
 				block.moveRight();
 				if (!collision(block)) {
 					current_ = block;
-					eventCallback(BoardEvent::PlayerMovesBlock, 0);
+					eventCallback(BoardEvent::PlayerMovedBlock, 0);
 				}
 				break;
 			case Move::DownGround: {
@@ -188,36 +190,34 @@ namespace tetris {
 					current_ = block;
 					block.moveDown();
 				}
-				eventCallback(BoardEvent::PlayerMovesBlock, 0);
+				eventCallback(BoardEvent::PlayerHardDroppedBlock, 0);
 				break;
 			}
 			case Move::Down:
 				block.moveDown();
 				if (!collision(block)) {
 					current_ = block;
-					eventCallback(BoardEvent::PlayerMovesBlock, 0);
+					eventCallback(BoardEvent::PlayerSoftDroppedBlock, 0);
 				}
 				break;
 			case Move::RotateRight:
 				block.rotateRight();
 				if (!collision(block)) {
 					current_ = block;
-					eventCallback(BoardEvent::PlayerMovesBlock, 0);
+					eventCallback(BoardEvent::PlayerRotatedBlock, 0);
 				}
 				break;
 			case Move::RotateLeft:
 				block.rotateLeft();
 				if (!collision(block)) {
 					current_ = block;
-					eventCallback(BoardEvent::PlayerMovesBlock, 0);
+					eventCallback(BoardEvent::PlayerRotatedBlock, 0);
 				}
 				break;
 			case Move::DownGravity:
 				block.moveDown();
 				if (collision(block)) {
 					addBlockToBoard(current_);
-					eventCallback(BoardEvent::BlockCollision, 0);
-					
 					removeFilledRows(current_, eventCallback);
 
 					// Update the user controlled block.
@@ -225,7 +225,7 @@ namespace tetris {
 					eventCallback(BoardEvent::CurrentBlockUpdated, 0);
 				} else {
 					current_ = block;
-					eventCallback(BoardEvent::GravityMovesBlock, 0);
+					eventCallback(BoardEvent::GravityMovedBlock, 0);
 				}
 				break;
 		}
@@ -248,9 +248,7 @@ namespace tetris {
 			}
 		}
 
-		if (rowsFilled > 0) {
-			callback(BoardEvent::RowsRemoved, rowsFilled);
-		}
+		callback(BoardEvent::BlockLocked, rowsFilled);
 	}
 
 	void TetrisBoard::moveRowsOneStepDown(int rowToRemove, EventCallback auto&& callback) {

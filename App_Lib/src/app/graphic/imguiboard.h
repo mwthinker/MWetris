@@ -15,7 +15,7 @@
 #include <vector>
 
 namespace app::game {
-	class GamePause;
+	struct GamePause;
 }
 
 namespace app::graphic {

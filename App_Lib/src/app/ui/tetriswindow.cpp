@@ -20,12 +20,9 @@
 #include "scene/gameroomlobby.h"
 #include "scene/networkerror.h"
 #include "game/serialize.h"
-#include "game/tetrisgame.h"
 #include "graphic/gamecomponent.h"
 #include "cnetwork/network.h"
 #include "util/auxiliary.h"
-
-#include <network/client.h>
 
 #include <IconsFontAwesome6.h>
 #include <spdlog/spdlog.h>
@@ -177,13 +174,13 @@ namespace app::ui {
 		modalStateMachine_.emplace<scene::LeaveGame>(tetrisController_, [this]() { window_.quit(); });
 
 		connections_ += tetrisController_->tetrisEvent.connect([this](const TetrisEvent& tetrisEvent) {
-			for (auto effect : audioEventRouter_.route(tetrisEvent)) audioEngine_->play(effect);
+			audio::playEventSound(*audioEngine_, tetrisEvent);
 			std::visit([&](auto&& event) {
 				onTetrisEvent(event);
 			}, tetrisEvent);
 		});
 		connections_ += tetrisController_->playerBoardEvent.connect([this](const game::PlayerPtr& player, const game::PlayerBoardEvent& event) {
-			for (auto effect : audioEventRouter_.route(*player, event)) audioEngine_->play(effect);
+			audio::playEventSound(*audioEngine_, *player, event);
 		});
 
 		// Keep the update loop in sync with monitor.

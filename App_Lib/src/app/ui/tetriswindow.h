@@ -11,7 +11,7 @@
 #include "../game/tetrisgameevent.h"
 #include "../ui/subwindow.h"
 #include "../cnetwork/networkevent.h"
-#include "../audio/audioeventrouter.h"
+#include "../audio/audioevent.h"
 
 #include <network/client.h>
 
@@ -84,7 +84,6 @@ namespace app::ui {
 		std::shared_ptr<game::DeviceManager> deviceManager_;
 		std::shared_ptr<ControlProfiles> controlProfiles_;
 		std::shared_ptr<audio::AudioEngine> audioEngine_;
-		audio::AudioEventRouter audioEventRouter_;
 		std::shared_ptr<ControlsPresenter> controlsPresenter_;
 		std::function<void()> requestRestart_;
 		app::TextureView background_;

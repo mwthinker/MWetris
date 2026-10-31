@@ -308,6 +308,11 @@ namespace app::game {
 		playerData_ = playerData;
 	}
 
+	void Player::updatePlayerData(const PlayerData& playerData, const LevelUp& levelUp) {
+		playerBoardUpdate(levelUp);
+		updatePlayerData(playerData);
+	}
+
 	void Player::updateMove(tetris::Move move) {
 		playerBoardUpdate(UpdateMove{move});
 		tetrisBoard_.update(move, [&](tetris::BoardEvent event, int nbr) {
@@ -398,10 +403,8 @@ namespace app::game {
 			playerBoardUpdate(nextBlock);
 			tetrisBoard_.setNextBlock(nextBlock.next);
 		}
-		if (boardEvent == tetris::BoardEvent::RowsRemoved) {
+		if (boardEvent == tetris::BoardEvent::BlockLocked) {
 			clearedRows_ += value;
-		}
-		if (boardEvent == tetris::BoardEvent::BlockCollision) {
 			tetrisBoard_.addExternalRows(externalRows_);
 			externalRows_.clear();
 		}

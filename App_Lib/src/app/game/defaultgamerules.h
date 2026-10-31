@@ -112,8 +112,8 @@ namespace app::game {
 
 		void updateGameBoardEvent(tetris::BoardEvent gameEvent, int value, Info& info) {
 			switch (gameEvent) {
-				case tetris::BoardEvent::RowsRemoved:
-					rowsRemove(info.player, value, info);
+				case tetris::BoardEvent::BlockLocked:
+					if (value > 0) rowsRemove(info.player, value, info);
 					break;
 				case tetris::BoardEvent::GameOver:
 					gameOver();
@@ -125,10 +125,15 @@ namespace app::game {
 			if (info.player->isLocal()) {
 				spdlog::info("[DefaultGameRules] Game event player: {}", static_cast<char>(info.player->getNextBlockType()));
 				const int clearedRows = info.player->getClearedRows() + nbr;
+				const int previousLevel = info.data.level;
 				info.data.points += calculateLineClearPoints(nbr, info.data.level);
 				info.data.level = levelForClearedRows(clearedRows, config_.startLevel);
 
-				info.player->updatePlayerData(info.data);
+				if (info.data.level > previousLevel) {
+					info.player->updatePlayerData(info.data, LevelUp{.previous = previousLevel, .current = info.data.level});
+				} else {
+					info.player->updatePlayerData(info.data);
+				}
 				info.player->setGravity(calculateGravity(info.data.level));
 			}
 
@@ -197,8 +202,8 @@ namespace app::game {
 	private:
 		void updateGameBoardEvent(tetris::BoardEvent gameEvent, int value, const PlayerPtr& player) {
 			switch (gameEvent) {
-				case tetris::BoardEvent::RowsRemoved:
-					rowsRemove(player, value);
+				case tetris::BoardEvent::BlockLocked:
+					if (value > 0) rowsRemove(player, value);
 					break;
 				case tetris::BoardEvent::GameOver:
 					gameOver(player);

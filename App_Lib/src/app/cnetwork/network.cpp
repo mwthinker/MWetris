@@ -619,6 +619,9 @@ namespace app::cnetwork {
 		spdlog::info("[Network] handle UpdatePlayerData");
 	}
 
+	void Network::handlePlayerBoardUpdate(const NetworkPlayer&, const game::LevelUp&) {
+	}
+
 	void Network::handlePlayerBoardUpdate(const NetworkPlayer& player, const game::ExternalRows& externalRows) {
 		if (player.player->isLocal()) {
 			spdlog::info("[Network] handle ExternalRows");

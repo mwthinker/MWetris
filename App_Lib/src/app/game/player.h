@@ -77,6 +77,7 @@ namespace app::game {
 		/// @brief Update the player data.
 		/// @param playerData 
 		void updatePlayerData(const PlayerData& playerData);
+		void updatePlayerData(const PlayerData& playerData, const LevelUp& levelUp);
 
 		/// @brief Update the move. Only to be called by a remote player.
 		/// @param move 

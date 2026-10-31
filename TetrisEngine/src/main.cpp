@@ -56,7 +56,7 @@ struct Tetris {
 	
 	void operator()(BoardEvent gameEvent, int value) {
 		switch (gameEvent) {
-			case tetris::BoardEvent::BlockCollision:
+			case tetris::BoardEvent::BlockLocked:
 				if (flags.useRandomFile_) {
 					try {
 						BlockType blockType = readBlockType(infile);
@@ -72,15 +72,6 @@ struct Tetris {
 				} else {
 					tetrisBoard.setNextBlock(randomBlockType());
 				}
-				break;
-			case tetris::BoardEvent::CurrentBlockUpdated:
-				++turns;
-				break;
-			case tetris::BoardEvent::PlayerMovesBlock:
-				break;
-			case tetris::BoardEvent::GravityMovesBlock:
-				break;
-			case tetris::BoardEvent::RowsRemoved:
 				switch (value) {
 					case 1:
 						++clearedOneRows;
@@ -95,6 +86,19 @@ struct Tetris {
 						++clearedFourRows;
 						break;
 				}
+				break;
+			case tetris::BoardEvent::CurrentBlockUpdated:
+				++turns;
+				break;
+			case tetris::BoardEvent::PlayerMovedBlock:
+				break;
+			case tetris::BoardEvent::PlayerRotatedBlock:
+				break;
+			case tetris::BoardEvent::PlayerSoftDroppedBlock:
+				break;
+			case tetris::BoardEvent::PlayerHardDroppedBlock:
+				break;
+			case tetris::BoardEvent::GravityMovedBlock:
 				break;
 			case tetris::BoardEvent::RowToBeRemoved:
 				break;

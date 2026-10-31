@@ -4,17 +4,24 @@
 #include "defaultgamerules.h"
 
 #include <memory>
-#include <variant>
 
 namespace app::game {
 
 	class Player;
 	using PlayerPtr = std::shared_ptr<Player>;
 
-	class GamePause {
-	public:
+	enum class GamePauseAction {
+		Countdown,
+		CountdownFinished,
+		Started,
+		Paused,
+		Resumed
+	};
+
+	struct GamePause {
 		int countDown;
 		bool pause;
+		GamePauseAction action;
 	};
 
 	struct GameOver {

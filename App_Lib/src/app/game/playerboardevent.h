@@ -33,6 +33,10 @@ namespace app::game {
 	struct UpdatePlayerData {
 		PlayerData playerData;
 	};
+	struct LevelUp {
+		int previous;
+		int current;
+	};
 	struct UpdateMove {
 		tetris::Move move;
 	};
@@ -45,7 +49,7 @@ namespace app::game {
 		std::vector<tetris::BlockType> blockTypes;
 	};
 
-	using PlayerBoardEvent = std::variant<UpdateRestart, UpdatePlayerData, ExternalRows, UpdateMove, UpdateNextBlock, TetrisBoardEvent>;
+	using PlayerBoardEvent = std::variant<UpdateRestart, UpdatePlayerData, LevelUp, ExternalRows, UpdateMove, UpdateNextBlock, TetrisBoardEvent>;
 
 	template <typename F>
 	concept PlayerBoardEventCallback = std::invocable<F, const PlayerBoardEvent&>;

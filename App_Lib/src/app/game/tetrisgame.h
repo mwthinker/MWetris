@@ -62,6 +62,7 @@ namespace app::game {
 
 		bool paused_ = false;
 		bool countDown_ = false;
+		bool started_ = false;
 		TimeHandler timeHandler_;
 		TimeHandler::Key pauseKey_;
 	};

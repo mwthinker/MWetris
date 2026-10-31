@@ -22,6 +22,7 @@ namespace app::game {
 
 	void TetrisGame::createGame(const std::vector<PlayerPtr>& players) {
 		countDown_ = players.size() > 1; // Only countdown if multiplayer.
+		started_ = false;
 		players_ = players;
 		playerConnections_.clear();
 		for (const auto& player : players_) {
@@ -41,6 +42,7 @@ namespace app::game {
 	void TetrisGame::restart() {
 		timeHandler_.reset();
 		paused_ = true;
+		started_ = false;
 		setPause(false);
 	}
 
@@ -70,7 +72,8 @@ namespace app::game {
 			paused_ = true;
 			gamePauseEvent(GamePause{
 				.countDown = 3,
-				.pause = true
+				.pause = true,
+				.action = GamePauseAction::Countdown
 			});
 			pauseKey_ = timeHandler_.scheduleRepeat([&, nbr = 2]() mutable {
 				if (nbr == 0) {
@@ -80,12 +83,15 @@ namespace app::game {
 					paused_ = false;
 					gamePauseEvent(GamePause{
 						.countDown = 0,
-						.pause = false
+						.pause = false,
+						.action = GamePauseAction::CountdownFinished
 					});
+					started_ = true;
 				} else {
 					gamePauseEvent(GamePause{
 						.countDown = nbr--,
-						.pause = true
+						.pause = true,
+						.action = GamePauseAction::Countdown
 					});
 				}
 			}, 1.0, 3);
@@ -93,8 +99,10 @@ namespace app::game {
 			paused_ = false;
 			gamePauseEvent(GamePause{
 				.countDown = 0,
-				.pause = false
+				.pause = false,
+				.action = started_ ? GamePauseAction::Resumed : GamePauseAction::Started
 			});
+			started_ = true;
 		}
 	}
 
@@ -106,7 +114,8 @@ namespace app::game {
 		timeHandler_.removeCallback(pauseKey_);
 		gamePauseEvent(GamePause{
 			.countDown = 0,
-			.pause = true
+			.pause = true,
+			.action = GamePauseAction::Paused
 		});
 	}
 
