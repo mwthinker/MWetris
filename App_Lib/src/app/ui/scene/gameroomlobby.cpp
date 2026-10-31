@@ -111,15 +111,16 @@ namespace app::ui::scene {
 			ImGui::SecondaryText("Players appear in this left-to-right order during the game.");
 			ImGui::Dummy({0.f, 6.f});
 
+			const float scale = std::clamp(ImGui::GetFontSize() / 17.f, 0.5f, 2.f);
 			const int columns = static_cast<int>(playerSlots_.size());
-			const bool compactCards = ImGui::GetContentRegionAvail().x / columns < 150.f;
+			const bool compactCards = ImGui::GetContentRegionAvail().x / columns < 150.f * scale;
 			if (ImGui::BeginTable("Player cards", columns, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_PadOuterX)) {
 				for (int i = 0; i < playerSlots_.size(); ++i) {
 					auto& playerSlot = playerSlots_[i];
 					ImGui::TableNextColumn();
 					ImGui::PushID(i);
-					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {12.f, 10.f});
-					if (ImGui::BeginChild("Player card", {0.f, 150.f}, true, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {12.f * scale, 10.f * scale});
+					if (ImGui::BeginChild("Player card", {0.f, 150.f * scale}, true, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
 						ImGui::Text(compactCards ? "P%d" : "Player %d", i + 1);
 						ImGui::Separator();
 						ImGui::Spacing();
@@ -129,30 +130,30 @@ namespace app::ui::scene {
 								ImGui::TextUnformatted(slot.name.c_str());
 								const char* deviceName = slot.device ? slot.device->getName().c_str() : "No device";
 								ImGui::SecondaryText("Human - %s", deviceName);
-								if (ImGui::MediumButton(compactCards ? "Remove##Human" : "Remove", {-1.f, 28.f})) {
+								if (ImGui::MediumButton(compactCards ? "Remove##Human" : "Remove", {-1.f, 28.f * scale})) {
 									playerSlot = game::OpenSlot{};
 									tetrisController_->setPlayerSlot(playerSlot, i);
 								}
 							} else if constexpr (std::is_same_v<T, game::Ai>) {
 								ImGui::TextUnformatted(slot.name.c_str());
 								ImGui::SecondaryText("Computer player");
-								if (ImGui::MediumButton(compactCards ? "Remove##Ai" : "Remove", {-1.f, 28.f})) {
+								if (ImGui::MediumButton(compactCards ? "Remove##Ai" : "Remove", {-1.f, 28.f * scale})) {
 									playerSlot = game::OpenSlot{};
 									tetrisController_->setPlayerSlot(playerSlot, i);
 								}
 							} else if constexpr (std::is_same_v<T, game::Remote>) {
 								ImGui::TextUnformatted(slot.name.c_str());
 								ImGui::SecondaryText(slot.ai ? "Remote computer" : "Remote player");
-								if (ImGui::MediumButton(compactCards ? "Remove##Remote" : "Remove", {-1.f, 28.f})) {
+								if (ImGui::MediumButton(compactCards ? "Remove##Remote" : "Remove", {-1.f, 28.f * scale})) {
 									playerSlot = game::OpenSlot{};
 									tetrisController_->setPlayerSlot(playerSlot, i);
 								}
 							} else if constexpr (std::is_same_v<T, game::ClosedSlot>) {
 								ImGui::BeginDisabled();
-								ImGui::MediumButton("Closed", {-1.f, 65.f});
+								ImGui::MediumButton("Closed", {-1.f, 65.f * scale});
 								ImGui::EndDisabled();
 							} else if constexpr (std::is_same_v<T, game::OpenSlot>) {
-								if (ImGui::MediumButton(compactCards ? "+ Add" : "+ Add Player", {-1.f, 65.f})) {
+								if (ImGui::MediumButton(compactCards ? "+ Add" : "+ Add Player", {-1.f, 65.f * scale})) {
 									AddPlayerData data{};
 									data.index = i;
 									data.usedDevices = getUsedDevices(playerSlots_);

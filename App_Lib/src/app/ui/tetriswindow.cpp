@@ -375,15 +375,15 @@ namespace app::ui {
 					if (ImGui::MenuItem(game::hasSavedGame() ? "Resume Single Player" : "New Single Player", "F1")) {
 						startSinglePlayer();
 					}
-					if (ImGui::MenuItem("Create Local Game")) {
+					if (ImGui::MenuItem("Local Multiplayer")) {
 						tetrisController_->createLocalGameRoom();
 					}
 					ImGui::BeginDisabled(!tetrisController_->isConnectedToServer());
 					if (ImGui::BeginMenu("Online")) {
-						if (ImGui::MenuItem("Create Network Game")) {
+						if (ImGui::MenuItem("Host Game")) {
 							modalStateMachine_.switchTo<scene::CreateGameRoom>();
 						}
-						if (ImGui::MenuItem("Join Network Game")) {
+						if (ImGui::MenuItem("Browse Games")) {
 							modalStateMachine_.switchTo<scene::JoinGameRoom>();
 						}
 						ImGui::EndMenu();
