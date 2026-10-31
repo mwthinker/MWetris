@@ -30,6 +30,7 @@
 #include <IconsFontAwesome6.h>
 #include <spdlog/spdlog.h>
 
+#include <algorithm>
 #include <chrono>
 #include <string>
 #include <utility>
@@ -194,6 +195,17 @@ namespace app::ui {
 	void TetrisWindow::refreshSettings() {
 		auto& configuration = Configuration::getInstance();
 		auto& style = ImGui::GetStyle();
+		const auto colorScheme = configuration.getEditableSettings().board.colorScheme;
+		const auto sliderPalette = theme::sliderPalette(colorScheme, configuration.getBorderColor());
+		auto sliderGrab = static_cast<ImVec4>(sliderPalette.grab);
+		auto sliderGrabActive = static_cast<ImVec4>(sliderPalette.active);
+		if (colorScheme == "custom") {
+			sliderGrab.w = std::max(sliderGrab.w, 0.75f);
+			sliderGrabActive.x += (1.f - sliderGrabActive.x) * 0.25f;
+			sliderGrabActive.y += (1.f - sliderGrabActive.y) * 0.25f;
+			sliderGrabActive.z += (1.f - sliderGrabActive.z) * 0.25f;
+			sliderGrabActive.w = 1.f;
+		}
 		style.Colors[ImGuiCol_Button] = configuration.getButtonBackgroundColor();
 		style.Colors[ImGuiCol_ButtonHovered] = configuration.getButtonHoverColor();
 		style.Colors[ImGuiCol_ButtonActive] = configuration.getButtonFocusColor();
@@ -207,6 +219,8 @@ namespace app::ui {
 		style.Colors[ImGuiCol_FrameBgActive] = configuration.getComboBoxFocusColor();
 		style.Colors[ImGuiCol_Border] = configuration.getComboBoxBorderColor();
 		style.Colors[ImGuiCol_CheckMark] = configuration.getChecboxCheckColor();
+		style.Colors[ImGuiCol_SliderGrab] = sliderGrab;
+		style.Colors[ImGuiCol_SliderGrabActive] = sliderGrabActive;
 		style.FrameBorderSize = 1.f;
 	}
 

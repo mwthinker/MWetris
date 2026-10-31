@@ -209,8 +209,9 @@ namespace ImGui {
 		ImGui::PushStyleColor(ImGuiCol_Button, app::ui::theme::Success.toImU32());
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, app::ui::theme::SuccessHovered.toImU32());
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, app::ui::theme::SuccessActive.toImU32());
+		ImGui::PushStyleColor(ImGuiCol_Text, app::ui::theme::SuccessButtonText.toImU32());
 		bool result = ImGui::Button(label, size);
-		ImGui::PopStyleColor(3);
+		ImGui::PopStyleColor(4);
 		PopButtonStyle();
 		return result;
 	}
