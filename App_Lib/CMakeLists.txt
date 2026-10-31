@@ -11,6 +11,10 @@ if (MSVC)
 endif ()
 
 set(SOURCES_LIB
+	src/app/audio/audioengine.cpp
+	src/app/audio/audioengine.h
+	src/app/audio/audioeventrouter.cpp
+	src/app/audio/audioeventrouter.h
 	src/app/graphic/gamecomponent.cpp
 	src/app/graphic/gamecomponent.h
 	src/app/graphic/imguiboard.cpp

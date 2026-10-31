@@ -123,6 +123,50 @@ namespace app {
 			bool operator==(const AssetSettings&) const = default;
 		};
 
+		struct AudioSettings {
+			bool masterEnabled = true;
+			bool musicEnabled = true;
+			bool effectsEnabled = true;
+			float masterVolume = 1.f;
+			float musicVolume = 0.6f;
+			float effectsVolume = 0.8f;
+
+			bool operator==(const AudioSettings&) const = default;
+		};
+
+		struct UiSoundAssets {
+			std::string click = "audio/ui/click.wav";
+			std::string confirm = "audio/ui/confirm.wav";
+			std::string error = "audio/ui/error.wav";
+
+			bool operator==(const UiSoundAssets&) const = default;
+		};
+
+		struct GameSoundAssets {
+			std::string move = "audio/game/move.wav";
+			std::string hardDrop = "audio/game/hard-drop.wav";
+			std::string lock = "audio/game/lock.wav";
+			std::string lineClear = "audio/game/line-clear.wav";
+			std::string lineClear4 = "audio/game/tetris.wav";
+			std::string levelUp = "audio/game/level-up.wav";
+			std::string garbage = "audio/game/garbage.wav";
+			std::string countdown = "audio/game/countdown.wav";
+			std::string go = "audio/game/go.wav";
+			std::string pause = "audio/game/pause.wav";
+			std::string resume = "audio/game/resume.wav";
+			std::string gameOver = "audio/game/game-over.wav";
+
+			bool operator==(const GameSoundAssets&) const = default;
+		};
+
+		struct AudioAssetSettings {
+			std::string music = "audio/music/tetris-theme.ogg";
+			UiSoundAssets ui;
+			GameSoundAssets game;
+
+			bool operator==(const AudioAssetSettings&) const = default;
+		};
+
 		struct AiDefinition {
 			std::string name;
 			std::string valueFunction;
@@ -135,6 +179,8 @@ namespace app {
 			BoardSettings board;
 			AppearanceSettings appearance;
 			AssetSettings assets;
+			AudioSettings audio;
+			AudioAssetSettings audioAssets;
 			Network network;
 			std::array<std::string, 4> activeAiNames;
 			std::vector<AiDefinition> ais;

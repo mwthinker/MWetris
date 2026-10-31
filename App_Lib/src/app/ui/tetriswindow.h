@@ -11,6 +11,7 @@
 #include "../game/tetrisgameevent.h"
 #include "../ui/subwindow.h"
 #include "../cnetwork/networkevent.h"
+#include "../audio/audioeventrouter.h"
 
 #include <network/client.h>
 
@@ -44,6 +45,7 @@ namespace app::ui {
 		TetrisWindow(const std::string& windowName, Type type, sdl::Window& window,
 			std::shared_ptr<game::DeviceManager> deviceManager,
 			std::shared_ptr<ControlProfiles> controlProfiles,
+			std::shared_ptr<audio::AudioEngine> audioEngine,
 			std::shared_ptr<cnetwork::Network> network,
 			std::function<void()> requestRestart
 		);
@@ -64,6 +66,7 @@ namespace app::ui {
 		void onTetrisEvent(const game::GameOver& gameOver);
 		void onTetrisEvent(const PlayerSlotEvent& playerSlotEvent);
 		void onTetrisEvent(const app::GameRoomEvent& gameRoomEvent);
+		void onTetrisEvent(const app::CreateGameEvent& createGameEvent);
 		void onTetrisEvent(const cnetwork::GameRoomListEvent& gameRoomListEvent);
 		void onTetrisEvent(const game::GameRoomConfigEvent& gameRoomConfigEvent);
 		void onTetrisEvent(const cnetwork::NetworkErrorEvent& networkErrorEvent);
@@ -80,6 +83,8 @@ namespace app::ui {
 		sdl::Window& window_;
 		std::shared_ptr<game::DeviceManager> deviceManager_;
 		std::shared_ptr<ControlProfiles> controlProfiles_;
+		std::shared_ptr<audio::AudioEngine> audioEngine_;
+		audio::AudioEventRouter audioEventRouter_;
 		std::shared_ptr<ControlsPresenter> controlsPresenter_;
 		std::function<void()> requestRestart_;
 		app::TextureView background_;

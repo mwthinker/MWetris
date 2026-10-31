@@ -15,6 +15,7 @@
 - For virtual functions, use one of `override`, `final`, or `virtual`.
 - Base class destructors must be public and virtual when objects may be deleted through base pointers; otherwise prefer protected and non-virtual (C.35).
 - Use `nullptr` instead of `NULL` or `0`.
+- Avoid nullable pointer parameters for optional behavior; prefer overloads, references, or explicit optional types.
 - Avoid prefixing class names with "I" (use `Player` instead of `IPlayer`). For concrete implementations, use `PlayerImpl` or a more descriptive name if possible.
 - For nested namespaces, use the compact syntax `namespace a::b::c { … }`.
 - Prefer signed integers for values, counters, and arithmetic; use unsigned only for bit manipulation, intentional modular arithmetic, or API-required types (ES.101, ES.102).

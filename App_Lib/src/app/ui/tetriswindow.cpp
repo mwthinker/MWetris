@@ -101,11 +101,13 @@ namespace app::ui {
 	TetrisWindow::TetrisWindow(const std::string& windowName, Type type, sdl::Window& window,
 		std::shared_ptr<game::DeviceManager> deviceManager,
 		std::shared_ptr<ControlProfiles> controlProfiles,
+		std::shared_ptr<audio::AudioEngine> audioEngine,
 		std::shared_ptr<cnetwork::Network> network,
 		std::function<void()> requestRestart)
 		: window_{window}
 		, deviceManager_{deviceManager}
 		, controlProfiles_{std::move(controlProfiles)}
+		, audioEngine_{std::move(audioEngine)}
 		, controlsPresenter_{std::make_shared<ControlsPresenter>(windowName, deviceManager, controlProfiles_)}
 		, requestRestart_{std::move(requestRestart)}
 		, modalStateMachine_{ui::scene::StateMachine::StateType::Modal}
@@ -160,11 +162,13 @@ namespace app::ui {
 		
 		modalStateMachine_.emplace<scene::JoinGameRoom>(tetrisController_);
 		modalStateMachine_.emplace<scene::CreateGameRoom>(tetrisController_);
-		modalStateMachine_.emplace<scene::Settings>(controlsPresenter_, requestRestart_);
+		modalStateMachine_.emplace<scene::Settings>(controlsPresenter_, audioEngine_, requestRestart_);
 		modalStateMachine_.emplace<scene::Controls>(controlsPresenter_);
 		modalStateMachine_.emplace<scene::HighScore>();
-		modalStateMachine_.emplace<scene::NewHighScore>([this]() {
-			modalStateMachine_.switchTo<scene::HighScore>();
+		modalStateMachine_.emplace<scene::NewHighScore>([this](int highlightedRank) {
+			scene::HighScoreData highScoreData;
+			highScoreData.highlightedRank = highlightedRank;
+			modalStateMachine_.switchTo<scene::HighScore>(highScoreData);
 		});
 		modalStateMachine_.emplace<scene::About>();
 		modalStateMachine_.emplace<scene::HowToPlay>();
@@ -173,9 +177,13 @@ namespace app::ui {
 		modalStateMachine_.emplace<scene::LeaveGame>(tetrisController_, [this]() { window_.quit(); });
 
 		connections_ += tetrisController_->tetrisEvent.connect([this](const TetrisEvent& tetrisEvent) {
+			for (auto effect : audioEventRouter_.route(tetrisEvent)) audioEngine_->play(effect);
 			std::visit([&](auto&& event) {
 				onTetrisEvent(event);
 			}, tetrisEvent);
+		});
+		connections_ += tetrisController_->playerBoardEvent.connect([this](const game::PlayerPtr& player, const game::PlayerBoardEvent& event) {
+			for (auto effect : audioEventRouter_.route(*player, event)) audioEngine_->play(effect);
 		});
 
 		// Keep the update loop in sync with monitor.
@@ -288,7 +296,6 @@ namespace app::ui {
 
 		if (const auto& player = gameOver.player;  tetrisController_->isDefaultGame() && game::isNewHighScore(playerData.points)) {
 			scene::NewHighScoreData highScoreData;
-			highScoreData.name = "Name"; // TODO! Get name from player
 			highScoreData.points = playerData.points;
 			highScoreData.clearedRows = player->getClearedRows();
 			highScoreData.level = playerData.level;
@@ -327,6 +334,9 @@ namespace app::ui {
 		}
 	}
 
+	void TetrisWindow::onTetrisEvent(const app::CreateGameEvent&) {
+	}
+
 	void TetrisWindow::onTetrisEvent(const cnetwork::GameRoomListEvent& gameRoomListEvent) {
 		// Do nothing here.
 	}
@@ -336,6 +346,7 @@ namespace app::ui {
 	}
 
 	void TetrisWindow::onTetrisEvent(const cnetwork::NetworkErrorEvent& networkErrorEvent) {
+		audioEngine_->play(audio::SoundEffect::UiError);
 		if (modalStateMachine_.isCurrentScene<scene::JoinGameRoom>() ||
 			modalStateMachine_.isCurrentScene<scene::CreateGameRoom>() ||
 			networkErrorEvent.insideGameRoom) {

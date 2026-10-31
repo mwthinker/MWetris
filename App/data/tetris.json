@@ -104,6 +104,36 @@
 			"port": 11175
 		}
 	},
+	"audio": {
+		"masterEnabled": true,
+		"musicEnabled": true,
+		"effectsEnabled": true,
+		"masterVolume": 1.0,
+		"musicVolume": 0.6,
+		"effectsVolume": 0.8
+	},
+	"audioAssets": {
+		"music": "audio/music/tetris-theme.ogg",
+		"ui": {
+			"click": "audio/ui/click.wav",
+			"confirm": "audio/ui/confirm.wav",
+			"error": "audio/ui/error.wav"
+		},
+		"game": {
+			"move": "audio/game/move.wav",
+			"hardDrop": "audio/game/hard-drop.wav",
+			"lock": "audio/game/lock.wav",
+			"lineClear": "audio/game/line-clear.wav",
+			"lineClear4": "audio/game/tetris.wav",
+			"levelUp": "audio/game/level-up.wav",
+			"garbage": "audio/game/garbage.wav",
+			"countdown": "audio/game/countdown.wav",
+			"go": "audio/game/go.wav",
+			"pause": "audio/game/pause.wav",
+			"resume": "audio/game/resume.wav",
+			"gameOver": "audio/game/game-over.wav"
+		}
+	},
 	"inputProfiles": [],
 	"lastSinglePlayerControls": {
 		"deviceGuid": "Keyboard 1",

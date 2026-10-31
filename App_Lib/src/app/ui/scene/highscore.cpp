@@ -33,6 +33,9 @@ namespace app::ui::scene {
 			int rankNbr = 1;
 			for (const auto& highscore : results_) {
 				ImGui::TableNextRow();
+				if (highlightedRank_ == rankNbr) {
+					ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, ImGui::GetColorU32(ImGuiCol_HeaderHovered));
+				}
 				ImGui::TableNextColumn(); ImGui::Text("%i", rankNbr++);
 				ImGui::TableNextColumn(); ImGui::TextUnformatted(highscore.name.c_str());
 				if (highscore.points > 0) {
@@ -55,6 +58,10 @@ namespace app::ui::scene {
 
 	void HighScore::switchedTo(const SceneData& sceneData) {
 		results_ = game::loadHighScore();
+		highlightedRank_.reset();
+		if (const auto* highScoreData = dynamic_cast<const HighScoreData*>(&sceneData)) {
+			highlightedRank_ = highScoreData->highlightedRank;
+		}
 	}
 
 }

@@ -13,6 +13,11 @@ install(DIRECTORY ${MWetrisData_SOURCE_DIR}/images/
 	COMPONENT data
 )
 
+install(DIRECTORY ${MWetrisData_SOURCE_DIR}/audio/
+	DESTINATION audio
+	COMPONENT data
+)
+
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data/
 	DESTINATION .
 	COMPONENT data

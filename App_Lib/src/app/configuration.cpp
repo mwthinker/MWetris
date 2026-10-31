@@ -324,6 +324,10 @@ namespace app {
 			const auto& window = document.at("window");
 			const auto& board = window.at("tetrisBoard");
 			const auto& button = window.at("button");
+			const auto audio = document.value("audio", json::object());
+			const auto audioAssets = document.value("audioAssets", json::object());
+			const auto uiAudio = audioAssets.value("ui", json::object());
+			const auto gameAudio = audioAssets.value("game", json::object());
 			Configuration::EditableSettings settings{
 				.window = {
 					.width = window.at("width").get<int>(),
@@ -370,6 +374,36 @@ namespace app {
 					.boardFont = board.at("font").get<std::string>(),
 					.icon = window.at("icon").get<std::string>(),
 					.background = window.at("sprites").at("background").get<std::string>(),
+				},
+				.audio = {
+					.masterEnabled = audio.value("masterEnabled", true),
+					.musicEnabled = audio.value("musicEnabled", true),
+					.effectsEnabled = audio.value("effectsEnabled", true),
+					.masterVolume = audio.value("masterVolume", 1.f),
+					.musicVolume = audio.value("musicVolume", 0.6f),
+					.effectsVolume = audio.value("effectsVolume", 0.8f),
+				},
+				.audioAssets = {
+					.music = audioAssets.value("music", "audio/music/tetris-theme.ogg"),
+					.ui = {
+						.click = uiAudio.value("click", "audio/ui/click.wav"),
+						.confirm = uiAudio.value("confirm", "audio/ui/confirm.wav"),
+						.error = uiAudio.value("error", "audio/ui/error.wav"),
+					},
+					.game = {
+						.move = gameAudio.value("move", "audio/game/move.wav"),
+						.hardDrop = gameAudio.value("hardDrop", "audio/game/hard-drop.wav"),
+						.lock = gameAudio.value("lock", "audio/game/lock.wav"),
+						.lineClear = gameAudio.value("lineClear", "audio/game/line-clear.wav"),
+						.lineClear4 = gameAudio.value("lineClear4", "audio/game/tetris.wav"),
+						.levelUp = gameAudio.value("levelUp", "audio/game/level-up.wav"),
+						.garbage = gameAudio.value("garbage", "audio/game/garbage.wav"),
+						.countdown = gameAudio.value("countdown", "audio/game/countdown.wav"),
+						.go = gameAudio.value("go", "audio/game/go.wav"),
+						.pause = gameAudio.value("pause", "audio/game/pause.wav"),
+						.resume = gameAudio.value("resume", "audio/game/resume.wav"),
+						.gameOver = gameAudio.value("gameOver", "audio/game/game-over.wav"),
+					},
 				},
 				.network = document.at("network").get<Configuration::Network>(),
 				.activeAiNames = {
@@ -437,6 +471,36 @@ namespace app {
 			for (int index = 0; index < std::ssize(BlockSpriteKeys); ++index) {
 				board["sprites"][BlockSpriteKeys[index]] = settings.assets.blockSprites[index];
 			}
+			document["audio"] = {
+				{"masterEnabled", settings.audio.masterEnabled},
+				{"musicEnabled", settings.audio.musicEnabled},
+				{"effectsEnabled", settings.audio.effectsEnabled},
+				{"masterVolume", settings.audio.masterVolume},
+				{"musicVolume", settings.audio.musicVolume},
+				{"effectsVolume", settings.audio.effectsVolume},
+			};
+			document["audioAssets"] = {
+				{"music", settings.audioAssets.music},
+				{"ui", {
+					{"click", settings.audioAssets.ui.click},
+					{"confirm", settings.audioAssets.ui.confirm},
+					{"error", settings.audioAssets.ui.error},
+				}},
+				{"game", {
+					{"move", settings.audioAssets.game.move},
+					{"hardDrop", settings.audioAssets.game.hardDrop},
+					{"lock", settings.audioAssets.game.lock},
+					{"lineClear", settings.audioAssets.game.lineClear},
+					{"lineClear4", settings.audioAssets.game.lineClear4},
+					{"levelUp", settings.audioAssets.game.levelUp},
+					{"garbage", settings.audioAssets.game.garbage},
+					{"countdown", settings.audioAssets.game.countdown},
+					{"go", settings.audioAssets.game.go},
+					{"pause", settings.audioAssets.game.pause},
+					{"resume", settings.audioAssets.game.resume},
+					{"gameOver", settings.audioAssets.game.gameOver},
+				}},
+			};
 			document["network"] = {
 				{"globalServer", {{"ip", settings.network.global.ip}, {"port", settings.network.global.port}}},
 				{"server", {{"ip", settings.network.server.ip}, {"port", settings.network.server.port}}},
@@ -1269,6 +1333,10 @@ namespace app {
 		if (!std::isfinite(candidate.board.borderSize) || candidate.board.borderSize < 0.f || candidate.board.borderSize > 20.f) {
 			return std::unexpected{"Board border size must be between 0 and 20."};
 		}
+		const std::array volumes{candidate.audio.masterVolume, candidate.audio.musicVolume, candidate.audio.effectsVolume};
+		if (std::ranges::any_of(volumes, [](float volume) { return !std::isfinite(volume) || volume < 0.f || volume > 1.f; })) {
+			return std::unexpected{"Audio volumes must be between 0 and 1."};
+		}
 		if (!isValidIpv4(candidate.network.global.ip) || !isValidIpv4(candidate.network.server.ip)) {
 			return std::unexpected{"Network addresses must be valid IPv4 addresses."};
 		}
@@ -1300,6 +1368,13 @@ namespace app {
 			candidate.assets.blockSprites[0], candidate.assets.blockSprites[1], candidate.assets.blockSprites[2],
 			candidate.assets.blockSprites[3], candidate.assets.blockSprites[4], candidate.assets.blockSprites[5],
 			candidate.assets.blockSprites[6],
+			candidate.audioAssets.music,
+			candidate.audioAssets.ui.click, candidate.audioAssets.ui.confirm, candidate.audioAssets.ui.error,
+			candidate.audioAssets.game.move, candidate.audioAssets.game.hardDrop, candidate.audioAssets.game.lock,
+			candidate.audioAssets.game.lineClear, candidate.audioAssets.game.lineClear4,
+			candidate.audioAssets.game.levelUp, candidate.audioAssets.game.garbage,
+			candidate.audioAssets.game.countdown, candidate.audioAssets.game.go,
+			candidate.audioAssets.game.pause, candidate.audioAssets.game.resume, candidate.audioAssets.game.gameOver,
 		};
 		if (std::ranges::any_of(paths, [](const std::string& path) { return path.empty() || path.contains('\0'); })) {
 			return std::unexpected{"Asset paths cannot be empty."};

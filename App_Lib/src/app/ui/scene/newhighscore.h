@@ -21,7 +21,7 @@ namespace app::ui::scene {
 
 	class NewHighScore : public Scene {
 	public:
-		NewHighScore(std::function<void()> closeFunction) {
+		NewHighScore(std::function<void(int)> closeFunction) {
 			closeFunction_ = closeFunction;
 		}
 
@@ -37,7 +37,7 @@ namespace app::ui::scene {
 		void switchedTo(const SceneData& sceneData) override;
 		
 		NewHighScoreData data_{};
-		std::function<void()> closeFunction_;
+		std::function<void(int)> closeFunction_;
 	};
 
 }

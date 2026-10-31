@@ -4,6 +4,7 @@
 #include "ui/controlspresenter.h"
 #include "ui/imguiextra.h"
 #include "ui/theme.h"
+#include "audio/audioengine.h"
 
 #include <IconsFontAwesome6.h>
 
@@ -45,7 +46,7 @@ namespace app::ui::scene {
 			if (ImGui::BeginTable(id, 3, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_PadOuterX)) {
 				ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 210.f * scale);
 				ImGui::TableSetupColumn("Control", ImGuiTableColumnFlags_WidthStretch);
-				ImGui::TableSetupColumn("Reset", ImGuiTableColumnFlags_WidthFixed, 28.f * scale);
+				ImGui::TableSetupColumn("Reset", ImGuiTableColumnFlags_WidthFixed, 36.f * scale);
 				content();
 				ImGui::EndTable();
 			}
@@ -120,8 +121,9 @@ namespace app::ui::scene {
 
 	}
 
-	Settings::Settings(std::shared_ptr<ControlsPresenter> controlsPresenter, std::function<void()> requestRestart)
+	Settings::Settings(std::shared_ptr<ControlsPresenter> controlsPresenter, std::shared_ptr<app::audio::AudioEngine> audioEngine, std::function<void()> requestRestart)
 		: controlsPresenter_{std::move(controlsPresenter)}
+		, audioEngine_{std::move(audioEngine)}
 		, requestRestart_{std::move(requestRestart)} {
 	}
 
@@ -154,6 +156,7 @@ namespace app::ui::scene {
 	}
 
 	void Settings::switchedFrom() {
+		if (loaded_ && audioEngine_) audioEngine_->previewSettings(committed_);
 		committed_ = {};
 		draft_ = {};
 		defaults_.reset();
@@ -208,6 +211,7 @@ namespace app::ui::scene {
 	void Settings::drawBasicSettings() {
 		const auto* defaults = defaults_ ? &*defaults_ : nullptr;
 		drawColorSchemeSelector();
+		drawAudioSettings();
 		if (ImGui::SemiBoldCollapsingHeader("General / Display", ImGuiTreeNodeFlags_DefaultOpen)) {
 			settingsTable("General display settings", [&]() {
 				settingRow("UI scale", draft_.window.uiScale, defaults ? &defaults->window.uiScale : nullptr, [&]() {
@@ -234,6 +238,33 @@ namespace app::ui::scene {
 		if (ImGui::SemiBoldCollapsingHeader("Controls", ImGuiTreeNodeFlags_DefaultOpen)) {
 			controlsPresenter_->drawMenu();
 			ImGui::SecondaryText("Control profile changes are saved immediately.");
+		}
+	}
+
+	void Settings::drawAudioSettings() {
+		if (!ImGui::SemiBoldCollapsingHeader("Audio", ImGuiTreeNodeFlags_DefaultOpen)) return;
+		const auto* defaults = defaults_ ? &*defaults_ : nullptr;
+		settingsTable("Audio settings", [&]() {
+			settingRow("Master audio", draft_.audio.masterEnabled, defaults ? &defaults->audio.masterEnabled : nullptr, [&]() {
+				ImGui::Checkbox("##Value", &draft_.audio.masterEnabled);
+			});
+			settingRow("Music", draft_.audio.musicEnabled, defaults ? &defaults->audio.musicEnabled : nullptr, [&]() {
+				ImGui::Checkbox("##Value", &draft_.audio.musicEnabled);
+			});
+			settingRow("Effects", draft_.audio.effectsEnabled, defaults ? &defaults->audio.effectsEnabled : nullptr, [&]() {
+				ImGui::Checkbox("##Value", &draft_.audio.effectsEnabled);
+			});
+			auto volume = [&](const char* label, float& value, const float* defaultValue) {
+				settingRow(label, value, defaultValue, [&]() {
+					ImGui::SliderFloat("##Value", &value, 0.f, 1.f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+				});
+			};
+			volume("Master volume", draft_.audio.masterVolume, defaults ? &defaults->audio.masterVolume : nullptr);
+			volume("Music volume", draft_.audio.musicVolume, defaults ? &defaults->audio.musicVolume : nullptr);
+			volume("Effects volume", draft_.audio.effectsVolume, defaults ? &defaults->audio.effectsVolume : nullptr);
+		});
+		if (audioEngine_) {
+			ImGui::SecondaryText("%s", audioEngine_->getStatus().data());
 		}
 	}
 
@@ -378,6 +409,29 @@ namespace app::ui::scene {
 					path(labels[index], draft_.assets.blockSprites[index], defaults ? &defaults->assets.blockSprites[index] : nullptr);
 				}
 			});
+			if (ImGui::SemiBoldCollapsingHeader("Audio assets")) {
+				settingsTable("Audio asset settings", [&]() {
+					auto path = [&](const char* label, std::string& value, const std::string* defaultValue) {
+						settingRow(label, value, defaultValue, [&]() { ImGui::InputText("##Value", &value); });
+					};
+					path("Music", draft_.audioAssets.music, defaults ? &defaults->audioAssets.music : nullptr);
+					path("UI click", draft_.audioAssets.ui.click, defaults ? &defaults->audioAssets.ui.click : nullptr);
+					path("UI confirm", draft_.audioAssets.ui.confirm, defaults ? &defaults->audioAssets.ui.confirm : nullptr);
+					path("UI error", draft_.audioAssets.ui.error, defaults ? &defaults->audioAssets.ui.error : nullptr);
+					path("Move", draft_.audioAssets.game.move, defaults ? &defaults->audioAssets.game.move : nullptr);
+					path("Hard drop", draft_.audioAssets.game.hardDrop, defaults ? &defaults->audioAssets.game.hardDrop : nullptr);
+					path("Lock", draft_.audioAssets.game.lock, defaults ? &defaults->audioAssets.game.lock : nullptr);
+					path("Line clear", draft_.audioAssets.game.lineClear, defaults ? &defaults->audioAssets.game.lineClear : nullptr);
+					path("Tetris", draft_.audioAssets.game.lineClear4, defaults ? &defaults->audioAssets.game.lineClear4 : nullptr);
+					path("Level up", draft_.audioAssets.game.levelUp, defaults ? &defaults->audioAssets.game.levelUp : nullptr);
+					path("Garbage", draft_.audioAssets.game.garbage, defaults ? &defaults->audioAssets.game.garbage : nullptr);
+					path("Countdown", draft_.audioAssets.game.countdown, defaults ? &defaults->audioAssets.game.countdown : nullptr);
+					path("Go", draft_.audioAssets.game.go, defaults ? &defaults->audioAssets.game.go : nullptr);
+					path("Pause", draft_.audioAssets.game.pause, defaults ? &defaults->audioAssets.game.pause : nullptr);
+					path("Resume", draft_.audioAssets.game.resume, defaults ? &defaults->audioAssets.game.resume : nullptr);
+					path("Game over", draft_.audioAssets.game.gameOver, defaults ? &defaults->audioAssets.game.gameOver : nullptr);
+				});
+			}
 		}
 		drawCustomAis();
 	}

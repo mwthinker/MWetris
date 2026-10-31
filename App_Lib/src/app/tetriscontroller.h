@@ -57,11 +57,12 @@ namespace app {
 	struct CreateGameEvent {
 	};
 
-	using TetrisEvent = std::variant<game::GamePause, game::GameOver, game::GameRoomConfigEvent, PlayerSlotEvent, GameRoomEvent, cnetwork::GameRoomListEvent, cnetwork::NetworkErrorEvent>;
+	using TetrisEvent = std::variant<game::GamePause, game::GameOver, game::GameRoomConfigEvent, PlayerSlotEvent, GameRoomEvent, CreateGameEvent, cnetwork::GameRoomListEvent, cnetwork::NetworkErrorEvent>;
 
 	class TetrisController {
 	public:
 		mw::PublicSignal<TetrisController, const TetrisEvent&> tetrisEvent;
+		mw::PublicSignal<TetrisController, const game::PlayerPtr&, const game::PlayerBoardEvent&> playerBoardEvent;
 
 		TetrisController(std::shared_ptr<game::DeviceManager> deviceManager, std::shared_ptr<ControlProfiles> controlProfiles, std::shared_ptr<cnetwork::Network> network, std::shared_ptr<graphic::GameComponent> gameComponent);
 		~TetrisController();
@@ -135,6 +136,7 @@ namespace app {
 		void setGameRoomType(GameRoomType gameRoomType);
 
 		mw::signals::ScopedConnections connections_;
+		mw::signals::ScopedConnections playerConnections_;
 		std::shared_ptr<game::DeviceManager> deviceManager_;
 		std::shared_ptr<ControlProfiles> controlProfiles_;
 		std::unique_ptr<game::GameRules> rules_;

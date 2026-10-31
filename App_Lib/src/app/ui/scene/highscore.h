@@ -9,7 +9,13 @@
 #include "game/serialize.h"
 #include "game/serializehighscore.h"
 
+#include <optional>
+
 namespace app::ui::scene {
+
+	struct HighScoreData : public SceneData {
+		std::optional<int> highlightedRank;
+	};
 
 	class HighScore : public Scene {
 	public:
@@ -20,6 +26,7 @@ namespace app::ui::scene {
 		void switchedTo(const SceneData& sceneData) override;
 		
 		std::vector<game::HighScoreResult> results_;
+		std::optional<int> highlightedRank_;
 	};
 
 }

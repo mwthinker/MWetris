@@ -303,7 +303,7 @@ namespace app {
 		EXPECT_TRUE(game::validateBindings(std::get<game::GamepadBindings>(state[1].bindings)));
 		EXPECT_EQ(std::get<game::GamepadBindings>(state[1].bindings).left, SDL_GAMEPAD_BUTTON_WEST);
 		ASSERT_TRUE(std::holds_alternative<game::KeyboardBindings>(state[2].bindings));
-		EXPECT_EQ(std::get<game::KeyboardBindings>(state[2].bindings), game::getDefaultKeyboard1Bindings());
+		EXPECT_EQ(std::get<game::KeyboardBindings>(state[2].bindings), game::getDefaultKeyboard2Bindings());
 		EXPECT_EQ(document["devices"][0]["inputProfileId"], "fast");
 		EXPECT_EQ(document["devices"][0]["bindings"]["type"], "keyboard");
 	}
@@ -461,6 +461,9 @@ namespace app {
 		settings.board.showDownBlock = false;
 		settings.activeAiNames[2] = "Careful";
 		settings.ais.push_back({"Aggressive", "-0.5*holes - landingHeight"});
+		settings.audio.masterVolume = 0.45f;
+		settings.audio.musicEnabled = false;
+		settings.audioAssets.game.move = "custom/move.wav";
 
 		// When
 		auto result = configuration_->persistEditableSettings(settings);
@@ -477,6 +480,34 @@ namespace app {
 		EXPECT_EQ(persisted.at("ai3"), "Careful");
 		EXPECT_TRUE(persisted.contains("devices"));
 		EXPECT_TRUE(persisted.contains("inputProfiles"));
+		EXPECT_FLOAT_EQ(persisted.at("audio").at("masterVolume").get<float>(), 0.45f);
+		EXPECT_FALSE(persisted.at("audio").at("musicEnabled"));
+		EXPECT_EQ(persisted.at("audioAssets").at("game").at("move"), "custom/move.wav");
+	}
+
+	TEST_F(ConfigurationPersistenceTest, legacyConfigurationUsesAudioDefaults) {
+		auto settings = configuration_->getEditableSettings();
+		EXPECT_TRUE(settings.audio.musicEnabled);
+		EXPECT_TRUE(settings.audio.masterEnabled);
+		EXPECT_TRUE(settings.audio.effectsEnabled);
+		EXPECT_FLOAT_EQ(settings.audio.masterVolume, 1.f);
+		EXPECT_FLOAT_EQ(settings.audio.musicVolume, 0.6f);
+		EXPECT_FLOAT_EQ(settings.audio.effectsVolume, 0.8f);
+		EXPECT_EQ(settings.audioAssets.music, "audio/music/tetris-theme.ogg");
+		EXPECT_EQ(settings.audioAssets.game.gameOver, "audio/game/game-over.wav");
+	}
+
+	TEST_F(ConfigurationPersistenceTest, rejectsInvalidAudioSettings) {
+		auto original = configuration_->getEditableSettings();
+		auto invalid = original;
+		invalid.audio.effectsVolume = 1.1f;
+		EXPECT_FALSE(configuration_->persistEditableSettings(invalid));
+		invalid = original;
+		invalid.audioAssets.ui.click.clear();
+		EXPECT_FALSE(configuration_->persistEditableSettings(invalid));
+		invalid.audioAssets.ui.click = std::string{"bad\0path", 8};
+		EXPECT_FALSE(configuration_->persistEditableSettings(invalid));
+		EXPECT_EQ(configuration_->getEditableSettings(), original);
 	}
 
 	TEST_F(ConfigurationPersistenceTest, networkChangeRequiresRestart) {

@@ -10,6 +10,12 @@
 #include <string>
 #include <vector>
 
+namespace app::audio {
+
+	class AudioEngine;
+
+}
+
 namespace app::ui {
 
 	class ControlsPresenter;
@@ -20,7 +26,7 @@ namespace app::ui::scene {
 
 	class Settings : public Scene {
 	public:
-		Settings(std::shared_ptr<ControlsPresenter> controlsPresenter, std::function<void()> requestRestart);
+		Settings(std::shared_ptr<ControlsPresenter> controlsPresenter, std::shared_ptr<app::audio::AudioEngine> audioEngine, std::function<void()> requestRestart);
 
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
 		ImVec2 getSize() const override;
@@ -32,6 +38,7 @@ namespace app::ui::scene {
 		void switchedTo(const SceneData& data) override;
 		void switchedFrom() override;
 		void drawBasicSettings();
+		void drawAudioSettings();
 		void drawAdvancedSettings();
 		void drawColorSchemeSelector();
 		void drawAiSelectors();
@@ -39,6 +46,7 @@ namespace app::ui::scene {
 		void apply();
 
 		std::shared_ptr<ControlsPresenter> controlsPresenter_;
+		std::shared_ptr<app::audio::AudioEngine> audioEngine_;
 		std::function<void()> requestRestart_;
 		Configuration::EditableSettings committed_;
 		Configuration::EditableSettings draft_;

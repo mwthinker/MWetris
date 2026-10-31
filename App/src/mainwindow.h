@@ -16,6 +16,7 @@
 namespace app {
 
 	class ControlProfiles;
+	namespace audio { class AudioEngine; }
 
 }
 
@@ -67,6 +68,7 @@ private:
 	asio::io_context ioContext_; // Must be declared first to guarantee destruction order.
 	std::shared_ptr<app::ControlProfiles> controlProfiles_;
 	std::shared_ptr<app::game::DeviceManager> deviceManager_;
+	std::shared_ptr<app::audio::AudioEngine> audioEngine_;
 	std::vector<std::unique_ptr<app::ui::SubWindow>> subWindows_;
 	std::shared_ptr<network::ServerCore> server_;
 	mw::signals::ScopedConnections connections_;

@@ -3,6 +3,7 @@
 
 #include "../types.h"
 #include "../configuration.h"
+#include "../audio/audioengine.h"
 
 #include <algorithm>
 #include <chrono>
@@ -48,6 +49,9 @@ namespace ImGui {
 	bool ConfirmationButton(const char* label, const ImVec2& size = {});
 
 	bool AbortButton(const char* label, const ImVec2& size = {});
+	void BeginAudioFrame();
+	void ReportAudioSound(app::audio::SoundEffect effect);
+	bool ConsumeAudioSound(app::audio::SoundEffect& effect);
 
 	void FormTable(const char* id, std::invocable auto&& content, float labelWidth = 160.f) {
 		if (ImGui::BeginTable(id, 2, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_PadOuterX)) {

@@ -55,6 +55,7 @@ namespace app {
 	}
 
 	TetrisController::~TetrisController() {
+		playerConnections_.clear();
 		connections_.clear();
 		network_->stop();
 	}
@@ -308,6 +309,13 @@ namespace app {
 	}
 
 	void TetrisController::createGame(const std::vector<game::PlayerPtr>& players, const game::GameRulesConfig& gameRulesConfig) {
+		tetrisEvent(CreateGameEvent{});
+		playerConnections_.clear();
+		for (const auto& player : players) {
+			playerConnections_ += player->playerBoardUpdate.connect([this, player](const game::PlayerBoardEvent& event) {
+				playerBoardEvent(player, event);
+			});
+		}
 		gameRulesConfig_ = gameRulesConfig;
 		rules_ = createGameRules(gameRulesConfig);
 		tetrisGame_.createGame(players);

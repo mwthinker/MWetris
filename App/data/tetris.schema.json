@@ -19,6 +19,8 @@
 			"additionalProperties": false
 		},
 		"network": { "$ref": "#/definitions/Network" },
+		"audio": { "$ref": "#/definitions/Audio" },
+		"audioAssets": { "$ref": "#/definitions/AudioAssets" },
 		"ai1": { "type": "string", "minLength": 1 },
 		"ai2": { "type": "string", "minLength": 1 },
 		"ai3": { "type": "string", "minLength": 1 },
@@ -36,7 +38,7 @@
 			}
 		}
 	},
-	"required": ["window", "network", "inputProfiles", "devices", "ai1", "ai2", "ai3" ,"ai4", "ais"],
+	"required": ["window", "network", "audio", "audioAssets", "inputProfiles", "devices", "ai1", "ai2", "ai3" ,"ai4", "ais"],
 	"additionalProperties": false,
 	
 	"definitions": {
@@ -297,6 +299,61 @@
 				}
 			},
 			"required": ["globalServer", "server"],
+			"additionalProperties": false
+		},
+		"Volume": {
+			"type": "number",
+			"minimum": 0.0,
+			"maximum": 1.0
+		},
+		"Audio": {
+			"type": "object",
+			"properties": {
+				"masterEnabled": { "type": "boolean" },
+				"musicEnabled": { "type": "boolean" },
+				"effectsEnabled": { "type": "boolean" },
+				"masterVolume": { "$ref": "#/definitions/Volume" },
+				"musicVolume": { "$ref": "#/definitions/Volume" },
+				"effectsVolume": { "$ref": "#/definitions/Volume" }
+			},
+			"required": ["masterEnabled", "musicEnabled", "effectsEnabled", "masterVolume", "musicVolume", "effectsVolume"],
+			"additionalProperties": false
+		},
+		"AudioAssets": {
+			"type": "object",
+			"properties": {
+				"music": { "type": "string", "minLength": 1 },
+				"ui": {
+					"type": "object",
+					"properties": {
+						"click": { "type": "string", "minLength": 1 },
+						"confirm": { "type": "string", "minLength": 1 },
+						"error": { "type": "string", "minLength": 1 }
+					},
+					"required": ["click", "confirm", "error"],
+					"additionalProperties": false
+				},
+				"game": {
+					"type": "object",
+					"properties": {
+						"move": { "type": "string", "minLength": 1 },
+						"hardDrop": { "type": "string", "minLength": 1 },
+						"lock": { "type": "string", "minLength": 1 },
+						"lineClear": { "type": "string", "minLength": 1 },
+						"lineClear4": { "type": "string", "minLength": 1 },
+						"levelUp": { "type": "string", "minLength": 1 },
+						"garbage": { "type": "string", "minLength": 1 },
+						"countdown": { "type": "string", "minLength": 1 },
+						"go": { "type": "string", "minLength": 1 },
+						"pause": { "type": "string", "minLength": 1 },
+						"resume": { "type": "string", "minLength": 1 },
+						"gameOver": { "type": "string", "minLength": 1 }
+					},
+					"required": ["move", "hardDrop", "lock", "lineClear", "lineClear4", "levelUp", "garbage", "countdown", "go", "pause", "resume", "gameOver"],
+					"additionalProperties": false
+				}
+			},
+			"required": ["music", "ui", "game"],
 			"additionalProperties": false
 		},
 		"InputProfiles": {

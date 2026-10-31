@@ -5,10 +5,13 @@
 
 #include <cstdarg>
 #include <utility>
+#include <optional>
 
 namespace ImGui {
 
 	namespace {
+		
+		std::optional<app::audio::SoundEffect> frameSound;
 
 		bool isMouseLeftClicked() {
 			return ImGui::GetIO().MouseClicked[ImGuiMouseButton_Left];
@@ -18,6 +21,21 @@ namespace ImGui {
 			return ImGui::GetIO().MouseClicked[ImGuiMouseButton_Right];
 		}
 
+	}
+
+	void BeginAudioFrame() {
+		frameSound.reset();
+	}
+
+	void ReportAudioSound(app::audio::SoundEffect effect) {
+		if (!frameSound) frameSound = effect;
+	}
+
+	bool ConsumeAudioSound(app::audio::SoundEffect& effect) {
+		if (!frameSound) return false;
+		effect = *frameSound;
+		frameSound.reset();
+		return true;
 	}
 
 	void PushButtonStyle() {
@@ -213,6 +231,7 @@ namespace ImGui {
 		bool result = ImGui::Button(label, size);
 		ImGui::PopStyleColor(4);
 		PopButtonStyle();
+		if (result) ReportAudioSound(app::audio::SoundEffect::UiConfirm);
 		return result;
 	}
 

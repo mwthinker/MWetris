@@ -29,7 +29,7 @@ namespace app::ui::scene {
 					if (focusName) {
 						ImGui::SetKeyboardFocusHere();
 					}
-					submitted = ImGui::InputText("##Value", &data_.name,
+					submitted = ImGui::InputTextWithHint("##Value", "Name", &data_.name,
 						ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CallbackAlways,
 						acceptNameInput);
 				});
@@ -44,9 +44,10 @@ namespace app::ui::scene {
 	}
 
 	void NewHighScore::save() {
+		const int placement = game::getHighScorePlacement(data_.points);
 		game::saveHighScore(data_.name, data_.points, data_.clearedRows, data_.level, data_.startLevel);
 		data_ = {};
-		closeFunction_();
+		closeFunction_(placement);
 	}
 
 	void NewHighScore::switchedTo(const SceneData& sceneData) {

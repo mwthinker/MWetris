@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 
 #include <app/configuration.h>
+#include <app/audio/audioengine.h>
+#include <app/ui/imguiextra.h>
 
 #include <app/ui/networkdebugwindow.h>
 #include <app/ui/tetriswindow.h>
@@ -34,6 +36,7 @@ MainWindow::~MainWindow() {
 	}
 	connections_.clear();
 	subWindows_.clear();
+	audioEngine_.reset();
 	server_.reset();
 	deviceManager_.reset();
 	controlProfiles_.reset();
@@ -60,7 +63,9 @@ void MainWindow::preLoop() {
 
 	auto& configuration = app::Configuration::getInstance();
 	baseImGuiStyle_ = ImGui::GetStyle();
+	audioEngine_ = std::make_shared<app::audio::AudioEngine>(configuration.getEditableSettings());
 	applyCommittedSettings(configuration.getEditableSettings());
+	audioEngine_->playMusic();
 	configuration.initImGuiFonts();
 
 	configuration.init(gpuDevice_);
@@ -111,6 +116,9 @@ void MainWindow::preLoop() {
 }
 
 void MainWindow::applyCommittedSettings(const app::Configuration::EditableSettings& settings, const app::Configuration::EditableSettings* previous) {
+	if (audioEngine_ && previous) {
+		audioEngine_->applySettings(*previous, settings);
+	}
 	if (!window_) {
 		return;
 	}
@@ -184,6 +192,7 @@ void MainWindow::initSingleTcpClient() {
 		subWindows_.push_back(std::make_unique<app::ui::TetrisWindow>(name, type, *this,
 			deviceManager_,
 			controlProfiles_,
+			audioEngine_,
 			std::make_shared<app::cnetwork::Network>(tcpClient, controlProfiles_),
 			[this]() { requestRestart(); }
 		));
@@ -203,6 +212,7 @@ void MainWindow::initTcpServer() {
 		subWindows_.push_back(std::make_unique<app::ui::TetrisWindow>(name, type, *this,
 			deviceManager_,
 			controlProfiles_,
+			audioEngine_,
 			std::make_shared<app::cnetwork::Network>(tcpClient, controlProfiles_),
 			[this]() { requestRestart(); }
 		));
@@ -220,6 +230,7 @@ void MainWindow::initDebugServer() {
 		subWindows_.push_back(std::make_unique<app::ui::TetrisWindow>(name, type, *this,
 			deviceManager_,
 			controlProfiles_,
+			audioEngine_,
 			std::make_shared<app::cnetwork::Network>(debugClient, controlProfiles_),
 			[this]() { requestRestart(); }
 		));
@@ -229,12 +240,24 @@ void MainWindow::initDebugServer() {
 }
 
 void MainWindow::renderImGui(const sdl::DeltaTime& deltaTime) {
+	ImGui::BeginAudioFrame();
 	recordFrameTiming(deltaTime);
 	if (uiScaleDirty_) {
 		applyUiScale();
 	}
 	for (auto& subWindow : subWindows_) {
 		subWindow->imGuiUpdate(deltaTime);
+	}
+	app::audio::SoundEffect semanticSound{};
+	if (audioEngine_ && ImGui::ConsumeAudioSound(semanticSound)) {
+		audioEngine_->play(semanticSound);
+	} else if (const auto drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
+		audioEngine_
+		&& ImGui::IsMouseReleased(ImGuiMouseButton_Left)
+		&& drag.x * drag.x + drag.y * drag.y < ImGui::GetIO().MouseDragThreshold * ImGui::GetIO().MouseDragThreshold
+		&& ImGui::IsAnyItemHovered()
+		&& !ImGui::GetIO().WantTextInput) {
+		audioEngine_->play(app::audio::SoundEffect::UiClick);
 	}
 	// ImGui-captured mouse events do not reach processEvent(), so handle window mouse actions here.
 	processWindowMouseActions();
