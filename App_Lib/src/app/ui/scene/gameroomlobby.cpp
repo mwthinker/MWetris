@@ -88,14 +88,15 @@ namespace app::ui::scene {
 
 	void GameRoomLooby::imGuiUpdate(const DeltaTime& deltaTime) {
 		const bool networkLobby = gameRoomSceneData_.type == GameRoomLoobyData::Type::Network;
-		const float backButtonWidth = 90.f;
+		const float scale = ImGui::GetUiScale();
+		const float backButtonWidth = 90.f * scale;
 
 		ImGui::PushFont(Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
 		ImGui::TextUnformatted(networkLobby ? "Online Lobby" : "Local Multiplayer");
 		ImGui::PopFont();
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetWindowWidth() - backButtonWidth - ImGui::GetStyle().WindowPadding.x);
-		if (ImGui::MediumButton("Back", {backButtonWidth, 30.f})) {
+		if (ImGui::MediumButton("Back", {backButtonWidth, 30.f * scale})) {
 			tetrisController_->leaveGameRoom();
 		}
 		ImGui::Spacing();
@@ -111,7 +112,6 @@ namespace app::ui::scene {
 			ImGui::SecondaryText("Players appear in this left-to-right order during the game.");
 			ImGui::Dummy({0.f, 6.f});
 
-			const float scale = std::clamp(ImGui::GetFontSize() / 17.f, 0.5f, 2.f);
 			const int columns = static_cast<int>(playerSlots_.size());
 			const bool compactCards = ImGui::GetContentRegionAvail().x / columns < 150.f * scale;
 			if (ImGui::BeginTable("Player cards", columns, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_PadOuterX)) {
@@ -190,7 +190,7 @@ namespace app::ui::scene {
 			ImGui::SecondaryText("Outlast the other players.");
 			if (auto* config = std::get_if<game::DefaultGameRules::Config>(&gameRulesConfig_)) {
 				ImGui::Spacing();
-				ImGui::SetNextItemWidth(220.f);
+				ImGui::SetNextItemWidth(220.f * scale);
 				ImGui::SliderInt("Starting level", &config->startLevel, 0, game::TetrisMaxLevel);
 			}
 
@@ -199,10 +199,10 @@ namespace app::ui::scene {
 				ImGui::Spacing();
 				ImGui::SeparatorText("Room");
 				if (!gameRoomId_.empty()) {
-					ImGui::SetNextItemWidth(std::max(80.f, ImGui::GetContentRegionAvail().x - 70.f));
+					ImGui::SetNextItemWidth(std::max(80.f * scale, ImGui::GetContentRegionAvail().x - 70.f * scale));
 					ImGui::InputText("##RoomId", &gameRoomId_, ImGuiInputTextFlags_ReadOnly);
 					ImGui::SameLine();
-					if (ImGui::MediumButton("Copy", {60.f, 0.f})) {
+					if (ImGui::MediumButton("Copy", {60.f * scale, 0.f})) {
 						ImGui::SetClipboardText(gameRoomId_.c_str());
 					}
 				}
@@ -217,7 +217,7 @@ namespace app::ui::scene {
 			}
 		};
 
-		if (ImGui::BeginChild("Lobby content", {0.f, -65.f})) {
+		if (ImGui::BeginChild("Lobby content", {0.f, -65.f * scale})) {
 			drawPlayerCards();
 			ImGui::Spacing();
 			ImGui::Separator();
@@ -238,9 +238,10 @@ namespace app::ui::scene {
 			ImGui::Text("%d player%s ready", playerCount, playerCount == 1 ? "" : "s");
 		}
 		ImGui::SameLine();
-		ImGui::AlignNextItemRight(140.f);
+		const float startButtonWidth = 140.f * scale;
+		ImGui::AlignNextItemRight(startButtonWidth);
 		ImGui::BeginDisabled(!canStart);
-		if (ImGui::ConfirmationButton("Start Game", {140.f, 40.f})) {
+		if (ImGui::ConfirmationButton("Start Game", {startButtonWidth, 40.f * scale})) {
 			if (networkLobby) {
 				spdlog::info("[CreateGame] Starting network game.");
 				tetrisController_->startNetworkGame(gameRulesConfig_, game::TetrisWidth, game::TetrisHeight);

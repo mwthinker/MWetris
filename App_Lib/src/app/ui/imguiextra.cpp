@@ -37,7 +37,7 @@ namespace ImGui {
 	}
 
 	void PushContentStyle() {
-		const float scale = std::clamp(ImGui::GetFontSize() / 17.f, 0.5f, 2.f);
+		const float scale = GetUiScale();
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {24.f * scale, 20.f * scale});
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {10.f * scale, 10.f * scale});
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.f * scale, 6.f * scale});
@@ -47,8 +47,12 @@ namespace ImGui {
 		ImGui::PopStyleVar(3);
 	}
 
+	float GetUiScale() {
+		return std::clamp(ImGui::GetFontSize() / 17.f, 0.5f, 2.f);
+	}
+
 	ImVec2 ModalSize(const ImVec2& logicalSize, float viewportFraction) {
-		const float scale = std::clamp(ImGui::GetFontSize() / 17.f, 0.5f, 2.f);
+		const float scale = GetUiScale();
 		const auto viewportSize = ImGui::GetMainViewport()->WorkSize;
 		return {
 			std::min(logicalSize.x * scale, viewportSize.x * viewportFraction),

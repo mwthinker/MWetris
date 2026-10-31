@@ -41,8 +41,9 @@ namespace app::ui::scene {
 	}
 
 	void JoinGameRoom::imGuiUpdate(const DeltaTime& deltaTime) {
+		const float scale = ImGui::GetUiScale();
 		ImGui::PushFont(app::Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
-		ImGui::Text("Custom Game");
+		ImGui::Text("Browse Game");
 		ImGui::PopFont();
 
 		ImGui::FormTable("Join game room form", [&]() {
@@ -55,27 +56,28 @@ namespace app::ui::scene {
 					}
 				});
 			});
-		});
+		}, 160.f * scale);
 
-		const float actionWidth = 200.f + ImGui::GetStyle().ItemSpacing.x;
+		const float buttonWidth = 100.f * scale;
+		const float actionWidth = buttonWidth * 2.f + ImGui::GetStyle().ItemSpacing.x;
 		ImGui::AlignNextItemRight(actionWidth);
-		if (ImGui::MediumButton("Refresh", {100.f, 30.f})) {
+		if (ImGui::MediumButton("Refresh", {buttonWidth, 30.f * scale})) {
 			tetrisController_->refreshGameRoomList();
 		}
 		ImGui::SameLine();
-		if (ImGui::ConfirmationButton("Connect", {100.f, 30.f})) { // TODO! Handle lag and show a spinner.
+		if (ImGui::ConfirmationButton("Connect", {buttonWidth, 30.f * scale})) { // TODO! Handle lag and show a spinner.
 			tetrisController_->joinGameRoom(serverId_);
 		}
 
 		ImGui::FormTable("Game room filter", [&]() {
 			ImGui::FormRow("Filter", [&]() { InputText("##Value", &filter_); });
-		});
+		}, 160.f * scale);
 
-		ImGui::Table("Game rooms", 4, ImGuiTableFlags_Borders, {500, 0}, [&]() {
-			ImGui::TableSetupColumn("Id");// , ImGuiTableColumnFlags_WidthFixed, 70);
-			ImGui::TableSetupColumn("Name");
-			ImGui::TableSetupColumn("Players / Max");
-			ImGui::TableSetupColumn("Connect");
+		ImGui::Table("Game rooms", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_SizingStretchProp, {0.f, 0.f}, [&]() {
+			ImGui::TableSetupColumn("Id", ImGuiTableColumnFlags_WidthStretch, 1.f);
+			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 1.f);
+			ImGui::TableSetupColumn("Players / Max", ImGuiTableColumnFlags_WidthFixed, 120.f * scale);
+			ImGui::TableSetupColumn("Connect", ImGuiTableColumnFlags_WidthFixed, 110.f * scale);
 			ImGui::TableHeadersRow();
 
 			for (const auto& gameRoom : gameRooms_) {

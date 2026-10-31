@@ -29,7 +29,7 @@ namespace app::ui::scene {
 
 		void detailsTable(const char* id, std::invocable auto&& rows) {
 			if (ImGui::BeginTable(id, 2, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_NoSavedSettings)) {
-				ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 170.f);
+				ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 170.f * ImGui::GetUiScale());
 				ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 				rows();
 				ImGui::EndTable();

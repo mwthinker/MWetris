@@ -219,7 +219,7 @@ namespace app::ui {
 	void ControlsPresenter::drawMenu() {
 		auto connectedDevices = getConnectedDevices();
 
-		ImGui::PushItemWidth(180.f);
+		ImGui::PushItemWidth(180.f * ImGui::GetUiScale());
 		ImGui::TextUnformatted("Configure controls for");
 		if (drawDeviceCombo(
 			selectedOptionsDeviceGuid_,

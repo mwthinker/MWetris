@@ -41,10 +41,11 @@ namespace app::ui::scene {
 		}
 
 		void settingsTable(const char* id, std::invocable auto&& content) {
+			const float scale = ImGui::GetUiScale();
 			if (ImGui::BeginTable(id, 3, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_PadOuterX)) {
-				ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 210.f);
+				ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 210.f * scale);
 				ImGui::TableSetupColumn("Control", ImGuiTableColumnFlags_WidthStretch);
-				ImGui::TableSetupColumn("Reset", ImGuiTableColumnFlags_WidthFixed, 28.f);
+				ImGui::TableSetupColumn("Reset", ImGuiTableColumnFlags_WidthFixed, 28.f * scale);
 				content();
 				ImGui::EndTable();
 			}
@@ -360,10 +361,11 @@ namespace app::ui::scene {
 		}
 
 		if (ImGui::SemiBoldCollapsingHeader("Assets / Theme")) {
+			const float scale = ImGui::GetUiScale();
 			settingsTable("Asset theme settings", [&]() {
 				auto path = [&](const char* label, std::string& value, const std::string* defaultValue) {
 					settingRow(label, value, defaultValue, [&]() {
-						ImGui::SetNextItemWidth(-130.f);
+						ImGui::SetNextItemWidth(-130.f * scale);
 						inputPath("##Value", value, nullptr);
 					});
 				};
@@ -429,7 +431,8 @@ namespace app::ui::scene {
 			ImGui::TextUnformatted("Saved. Restart required for:");
 			ImGui::SameLine();
 			ImGui::BeginDisabled(dirty || !requestRestart_);
-			if (ImGui::MediumButton("Restart now", {120.f, 30.f})) {
+			const float scale = ImGui::GetUiScale();
+			if (ImGui::MediumButton("Restart now", {120.f * scale, 30.f * scale})) {
 				requestRestart_();
 			}
 			ImGui::EndDisabled();
@@ -439,8 +442,9 @@ namespace app::ui::scene {
 		}
 		ImGui::EndModalBody();
 
-		constexpr float restoreButtonWidth = 140.f;
-		constexpr float applyButtonWidth = 100.f;
+		const float scale = ImGui::GetUiScale();
+		const float restoreButtonWidth = 140.f * scale;
+		const float applyButtonWidth = 100.f * scale;
 		const float actionWidth = restoreButtonWidth + applyButtonWidth + ImGui::GetStyle().ItemSpacing.x;
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + std::max(0.f, ImGui::GetContentRegionAvail().x - actionWidth));
 		ImGui::BeginDisabled(!defaults_);

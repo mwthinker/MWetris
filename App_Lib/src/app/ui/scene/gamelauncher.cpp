@@ -18,9 +18,10 @@ namespace app::ui::scene {
 	}
 
 	void GameLauncher::imGuiUpdate(const DeltaTime& deltaTime) {
-		constexpr float contentWidth = 440.f;
-		constexpr float buttonHeight = 56.f;
-		constexpr float contentHeight = 330.f;
+		const float scale = ImGui::GetUiScale();
+		const float contentWidth = 440.f * scale;
+		const float buttonHeight = 56.f * scale;
+		const float contentHeight = 330.f * scale;
 		const float left = std::max(ImGui::GetStyle().WindowPadding.x, (ImGui::GetWindowWidth() - contentWidth) / 2.f);
 		const float top = std::max(ImGui::GetCursorPosY(), (ImGui::GetWindowHeight() - contentHeight) / 2.f);
 
