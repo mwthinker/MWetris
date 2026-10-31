@@ -18,6 +18,7 @@ set(SOURCES_LIB
 	
 	src/app/game/actionhandler.cpp
 	src/app/game/actionhandler.h
+	src/app/game/classicscorecomparison.h
 	src/app/game/computer.cpp
 	src/app/game/computer.h
 	src/app/game/dasarrhandler.cpp

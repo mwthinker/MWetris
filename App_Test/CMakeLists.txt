@@ -11,6 +11,7 @@ enable_testing()
 set(SOURCES_TEST
 	src/configurationtest.cpp
 	src/controlprofilestest.cpp
+	src/game/classicscorecomparisontest.cpp
 	src/game/dasarrhandlertest.cpp
 	src/game/defaultgamerulestest.cpp
 	src/game/devicemanagertest.cpp
