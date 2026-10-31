@@ -8,7 +8,7 @@ namespace app::game {
 
 	namespace {
 
-		PlayerPtr createPlayerClearingRows(int rowsToClear, int clearedRows = 0) {
+		PlayerPtr createPlayerClearingRows(int rowsToClear, int clearedRows = 0, const DefaultPlayerData& playerData = {}) {
 			constexpr int Width = 4;
 			constexpr int Height = 8;
 			std::vector<tetris::BlockType> board(Width * Height, tetris::BlockType::Empty);
@@ -20,13 +20,14 @@ namespace app::game {
 
 			auto player = createAiPlayer(
 				tetris::Ai{},
-				DefaultPlayerData{},
+				playerData,
 				tetris::TetrisBoard{
 					board,
 					Width,
 					Height,
 					tetris::Block{tetris::BlockType::I, 0, 0},
-					tetris::BlockType::O});
+					tetris::BlockType::O}
+					);
 			player->setClearedRows(clearedRows);
 			return player;
 		}
@@ -228,6 +229,45 @@ namespace app::game {
 		const auto data = std::get<DefaultPlayerData>(player->getPlayerData());
 		EXPECT_EQ(data.points, 400);
 		EXPECT_EQ(data.level, 10);
+	}
+
+	TEST(DefaultGameRulesTest, keepsLastClassicPlayerActiveAfterOpponentFinishes) {
+		// Given
+		auto finishedPlayer = createPlayerClearingRows(0);
+		auto activePlayer = createPlayerClearingRows(0);
+		DefaultGameRules rules;
+		rules.createGame({finishedPlayer, activePlayer});
+
+		// When
+		finishedPlayer->updateMove(tetris::Move::GameOver);
+
+		// Then
+		EXPECT_TRUE(finishedPlayer->isGameOver());
+		EXPECT_FALSE(activePlayer->isGameOver());
+	}
+
+	TEST(DefaultGameRulesTest, assignsFinalClassicPositionsByScoreAfterAllPlayersFinish) {
+		// Given
+		auto firstPlayer = createPlayerClearingRows(0, 0, DefaultPlayerData{
+			.level = 0,
+			.points = 1000,
+			.position = 0,
+			.startLevel = 0
+		});
+		auto secondPlayer = createPlayerClearingRows(4);
+		DefaultGameRules rules{{.resume = true}};
+		rules.createGame({firstPlayer, secondPlayer});
+		firstPlayer->updateMove(tetris::Move::GameOver);
+		secondPlayer->updateMove(tetris::Move::DownGravity);
+
+		// When
+		secondPlayer->updateMove(tetris::Move::GameOver);
+
+		// Then
+		const auto firstPlayerData = std::get<DefaultPlayerData>(firstPlayer->getPlayerData());
+		const auto secondPlayerData = std::get<DefaultPlayerData>(secondPlayer->getPlayerData());
+		EXPECT_EQ(firstPlayerData.position, 2);
+		EXPECT_EQ(secondPlayerData.position, 1);
 	}
 
 }

@@ -116,7 +116,7 @@ namespace app::game {
 					rowsRemove(info.player, value, info);
 					break;
 				case tetris::BoardEvent::GameOver:
-					gameOver(info.player);
+					gameOver();
 					break;
 			}
 		}
@@ -134,26 +134,23 @@ namespace app::game {
 
 		}
 
-		void gameOver(const PlayerPtr& player) {
-			int nbr = static_cast<int>(players_.size());
-			for (auto& info : players_) {
-				if (info.player->isGameOver()) {
-					--nbr;
-				}
+		void gameOver() {
+			if (players_.size() <= 1 || !std::ranges::all_of(players_, [](const Info& info) {
+				return info.player->isGameOver();
+			})) {
+				return;
 			}
 
-			if (players_.size() > 1) {
-				for (auto& info : players_) {
-					if (nbr == 1 && !info.player->isGameOver() && info.player->isLocal()) {
-						info.player->updateMove(tetris::Move::GameOver);
-						info.data.position = 1;
-						info.player->updatePlayerData(info.data);
-					}
-					if (info.player == player) {
-						info.data.position = nbr + 1;
-						info.player->updatePlayerData(info.data);
+			for (int index = 0; index < static_cast<int>(players_.size()); ++index) {
+				auto& info = players_[index];
+				info.data.position = 1;
+				for (int opponent = 0; opponent < static_cast<int>(players_.size()); ++opponent) {
+					if (players_[opponent].data.points > info.data.points
+						|| (players_[opponent].data.points == info.data.points && opponent < index)) {
+						++info.data.position;
 					}
 				}
+				info.player->updatePlayerData(info.data);
 			}
 		}
 
