@@ -464,6 +464,9 @@ namespace app::ui::scene {
 			apply();
 		}
 		ImGui::EndDisabled();
+
+		controlsPresenter_->drawProfileDialog();
+		controlsPresenter_->drawBindingDialog();
 	}
 
 }

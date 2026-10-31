@@ -33,9 +33,10 @@ namespace app::ui::scene {
 				auto pos = ImGui::GetCursorScreenPos();
 				const auto closeButtonLength = ImGui::GetFrameHeight();
 				const auto size = ImVec2{closeButtonLength, closeButtonLength};
+				const bool childPopupOpen = ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId);
 
 				ImGui::SetCursorPosX(ImGui::GetWindowWidth() - size.x - ImGui::GetStyle().WindowPadding.x);
-				if (ImGui::CloseIconButton(size) || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+				if (ImGui::CloseIconButton(size) || (!childPopupOpen && ImGui::IsKeyPressed(ImGuiKey_Escape))) {
 					requestClose();
 				}
 				if (closePopUp_) {

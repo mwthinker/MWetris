@@ -470,8 +470,12 @@ namespace app::ui {
 				}
 			});
 			ImGui::PopStyleVar(2);
-			controlsPresenter_->drawProfileDialog();
-			controlsPresenter_->drawBindingDialog();
+			const bool controlModalOpen = modalStateMachine_.isCurrentScene<scene::Settings>()
+				|| modalStateMachine_.isCurrentScene<scene::Controls>();
+			if (!controlModalOpen) {
+				controlsPresenter_->drawProfileDialog();
+				controlsPresenter_->drawBindingDialog();
+			}
 			
 			if (mainStateMachine_.isCurrentScene<scene::Play>()) {
 				mainStateMachine_.imGuiUpdate(deltaTime);

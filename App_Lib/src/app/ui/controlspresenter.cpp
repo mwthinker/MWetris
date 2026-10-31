@@ -513,7 +513,7 @@ namespace app::ui {
 		const float actionWidth = 190.f * scale + ImGui::GetStyle().ItemSpacing.x;
 		const float rightStart = ImGui::GetWindowWidth() - ImGui::GetStyle().WindowPadding.x - actionWidth;
 		ImGui::SetCursorPosX(std::max(ImGui::GetCursorPosX(), rightStart));
-		if (ImGui::MediumButton("Cancel", {90.f * scale, 0.f})) {
+		if (ImGui::MediumButton("Cancel", {90.f * scale, 0.f}) || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
 			closeBindingDialog();
 		} else {
 			ImGui::SameLine();

@@ -17,6 +17,8 @@ namespace app::ui::scene {
 		ImGui::PopFont();
 		ImGui::Separator();
 		controlsPresenter_->drawMenu();
+		controlsPresenter_->drawProfileDialog();
+		controlsPresenter_->drawBindingDialog();
 	}
 
 }
