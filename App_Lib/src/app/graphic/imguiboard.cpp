@@ -3,15 +3,13 @@
 
 #include "game/player.h"
 #include "game/tetrisgameevent.h"
+#include "ui/theme.h"
 #include "util/auxiliary.h"
 
 #include <tetris/tetrisboard.h>
 
-#include <spdlog/spdlog.h>
-
 #include <variant>
 #include <algorithm>
-#include <concepts>
 #include <limits>
 #include <string>
 #include <utility>
@@ -69,6 +67,28 @@ namespace app::graphic {
 					return "3RD PLACE!";
 				default:
 					return "GAME OVER!";
+			}
+		}
+
+		void drawScoreComparison(const game::ClassicScoreComparison& comparison, ScoreGapDisplay display) {
+			const double displayedValue = display == ScoreGapDisplay::Points
+				? static_cast<double>(comparison.pointDifference)
+				: comparison.tetrisDifference;
+
+			if (displayedValue > 0.0) {
+				ImGui::PushStyleColor(ImGuiCol_Text, ui::theme::SuccessText.toImU32());
+			} else if (displayedValue < 0.0) {
+				ImGui::PushStyleColor(ImGuiCol_Text, ui::theme::DangerText.toImU32());
+			}
+
+			if (display == ScoreGapDisplay::Points) {
+				ImGui::Text("%+d", comparison.pointDifference);
+			} else {
+				ImGui::Text("%+.2f TETRIS", comparison.tetrisDifference);
+			}
+
+			if (displayedValue != 0.0) {
+				ImGui::PopStyleColor();
 			}
 		}
 
@@ -284,7 +304,8 @@ namespace app::graphic {
 		drawList->PopTexture();
 	}
 
-	void ImGuiBoard::draw(float width, float height, double deltaTime, const game::GamePause& pause) {
+	void ImGuiBoard::draw(float width, float height, double deltaTime, const game::GamePause& pause,
+		const std::optional<game::ClassicScoreComparison>& comparison, ScoreGapDisplay scoreGapDisplay) {
 		ImGui::PushID(this);
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, PlayerCardRounding);
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 2.f);
@@ -391,6 +412,12 @@ namespace app::graphic {
 				if (player_->isHuman() && sidebarRenderer_) {
 					ImGui::Dummy({0.f, SidebarSectionSpacing});
 					sidebarRenderer_(player_, ImGui::GetContentRegionAvail().x);
+				}
+				if (comparison) {
+					ImGui::Dummy({0.f, SidebarSectionSpacing});
+					ImGui::PushFont(Configuration::getInstance().getImGuiScoreFont(), 20.f);
+					drawScoreComparison(*comparison, scoreGapDisplay);
+					ImGui::PopFont();
 				}
 			}
 			ImGui::EndChild();

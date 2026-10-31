@@ -37,6 +37,8 @@ namespace app::graphic {
 	private:
 		std::vector<ImGuiBoard> imguiBoards_;
 		BoardSidebarRenderer boardSidebarRenderer_;
+		double scoreGapDisplayTime_ = 0.0;
+		ScoreGapDisplay scoreGapDisplay_ = ScoreGapDisplay::Points;
 		
 		game::GamePause gamePause_{};
 	};

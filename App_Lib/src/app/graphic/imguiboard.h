@@ -2,6 +2,7 @@
 #define APP_GRAPHIC_IMGUIBOARD_H
 
 #include "types.h"
+#include "game/classicscorecomparison.h"
 #include "game/player.h"
 
 #include <tetris/tetrisboard.h>
@@ -9,6 +10,7 @@
 #include "textureview.h"
 
 #include <functional>
+#include <optional>
 #include <string_view>
 #include <vector>
 
@@ -18,13 +20,19 @@ namespace app::game {
 
 namespace app::graphic {
 
+	enum class ScoreGapDisplay {
+		Points,
+		Tetrises
+	};
+
 	class ImGuiBoard {
 	public:
 		using SidebarRenderer = std::function<void(const game::PlayerPtr&, float)>;
 
 		explicit ImGuiBoard(game::PlayerPtr player, int playerNumber, SidebarRenderer sidebarRenderer = {});
 
-		void draw(float width, float height, double deltaTime, const game::GamePause& pause);
+		void draw(float width, float height, double deltaTime, const game::GamePause& pause,
+			const std::optional<game::ClassicScoreComparison>& comparison, ScoreGapDisplay scoreGapDisplay);
 
 		const game::Player& getPlayer() const;
 
