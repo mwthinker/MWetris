@@ -154,7 +154,8 @@ namespace app::ui {
 		mainStateMachine_.emplace<scene::GameLauncher>(tetrisController_,
 			[this]() { startSinglePlayer(); },
 			[this]() { modalStateMachine_.switchTo<scene::CreateGameRoom>(); },
-			[this]() { modalStateMachine_.switchTo<scene::JoinGameRoom>(); });
+			[this]() { modalStateMachine_.switchTo<scene::JoinGameRoom>(); },
+			[this]() { modalStateMachine_.switchTo<scene::HighScore>(); });
 		mainStateMachine_.emplace<scene::Play>(tetrisController_);
 		
 		modalStateMachine_.emplace<scene::JoinGameRoom>(tetrisController_);

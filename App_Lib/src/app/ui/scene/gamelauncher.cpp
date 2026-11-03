@@ -10,18 +10,20 @@ namespace app::ui::scene {
 
 	GameLauncher::GameLauncher(std::shared_ptr<TetrisController> tetrisController,
 		std::function<void()> startSinglePlayer,
-		std::function<void()> createNetworkGame, std::function<void()> joinNetworkGame)
+		std::function<void()> createNetworkGame, std::function<void()> joinNetworkGame,
+		std::function<void()> showHighScores)
 		: tetrisController_{std::move(tetrisController)}
 		, startSinglePlayer_{std::move(startSinglePlayer)}
 		, createNetworkGame_{std::move(createNetworkGame)}
-		, joinNetworkGame_{std::move(joinNetworkGame)} {
+		, joinNetworkGame_{std::move(joinNetworkGame)}
+		, showHighScores_{std::move(showHighScores)} {
 	}
 
 	void GameLauncher::imGuiUpdate(const DeltaTime& deltaTime) {
 		const float scale = ImGui::GetUiScale();
 		const float contentWidth = 440.f * scale;
 		const float buttonHeight = 56.f * scale;
-		const float contentHeight = 330.f * scale;
+		const float contentHeight = 390.f * scale;
 		const float left = std::max(ImGui::GetStyle().WindowPadding.x, (ImGui::GetWindowWidth() - contentWidth) / 2.f);
 		const float top = std::max(ImGui::GetCursorPosY(), (ImGui::GetWindowHeight() - contentHeight) / 2.f);
 
@@ -40,6 +42,9 @@ namespace app::ui::scene {
 
 		if (ImGui::MediumButton("Local Multiplayer", {contentWidth, buttonHeight})) {
 			tetrisController_->createLocalGameRoom();
+		}
+		if (ImGui::MediumButton("High Scores", {contentWidth, buttonHeight})) {
+			showHighScores_();
 		}
 
 		ImGui::Spacing();

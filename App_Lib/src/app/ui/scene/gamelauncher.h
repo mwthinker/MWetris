@@ -12,7 +12,8 @@ namespace app::ui::scene {
 	public:
 		GameLauncher(std::shared_ptr<TetrisController> tetrisController,
 			std::function<void()> startSinglePlayer,
-			std::function<void()> createNetworkGame, std::function<void()> joinNetworkGame);
+			std::function<void()> createNetworkGame, std::function<void()> joinNetworkGame,
+			std::function<void()> showHighScores);
 
 		void imGuiUpdate(const DeltaTime& deltaTime) override;
 		ImVec2 getSize() const override { return {500.f, 220.f}; }
@@ -22,6 +23,7 @@ namespace app::ui::scene {
 		std::function<void()> startSinglePlayer_;
 		std::function<void()> createNetworkGame_;
 		std::function<void()> joinNetworkGame_;
+		std::function<void()> showHighScores_;
 	};
 
 }
