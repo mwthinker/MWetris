@@ -15,6 +15,7 @@ find_package(spdlog CONFIG REQUIRED)
 add_executable(GameServer
 	src/main.cpp
 	
+	vcpkg-configuration.json
 	vcpkg.json
 )
 

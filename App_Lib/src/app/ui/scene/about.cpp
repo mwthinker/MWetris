@@ -61,15 +61,13 @@ namespace app::ui::scene {
 			detailRow("Version", "v" PROJECT_VERSION);
 			detailRow("License", "MIT");
 			detailRow("Source date", GIT_DATE);
-			detailRow("Dependencies date", VCPKG_DATE);
 		});
 
 		ImGui::Spacing();
-		ImGui::SeparatorText("Build identifiers");
+		ImGui::SeparatorText("Build information");
 		detailsTable("BuildIdentifiers", [&]() {
-			detailRow("Git commit", GIT_VERSION, true);
-			detailRow("vcpkg commit", VCPKG_HASH, true);
-			detailRow("Build GUID", MWETRIS_GUID, true);
+			detailRow("Source revision", GIT_VERSION, true);
+			detailRow("Build ID", MWETRIS_GUID, true);
 		});
 
 		ImGui::PopFont();

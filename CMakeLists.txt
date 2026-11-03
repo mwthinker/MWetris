@@ -57,17 +57,11 @@ extract_git_hash(
 	GIT_HASH
 	GIT_DATE
 )
-extract_git_hash(
-	$ENV{VCPKG_ROOT}
-	VCPKG_HASH
-	VCPKG_DATE
-)
 create_guid_from_source(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	GUID
 )
 
-message(STATUS "VCPKG_HASH: ${VCPKG_HASH} ${VCPKG_DATE}")
 message(STATUS "GIT_HASH: ${GIT_HASH} ${GIT_DATE}")
 message(STATUS "CMAKE_PROJECT_VERSION: ${CMAKE_PROJECT_VERSION}")
 message(STATUS "GUID: ${GUID}")

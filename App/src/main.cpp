@@ -72,7 +72,6 @@ int main(int argc, char** argv) {
 	mwetris::logger::init();
 	spdlog::info("[main] MWetris Version:  {}", PROJECT_VERSION);
 	spdlog::info("[main] MWetris git hash:  {}  date: {}", GIT_VERSION, GIT_DATE);
-	spdlog::info("[main] MWetris vcpkg hash:  {}  date: {}", VCPKG_HASH, VCPKG_DATE);
 	spdlog::info("[main] MWetris GUI:  {}", MWETRIS_GUID);
 
 	MainWindow::ExitAction exitAction;

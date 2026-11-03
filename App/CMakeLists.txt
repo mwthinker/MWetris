@@ -16,6 +16,7 @@ set(SOURCES
 
 	CPack.cmake
 	data/AGENTS.md
+	vcpkg-configuration.json
 	vcpkg.json
 )
 
@@ -89,8 +90,6 @@ target_compile_definitions(App
 		GIT_VERSION="${GIT_HASH}"
 		GIT_DATE="${GIT_DATE}"
 		PROJECT_VERSION="${PROJECT_VERSION}"
-		VCPKG_HASH="${VCPKG_HASH}"
-		VCPKG_DATE="${VCPKG_DATE}"
 )
 
 set_target_properties(App
