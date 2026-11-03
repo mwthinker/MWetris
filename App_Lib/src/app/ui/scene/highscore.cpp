@@ -5,13 +5,14 @@ namespace app::ui::scene {
 
 	void HighScore::imGuiUpdate(const DeltaTime& deltaTime) {
 		auto labelColor = app::Configuration::getInstance().getLabelTextColor();
+		const float scale = ImGui::GetUiScale();
 
 		ImGui::PushFont(app::Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
 		ImGui::TextColored(labelColor, "High Scores");
 		ImGui::PopFont();
 
 		ImGui::PushFont(app::Configuration::getInstance().getImGuiDefaultFont(), 0.f);
-		ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, {8.f, 6.f});
+		ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, {8.f * scale, 6.f * scale});
 
 		constexpr ImGuiTableFlags tableFlags =
 			ImGuiTableFlags_BordersOuter |
@@ -22,12 +23,12 @@ namespace app::ui::scene {
 			ImGuiTableFlags_PadOuterX |
 			ImGuiTableFlags_NoSavedSettings;
 		ImGui::Table("High Scores", 6, tableFlags, {ImGui::GetContentRegionAvail().x, 0.f}, [&]() {
-			ImGui::TableSetupColumn("Rank", ImGuiTableColumnFlags_WidthFixed, 50.f);
+			ImGui::TableSetupColumn("Rank", ImGuiTableColumnFlags_WidthFixed, 50.f * scale);
 			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
-			ImGui::TableSetupColumn("Points", ImGuiTableColumnFlags_WidthFixed, 75.f);
-			ImGui::TableSetupColumn("Rows", ImGuiTableColumnFlags_WidthFixed, 55.f);
-			ImGui::TableSetupColumn("Level", ImGuiTableColumnFlags_WidthFixed, 55.f);
-			ImGui::TableSetupColumn("Date", ImGuiTableColumnFlags_WidthFixed, 90.f);
+			ImGui::TableSetupColumn("Points", ImGuiTableColumnFlags_WidthFixed, 75.f * scale);
+			ImGui::TableSetupColumn("Rows", ImGuiTableColumnFlags_WidthFixed, 55.f * scale);
+			ImGui::TableSetupColumn("Level", ImGuiTableColumnFlags_WidthFixed, 55.f * scale);
+			ImGui::TableSetupColumn("Date", ImGuiTableColumnFlags_WidthFixed, 90.f * scale);
 			ImGui::TableHeadersRow();
 
 			int rankNbr = 1;
