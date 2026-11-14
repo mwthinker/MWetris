@@ -7,13 +7,10 @@
 
 namespace app::game {
 
-	Keyboard::Keyboard(
-		const std::string& name,
-		const KeyboardMapping& keyboardMapping,
-		const KeyboardMapping& defaultMapping)
+	Keyboard::Keyboard(const std::string& name, const KeyboardBindings& bindings, const KeyboardBindings& defaultBindings)
 		: name_{name}
-		, bindings_{keyboardMapping}
-		, defaults_{defaultMapping} {
+		, bindings_{bindings}
+		, defaults_{defaultBindings} {
 	}
 
 	const char* Keyboard::getName() const {

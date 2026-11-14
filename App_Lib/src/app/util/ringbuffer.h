@@ -1,5 +1,5 @@
-#ifndef APP_RINGBUFFER_H
-#define APP_RINGBUFFER_H
+#ifndef APP_UTIL_RINGBUFFER_H
+#define APP_UTIL_RINGBUFFER_H
 
 #include <array>
 #include <cassert>
@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <utility>
 
-namespace app {
+namespace app::util {
 
 	template<typename T, int Capacity>
 	requires (Capacity > 0) && std::default_initializable<T> && std::movable<T>

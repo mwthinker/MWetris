@@ -14,6 +14,7 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <string_view>
 #include <vector>
 
 namespace app::game {
@@ -53,11 +54,15 @@ namespace app::game {
 			SDL_GUID guid;
 		};
 
-		KeyboardDevice createKeyboardDevice(const std::string& name, KeyboardBindings defaults);
-		GamepadDevice createGamepadDevice(sdl::GameController&& gameController);
+		KeyboardDevice createKeyboardDevice(const std::string& name, KeyboardBindings defaults, sdl::Color fallbackColor);
+		GamepadDevice createGamepadDevice(sdl::GameController&& gameController, const DeviceBinding& configuration);
 		Keyboard* findKeyboardBackend(Device& device) const;
 		GamePad* findGamepadBackend(Device& device) const;
+		DeviceBinding* findConfiguration(const std::string& deviceGuid);
+		const DeviceBinding* findConfiguration(const std::string& deviceGuid) const;
 		BindingSet getConfiguredBindings(const std::string& guid, BindingSet defaults) const;
+		sdl::Color nextAvailableColor() const;
+		std::string nextLogicalGuid(std::string_view hardwareGuid) const;
 		void controllerDeviceAddedEvent(const SDL_GamepadDeviceEvent& deviceEvent);
 		void controllerDeviceRemovedEvent(const SDL_GamepadDeviceEvent& deviceEvent);
 		void clearInput(KeyboardDevice& keyboardDevice);

@@ -5,7 +5,7 @@
 #include "actionhandler.h"
 #include "dasarrhandler.h"
 #include "playerboardevent.h"
-#include "../ringbuffer.h"
+#include "../util/ringbuffer.h"
 
 #include <tetris/tetrisboard.h>
 
@@ -214,7 +214,7 @@ namespace app::game {
 		DasArrHandler rightHandler_{0.167, 0.033};
 		ActionHandler gravityMove_{1, false};  // Value doesn't matter! Changes every frame.
 		DasArrHandler downHandler_{0.04, 0.04};
-		app::RingBuffer<InputCommand, 16> pendingCommands_;
+		util::RingBuffer<InputCommand, 16> pendingCommands_;
 		std::uint64_t overflowCount_ = 0;
 		bool hardDropQueued_ = false;
 		std::optional<InputCommand> bufferedRotation_;

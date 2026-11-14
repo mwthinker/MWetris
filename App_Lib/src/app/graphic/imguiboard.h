@@ -1,10 +1,11 @@
 #ifndef APP_GRAPHIC_IMGUIBOARD_H
 #define APP_GRAPHIC_IMGUIBOARD_H
 
-#include "types.h"
 #include "game/classicscorecomparison.h"
 #include "game/player.h"
 
+#include <glm/glm.hpp>
+#include <sdl/color.h>
 #include <tetris/tetrisboard.h>
 
 #include "textureview.h"
@@ -45,13 +46,13 @@ namespace app::graphic {
 		void handleGameBoardEvent(tetris::BoardEvent gameEvent, int nbr);
 
 		void drawBoard(double deltaTime);
-		void drawBorder(float width, float height, Color color);
+		void drawBorder(float width, float height, sdl::Color color);
 
-		void drawBlock(const tetris::Block& block, Vec2 pos = {}, bool center = false, Color color = color::White);
+		void drawBlock(const tetris::Block& block, glm::vec2 pos = {}, bool center = false, sdl::Color color = sdl::color::White);
 		void drawBoardSquares(double deltaTime);
 		void drawGrid(int columns, int rows);
 		void drawPreviewBlock(tetris::BlockType type, float width);
-		void drawStatusOverlay(std::string_view text, Color textColor) const;
+		void drawStatusOverlay(std::string_view text, sdl::Color textColor) const;
 		void drawPauseOverlay(const game::GamePause& pause) const;
 
 		app::TextureView getSprite(tetris::BlockType blockType) const;
@@ -70,8 +71,8 @@ namespace app::graphic {
 		
 		std::vector<Row> rows_;
 		float height_ = 0.f;
-		Vec2 boardCenter_{};
-		Vec2 boardSize_{};
+		glm::vec2 boardCenter_{};
+		glm::vec2 boardSize_{};
 		app::TextureView spriteI_, spriteJ_, spriteL_, spriteO_, spriteS_, spriteT_, spriteZ_;
 		mw::signals::ScopedConnections connections_;
 	};

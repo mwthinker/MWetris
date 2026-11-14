@@ -3,7 +3,6 @@
 
 #include "scene.h"
 
-#include "types.h"
 #include "configuration.h"
 #include "ui/imguiextra.h"
 #include "game/serialize.h"

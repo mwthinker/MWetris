@@ -3,7 +3,6 @@
 
 #include "scene.h"
 
-#include "../../types.h"
 #include "../../configuration.h"
 
 #include "../imguiextra.h"
@@ -77,7 +76,7 @@ namespace app::ui::scene {
 		std::function<void(AddPlayer&)> addCallback_;
 		std::shared_ptr<game::DeviceManager> deviceManager_;
 
-		std::vector<game::Human> allDevices_;
+		std::vector<game::DevicePtr> allDevices_;
 		std::vector<game::Ai> allAis_;
 
 		std::string playerName_;
@@ -86,7 +85,7 @@ namespace app::ui::scene {
 		AddPlayerData data_{};
 		ImGui::ComboVector<GameMode> gameModesCombo_;
 		ImGui::ComboVector<PlayerType> playerTypesCombo_;
-		ImGui::ComboVector<game::Human> humansCombo_;
+		game::DevicePtr selectedDevice_;
 		ImGui::ComboVector<game::Ai> aisCombo_;
 
 		mw::signals::ScopedConnections connections_;

@@ -34,10 +34,10 @@ namespace app::graphic {
 			ImGui::GetWindowDrawList()->PrimQuadUV(a, b, c, d, uv_a, uv_b, uv_c, uv_d, color.toImU32());
 		}
 
-		Vec2 calculateCenterOfMass(const tetris::Block& block) {
-			Vec2 pos{};
+		glm::vec2 calculateCenterOfMass(const tetris::Block& block) {
+			glm::vec2 pos{};
 			for (const auto& sq : block) {
-				pos += Vec2{sq.column, sq.row};
+				pos += glm::vec2{sq.column, sq.row};
 			}
 			return 1.f / block.getSize() * pos;
 		}
@@ -174,13 +174,13 @@ namespace app::graphic {
 		}
 	}
 
-	void ImGuiBoard::drawBlock(const tetris::Block& block, Vec2 pos, bool center, Color color) {
-		Vec2 delta{};
+	void ImGuiBoard::drawBlock(const tetris::Block& block, glm::vec2 pos, bool center, sdl::Color color) {
+		glm::vec2 delta{};
 		if (center) {
-			delta = (Vec2{1.f, 3.f} - calculateCenterOfMass(block)) * squareSize_;
+			delta = (glm::vec2{1.f, 3.f} - calculateCenterOfMass(block)) * squareSize_;
 			delta.y = NormalizedPreviewSize * squareSize_ - delta.y;
 		} else {
-			delta = Vec2{0.f, (player_->getRows() - 2) * squareSize_};
+			delta = glm::vec2{0.f, (player_->getRows() - 2) * squareSize_};
 		}
 		
 		auto drawList = ImGui::GetWindowDrawList();
@@ -193,7 +193,7 @@ namespace app::graphic {
 			
 			if (sq.row < player_->getRows() - 2) {
 				drawList->PrimReserve(6, 4);
-				addImageQuad(texture, {x, y}, Vec2{squareSize_, squareSize_}, color);
+				addImageQuad(texture, {x, y}, glm::vec2{squareSize_, squareSize_}, color);
 			}
 		}
 		drawList->PopTexture();
@@ -201,19 +201,19 @@ namespace app::graphic {
 
 	void ImGuiBoard::drawGrid(int columns, int rows) {
 		auto drawList = ImGui::GetWindowDrawList();
-		Vec2 cursorPos = ImGui::GetCursorScreenPos();
-		Vec2 sqSize{squareSize_ , squareSize_};
+		glm::vec2 cursorPos = ImGui::GetCursorScreenPos();
+		glm::vec2 sqSize{squareSize_ , squareSize_};
 
 		auto startAreaColor = Configuration::getInstance().getStartAreaColor().toImU32();
-		drawList->AddRectFilled(cursorPos, cursorPos + sqSize * Vec2{columns, 2}, startAreaColor);
+		drawList->AddRectFilled(cursorPos, cursorPos + sqSize * glm::vec2{columns, 2}, startAreaColor);
 
 		auto outerColor = Configuration::getInstance().getOuterSquareColor().toImU32();
-		drawList->AddRectFilled(cursorPos, cursorPos + sqSize * Vec2{columns, rows}, outerColor);
+		drawList->AddRectFilled(cursorPos, cursorPos + sqSize * glm::vec2{columns, rows}, outerColor);
 		
 		auto innerColor = Configuration::getInstance().getInnerSquareColor().toImU32();
 		for (int i = 0; i < rows; ++i) {
 			for (int j = 0; j < columns; ++j) {
-				Vec2 pos = cursorPos + Vec2{j + 0.1f, i + 0.1f} * sqSize;
+				glm::vec2 pos = cursorPos + glm::vec2{j + 0.1f, i + 0.1f} * sqSize;
 				drawList->AddRectFilled(pos, pos + sqSize * 0.8f, innerColor);
 			}
 		}
@@ -221,15 +221,15 @@ namespace app::graphic {
 
 	void ImGuiBoard::drawPreviewBlock(tetris::BlockType type, float width) {
 		auto drawList = ImGui::GetWindowDrawList();
-		Vec2 pos = ImGui::GetCursorScreenPos();
+		glm::vec2 pos = ImGui::GetCursorScreenPos();
 
-		Vec2 previewSize{width, width};
+		glm::vec2 previewSize{width, width};
 		drawList->AddRectFilled(pos, pos + previewSize,
 			Configuration::getInstance().getPreviewBackgroundColor().toImU32(), PreviewRounding);
 		drawList->AddRect(pos, pos + previewSize,
 			Configuration::getInstance().getPreviewBorderColor().toImU32(), PreviewRounding);
 
-		const Vec2 blockOffset = previewSize * 0.5f - Vec2{1.5f * squareSize_};
+		const glm::vec2 blockOffset = previewSize * 0.5f - glm::vec2{1.5f * squareSize_};
 		drawBlock(tetris::Block{type, 0, 0}, pos + blockOffset, true);
 
 		ImGui::Dummy(previewSize);
@@ -242,7 +242,7 @@ namespace app::graphic {
 		drawGrid(columns, rows - 2);
 		drawBoardSquares(deltaTime);
 		
-		Vec2 cursorPos = ImGui::GetCursorScreenPos();
+		glm::vec2 cursorPos = ImGui::GetCursorScreenPos();
 		if (Configuration::getInstance().isShowDownBlock()) {
 			drawBlock(player_->getBlockDown(), cursorPos, false, Configuration::getInstance().getDownBlockColor());
 		}
@@ -251,26 +251,26 @@ namespace app::graphic {
 		ImGui::Dummy({squareSize_ * columns, squareSize_ * (rows - 2)});
 	}
 
-	void ImGuiBoard::drawBorder(float width, float height, Color color) {
+	void ImGuiBoard::drawBorder(float width, float height, sdl::Color color) {
 		borderSize_ = Configuration::getInstance().getTetrisBorderSize();
 		auto drawList = ImGui::GetWindowDrawList();
-		Vec2 pos = ImGui::GetCursorScreenPos();
+		glm::vec2 pos = ImGui::GetCursorScreenPos();
 		
 		// Left side.
-		drawList->AddRectFilled(pos, pos + Vec2{borderSize_, height}, color.toImU32());
+		drawList->AddRectFilled(pos, pos + glm::vec2{borderSize_, height}, color.toImU32());
 
 		// Right side.
-		drawList->AddRectFilled(pos + Vec2{width - borderSize_, 0.f}, pos + Vec2{width, height}, color.toImU32());
+		drawList->AddRectFilled(pos + glm::vec2{width - borderSize_, 0.f}, pos + glm::vec2{width, height}, color.toImU32());
 
 		// Up side.
-		drawList->AddRectFilled(pos, pos + Vec2{width, borderSize_}, color.toImU32());
+		drawList->AddRectFilled(pos, pos + glm::vec2{width, borderSize_}, color.toImU32());
 
 		// Down side.
-		drawList->AddRectFilled(pos + Vec2{0.f, height - borderSize_}, pos + Vec2{width, height}, color.toImU32());
+		drawList->AddRectFilled(pos + glm::vec2{0.f, height - borderSize_}, pos + glm::vec2{width, height}, color.toImU32());
 	}
 
 	void ImGuiBoard::drawBoardSquares(double deltaTime) {
-		Vec2 cursorPos = ImGui::GetCursorScreenPos();
+		glm::vec2 cursorPos = ImGui::GetCursorScreenPos();
 
 		auto drawList = ImGui::GetWindowDrawList();
 
@@ -297,7 +297,7 @@ namespace app::graphic {
 					
 					
 					drawList->PrimReserve(6, 4);
-					addImageQuad(texture, {x, y}, Vec2{squareSize_, squareSize_});
+					addImageQuad(texture, {x, y}, glm::vec2{squareSize_, squareSize_});
 				}
 			}
 		}
@@ -309,7 +309,7 @@ namespace app::graphic {
 		ImGui::PushID(this);
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, PlayerCardRounding);
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 2.f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Vec2{PlayerCardPadding, PlayerCardPadding});
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, glm::vec2{PlayerCardPadding, PlayerCardPadding});
 		ImGui::PushStyleColor(ImGuiCol_ChildBg,
 			Configuration::getInstance().getPlayerCardBackgroundColor().toImU32());
 		ImGui::PushStyleColor(ImGuiCol_Border,
@@ -341,8 +341,8 @@ namespace app::graphic {
 				ImGui::SameLine();
 			}
 
-			boardSize_ = Vec2{columns * squareSize_, normalizedHeight * squareSize_};
-			boardCenter_ = Vec2{ImGui::GetCursorScreenPos()} + boardSize_ * 0.5f;
+			boardSize_ = glm::vec2{columns * squareSize_, normalizedHeight * squareSize_};
+			boardCenter_ = glm::vec2{ImGui::GetCursorScreenPos()} + boardSize_ * 0.5f;
 			drawBorder(boardSize_.x, boardSize_.y, Configuration::getInstance().getBorderColor());
 			drawBoard(deltaTime);
 
@@ -350,7 +350,7 @@ namespace app::graphic {
 			ImGui::SameLine(0.f, SidebarGap);
 			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, SidebarRounding);
 			ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 1.f);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, Vec2{SidebarPadding, SidebarPadding});
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, glm::vec2{SidebarPadding, SidebarPadding});
 			ImGui::PushStyleColor(ImGuiCol_ChildBg,
 				Configuration::getInstance().getSidebarBackgroundColor().toImU32());
 			ImGui::PushStyleColor(ImGuiCol_Border,
@@ -464,10 +464,10 @@ namespace app::graphic {
 			: configuration.getPlayerCardTextColor());
 	}
 
-	void ImGuiBoard::drawStatusOverlay(std::string_view text, Color textColor) const {
+	void ImGuiBoard::drawStatusOverlay(std::string_view text, sdl::Color textColor) const {
 		float fontSize = std::clamp(boardSize_.x * 0.16f, StatusOverlayMinFontSize, StatusOverlayMaxFontSize);
 		auto font = Configuration::getInstance().getImGuiScoreFont();
-		Vec2 textSize = font->CalcTextSizeA(fontSize, std::numeric_limits<float>::max(), 0.f,
+		glm::vec2 textSize = font->CalcTextSizeA(fontSize, std::numeric_limits<float>::max(), 0.f,
 			text.data(), text.data() + text.size());
 		const float initialPanelWidth = textSize.x + fontSize * 0.9f;
 		if (initialPanelWidth > boardSize_.x * 0.9f) {
@@ -475,10 +475,10 @@ namespace app::graphic {
 			textSize = font->CalcTextSizeA(fontSize, std::numeric_limits<float>::max(), 0.f,
 				text.data(), text.data() + text.size());
 		}
-		const Vec2 padding{fontSize * 0.45f, fontSize * 0.3f};
-		const Vec2 panelMin = boardCenter_ - textSize * 0.5f - padding;
-		const Vec2 panelMax = boardCenter_ + textSize * 0.5f + padding;
-		const Vec2 shadowOffset{4.f, 4.f};
+		const glm::vec2 padding{fontSize * 0.45f, fontSize * 0.3f};
+		const glm::vec2 panelMin = boardCenter_ - textSize * 0.5f - padding;
+		const glm::vec2 panelMax = boardCenter_ + textSize * 0.5f + padding;
+		const glm::vec2 shadowOffset{4.f, 4.f};
 		auto drawList = ImGui::GetWindowDrawList();
 		auto& configuration = Configuration::getInstance();
 

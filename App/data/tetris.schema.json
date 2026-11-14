@@ -376,10 +376,13 @@
 				"type": "object",
 				"properties": {
 					"guid": { "type": "string", "minLength": 1 },
+					"hardwareGuid": { "type": "string", "minLength": 1 },
+					"kind": { "type": "string", "enum": ["keyboard", "gamepad"] },
+					"color": { "$ref": "#/definitions/Color" },
 					"inputProfileId": { "type": "string", "minLength": 1 },
 					"bindings": { "$ref": "#/definitions/InputBindings" }
 				},
-				"required": ["guid", "inputProfileId"],
+				"required": ["guid", "hardwareGuid", "kind", "color", "inputProfileId"],
 				"additionalProperties": false
 			}
 		},

@@ -1,12 +1,12 @@
 #include "settings.h"
 
-#include "types.h"
 #include "ui/controlspresenter.h"
 #include "ui/imguiextra.h"
 #include "ui/theme.h"
 #include "audio/audioengine.h"
 
 #include <IconsFontAwesome6.h>
+#include <sdl/color.h>
 
 #include <algorithm>
 #include <array>
@@ -69,15 +69,11 @@ namespace app::ui::scene {
 			}
 		}
 
-		bool colorEdit(const char* label, std::string& color, const std::string* defaultColor) {
-			sdl::Color parsed{color};
-			ImVec4 value = parsed;
+		bool colorEdit(const char* label, sdl::Color& color) {
+			ImVec4 value = color;
 			bool changed = ImGui::ColorEdit4(label, &value.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs);
 			if (changed) {
-				color = sdl::Color{value.x, value.y, value.z, value.w}.toHexString();
-			}
-			if (defaultColor) {
-				drawDefaultReset(label, color, *defaultColor);
+				color = sdl::Color{value.x, value.y, value.z, value.w};
 			}
 			return changed;
 		}
@@ -228,7 +224,7 @@ namespace app::ui::scene {
 				});
 				if (draft_.board.showDownBlock) {
 					settingRow("Ghost block color", draft_.board.downBlockColor, defaults ? &defaults->board.downBlockColor : nullptr, [&]() {
-						colorEdit("##Value", draft_.board.downBlockColor, nullptr);
+						colorEdit("##Value", draft_.board.downBlockColor);
 					});
 					draft_.board.colorScheme = Configuration::detectColorScheme(draft_.board);
 				}
@@ -341,8 +337,8 @@ namespace app::ui::scene {
 				settingRow("Board border size", draft_.board.borderSize, defaults ? &defaults->board.borderSize : nullptr, [&]() {
 					ImGui::SliderFloat("##Value", &draft_.board.borderSize, 0.f, 20.f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
 				});
-				auto color = [&](const char* label, std::string& value, const std::string* defaultValue) {
-					settingRow(label, value, defaultValue, [&]() { colorEdit("##Value", value, nullptr); });
+				auto color = [&](const char* label, sdl::Color& value, const sdl::Color* defaultValue) {
+					settingRow(label, value, defaultValue, [&]() { colorEdit("##Value", value); });
 				};
 				color("Board border", draft_.board.borderColor, defaults ? &defaults->board.borderColor : nullptr);
 				color("Start area", draft_.board.startAreaColor, defaults ? &defaults->board.startAreaColor : nullptr);
@@ -379,8 +375,8 @@ namespace app::ui::scene {
 
 		if (ImGui::SemiBoldCollapsingHeader("Appearance")) {
 			settingsTable("Appearance settings", [&]() {
-				auto color = [&](const char* label, std::string& value, const std::string* defaultValue) {
-					settingRow(label, value, defaultValue, [&]() { colorEdit("##Value", value, nullptr); });
+				auto color = [&](const char* label, sdl::Color& value, const sdl::Color* defaultValue) {
+					settingRow(label, value, defaultValue, [&]() { colorEdit("##Value", value); });
 				};
 				color("Heading text", draft_.appearance.labelTextColor, defaults ? &defaults->appearance.labelTextColor : nullptr);
 				color("Button text", draft_.appearance.buttonTextColor, defaults ? &defaults->appearance.buttonTextColor : nullptr);

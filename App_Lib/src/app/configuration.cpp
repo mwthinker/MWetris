@@ -1,4 +1,5 @@
 #include "configuration.h"
+#include "configurationnormalization.h"
 
 #include "game/tetrisparameters.h"
 #include "util/uuid.h"
@@ -25,7 +26,6 @@
 #include <optional>
 #include <vector>
 #include <fstream>
-#include <sstream>
 #include <unordered_set>
 
 using nlohmann::json;
@@ -33,13 +33,17 @@ using namespace app;
 
 namespace sdl {
 
-	void from_json(const json& j, Color& color) {
+	void from_json(const json& j, sdl::Color& color) {
 		auto textColor = j.get<std::string>();
 		if (sdl::color::isValidHexColor(textColor)) {
-			color = Color{textColor};
+			color = sdl::Color{textColor};
 		} else {
-			throw std::runtime_error{fmt::format("Invalid hex color: ", color.toHexString())};
+			throw std::runtime_error{fmt::format("Invalid hex color: {}", textColor)};
 		}
+	}
+
+	void to_json(json& j, const sdl::Color& color) {
+		j = color.toHexString();
 	}
 
 }
@@ -56,102 +60,6 @@ namespace app {
 		};
 	}
 
-}
-
-namespace tetris {
-
-	void from_json(const json& j, tetris::BlockType& blockType) {
-		blockType = charToBlockType(j.get<std::string>()[0]);
-	}
-
-	void to_json(json& j, const tetris::BlockType& blockType) {
-		j = json{blockTypeToString(blockType)};
-	}
-
-	void from_json(const json& j, tetris::Block& block) {
-		block = tetris::Block{
-			j.at("blockType").get<tetris::BlockType>(),
-			j.at("leftColumn").get<int>(),
-			j.at("bottomRow").get<int>(),
-			j.at("currentRotation").get<int>()
-		};
-	}
-
-	void to_json(json& j, const tetris::Block& block) {
-		j = json{{
-			{"bottomRow", block.getLowestStartRow()},
-			{"blockType", block.getBlockType()},
-			{"leftColumn", block.getStartColumn()},
-			{"currentRotation", block.getCurrentRotation()}
-		}};
-	}
-
-}
-
-namespace app {
-
-	constexpr tetris::BlockType charToBlockType(char key) {
-		switch (key) {
-			case 'z': case 'Z':
-				return tetris::BlockType::Z;
-			case 'w': case 'W':
-				return tetris::BlockType::Wall;
-			case 't': case 'T':
-				return tetris::BlockType::T;
-			case 's': case 'S':
-				return tetris::BlockType::S;
-			case 'o': case 'O':
-				return tetris::BlockType::O;
-			case 'l': case 'L':
-				return tetris::BlockType::L;
-			case 'j': case 'J':
-				return tetris::BlockType::J;
-			case 'I': case 'i':
-				return tetris::BlockType::I;
-			default:
-				return tetris::BlockType::Empty;
-		}
-	}
-
-	constexpr const char* blockTypeToString(tetris::BlockType blocktype) {
-		switch (blocktype) {
-			case tetris::BlockType::Z:
-				return "Z";
-			case tetris::BlockType::Wall:
-				return "W";
-			case tetris::BlockType::T:
-				return "T";
-			case tetris::BlockType::S:
-				return "S";
-			case tetris::BlockType::O:
-				return "O";
-			case tetris::BlockType::L:
-				return "L";
-			case tetris::BlockType::J:
-				return "J";
-			case tetris::BlockType::I:
-				return "I";
-			default:
-				return "E";
-		}
-	}
-
-	std::string convertBlockTypesToString(const std::vector<tetris::BlockType>& board) {
-		std::stringstream stream;
-		for (auto chr : board) {
-			stream << blockTypeToString(chr);
-		}
-		return stream.str();
-	}
-
-	std::vector<tetris::BlockType> convertStringToBlockTypes(const std::string& str) {
-		std::vector<tetris::BlockType> blocktypes_;
-		for (auto key : str) {
-			blocktypes_.push_back(charToBlockType(key));
-		}
-		return blocktypes_;
-	}
-
 	void from_json(const json& j, Configuration::Network& network) {
 		network = Configuration::Network{
 			.global = {
@@ -162,34 +70,6 @@ namespace app {
 				.ip = j.at("server").at("ip").get<std::string>(),
 				.port = j.at("server").at("port").get<int>()
 			}
-		};
-	}
-
-	void from_json(const json& j, HighscoreRecord& highscoreRecord) {
-		highscoreRecord.name = j.at("name").get<std::string>();
-		highscoreRecord.date = j.at("date").get<std::string>();
-		highscoreRecord.points = j.at("points").get<int>();
-
-		try {
-			highscoreRecord.level = j.at("level").get<int>();
-		} catch (const nlohmann::detail::out_of_range&) {
-			highscoreRecord.level = 0;
-		}
-
-		try {
-			highscoreRecord.rows = j.at("rows").get<int>();
-		} catch (const nlohmann::detail::out_of_range&) {
-			highscoreRecord.rows = 0;
-		}
-	}
-
-	void to_json(json& j, const HighscoreRecord& highscoreRecord) {
-		j = json{
-			{"name", highscoreRecord.name},
-			{"date", highscoreRecord.date},
-			{"points", highscoreRecord.points},
-			{"level", highscoreRecord.level},
-			{"rows", highscoreRecord.rows}
 		};
 	}
 
@@ -265,7 +145,55 @@ namespace app {
 		stream >> impl_->jsonObject;
 	}
 
-	namespace {
+}
+
+namespace {
+		constexpr tetris::BlockType charToBlockType(char key) {
+			switch (key) {
+				case 'z': case 'Z':
+					return tetris::BlockType::Z;
+				case 'w': case 'W':
+					return tetris::BlockType::Wall;
+				case 't': case 'T':
+					return tetris::BlockType::T;
+				case 's': case 'S':
+					return tetris::BlockType::S;
+				case 'o': case 'O':
+					return tetris::BlockType::O;
+				case 'l': case 'L':
+					return tetris::BlockType::L;
+				case 'j': case 'J':
+					return tetris::BlockType::J;
+				case 'I': case 'i':
+					return tetris::BlockType::I;
+				default:
+					return tetris::BlockType::Empty;
+			}
+		}
+
+		constexpr const char* blockTypeToString(tetris::BlockType blocktype) {
+			switch (blocktype) {
+				case tetris::BlockType::Z:
+					return "Z";
+				case tetris::BlockType::Wall:
+					return "W";
+				case tetris::BlockType::T:
+					return "T";
+				case tetris::BlockType::S:
+					return "S";
+				case tetris::BlockType::O:
+					return "O";
+				case tetris::BlockType::L:
+					return "L";
+				case tetris::BlockType::J:
+					return "J";
+				case tetris::BlockType::I:
+					return "I";
+				default:
+					return "E";
+			}
+		}
+
 		constexpr std::string_view ProfileNameWhitespace{" \t\r\n\f\v"};
 		constexpr std::array<const char*, 7> BlockSpriteKeys{
 			"squareI", "squareJ", "squareL", "squareO", "squareS", "squareT", "squareZ"
@@ -273,25 +201,25 @@ namespace app {
 
 		struct ColorSchemePreset {
 			Configuration::ColorSchemeInfo info;
-			const char* border;
-			const char* startArea;
-			const char* outerSquare;
-			const char* innerSquare;
-			const char* downBlock;
-			const char* playerCard;
-			const char* playerCardBorder;
-			const char* sidebar;
-			const char* sidebarBorder;
-			const char* preview;
-			const char* previewBorder;
-			const char* text;
+			sdl::Color border;
+			sdl::Color startArea;
+			sdl::Color outerSquare;
+			sdl::Color innerSquare;
+			sdl::Color downBlock;
+			sdl::Color playerCard;
+			sdl::Color playerCardBorder;
+			sdl::Color sidebar;
+			sdl::Color sidebarBorder;
+			sdl::Color preview;
+			sdl::Color previewBorder;
+			sdl::Color text;
 		};
 
 		constexpr std::array ColorSchemePresets{
-			ColorSchemePreset{{"frostedBlue", "Frosted Blue"}, "#D0E8F2", "#7199B580", "#40566BB3", "#71889F66", "#FFFFFF26", "#536A80B3", "#B8D8E8CC", "#607A92CC", "#B8D8E866", "#40566BB3", "#B8D8E866", "#F5F8FA"},
-			ColorSchemePreset{{"classicCrimson", "Classic Crimson"}, "#F0A3B0", "#A3293D80", "#741A2AB3", "#C64C6466", "#FFFFFF26", "#4A202AB3", "#E8A0ACCC", "#61303ACC", "#E8A0AC66", "#391720B3", "#E8A0AC66", "#FFF5F7"},
-			ColorSchemePreset{{"warmSand", "Warm Sand"}, "#FFF0C7", "#D9B66F80", "#8A704AB3", "#DBC89A66", "#FFFFFF33", "#C9AD78D9", "#FFF1CCDD", "#DEC99AE6", "#FFF1CC99", "#B89B68CC", "#FFF1CC99", "#2A241B"},
-			ColorSchemePreset{{"highContrast", "High Contrast"}, "#FFFFFF", "#FFE60080", "#111111E6", "#66666699", "#FFFFFF66", "#080808F2", "#FFE600", "#181818F2", "#FFFFFFCC", "#000000F2", "#FFE600CC", "#FFFFFF"},
+			ColorSchemePreset{{"frostedBlue", "Frosted Blue"}, sdl::Color{"#D0E8F2"}, sdl::Color{"#7199B580"}, sdl::Color{"#40566BB3"}, sdl::Color{"#71889F66"}, sdl::Color{"#FFFFFF26"}, sdl::Color{"#536A80B3"}, sdl::Color{"#B8D8E8CC"}, sdl::Color{"#607A92CC"}, sdl::Color{"#B8D8E866"}, sdl::Color{"#40566BB3"}, sdl::Color{"#B8D8E866"}, sdl::Color{"#F5F8FA"}},
+			ColorSchemePreset{{"classicCrimson", "Classic Crimson"}, sdl::Color{"#F0A3B0"}, sdl::Color{"#A3293D80"}, sdl::Color{"#741A2AB3"}, sdl::Color{"#C64C6466"}, sdl::Color{"#FFFFFF26"}, sdl::Color{"#4A202AB3"}, sdl::Color{"#E8A0ACCC"}, sdl::Color{"#61303ACC"}, sdl::Color{"#E8A0AC66"}, sdl::Color{"#391720B3"}, sdl::Color{"#E8A0AC66"}, sdl::Color{"#FFF5F7"}},
+			ColorSchemePreset{{"warmSand", "Warm Sand"}, sdl::Color{"#FFF0C7"}, sdl::Color{"#D9B66F80"}, sdl::Color{"#8A704AB3"}, sdl::Color{"#DBC89A66"}, sdl::Color{"#FFFFFF33"}, sdl::Color{"#C9AD78D9"}, sdl::Color{"#FFF1CCDD"}, sdl::Color{"#DEC99AE6"}, sdl::Color{"#FFF1CC99"}, sdl::Color{"#B89B68CC"}, sdl::Color{"#FFF1CC99"}, sdl::Color{"#2A241B"}},
+			ColorSchemePreset{{"highContrast", "High Contrast"}, sdl::Color{"#FFFFFF"}, sdl::Color{"#FFE60080"}, sdl::Color{"#111111E6"}, sdl::Color{"#66666699"}, sdl::Color{"#FFFFFF66"}, sdl::Color{"#080808F2"}, sdl::Color{"#FFE600"}, sdl::Color{"#181818F2"}, sdl::Color{"#FFFFFFCC"}, sdl::Color{"#000000F2"}, sdl::Color{"#FFE600CC"}, sdl::Color{"#FFFFFF"}},
 		};
 
 		const ColorSchemePreset* findColorScheme(std::string_view id) {
@@ -301,23 +229,19 @@ namespace app {
 			return found == ColorSchemePresets.end() ? nullptr : &*found;
 		}
 
-		bool sameColor(const std::string& left, const char* right) {
-			return sdl::Color{left} == sdl::Color{right};
-		}
-
 		bool matchesColorScheme(const Configuration::BoardSettings& settings, const ColorSchemePreset& preset) {
-			return sameColor(settings.borderColor, preset.border)
-				&& sameColor(settings.startAreaColor, preset.startArea)
-				&& sameColor(settings.outerSquareColor, preset.outerSquare)
-				&& sameColor(settings.innerSquareColor, preset.innerSquare)
-				&& sameColor(settings.downBlockColor, preset.downBlock)
-				&& sameColor(settings.playerCardBackgroundColor, preset.playerCard)
-				&& sameColor(settings.playerCardBorderColor, preset.playerCardBorder)
-				&& sameColor(settings.sidebarBackgroundColor, preset.sidebar)
-				&& sameColor(settings.sidebarBorderColor, preset.sidebarBorder)
-				&& sameColor(settings.previewBackgroundColor, preset.preview)
-				&& sameColor(settings.previewBorderColor, preset.previewBorder)
-				&& sameColor(settings.playerCardTextColor, preset.text);
+			return settings.borderColor == preset.border
+				&& settings.startAreaColor == preset.startArea
+				&& settings.outerSquareColor == preset.outerSquare
+				&& settings.innerSquareColor == preset.innerSquare
+				&& settings.downBlockColor == preset.downBlock
+				&& settings.playerCardBackgroundColor == preset.playerCard
+				&& settings.playerCardBorderColor == preset.playerCardBorder
+				&& settings.sidebarBackgroundColor == preset.sidebar
+				&& settings.sidebarBorderColor == preset.sidebarBorder
+				&& settings.previewBackgroundColor == preset.preview
+				&& settings.previewBorderColor == preset.previewBorder
+				&& settings.playerCardTextColor == preset.text;
 		}
 
 		Configuration::EditableSettings editableSettingsFromJson(const json& document) {
@@ -348,26 +272,26 @@ namespace app {
 					.borderSize = board.at("borderSize").get<float>(),
 					.showDownBlock = board.at("showDownBlock").get<bool>(),
 					.colorScheme = board.value("colorScheme", "custom"),
-					.outerSquareColor = board.at("outerSquareColor").get<std::string>(),
-					.innerSquareColor = board.at("innerSquareColor").get<std::string>(),
-					.startAreaColor = board.at("startAreaColor").get<std::string>(),
-					.borderColor = board.at("borderColor").get<std::string>(),
-					.downBlockColor = board.at("downBlockColor").get<std::string>(),
-					.playerCardBackgroundColor = board.value("playerCardBackgroundColor", "#536A80B3"),
-					.playerCardBorderColor = board.value("playerCardBorderColor", "#B8D8E8CC"),
-					.sidebarBackgroundColor = board.value("sidebarBackgroundColor", "#607A92CC"),
-					.sidebarBorderColor = board.value("sidebarBorderColor", "#B8D8E866"),
-					.previewBackgroundColor = board.value("previewBackgroundColor", "#40566BB3"),
-					.previewBorderColor = board.value("previewBorderColor", "#B8D8E866"),
-					.playerCardTextColor = board.value("playerCardTextColor", "#F5F8FA"),
+					.outerSquareColor = board.at("outerSquareColor").get<sdl::Color>(),
+					.innerSquareColor = board.at("innerSquareColor").get<sdl::Color>(),
+					.startAreaColor = board.at("startAreaColor").get<sdl::Color>(),
+					.borderColor = board.at("borderColor").get<sdl::Color>(),
+					.downBlockColor = board.at("downBlockColor").get<sdl::Color>(),
+					.playerCardBackgroundColor = board.value("playerCardBackgroundColor", sdl::Color{"#536A80B3"}),
+					.playerCardBorderColor = board.value("playerCardBorderColor", sdl::Color{"#B8D8E8CC"}),
+					.sidebarBackgroundColor = board.value("sidebarBackgroundColor", sdl::Color{"#607A92CC"}),
+					.sidebarBorderColor = board.value("sidebarBorderColor", sdl::Color{"#B8D8E866"}),
+					.previewBackgroundColor = board.value("previewBackgroundColor", sdl::Color{"#40566BB3"}),
+					.previewBorderColor = board.value("previewBorderColor", sdl::Color{"#B8D8E866"}),
+					.playerCardTextColor = board.value("playerCardTextColor", sdl::Color{"#F5F8FA"}),
 				},
 				.appearance = {
-					.labelTextColor = window.at("label").at("textColor").get<std::string>(),
-					.buttonFocusColor = button.at("focusColor").get<std::string>(),
-					.buttonTextColor = button.at("textColor").get<std::string>(),
-					.buttonHoverColor = button.at("hoverColor").get<std::string>(),
-					.buttonBackgroundColor = button.at("backgroundColor").get<std::string>(),
-					.buttonBorderColor = button.at("borderColor").get<std::string>(),
+					.labelTextColor = window.at("label").at("textColor").get<sdl::Color>(),
+					.buttonFocusColor = button.at("focusColor").get<sdl::Color>(),
+					.buttonTextColor = button.at("textColor").get<sdl::Color>(),
+					.buttonHoverColor = button.at("hoverColor").get<sdl::Color>(),
+					.buttonBackgroundColor = button.at("backgroundColor").get<sdl::Color>(),
+					.buttonBorderColor = button.at("borderColor").get<sdl::Color>(),
 				},
 				.assets = {
 					.windowFont = window.at("font").get<std::string>(),
@@ -599,14 +523,14 @@ namespace app {
 		ProfileId makeUniqueProfileId(
 			std::string preferredId,
 			const ControlProfilesState& state,
-			int& migratedId) {
+			int& generatedId) {
 			ProfileId profileId{std::move(preferredId)};
 			if (!profileId.value.empty() && !containsProfileId(state, profileId)) {
 				return profileId;
 			}
 
 			do {
-				profileId.value = "migrated-" + std::to_string(migratedId++);
+				profileId.value = "profile-" + std::to_string(generatedId++);
 			} while (containsProfileId(state, profileId));
 			return profileId;
 		}
@@ -623,49 +547,67 @@ namespace app {
 			return number;
 		}
 
-		int convertTiming(double value, double scale, int minimum, int maximum) {
-			if (value <= static_cast<double>(minimum) / scale) {
+		int convertTiming(double value, int minimum, int maximum) {
+			if (value <= minimum) {
 				return minimum;
 			}
-			if (value >= static_cast<double>(maximum) / scale) {
+			if (value >= maximum) {
 				return maximum;
 			}
-			return std::clamp(static_cast<int>(std::llround(value * scale)), minimum, maximum);
+			return std::clamp(static_cast<int>(std::llround(value)), minimum, maximum);
 		}
 
-		std::optional<InputTiming> getTiming(const json& object, double scale) {
+		std::optional<InputTiming> getTiming(const json& object) {
 			auto das = getNumber(object, "das");
 			auto arr = getNumber(object, "arr");
 			if (!das || !arr) {
 				return std::nullopt;
 			}
 			return InputTiming{
-				.dasMs = convertTiming(*das, scale, ControlProfiles::MinDasMs, ControlProfiles::MaxDasMs),
-				.arrMs = convertTiming(*arr, scale, ControlProfiles::MinArrMs, ControlProfiles::MaxArrMs),
+				.dasMs = convertTiming(*das, ControlProfiles::MinDasMs, ControlProfiles::MaxDasMs),
+				.arrMs = convertTiming(*arr, ControlProfiles::MinArrMs, ControlProfiles::MaxArrMs),
 			};
 		}
 
-		std::string normalizeDeviceGuid(std::string guid) {
-			if (guid == "keyboard1") {
-				return "Keyboard 1";
-			}
-			if (guid == "keyboard2") {
-				return "Keyboard 2";
-			}
-			return guid;
+		const char* deviceKindName(game::DeviceKind kind) {
+			return kind == game::DeviceKind::Keyboard ? "keyboard" : "gamepad";
 		}
 
-		std::optional<ProfileId> getBuiltInProfileId(InputTiming timing) {
-			if (timing == InputTiming{167, 33}) {
-				return ControlProfiles::BalancedProfileId;
+		game::DeviceKind deviceKind(const json& value, const game::BindingSet& bindings) {
+			auto kind = value.value("kind", std::string{});
+			if (kind == "keyboard") {
+				return game::DeviceKind::Keyboard;
 			}
-			if (timing == InputTiming{100, 16}) {
-				return ControlProfiles::FastProfileId;
+			if (kind == "gamepad") {
+				return game::DeviceKind::Gamepad;
 			}
-			if (timing == InputTiming{250, 50}) {
-				return ControlProfiles::ClassicProfileId;
+			return std::holds_alternative<game::KeyboardBindings>(bindings)
+				? game::DeviceKind::Keyboard
+				: game::DeviceKind::Gamepad;
+		}
+
+		std::string hardwareGuid(std::string_view logicalGuid) {
+			auto separator = logicalGuid.rfind('#');
+			if (separator == std::string_view::npos || separator + 1 == logicalGuid.size()) {
+				return std::string{logicalGuid};
 			}
-			return std::nullopt;
+			if (!std::ranges::all_of(logicalGuid.substr(separator + 1), [](char value) {
+				return value >= '0' && value <= '9';
+			})) {
+				return std::string{logicalGuid};
+			}
+			return std::string{logicalGuid.substr(0, separator)};
+		}
+
+		sdl::Color nextDeviceColor(const std::vector<game::DeviceBinding>& devices) {
+			for (auto color : game::DeviceColors) {
+				if (std::ranges::none_of(devices, [color](const game::DeviceBinding& device) {
+					return device.color == color;
+				})) {
+					return color;
+				}
+			}
+			return game::DeviceColors[devices.size() % game::DeviceColors.size()];
 		}
 
 		json serializeInputProfiles(const ControlProfilesState& state) {
@@ -796,12 +738,17 @@ namespace app {
 			for (auto& device : devices) {
 				auto guid = device.at("guid").get<std::string>();
 				auto current = std::ranges::find_if(*currentDevices, [&](const json& value) {
-					return value.is_object() && normalizeDeviceGuid(value.value("guid", std::string{})) == guid;
+					return value.is_object() && value.value("guid", std::string{}) == guid;
 				});
 				if (current != currentDevices->end()) {
 					auto bindings = current->find("bindings");
 					if (bindings != current->end()) {
 						device["bindings"] = *bindings;
+					}
+					for (const auto* key : {"hardwareGuid", "kind", "color"}) {
+						if (auto field = current->find(key); field != current->end()) {
+							device[key] = *field;
+						}
 					}
 				}
 			}
@@ -865,7 +812,39 @@ namespace app {
 			};
 		}
 
+}
+
+namespace tetris {
+
+	void from_json(const json& j, tetris::BlockType& blockType) {
+		blockType = charToBlockType(j.get<std::string>()[0]);
 	}
+
+	void to_json(json& j, const tetris::BlockType& blockType) {
+		j = json{blockTypeToString(blockType)};
+	}
+
+	void from_json(const json& j, tetris::Block& block) {
+		block = tetris::Block{
+			j.at("blockType").get<tetris::BlockType>(),
+			j.at("leftColumn").get<int>(),
+			j.at("bottomRow").get<int>(),
+			j.at("currentRotation").get<int>()
+		};
+	}
+
+	void to_json(json& j, const tetris::Block& block) {
+		j = json{{
+			{"bottomRow", block.getLowestStartRow()},
+			{"blockType", block.getBlockType()},
+			{"leftColumn", block.getStartColumn()},
+			{"currentRotation", block.getCurrentRotation()}
+		}};
+	}
+
+}
+
+namespace app {
 
 	void Configuration::init(SDL_GPUDevice* gpuDevice) {
 		std::vector<std::string> files;
@@ -985,10 +964,6 @@ namespace app {
 		return impl_->jsonObject["window"]["tetrisBoard"]["startAreaColor"].get<sdl::Color>();
 	}
 
-	sdl::Color Configuration::getPlayerAreaColor() const {
-		return impl_->jsonObject["window"]["tetrisBoard"]["playerAreaColor"].get<sdl::Color>();
-	}
-
 	sdl::Color Configuration::getBorderColor() const {
 		return impl_->jsonObject["window"]["tetrisBoard"]["borderColor"].get<sdl::Color>();
 	}
@@ -1068,10 +1043,6 @@ namespace app {
 		}
 	}
 
-	void Configuration::setShowDownBlock(bool showDownColor) {
-		impl_->jsonObject["window"]["tetrisBoard"]["showDownBlock"] = showDownColor;
-	}
-
 	sdl::Color Configuration::getDownBlockColor() const {
 		try {
 			return impl_->jsonObject.at("window").at("tetrisBoard").at("downBlockColor").get<sdl::Color>();
@@ -1088,32 +1059,12 @@ namespace app {
 		return impl_->jsonObject["window"]["tetrisBoard"]["borderSize"].get<float>();
 	}
 
-	bool Configuration::isLimitFps() const {
-		try {
-			return impl_->jsonObject.at("window").at("limitFps").get<bool>();
-		} catch (const nlohmann::detail::out_of_range&) {
-			return false;
-		}
-	}
-
-	void Configuration::setLimitFps(bool limited) {
-		impl_->jsonObject["window"]["limitFps"] = limited;
-	}
-
 	int Configuration::getWindowPositionX() const {
 		return impl_->jsonObject["window"]["positionX"].get<int>();
 	}
 
 	int Configuration::getWindowPositionY() const {
 		return impl_->jsonObject["window"]["positionY"].get<int>();
-	}
-
-	void Configuration::setWindowPositionX(int x) {
-		impl_->jsonObject["window"]["positionX"] = x;
-	}
-
-	void Configuration::setWindowPositionY(int y) {
-		impl_->jsonObject["window"]["positionY"] = y;
 	}
 
 	int Configuration::getWindowWidth() const {
@@ -1124,40 +1075,8 @@ namespace app {
 		return impl_->jsonObject["window"]["height"].get<int>();
 	}
 
-	void Configuration::setWindowWidth(int width) {
-		impl_->jsonObject["window"]["width"] = width;
-	}
-
-	void Configuration::setWindowHeight(int height) {
-		impl_->jsonObject["window"]["height"] = height;
-	}
-
-	bool Configuration::isWindowResizable() const {
-		return impl_->jsonObject["window"]["resizeable"].get<bool>();
-	}
-
-	void Configuration::setWindowResizable(bool resizeable) {
-		impl_->jsonObject["window"]["resizeable"] = resizeable;
-	}
-
-	int Configuration::getWindowMinWidth() const {
-		return impl_->jsonObject["window"]["minWidth"].get<int>();
-	}
-
-	int Configuration::getWindowMinHeight() const {
-		return impl_->jsonObject["window"]["minHeight"].get<int>();
-	}
-
 	std::string Configuration::getWindowIcon() const {
 		return impl_->jsonObject["window"]["icon"].get<std::string>();
-	}
-
-	bool Configuration::isWindowBordered() const {
-		return impl_->jsonObject["window"]["border"].get<bool>();
-	}
-
-	void Configuration::setWindowBordered(bool border) {
-		impl_->jsonObject["window"]["border"] = border;
 	}
 
 	bool Configuration::isWindowPauseOnLostFocus() const {
@@ -1166,50 +1085,6 @@ namespace app {
 		} catch (const nlohmann::detail::out_of_range&) {
 			return true;
 		}
-	}
-
-	void Configuration::setWindowPauseOnLostFocus(bool pauseOnFocus) {
-		impl_->jsonObject["window"]["pauseOnLostFocus"] = pauseOnFocus;
-	}
-
-	bool Configuration::isWindowMaximized() const {
-		return impl_->jsonObject["window"]["maximized"].get<bool>();
-	}
-
-	void Configuration::setWindowMaximized(bool maximized) {
-		impl_->jsonObject["window"]["maximized"] = maximized;
-	}
-
-	bool Configuration::isWindowVsync() const {
-		return impl_->jsonObject["window"]["vsync"].get<bool>();
-	}
-
-	void Configuration::setWindowVsync(bool activate) {
-		impl_->jsonObject["window"]["vsync"] = activate;
-	}
-
-	int Configuration::getMultiSampleBuffers() const {
-		return impl_->jsonObject["window"]["multiSampleBuffers"].get<int>();
-	}
-
-	int Configuration::getMultiSampleSamples() const {
-		return impl_->jsonObject["window"]["multiSampleSamples"].get<int>();
-	}
-
-	float Configuration::getRowFadingTime() const {
-		return impl_->jsonObject["window"]["rowFadingTime"].get<float>();
-	}
-
-	void Configuration::setRowFadingTime(float time) {
-		impl_->jsonObject["window"]["rowFadingTime"] = time;
-	}
-
-	float Configuration::getRowMovingTime() const {
-		return impl_->jsonObject["window"]["rowMovingTime"].get<float>();
-	}
-
-	void Configuration::setRowMovingTime(float time) {
-		impl_->jsonObject["window"]["rowMovingTime"] = time;
 	}
 
 	app::TextureView Configuration::getBackgroundSprite() {
@@ -1225,26 +1100,6 @@ namespace app {
 	std::string Configuration::getAi3Name() const {
 		return impl_->jsonObject["ai3"].get<std::string>();
 	}
-	std::string Configuration::getAi4Name() const {
-		return impl_->jsonObject["ai4"].get<std::string>();
-	}
-
-	void Configuration::setAi1Name(const std::string& name) {
-		impl_->jsonObject["ai1"] = name;
-	}
-
-	void Configuration::setAi2Name(const std::string& name) {
-		impl_->jsonObject["ai2"] = name;
-	}
-
-	void Configuration::setAi3Name(const std::string& name) {
-		impl_->jsonObject["ai3"] = name;
-	}
-
-	void Configuration::setAi4Name(const std::string& name) {
-		impl_->jsonObject["ai4"] = name;
-	}
-
 	std::vector<Configuration::Ai> Configuration::getAiVector() const {
 		std::vector<Configuration::Ai> ais = impl_->jsonObject["ais"].get<std::vector<Configuration::Ai>>();
 		ais.push_back(Configuration::Ai{
@@ -1254,39 +1109,12 @@ namespace app {
 		return ais;
 	}
 
-	std::vector<HighscoreRecord> Configuration::getHighscoreRecordVector() const {
-		return std::vector<HighscoreRecord>(impl_->jsonObject["highscore"].begin(), impl_->jsonObject["highscore"].end());
-	}
-
-	void Configuration::setHighscoreRecordVector(const std::vector<HighscoreRecord>& highscoreVector) {
-		impl_->jsonObject["highscore"].clear();
-		for (const auto& record : highscoreVector) {
-			impl_->jsonObject["highscore"].push_back(record);
-		}
-	}
-
-	int Configuration::getActiveLocalGameRows() const {
-		return impl_->jsonObject["activeGames"]["localGame"]["rows"].get<int>();
-	}
-
-	int Configuration::getActiveLocalGameColumns() const {
-		return impl_->jsonObject["activeGames"]["localGame"]["columns"].get<int>();
-	}
-
 	bool Configuration::isFullscreenOnDoubleClick() const {
 		return impl_->jsonObject["window"]["fullscreenOnDoubleClick"].get<bool>();
 	}
 
-	void Configuration::setFullscreenOnDoubleClick(bool activate) {
-		impl_->jsonObject["window"]["fullscreenOnDoubleClick"] = activate;
-	}
-
 	bool Configuration::isMoveWindowByHoldingDownMouse() const {
 		return impl_->jsonObject["window"]["moveWindowByHoldingDownMouse"].get<bool>();
-	}
-
-	void Configuration::setMoveWindowByHoldingDownMouse(bool activate) {
-		impl_->jsonObject["window"]["moveWindowByHoldingDownMouse"] = activate;
 	}
 
 	Configuration::Network Configuration::getNetwork() const {
@@ -1344,21 +1172,6 @@ namespace app {
 			return std::unexpected{"Network ports must be between 1 and 65535."};
 		}
 
-		const std::array colors{
-			candidate.board.outerSquareColor, candidate.board.innerSquareColor, candidate.board.startAreaColor,
-			candidate.board.borderColor, candidate.board.downBlockColor,
-			candidate.board.playerCardBackgroundColor, candidate.board.playerCardBorderColor,
-			candidate.board.sidebarBackgroundColor, candidate.board.sidebarBorderColor,
-			candidate.board.previewBackgroundColor, candidate.board.previewBorderColor,
-			candidate.board.playerCardTextColor,
-			candidate.appearance.labelTextColor, candidate.appearance.buttonFocusColor,
-			candidate.appearance.buttonTextColor, candidate.appearance.buttonHoverColor,
-			candidate.appearance.buttonBackgroundColor,
-			candidate.appearance.buttonBorderColor,
-		};
-		if (std::ranges::any_of(colors, [](const std::string& color) { return !sdl::color::isValidHexColor(color); })) {
-			return std::unexpected{"Colors must use #RGB, #RGBA, #RRGGBB, or #RRGGBBAA syntax."};
-		}
 		if (candidate.board.colorScheme != "custom" && !findColorScheme(candidate.board.colorScheme)) {
 			return std::unexpected{"Unknown color scheme."};
 		}
@@ -1440,52 +1253,12 @@ namespace app {
 		}
 	}
 
-	float Configuration::getWindowBarHeight() const {
-		return impl_->jsonObject["window"]["bar"]["height"].get<float>();
-	}
-
-	sdl::Color Configuration::getWindowBarColor() const {
-		return impl_->jsonObject["window"]["bar"]["color"].get<sdl::Color>();
-	}
-
-	sdl::Color Configuration::getCheckboxTextColor() const {
-		return impl_->jsonObject["window"]["checkBox"]["textColor"].get<sdl::Color>();
-	}
-
-	sdl::Color Configuration::getCheckboxBackgroundColor() const {
-		return impl_->jsonObject["window"]["checkBox"]["backgroundColor"].get<sdl::Color>();
-	}
-
-	sdl::Color Configuration::getCheckboxBoxColor() const {
-		return impl_->jsonObject["window"]["checkBox"]["boxColor"].get<sdl::Color>();
-	}
-
 	sdl::Color Configuration::getChecboxCheckColor() const {
 		return impl_->jsonObject["window"]["checkBox"]["checkColor"].get<sdl::Color>();
 	}
 
-	sdl::Color Configuration::getRadioButtonTextColor() const {
-		return impl_->jsonObject["window"]["radioButton"]["textColor"].get<sdl::Color>();
-	}
-
-	sdl::Color Configuration::getRadioButtonBackgroundColor() const {
-		return impl_->jsonObject["window"]["radioButton"]["backgroundColor"].get<sdl::Color>();
-	}
-
-	sdl::Color Configuration::getRadioButtonBoxColor() const {
-		return impl_->jsonObject["window"]["radioButton"]["boxColor"].get<sdl::Color>();
-	}
-
-	sdl::Color Configuration::getRadioButtonCheckColor() const {
-		return impl_->jsonObject["window"]["radioButton"]["checkColor"].get<sdl::Color>();
-	}
-
 	sdl::Color Configuration::getLabelTextColor() const {
 		return impl_->jsonObject["window"]["label"]["textColor"].get<sdl::Color>();
-	}
-
-	sdl::Color Configuration::getLabelBackgroundColor() const {
-		return impl_->jsonObject["window"]["label"]["backgroundColor"].get<sdl::Color>();
 	}
 
 	sdl::Color Configuration::getButtonFocusColor() const {
@@ -1516,18 +1289,6 @@ namespace app {
 		return impl_->jsonObject["window"]["comboBox"]["focusColor"].get<sdl::Color>();
 	}
 
-	sdl::Color Configuration::getComboBoxTextColor() const {
-		return impl_->jsonObject["window"]["comboBox"]["textColor"].get<sdl::Color>();
-	}
-
-	sdl::Color Configuration::getComboBoxSelectedTextColor() const {
-		return impl_->jsonObject["window"]["comboBox"]["selectedTextColor"].get<sdl::Color>();
-	}
-
-	sdl::Color Configuration::getComboBoxSelectedBackgroundColor() const {
-		return impl_->jsonObject["window"]["comboBox"]["selectedBackgroundColor"].get<sdl::Color>();
-	}
-
 	sdl::Color Configuration::getComboBoxBackgroundColor() const {
 		return impl_->jsonObject["window"]["comboBox"]["backgroundColor"].get<sdl::Color>();
 	}
@@ -1536,32 +1297,12 @@ namespace app {
 		return impl_->jsonObject["window"]["comboBox"]["borderColor"].get<sdl::Color>();
 	}
 
-	sdl::Color Configuration::getComboBoxShowDropDownColor() const {
-		return impl_->jsonObject["window"]["comboBox"]["showDropDownColor"].get<sdl::Color>();
-	}
-
-	sdl::Color Configuration::getMiddleTextColor() const {
-		try {
-			return impl_->jsonObject.at("window").at("tetrisBoard").at("middleTextColor").get<sdl::Color>();
-		} catch (const nlohmann::detail::out_of_range&) {
-			return sdl::Color{0.2f, 0.2f, 0.2f, 0.5f};
-		}
-	}
-
-	int Configuration::getMiddleTextBoxSize() const {
-		try {
-			return impl_->jsonObject.at("window").at("tetrisBoard").at("middleTextBoxSize").get<int>();
-		} catch (const nlohmann::detail::out_of_range&) {
-			return 7;
-		}
-	}
-
-	ControlProfilesState Configuration::normalizeControlProfiles(json& jsonObject) {
+	ControlProfilesState normalizeControlProfiles(json& jsonObject) {
 		if (!jsonObject.is_object()) {
 			jsonObject = json::object();
 		}
 		auto state = ControlProfiles::createDefaultState();
-		int migratedId = 1;
+		int generatedId = 1;
 
 		auto inputProfiles = jsonObject.find("inputProfiles");
 		if (inputProfiles != jsonObject.end() && inputProfiles->is_array()) {
@@ -1570,7 +1311,7 @@ namespace app {
 					continue;
 				}
 				auto nameValue = value.find("name");
-				auto timing = getTiming(value, 1.0);
+				auto timing = getTiming(value);
 				if (nameValue == value.end() || !nameValue->is_string() || !timing) {
 					continue;
 				}
@@ -1580,7 +1321,7 @@ namespace app {
 					? idValue->get<std::string>()
 					: std::string{};
 				state.profiles.push_back({
-					.id = makeUniqueProfileId(std::move(id), state, migratedId),
+					.id = makeUniqueProfileId(std::move(id), state, generatedId),
 					.name = makeUniqueProfileName(nameValue->get<std::string>(), state),
 					.timing = *timing,
 					.builtIn = false,
@@ -1588,7 +1329,6 @@ namespace app {
 			}
 		}
 
-		std::vector<std::pair<InputTiming, ProfileId>> migratedTimings;
 		std::vector<std::string> deviceGuids;
 		auto devices = jsonObject.find("devices");
 		if (devices != jsonObject.end() && devices->is_array()) {
@@ -1600,7 +1340,7 @@ namespace app {
 				if (guidValue == value.end() || !guidValue->is_string()) {
 					continue;
 				}
-				auto guid = normalizeDeviceGuid(guidValue->get<std::string>());
+				auto guid = guidValue->get<std::string>();
 				if (guid.empty() || std::ranges::find(deviceGuids, guid) != deviceGuids.end()) {
 					continue;
 				}
@@ -1612,22 +1352,6 @@ namespace app {
 					ProfileId requestedId{profileIdValue->get<std::string>()};
 					if (containsProfileId(state, requestedId)) {
 						profileId = std::move(requestedId);
-					}
-				} else if (auto timing = getTiming(value, 1000.0)) {
-					if (auto builtInId = getBuiltInProfileId(*timing)) {
-						profileId = *builtInId;
-					} else {
-						auto migrated = std::ranges::find(migratedTimings, *timing, &std::pair<InputTiming, ProfileId>::first);
-						if (migrated != migratedTimings.end()) {
-							profileId = migrated->second;
-						} else {
-							profileId = makeUniqueProfileId({}, state, migratedId);
-							auto name = makeUniqueProfileName(
-								fmt::format("Legacy {}/{} ms", timing->dasMs, timing->arrMs),
-								state);
-							state.profiles.push_back({profileId, std::move(name), *timing, false});
-							migratedTimings.push_back({*timing, profileId});
-						}
 					}
 				}
 
@@ -1675,7 +1399,7 @@ namespace app {
 		}
 	}
 
-	std::vector<game::DeviceBinding> Configuration::normalizeDeviceBindings(json& jsonObject) {
+	std::vector<game::DeviceBinding> normalizeDeviceBindings(json& jsonObject) {
 		if (!jsonObject.is_object()) {
 			jsonObject = json::object();
 		}
@@ -1692,7 +1416,7 @@ namespace app {
 			if (guidValue == value.end() || !guidValue->is_string()) {
 				continue;
 			}
-			auto guid = normalizeDeviceGuid(guidValue->get<std::string>());
+			auto guid = guidValue->get<std::string>();
 			if (guid.empty() || std::ranges::find(state, guid, &game::DeviceBinding::deviceGuid) != state.end()) {
 				continue;
 			}
@@ -1702,7 +1426,25 @@ namespace app {
 				bindingsValue == value.end() ? json{} : *bindingsValue,
 				guid);
 			value["bindings"] = serializeBindings(bindings);
-			state.push_back({std::move(guid), std::move(bindings)});
+			auto kind = deviceKind(value, bindings);
+			auto physicalGuid = value.value("hardwareGuid", hardwareGuid(guid));
+			if (physicalGuid.empty()) {
+				physicalGuid = hardwareGuid(guid);
+			}
+			auto colorText = value.value("color", std::string{});
+			const bool validColor = sdl::color::isValidHexColor(colorText);
+			auto color = validColor ? sdl::Color{colorText} : sdl::Color{};
+			const bool colorUsed = validColor
+				&& std::ranges::any_of(state, [color](const game::DeviceBinding& device) {
+					return device.color == color;
+				});
+			if (!validColor || colorUsed) {
+				color = nextDeviceColor(state);
+			}
+			value["hardwareGuid"] = physicalGuid;
+			value["kind"] = deviceKindName(kind);
+			value["color"] = color;
+			state.push_back({std::move(guid), std::move(bindings), std::move(physicalGuid), kind, color});
 		}
 		return state;
 	}
@@ -1748,9 +1490,15 @@ namespace app {
 						{"guid", entry.deviceGuid},
 						{"inputProfileId", ControlProfiles::BalancedProfileId.value},
 						{"bindings", serializeBindings(entry.bindings)},
+						{"hardwareGuid", entry.hardwareGuid.empty() ? entry.deviceGuid : entry.hardwareGuid},
+						{"kind", deviceKindName(entry.kind)},
+						{"color", entry.color},
 					});
 				} else {
 					(*found)["bindings"] = serializeBindings(entry.bindings);
+					(*found)["hardwareGuid"] = entry.hardwareGuid.empty() ? entry.deviceGuid : entry.hardwareGuid;
+					(*found)["kind"] = deviceKindName(entry.kind);
+					(*found)["color"] = entry.color;
 				}
 			}
 			auto result = replaceJsonFile(impl_->jsonPath, candidate);
@@ -1771,9 +1519,9 @@ namespace app {
 			return controls;
 		}
 		if (auto guid = value->find("deviceGuid"); guid != value->end() && guid->is_string()) {
-			auto normalized = normalizeDeviceGuid(guid->get<std::string>());
-			if (!normalized.empty()) {
-				controls.deviceGuid = std::move(normalized);
+			auto parsed = guid->get<std::string>();
+			if (!parsed.empty()) {
+				controls.deviceGuid = std::move(parsed);
 			}
 		}
 		if (auto profileId = value->find("profileId"); profileId != value->end() && profileId->is_string()) {
@@ -1790,7 +1538,7 @@ namespace app {
 
 	std::expected<void, std::string> Configuration::persistLastSinglePlayerControls(const SinglePlayerControls& controls) {
 		try {
-			auto guid = normalizeDeviceGuid(controls.deviceGuid);
+			auto guid = controls.deviceGuid;
 			if (guid.empty() || controls.profileId.value.empty()) {
 				return std::unexpected{"The single-player device and profile IDs cannot be empty."};
 			}

@@ -51,42 +51,11 @@ namespace app::ui {
 	bool ControlsPresenter::drawDeviceCombo(std::string& selectedDeviceGuid, const std::vector<game::DevicePtr>& connectedDevices,
 		const char* label, bool retainDisconnected) const {
 
-		bool changed = false;
 		auto selectedDevice = resolveDevice(selectedDeviceGuid, connectedDevices, retainDisconnected);
-		if (!selectedDevice && !connectedDevices.empty()) {
-			selectedDevice = connectedDevices.front();
-			changed = selectedDeviceGuid != selectedDevice->getGuid();
-			selectedDeviceGuid = selectedDevice->getGuid();
-		} else if (!selectedDevice && !retainDisconnected) {
-			changed = !selectedDeviceGuid.empty();
-			selectedDeviceGuid.clear();
-		}
-
-		std::string preview = "No connected devices";
-		if (selectedDevice) {
-			preview = selectedDevice->getName();
-			if (!selectedDevice->isConnected()) {
-				preview += " (disconnected)";
-			}
-		}
-
-		ImGui::ComboScoped(label, preview.c_str(), [&]() {
-			for (const auto& device : connectedDevices) {
-				ImGui::PushID(device->getGuid().c_str());
-				ImGui::PushID(device.get());
-				bool isSelected = selectedDeviceGuid == device->getGuid();
-				if (ImGui::Selectable(device->getName().c_str(), isSelected)) {
-					selectedDeviceGuid = device->getGuid();
-					changed = true;
-				}
-				if (isSelected) {
-					ImGui::SetItemDefaultFocus();
-				}
-				ImGui::PopID();
-				ImGui::PopID();
-			}
-		});
-		return changed;
+		const auto previousGuid = selectedDeviceGuid;
+		ImGui::DeviceCombo(label, connectedDevices, selectedDevice);
+		selectedDeviceGuid = selectedDevice ? selectedDevice->getGuid() : std::string{};
+		return selectedDeviceGuid != previousGuid;
 	}
 
 	void ControlsPresenter::drawAssignedProfileCombo(
@@ -449,7 +418,9 @@ namespace app::ui {
 		}
 
 		ImGui::PushFont(Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
-		ImGui::Text("Configure %s", dialog.device->getName().c_str());
+		ImGui::TextUnformatted("Configure");
+		ImGui::SameLine();
+		ImGui::DeviceLabel(*dialog.device);
 		ImGui::PopFont();
 		ImGui::Separator();
 		ImGui::Dummy({0.f, 4.f * scale});

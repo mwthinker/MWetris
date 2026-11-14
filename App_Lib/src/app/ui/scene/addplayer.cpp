@@ -13,15 +13,15 @@ namespace app::ui::scene {
 
 	namespace {
 
-		std::vector<game::Human> getDeviceTypes(const std::vector<game::DevicePtr>& devices, const std::vector<game::DevicePtr>& excludes) {
-			std::vector<game::Human> types;
+		std::vector<game::DevicePtr> getAvailableDevices(const std::vector<game::DevicePtr>& devices, const std::vector<game::DevicePtr>& excludes) {
+			std::vector<game::DevicePtr> available;
 
 			for (const auto& device : devices) {
 				if (std::find(excludes.begin(), excludes.end(), device) != excludes.end()) continue;
 
-				types.emplace_back(device->getName(), device);
+				available.push_back(device);
 			}
-			return types;
+			return available;
 		}
 
 		std::vector<game::Human> extractHumans(const std::vector<std::string>& names, const std::vector<std::variant<game::DevicePtr, tetris::Ai>>& players) {
@@ -57,7 +57,6 @@ namespace app::ui::scene {
 		, deviceManager_{deviceManager}
 		, gameModesCombo_{getGameModes()}
 		, playerTypesCombo_{getPlayerTypes(allDevices_.empty())}
-		, humansCombo_{allDevices_}
 		, aisCombo_{allAis_} {
 
 		connections_ += deviceManager->deviceConnected.connect(this, &AddPlayer::deviceConnected);
@@ -74,14 +73,12 @@ namespace app::ui::scene {
 		}
 
 		const bool firstDevice = allDevices_.empty();
-		auto human = game::Human{device->getName(), device};
-		allDevices_.push_back(human);
-		humansCombo_.addItem(human);
+		allDevices_.push_back(device);
 
 		if (firstDevice) {
 			playerTypesCombo_ = ImGui::ComboVector<PlayerType>{getPlayerTypes(false)};
-			human.name = playerName_;
-			player_ = std::move(human);
+			selectedDevice_ = device;
+			player_ = game::Human{playerName_, std::move(device)};
 		}
 	}
 
@@ -97,10 +94,10 @@ namespace app::ui::scene {
 			});
 			if (playerTypesCombo_.getSelected().player == Player::Human) {
 				ImGui::FormRow("Device", [&]() {
-					if (humansCombo_.imGuiCombo("##Value")) {
-						auto selected = humansCombo_.getSelected();
-						selected.name = playerName_;
-						player_ = selected;
+					if (!allDevices_.empty()) {
+						if (ImGui::DeviceCombo("##Value", allDevices_, selectedDevice_)) {
+							player_ = game::Human{playerName_, selectedDevice_};
+						}
 					}
 				});
 			} else if (playerTypesCombo_.getSelected().player == Player::Ai) {
@@ -133,16 +130,14 @@ namespace app::ui::scene {
 			spdlog::error("Bug, should be type NewHighScoreData: {}", exp.what());
 		}
 		playerName_ = fmt::format("Player {}", data_.index + 1);
-		allDevices_ = getDeviceTypes(deviceManager_->getAllDevicesAvailable(), data_.usedDevices);
+		allDevices_ = getAvailableDevices(deviceManager_->getAllDevicesAvailable(), data_.usedDevices);
 
 		playerTypesCombo_ = ImGui::ComboVector<PlayerType>{getPlayerTypes(allDevices_.empty())};
-		humansCombo_ = ImGui::ComboVector<game::Human>{allDevices_};
+		selectedDevice_ = allDevices_.empty() ? nullptr : allDevices_.front();
 		aisCombo_ = ImGui::ComboVector<game::Ai>{allAis_};
 
 		if (allDevices_.size() > 0) {
-			auto selected = humansCombo_.getSelected();
-			selected.name = playerName_;
-			player_ = selected;
+			player_ = game::Human{playerName_, selectedDevice_};
 		} else if (allAis_.size() > 0) {
 			auto selected = aisCombo_.getSelected();
 			selected.name = playerName_;

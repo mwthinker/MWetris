@@ -1,14 +1,16 @@
 #ifndef APP_IMGUIEXTRA_H
 #define APP_IMGUIEXTRA_H
 
-#include "../types.h"
 #include "../configuration.h"
 #include "../audio/audioengine.h"
+#include "../game/device.h"
 
 #include <algorithm>
 #include <chrono>
 #include <cfloat>
 #include <concepts>
+#include <span>
+#include <string_view>
 #include <utility>
 
 namespace ImGui {
@@ -37,6 +39,9 @@ namespace ImGui {
 	bool LinkButton(const char* label);
 	bool SemiBoldCollapsingHeader(const char* label, ImGuiTreeNodeFlags flags = 0);
 	void SecondaryText(const char* format, ...);
+	void DeviceLabel(const app::game::Device& device, bool disabled = false);
+	bool DeviceCombo(const char* label, std::span<const app::game::DevicePtr> devices,
+		app::game::DevicePtr& selectedDevice, const char* emptyPreview = "No connected devices");
 
 	void Text(const std::chrono::year_month_day& ymd);
 

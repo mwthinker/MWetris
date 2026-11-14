@@ -252,6 +252,17 @@ namespace app::game {
 		EXPECT_NE(device1->getName(), device2->getName());
 	}
 
+	TEST(DeviceManagerTest, defaultKeyboardsHaveDistinctPersistableAppearance) {
+		DeviceManager manager;
+
+		auto first = manager.getDefaultDevice1();
+		auto second = manager.getDefaultDevice2();
+
+		EXPECT_EQ(first->getKind(), DeviceKind::Keyboard);
+		EXPECT_EQ(second->getKind(), DeviceKind::Keyboard);
+		EXPECT_NE(first->getColor(), second->getColor());
+	}
+
 	TEST(DeviceManagerTest, keyboardRepeatDoesNotPublishCommand) {
 		// Given
 		DeviceManager manager;
@@ -406,7 +417,8 @@ namespace app::game {
 		KeyboardBindings custom = getDefaultKeyboard1Bindings();
 		custom.left = SDLK_J;
 		custom.right = SDLK_L;
-		DeviceManager manager{{DeviceBinding{"Keyboard 1", custom}}};
+		DeviceManager manager{{DeviceBinding{
+			"Keyboard 1", custom, "Keyboard 1", DeviceKind::Keyboard, DeviceColors[0]}}};
 		auto device = manager.getDefaultDevice1();
 
 		// When
@@ -420,7 +432,8 @@ namespace app::game {
 		// Given
 		KeyboardBindings custom = getDefaultKeyboard1Bindings();
 		custom.left = SDLK_J;
-		DeviceManager manager{{DeviceBinding{"Keyboard 1", custom}}};
+		DeviceManager manager{{DeviceBinding{
+			"Keyboard 1", custom, "Keyboard 1", DeviceKind::Keyboard, DeviceColors[0]}}};
 		auto device = manager.getDefaultDevice1();
 		manager.beginMapping(*device);
 
@@ -467,7 +480,8 @@ namespace app::game {
 			auto custom = getDefaultGamepadBindings();
 			custom.left = SDL_GAMEPAD_BUTTON_WEST;
 			custom.right = SDL_GAMEPAD_BUTTON_EAST;
-			manager_ = std::make_unique<DeviceManager>(std::vector{DeviceBinding{guid_, custom}});
+			manager_ = std::make_unique<DeviceManager>(std::vector{DeviceBinding{
+				guid_, custom, guid_, DeviceKind::Gamepad, DeviceColors[2]}});
 			manager_->eventUpdate(gamepadDeviceEvent(instanceId_, SDL_EVENT_GAMEPAD_ADDED));
 			device_ = manager_->findDevice(guid_);
 			ASSERT_TRUE(device_);
@@ -590,6 +604,27 @@ namespace app::game {
 		EXPECT_EQ(manager_->findDevice(guid_), device_);
 		EXPECT_TRUE(device_->isConnected());
 		EXPECT_TRUE(device_->getInput().left);
+	}
+
+	TEST_F(GamepadDeviceManagerTest, identicalGamepadsGetDistinctSlotsAndColors) {
+		// Given
+		auto secondInstanceId = SDL_AttachVirtualJoystick(&description_);
+		ASSERT_NE(secondInstanceId, 0u) << SDL_GetError();
+
+		// When
+		manager_->eventUpdate(gamepadDeviceEvent(secondInstanceId, SDL_EVENT_GAMEPAD_ADDED));
+		auto devices = manager_->getAllDevicesAvailable();
+		std::vector<DevicePtr> gamepads;
+		std::ranges::copy_if(devices, std::back_inserter(gamepads), [](const DevicePtr& device) {
+			return device->getKind() == DeviceKind::Gamepad;
+		});
+
+		// Then
+		ASSERT_EQ(gamepads.size(), 2);
+		EXPECT_EQ(gamepads[0]->getName(), gamepads[1]->getName());
+		EXPECT_NE(gamepads[0]->getGuid(), gamepads[1]->getGuid());
+		EXPECT_NE(gamepads[0]->getColor(), gamepads[1]->getColor());
+		EXPECT_TRUE(SDL_DetachVirtualJoystick(secondInstanceId));
 	}
 
 }

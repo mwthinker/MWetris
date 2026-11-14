@@ -2,10 +2,14 @@
 #define APP_GAME_DEVICE_H
 
 #include "input.h"
+#include "inputbindings.h"
+
 #include <mw/signal.h>
+#include <sdl/color.h>
 
 #include <memory>
 #include <string>
+#include <utility>
 
 namespace app::game {
 
@@ -15,6 +19,13 @@ namespace app::game {
 	class Device {
 	public:
 		friend class DeviceManager;
+
+		Device(std::string name, std::string guid, DeviceKind kind, sdl::Color color)
+			: name_{std::move(name)}
+			, guid_{std::move(guid)}
+			, kind_{kind}
+			, color_{color} {
+		}
 
 		mw::PublicSignal<Device, bool> connection;
 		mw::PublicSignal<Device, const InputCommand&> command;
@@ -33,6 +44,14 @@ namespace app::game {
 		/// @return The GUID of the device.
 		const std::string& getGuid() const {
 			return guid_;
+		}
+
+		DeviceKind getKind() const {
+			return kind_;
+		}
+
+		const sdl::Color& getColor() const {
+			return color_;
 		}
 
 		/// @brief Check whether the physical device is connected to the computer.
@@ -69,6 +88,8 @@ namespace app::game {
 		bool connected_ = false;
 		std::string name_;
 		std::string guid_;
+		DeviceKind kind_;
+		sdl::Color color_;
 	};
 
 }

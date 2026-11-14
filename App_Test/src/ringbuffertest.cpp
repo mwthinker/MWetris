@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
 
-#include <app/ringbuffer.h>
+#include <app/util/ringbuffer.h>
 
 #include <memory>
 #include <utility>
 
-namespace app {
+namespace app::util {
 	namespace {
 		template<int Capacity>
 		concept ValidRingBufferCapacity = requires {

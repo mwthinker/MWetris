@@ -143,6 +143,9 @@
 	"devices": [
 		{
 			"guid": "Keyboard 1",
+			"hardwareGuid": "Keyboard 1",
+			"kind": "keyboard",
+			"color": "#0072B2",
 			"inputProfileId": "balanced",
 			"bindings": {
 				"type": "keyboard",
@@ -155,6 +158,9 @@
 		},
 		{
 			"guid": "Keyboard 2",
+			"hardwareGuid": "Keyboard 2",
+			"kind": "keyboard",
+			"color": "#D55E00",
 			"inputProfileId": "balanced",
 			"bindings": {
 				"type": "keyboard",

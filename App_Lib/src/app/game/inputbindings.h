@@ -2,6 +2,7 @@
 #define APP_GAME_INPUTBINDINGS_H
 
 #include <SDL3/SDL.h>
+#include <sdl/color.h>
 
 #include <array>
 #include <concepts>
@@ -87,9 +88,23 @@ namespace app::game {
 	using BindingSet = std::variant<KeyboardBindings, GamepadBindings>;
 	using BindingsValidationResult = std::expected<void, std::string>;
 
+	enum class DeviceKind {
+		Keyboard,
+		Gamepad,
+	};
+
+	inline constexpr std::array DeviceColors{
+		sdl::Color{"#0072B2"}, sdl::Color{"#D55E00"}, sdl::Color{"#009E73"}, sdl::Color{"#CC79A7"},
+		sdl::Color{"#E69F00"}, sdl::Color{"#56B4E9"}, sdl::Color{"#6A3D9A"}, sdl::Color{"#B15928"},
+		sdl::Color{"#1B9E77"}, sdl::Color{"#D95F02"}, sdl::Color{"#7570B3"}, sdl::Color{"#E7298A"},
+	};
+
 	struct DeviceBinding {
 		std::string deviceGuid;
 		BindingSet bindings;
+		std::string hardwareGuid;
+		DeviceKind kind;
+		sdl::Color color;
 
 		bool operator==(const DeviceBinding&) const = default;
 	};

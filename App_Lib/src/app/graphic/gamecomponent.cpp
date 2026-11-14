@@ -87,8 +87,8 @@ namespace app::graphic {
 
 		const auto cursorPos = ImGui::GetCursorPos();
 
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, Vec2{0.f, 0.f});
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, Vec2{0.f, 0.f});
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, glm::vec2{0.f, 0.f});
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, glm::vec2{0.f, 0.f});
 
 		const int boardCount{static_cast<int>(imguiBoards_.size())};
 		float width = windowWidth;
@@ -98,8 +98,8 @@ namespace app::graphic {
 		const float cardWidth = std::max(1.f, width - 2.f * PlayerCardSpacing);
 		const float cardHeight = std::max(1.f, windowHeight - 2.f * PlayerCardSpacing);
 
-		const Vec2 pos = ImGui::GetCursorPos();
-		ImGui::SetCursorPos(pos + Vec2{PlayerCardSpacing, PlayerCardSpacing});
+		const glm::vec2 pos = ImGui::GetCursorPos();
+		ImGui::SetCursorPos(pos + glm::vec2{PlayerCardSpacing, PlayerCardSpacing});
 		for (int i = 0; i < boardCount; ++i) {
 			std::optional<game::ClassicScoreComparison> scoreComparison;
 			if (scoreRanking.available) {

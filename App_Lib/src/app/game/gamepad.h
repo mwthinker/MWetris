@@ -28,6 +28,7 @@ namespace app::game {
 		void beginMapping();
 		void resetMapping();
 		void cancelMapping();
+
 		BindingsValidationResult commitMapping();
 		std::optional<MappingStatus> getMappingStatus() const;
 		std::array<std::string, 5> getMappingLabels() const;

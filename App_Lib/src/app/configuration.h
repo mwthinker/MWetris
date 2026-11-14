@@ -4,15 +4,13 @@
 #include <tetris/block.h>
 #include <tetris/ai.h>
 
-#include <nlohmann/json.hpp>
-
 #include "controlprofiles.h"
 #include "game/inputbindings.h"
 #include "textureview.h"
-#include <sdl/color.h>
 
-#include <sdl/gpu.h>
 #include <imgui.h>
+#include <sdl/color.h>
+#include <sdl/gpu.h>
 #include <mw/signal.h>
 
 #include <array>
@@ -26,17 +24,6 @@
 namespace app {
 	using ControlProfilesLoadResult = std::expected<ControlProfilesState, std::string>;
 	using DeviceBindingsLoadResult = std::expected<std::vector<game::DeviceBinding>, std::string>;
-
-	constexpr tetris::BlockType charToBlockType(char key);
-	constexpr const char* blockTypeToString(tetris::BlockType blocktype);
-
-	struct HighscoreRecord {
-		std::string name;
-		std::string date;
-		int points = 0;
-		int level = 1;
-		int rows = 0;
-	};
 
 	class Configuration {
 	public:
@@ -81,18 +68,18 @@ namespace app {
 			float borderSize = 0.f;
 			bool showDownBlock = true;
 			std::string colorScheme = "custom";
-			std::string outerSquareColor;
-			std::string innerSquareColor;
-			std::string startAreaColor;
-			std::string borderColor;
-			std::string downBlockColor;
-			std::string playerCardBackgroundColor;
-			std::string playerCardBorderColor;
-			std::string sidebarBackgroundColor;
-			std::string sidebarBorderColor;
-			std::string previewBackgroundColor;
-			std::string previewBorderColor;
-			std::string playerCardTextColor;
+			sdl::Color outerSquareColor;
+			sdl::Color innerSquareColor;
+			sdl::Color startAreaColor;
+			sdl::Color borderColor;
+			sdl::Color downBlockColor;
+			sdl::Color playerCardBackgroundColor;
+			sdl::Color playerCardBorderColor;
+			sdl::Color sidebarBackgroundColor;
+			sdl::Color sidebarBorderColor;
+			sdl::Color previewBackgroundColor;
+			sdl::Color previewBorderColor;
+			sdl::Color playerCardTextColor;
 
 			bool operator==(const BoardSettings&) const = default;
 		};
@@ -103,12 +90,12 @@ namespace app {
 		};
 
 		struct AppearanceSettings {
-			std::string labelTextColor;
-			std::string buttonFocusColor;
-			std::string buttonTextColor;
-			std::string buttonHoverColor;
-			std::string buttonBackgroundColor;
-			std::string buttonBorderColor;
+			sdl::Color labelTextColor;
+			sdl::Color buttonFocusColor;
+			sdl::Color buttonTextColor;
+			sdl::Color buttonHoverColor;
+			sdl::Color buttonBackgroundColor;
+			sdl::Color buttonBorderColor;
 
 			bool operator==(const AppearanceSettings&) const = default;
 		};
@@ -229,7 +216,6 @@ namespace app {
 		sdl::Color getOuterSquareColor() const;
 		sdl::Color getInnerSquareColor() const;
 		sdl::Color getStartAreaColor() const;
-		sdl::Color getPlayerAreaColor() const;
 		sdl::Color getBorderColor() const;
 		sdl::Color getPlayerCardBackgroundColor() const;
 		sdl::Color getPlayerCardBorderColor() const;
@@ -247,57 +233,21 @@ namespace app {
 		float getTetrisBorderSize() const;
 
 		bool isShowDownBlock() const;
-		void setShowDownBlock(bool showDownColor);
 		sdl::Color getDownBlockColor() const;
-
-		bool isLimitFps() const;
-		void setLimitFps(bool limited);
 
 		int getWindowPositionX() const;
 		int getWindowPositionY() const;
 
-		void setWindowPositionX(int x);
-		void setWindowPositionY(int y);
-
 		int getWindowWidth() const;
 		int getWindowHeight() const;
 
-		void setWindowWidth(int width);
-		void setWindowHeight(int height);
-
-		bool isWindowResizable() const;
-		void setWindowResizable(bool resizeable);
-
-		int getWindowMinWidth() const;
-		int getWindowMinHeight() const;
 		std::string getWindowIcon() const;
 
 		bool isWindowPauseOnLostFocus() const;
-		void setWindowPauseOnLostFocus(bool pauseOnFocus);
-
-		bool isWindowBordered() const;
-		void setWindowBordered(bool border);
-
-		bool isWindowMaximized() const;
-		void setWindowMaximized(bool maximized);
-
-		bool isWindowVsync() const;
-		void setWindowVsync(bool activate);
-
-		int getMultiSampleBuffers() const;
-		int getMultiSampleSamples() const;
-
-		float getRowFadingTime() const;
-		void setRowFadingTime(float time);
-
-		float getRowMovingTime() const;
-		void setRowMovingTime(float time);
 
 		bool isFullscreenOnDoubleClick() const;
-		void setFullscreenOnDoubleClick(bool activate);
 
 		bool isMoveWindowByHoldingDownMouse() const;
-		void setMoveWindowByHoldingDownMouse(bool activate);
 
 		Network getNetwork() const;
 
@@ -311,34 +261,12 @@ namespace app {
 		std::string getAi1Name() const;
 		std::string getAi2Name() const;
 		std::string getAi3Name() const;
-		std::string getAi4Name() const;
-
-		void setAi1Name(const std::string& name);
-		void setAi2Name(const std::string& name);
-		void setAi3Name(const std::string& name);
-		void setAi4Name(const std::string& name);
 
 		std::vector<Ai> getAiVector() const;
 
-		std::vector<HighscoreRecord> getHighscoreRecordVector() const;
-		void setHighscoreRecordVector(const std::vector<HighscoreRecord>& highscoreVector);
-
-		float getWindowBarHeight() const;
-
-		sdl::Color getWindowBarColor() const;
-		
-		sdl::Color getCheckboxTextColor() const;
-		sdl::Color getCheckboxBackgroundColor() const;
-		sdl::Color getCheckboxBoxColor() const;
 		sdl::Color getChecboxCheckColor() const;
-		
-		sdl::Color getRadioButtonTextColor() const;
-		sdl::Color getRadioButtonBackgroundColor() const;
-		sdl::Color getRadioButtonBoxColor() const;
-		sdl::Color getRadioButtonCheckColor() const;
 
 		sdl::Color getLabelTextColor() const;
-		sdl::Color getLabelBackgroundColor() const;
 
 		sdl::Color getButtonFocusColor() const;
 		sdl::Color getButtonTextColor() const;
@@ -348,25 +276,13 @@ namespace app {
 		sdl::Color getButtonBorderColor() const;
 
 		sdl::Color getComboBoxFocusColor() const;
-		sdl::Color getComboBoxTextColor() const;
-		sdl::Color getComboBoxSelectedTextColor() const;
-		sdl::Color getComboBoxSelectedBackgroundColor() const;
 		sdl::Color getComboBoxBackgroundColor() const;
 		sdl::Color getComboBoxBorderColor() const;
-		sdl::Color getComboBoxShowDropDownColor() const;
-
-		sdl::Color getMiddleTextColor() const;
-		int getMiddleTextBoxSize() const;
-
-		int getActiveLocalGameRows() const;
-		int getActiveLocalGameColumns() const;
 
 		ControlProfilesLoadResult loadControlProfiles();
 		ControlProfilesPersistenceResult persistControlProfiles(const ControlProfilesState& state);
-		static ControlProfilesState normalizeControlProfiles(nlohmann::json& jsonObject);
 		DeviceBindingsLoadResult loadDeviceBindings();
 		game::DeviceBindingsPersistenceResult persistDeviceBindings(const std::vector<game::DeviceBinding>& state);
-		static std::vector<game::DeviceBinding> normalizeDeviceBindings(nlohmann::json& jsonObject);
 		SinglePlayerControls getLastSinglePlayerControls() const;
 		std::expected<void, std::string> persistLastSinglePlayerControls(const SinglePlayerControls& controls);
 

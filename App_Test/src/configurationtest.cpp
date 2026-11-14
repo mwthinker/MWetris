@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <app/configuration.h>
+#include <app/configurationnormalization.h>
 
 #include <nlohmann/json.hpp>
 
@@ -29,7 +30,7 @@ namespace app {
 			std::filesystem::path path_;
 		};
 
-		nlohmann::json legacyConfiguration() {
+		nlohmann::json configurationDocument() {
 			auto document = nlohmann::json{
 				{"sentinel", 42},
 				{"inputProfiles", {
@@ -48,11 +49,11 @@ namespace app {
 					},
 				}},
 				{"devices", {
-					{{"guid", "keyboard1"}, {"das", 0.167}, {"arr", 0.033}},
+					{{"guid", "Keyboard 1"}, {"inputProfileId", "balanced"}},
 					{{"guid", "Keyboard 1"}, {"inputProfileId", "fast"}},
-					{{"guid", "keyboard2"}, {"das", 0.100}, {"arr", 0.016}},
-					{{"guid", "pad"}, {"das", 0.140}, {"arr", 0.025}},
-					{{"guid", "pad-2"}, {"das", 0.140}, {"arr", 0.025}},
+					{{"guid", "Keyboard 2"}, {"inputProfileId", "fast"}},
+					{{"guid", "pad"}, {"inputProfileId", "user-profile"}},
+					{{"guid", "pad-2"}, {"inputProfileId", "user-profile"}},
 					{{"guid", "missing"}, {"inputProfileId", "does-not-exist"}},
 					{{"guid", "user-device"}, {"inputProfileId", "user-profile"}},
 				}},
@@ -127,7 +128,7 @@ namespace app {
 			currentPathGuard_ = std::make_unique<CurrentPathGuard>();
 			std::filesystem::current_path(testDirectory_);
 
-			auto document = legacyConfiguration();
+			auto document = configurationDocument();
 			std::ofstream{"USE_APPLICATION_JSON"} << true;
 			std::ofstream{"tetris.json"} << document.dump();
 			document["window"]["width"] = 1024;
@@ -135,10 +136,10 @@ namespace app {
 
 			configuration_ = &Configuration::getInstance();
 			baselineSettings_ = configuration_->getEditableSettings();
-			auto profilesDocument = legacyConfiguration();
-			baselineProfiles_ = Configuration::normalizeControlProfiles(profilesDocument);
-			auto bindingsDocument = legacyConfiguration();
-			baselineBindings_ = Configuration::normalizeDeviceBindings(bindingsDocument);
+			auto profilesDocument = configurationDocument();
+			baselineProfiles_ = normalizeControlProfiles(profilesDocument);
+			auto bindingsDocument = configurationDocument();
+			baselineBindings_ = normalizeDeviceBindings(bindingsDocument);
 		}
 
 		static void TearDownTestSuite() {
@@ -183,58 +184,53 @@ namespace app {
 		static inline std::vector<game::DeviceBinding> baselineBindings_;
 	};
 
-	TEST(ConfigurationTest, normalizesLegacyControlProfiles) {
+	TEST(ConfigurationTest, normalizesControlProfiles) {
 		// Given
-		auto document = legacyConfiguration();
+		auto document = configurationDocument();
 
 		// When
-		auto state = Configuration::normalizeControlProfiles(document);
+		auto state = normalizeControlProfiles(document);
 
 		// Then
-		ASSERT_EQ(state.profiles.size(), 6);
+		ASSERT_EQ(state.profiles.size(), 5);
 		auto userProfile = std::ranges::find(state.profiles, ProfileId{"user-profile"}, &InputProfile::id);
 		ASSERT_NE(userProfile, state.profiles.end());
 		EXPECT_EQ(userProfile->name, "User");
 		EXPECT_EQ(userProfile->timing, (InputTiming{140, 25}));
 		EXPECT_FALSE(userProfile->builtIn);
-		auto repairedProfile = std::ranges::find(state.profiles, ProfileId{"migrated-1"}, &InputProfile::id);
+		auto repairedProfile = std::ranges::find(state.profiles, ProfileId{"profile-1"}, &InputProfile::id);
 		ASSERT_NE(repairedProfile, state.profiles.end());
 		EXPECT_EQ(repairedProfile->name, "Balanced Copy");
-		auto legacyProfile = std::ranges::find(state.profiles, ProfileId{"migrated-2"}, &InputProfile::id);
-		ASSERT_NE(legacyProfile, state.profiles.end());
-		EXPECT_EQ(legacyProfile->timing, (InputTiming{140, 25}));
 	}
 
-	TEST(ConfigurationTest, normalizesLegacyProfileAssignments) {
+	TEST(ConfigurationTest, normalizesProfileAssignments) {
 		// Given
-		auto document = legacyConfiguration();
+		auto document = configurationDocument();
 
 		// When
-		auto state = Configuration::normalizeControlProfiles(document);
+		auto state = normalizeControlProfiles(document);
 
 		// Then
 		ASSERT_EQ(state.assignments.size(), 6);
 		ControlProfiles profiles{state};
 		EXPECT_EQ(profiles.getAssignedProfileId("Keyboard 1"), ControlProfiles::BalancedProfileId);
 		EXPECT_EQ(profiles.getAssignedProfileId("Keyboard 2"), ControlProfiles::FastProfileId);
-		EXPECT_EQ(std::ranges::count(state.assignments, "keyboard1", &DeviceProfileAssignment::deviceGuid), 0);
-		EXPECT_EQ(std::ranges::count(state.assignments, "keyboard2", &DeviceProfileAssignment::deviceGuid), 0);
-		EXPECT_EQ(profiles.getAssignedProfileId("pad"), ProfileId{"migrated-2"});
-		EXPECT_EQ(profiles.getAssignedProfileId("pad-2"), ProfileId{"migrated-2"});
+		EXPECT_EQ(profiles.getAssignedProfileId("pad"), ProfileId{"user-profile"});
+		EXPECT_EQ(profiles.getAssignedProfileId("pad-2"), ProfileId{"user-profile"});
 		EXPECT_EQ(profiles.getAssignedProfileId("missing"), ControlProfiles::BalancedProfileId);
 		EXPECT_EQ(profiles.getAssignedProfileId("user-device"), ProfileId{"user-profile"});
 	}
 
-	TEST(ConfigurationTest, rewritesLegacyControlProfileJson) {
+	TEST(ConfigurationTest, rewritesNormalizedControlProfileJson) {
 		// Given
-		auto document = legacyConfiguration();
+		auto document = configurationDocument();
 
 		// When
-		Configuration::normalizeControlProfiles(document);
+		normalizeControlProfiles(document);
 
 		// Then
 		EXPECT_EQ(document.at("sentinel"), 42);
-		ASSERT_EQ(document.at("inputProfiles").size(), 3);
+		ASSERT_EQ(document.at("inputProfiles").size(), 2);
 		for (const auto& profile : document.at("inputProfiles")) {
 			EXPECT_FALSE(profile.contains("builtIn"));
 		}
@@ -247,12 +243,12 @@ namespace app {
 
 	TEST(ConfigurationTest, controlProfileNormalizationIsIdempotent) {
 		// Given
-		auto document = legacyConfiguration();
-		auto state = Configuration::normalizeControlProfiles(document);
+		auto document = configurationDocument();
+		auto state = normalizeControlProfiles(document);
 		auto normalizedDocument = document;
 
 		// When
-		auto normalizedState = Configuration::normalizeControlProfiles(normalizedDocument);
+		auto normalizedState = normalizeControlProfiles(normalizedDocument);
 
 		// Then
 		EXPECT_EQ(normalizedDocument, document);
@@ -265,7 +261,7 @@ namespace app {
 		nlohmann::json document = 42;
 
 		// When
-		auto state = Configuration::normalizeControlProfiles(document);
+		auto state = normalizeControlProfiles(document);
 
 		// Then
 		EXPECT_TRUE(document.is_object());
@@ -276,7 +272,7 @@ namespace app {
 	TEST(ConfigurationTest, normalizesDeviceBindings) {
 		// Given
 		auto document = nlohmann::json{{"devices", {
-			{{"guid", "keyboard1"}, {"inputProfileId", "fast"}},
+			{{"guid", "Keyboard 1"}, {"inputProfileId", "fast"}},
 			{{"guid", "pad"}, {"inputProfileId", "balanced"}, {"bindings", {
 				{"type", "gamepad"},
 				{"left", SDL_GetGamepadStringForButton(SDL_GAMEPAD_BUTTON_WEST)},
@@ -292,30 +288,38 @@ namespace app {
 		}}};
 
 		// When
-		auto state = Configuration::normalizeDeviceBindings(document);
+		auto state = normalizeDeviceBindings(document);
 
 		// Then
 		ASSERT_EQ(state.size(), 3);
 		EXPECT_EQ(state[0].deviceGuid, "Keyboard 1");
+		EXPECT_EQ(state[0].hardwareGuid, "Keyboard 1");
+		EXPECT_EQ(state[0].kind, game::DeviceKind::Keyboard);
+		EXPECT_EQ(state[0].color, game::DeviceColors[0]);
 		ASSERT_TRUE(std::holds_alternative<game::KeyboardBindings>(state[0].bindings));
 		EXPECT_EQ(std::get<game::KeyboardBindings>(state[0].bindings), game::getDefaultKeyboard1Bindings());
 		ASSERT_TRUE(std::holds_alternative<game::GamepadBindings>(state[1].bindings));
 		EXPECT_TRUE(game::validateBindings(std::get<game::GamepadBindings>(state[1].bindings)));
 		EXPECT_EQ(std::get<game::GamepadBindings>(state[1].bindings).left, SDL_GAMEPAD_BUTTON_WEST);
+		EXPECT_EQ(state[1].hardwareGuid, "pad");
+		EXPECT_EQ(state[1].kind, game::DeviceKind::Gamepad);
+		EXPECT_NE(state[1].color, state[0].color);
 		ASSERT_TRUE(std::holds_alternative<game::KeyboardBindings>(state[2].bindings));
 		EXPECT_EQ(std::get<game::KeyboardBindings>(state[2].bindings), game::getDefaultKeyboard2Bindings());
 		EXPECT_EQ(document["devices"][0]["inputProfileId"], "fast");
 		EXPECT_EQ(document["devices"][0]["bindings"]["type"], "keyboard");
+		EXPECT_EQ(document["devices"][0]["kind"], "keyboard");
+		EXPECT_EQ(document["devices"][0]["color"], game::DeviceColors[0].toHexString());
 	}
 
 	TEST(ConfigurationTest, deviceBindingNormalizationIsIdempotent) {
 		// Given
-		auto document = legacyConfiguration();
-		auto state = Configuration::normalizeDeviceBindings(document);
+		auto document = configurationDocument();
+		auto state = normalizeDeviceBindings(document);
 		auto normalized = document;
 
 		// When
-		auto roundTrip = Configuration::normalizeDeviceBindings(normalized);
+		auto roundTrip = normalizeDeviceBindings(normalized);
 
 		// Then
 		EXPECT_EQ(normalized, document);
@@ -626,14 +630,14 @@ namespace app {
 		// Then
 		EXPECT_EQ(settings.colorScheme, "warmSand");
 		EXPECT_EQ(Configuration::detectColorScheme(settings), "warmSand");
-		EXPECT_EQ(settings.playerCardTextColor, "#2A241B");
+		EXPECT_EQ(settings.playerCardTextColor, sdl::Color{"#2A241B"});
 	}
 
 	TEST(ConfigurationTest, detectsModifiedColorSchemeAsCustom) {
 		// Given
 		Configuration::BoardSettings settings;
 		Configuration::applyColorScheme(settings, "warmSand");
-		settings.sidebarBackgroundColor = "#000000";
+		settings.sidebarBackgroundColor = sdl::color::Black;
 
 		// When
 		auto scheme = Configuration::detectColorScheme(settings);

@@ -128,8 +128,15 @@ namespace app::ui::scene {
 							using T = std::decay_t<decltype(slot)>;
 							if constexpr (std::is_same_v<T, game::Human>) {
 								ImGui::TextUnformatted(slot.name.c_str());
-								const char* deviceName = slot.device ? slot.device->getName().c_str() : "No device";
-								ImGui::SecondaryText("Human - %s", deviceName);
+								ImGui::PushFont(Configuration::getInstance().getImGuiRegularSmallFont(), 0.f);
+								ImGui::TextDisabled("Human -");
+								ImGui::SameLine();
+								if (slot.device) {
+									ImGui::DeviceLabel(*slot.device, true);
+								} else {
+									ImGui::TextDisabled("No device");
+								}
+								ImGui::PopFont();
 								if (ImGui::MediumButton(compactCards ? "Remove##Human" : "Remove", {-1.f, 28.f * scale})) {
 									playerSlot = game::OpenSlot{};
 									tetrisController_->setPlayerSlot(playerSlot, i);

@@ -196,6 +196,124 @@ namespace ImGui {
 		ImGui::PopFont();
 	}
 
+	void DeviceLabel(const app::game::Device& device, bool disabled) {
+		const auto icon = device.getKind() == app::game::DeviceKind::Keyboard
+			? ICON_FA_KEYBOARD
+			: ICON_FA_GAMEPAD;
+		ImGui::PushFont(app::Configuration::getInstance().getImGuiDefaultFont(), 0.f);
+		ImGui::PushStyleColor(ImGuiCol_Text, disabled
+			? ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled)
+			: static_cast<ImVec4>(device.getColor()));
+		ImGui::TextUnformatted(icon);
+		ImGui::PopStyleColor();
+		ImGui::PopFont();
+		ImGui::SameLine(0.f, ImGui::GetStyle().ItemInnerSpacing.x);
+		if (disabled) {
+			ImGui::TextDisabled("%s", device.getName().c_str());
+		} else {
+			ImGui::TextUnformatted(device.getName().c_str());
+		}
+	}
+
+	namespace {
+
+		ImWchar deviceIconCodepoint(const app::game::Device& device) {
+			return device.getKind() == app::game::DeviceKind::Keyboard ? 0xf11c : 0xf11b;
+		}
+
+		float deviceIconRightEdge(ImFont* font, float fontSize, const app::game::Device& device, const char* icon) {
+			if (const auto* glyph = font->GetFontBaked(fontSize)->FindGlyphNoFallback(deviceIconCodepoint(device))) {
+				return glyph->X1;
+			}
+			return font->CalcTextSizeA(fontSize, FLT_MAX, 0.f, icon).x;
+		}
+
+		float deviceLabelSpacing(float fontSize) {
+			return fontSize * 0.15f;
+		}
+
+		bool deviceSelectable(const app::game::Device& device, bool selected) {
+			const auto position = ImGui::GetCursorScreenPos();
+			const auto height = ImGui::GetFrameHeight();
+			ImGui::PushID(device.getGuid().c_str());
+			const bool activated = ImGui::Selectable("##Device", selected, 0, {0.f, height});
+			ImGui::PopID();
+
+			auto* defaultFont = app::Configuration::getInstance().getImGuiDefaultFont();
+			auto* textFont = ImGui::GetFont();
+			const auto fontSize = ImGui::GetFontSize();
+			const auto icon = device.getKind() == app::game::DeviceKind::Keyboard
+				? ICON_FA_KEYBOARD
+				: ICON_FA_GAMEPAD;
+			const float iconRightEdge = deviceIconRightEdge(defaultFont, fontSize, device, icon);
+			const ImVec2 textPosition{
+				position.x + ImGui::GetStyle().FramePadding.x,
+				position.y + (height - fontSize) * 0.5f,
+			};
+			auto* drawList = ImGui::GetWindowDrawList();
+			drawList->AddText(defaultFont, fontSize, textPosition, device.getColor().toImU32(), icon);
+			drawList->AddText(textFont, fontSize,
+				{textPosition.x + iconRightEdge + deviceLabelSpacing(fontSize), textPosition.y},
+				ImGui::GetColorU32(ImGuiCol_Text), device.getName().c_str());
+			return activated;
+		}
+
+		bool beginDeviceCombo(const char* label, const app::game::Device* device,
+			std::string_view suffix, const char* emptyPreview) {
+
+			const auto position = ImGui::GetCursorScreenPos();
+			auto* textFont = ImGui::GetFont();
+			const float fontSize = ImGui::GetFontSize();
+			const bool opened = ImGui::BeginCombo(label, device ? "" : emptyPreview);
+			if (!device) {
+				return opened;
+			}
+
+			const auto icon = device->getKind() == app::game::DeviceKind::Keyboard
+				? ICON_FA_KEYBOARD
+				: ICON_FA_GAMEPAD;
+			auto* iconFont = app::Configuration::getInstance().getImGuiDefaultFont();
+			const float iconRightEdge = deviceIconRightEdge(iconFont, fontSize, *device, icon);
+			const ImVec2 textPosition{
+				position.x + ImGui::GetStyle().FramePadding.x,
+				position.y + ImGui::GetStyle().FramePadding.y,
+			};
+			auto* drawList = ImGui::GetWindowDrawList();
+			drawList->AddText(iconFont, fontSize, textPosition, device->getColor().toImU32(), icon);
+			auto name = device->getName() + std::string{suffix};
+			drawList->AddText(textFont, fontSize,
+				{textPosition.x + iconRightEdge + deviceLabelSpacing(fontSize), textPosition.y},
+				ImGui::GetColorU32(ImGuiCol_Text), name.c_str());
+			return opened;
+		}
+
+	}
+
+	bool DeviceCombo(const char* label, std::span<const app::game::DevicePtr> devices,
+		app::game::DevicePtr& selectedDevice, const char* emptyPreview) {
+
+		bool changed = false;
+		if (!selectedDevice && !devices.empty()) {
+			selectedDevice = devices.front();
+			changed = true;
+		}
+		const auto suffix = selectedDevice && !selectedDevice->isConnected() ? " (disconnected)" : "";
+		if (beginDeviceCombo(label, selectedDevice.get(), suffix, emptyPreview)) {
+			for (const auto& device : devices) {
+				const bool selected = selectedDevice && selectedDevice->getGuid() == device->getGuid();
+				if (deviceSelectable(*device, selected)) {
+					selectedDevice = device;
+					changed = true;
+				}
+				if (selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+		return changed;
+	}
+
 	void Text(const std::chrono::year_month_day& ymd) {
 		ImGui::Text("%d-%02d-%02d", static_cast<int>(ymd.year()), static_cast<int>(static_cast<unsigned>(ymd.month())), static_cast<int>(static_cast<unsigned>(ymd.day())));
 	}

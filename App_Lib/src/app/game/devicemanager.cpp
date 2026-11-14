@@ -15,11 +15,13 @@ namespace app::game {
 		: bindings_{std::move(bindings)}
 		, persist_{std::move(persist)} {
 
-		keyboard1_ = createKeyboardDevice("Keyboard 1", getDefaultKeyboard1Bindings());
-		keyboard2_ = createKeyboardDevice("Keyboard 2", getDefaultKeyboard2Bindings());
+		keyboard1_ = createKeyboardDevice("Keyboard 1", getDefaultKeyboard1Bindings(), DeviceColors[0]);
+		keyboard2_ = createKeyboardDevice("Keyboard 2", getDefaultKeyboard2Bindings(), DeviceColors[1]);
 	}
 
-	DeviceManager::KeyboardDevice DeviceManager::createKeyboardDevice(const std::string& name, KeyboardBindings defaults) {
+	DeviceManager::KeyboardDevice DeviceManager::createKeyboardDevice(
+		const std::string& name, KeyboardBindings defaults, sdl::Color color) {
+
 		auto configured = getConfiguredBindings(name, defaults);
 		auto* bindings = std::get_if<KeyboardBindings>(&configured);
 
@@ -28,34 +30,35 @@ namespace app::game {
 				name,
 				bindings ? *bindings : defaults,
 				defaults),
-			.device = std::make_shared<Device>(),
+			.device = std::make_shared<Device>(name, name, DeviceKind::Keyboard, color),
 		};
 
-		keyboardDevice.device->guid_ = name;
-		keyboardDevice.device->name_ = name;
 		keyboardDevice.device->connected_ = true;
-		keyboardDevice.device->input_ = {};
 		return keyboardDevice;
 	}
 
-	DeviceManager::GamepadDevice DeviceManager::createGamepadDevice(sdl::GameController&& gameController) {
+	DeviceManager::GamepadDevice DeviceManager::createGamepadDevice(sdl::GameController&& gameController, const DeviceBinding& configuration) {
 		const auto guid = gameController.getGuid();
-		const auto guidString = sdl::guidToString(guid);
 		const auto defaults = getDefaultGamepadBindings();
-		const auto configured = getConfiguredBindings(guidString, defaults);
+		const auto configured = getConfiguredBindings(configuration.deviceGuid, defaults);
 		const auto* bindings = std::get_if<GamepadBindings>(&configured);
 
+		auto gamePad = std::make_unique<GamePad>(
+			std::move(gameController),
+			bindings ? *bindings : defaults
+		);
+		auto device = std::make_shared<Device>(
+			gamePad->getName(),
+			configuration.deviceGuid,
+			DeviceKind::Gamepad,
+			configuration.color
+		);
 		GamepadDevice gamepadDevice{
-			.gamePad = std::make_unique<GamePad>(
-				std::move(gameController),
-				bindings ? *bindings : defaults),
-			.device = std::make_shared<Device>(),
+			.gamePad = std::move(gamePad),
+			.device = std::move(device),
 			.guid = guid,
 		};
 		gamepadDevice.device->connected_ = true;
-		gamepadDevice.device->guid_ = gamepadDevice.gamePad->getGuid();
-		gamepadDevice.device->name_ = gamepadDevice.gamePad->getName();
-		gamepadDevice.device->input_ = {};
 		return gamepadDevice;
 	}
 
@@ -142,8 +145,54 @@ namespace app::game {
 	}
 
 	BindingSet DeviceManager::getConfiguredBindings(const std::string& guid, BindingSet defaults) const {
-		auto found = std::ranges::find(bindings_, guid, &DeviceBinding::deviceGuid);
-		return found == bindings_.end() ? std::move(defaults) : found->bindings;
+		auto* configuration = findConfiguration(guid);
+		return configuration ? configuration->bindings : std::move(defaults);
+	}
+
+	DeviceBinding* DeviceManager::findConfiguration(const std::string& deviceGuid) {
+		auto found = std::ranges::find(bindings_, deviceGuid, &DeviceBinding::deviceGuid);
+		return found == bindings_.end() ? nullptr : &*found;
+	}
+
+	const DeviceBinding* DeviceManager::findConfiguration(const std::string& deviceGuid) const {
+		auto found = std::ranges::find(bindings_, deviceGuid, &DeviceBinding::deviceGuid);
+		return found == bindings_.end() ? nullptr : &*found;
+	}
+
+	sdl::Color DeviceManager::nextAvailableColor() const {
+		for (auto color : DeviceColors) {
+			const bool configured = std::ranges::any_of(bindings_, [color](const DeviceBinding& binding) {
+				return binding.color == color;
+			});
+			const bool active = keyboard1_.device && keyboard1_.device->getColor() == color
+				|| keyboard2_.device && keyboard2_.device->getColor() == color
+				|| std::ranges::any_of(devices_, [color](const GamepadDevice& device) {
+					return device.device->getColor() == color;
+				});
+			if (!configured && !active) {
+				return color;
+			}
+		}
+		return DeviceColors[(bindings_.size() + devices_.size()) % DeviceColors.size()];
+	}
+
+	std::string DeviceManager::nextLogicalGuid(std::string_view hardwareGuid) const {
+		auto isUsed = [this](std::string_view candidate) {
+			return std::ranges::any_of(bindings_, [candidate](const DeviceBinding& binding) {
+				return binding.deviceGuid == candidate;
+			}) || std::ranges::any_of(devices_, [candidate](const GamepadDevice& device) {
+				return device.device->getGuid() == candidate;
+			});
+		};
+		if (!isUsed(hardwareGuid)) {
+			return std::string{hardwareGuid};
+		}
+		for (int slot = 2;; ++slot) {
+			auto candidate = std::string{hardwareGuid} + "#" + std::to_string(slot);
+			if (!isUsed(candidate)) {
+				return candidate;
+			}
+		}
 	}
 
 	bool DeviceManager::eventUpdate(const SDL_Event& windowEvent) {
@@ -282,9 +331,18 @@ namespace app::game {
 		auto candidate = bindings_;
 		auto found = std::ranges::find(candidate, device.getGuid(), &DeviceBinding::deviceGuid);
 		if (found == candidate.end()) {
-			candidate.push_back({device.getGuid(), *draft});
+			std::string hardwareGuid = device.getGuid();
+			if (auto gamePad = findGamepadBackend(device)) {
+				hardwareGuid = gamePad->getGuid();
+			}
+			candidate.push_back({device.getGuid(), *draft, std::move(hardwareGuid), device.getKind(), device.getColor()});
 		} else {
 			found->bindings = *draft;
+			found->hardwareGuid = device.getKind() == DeviceKind::Keyboard
+				? device.getGuid()
+				: findGamepadBackend(device)->getGuid();
+			found->kind = device.getKind();
+			found->color = device.getColor();
 		}
 		if (persist_) {
 			if (auto result = persist_(candidate); !result) {
@@ -313,6 +371,7 @@ namespace app::game {
 
 	void DeviceManager::controllerDeviceAddedEvent(const SDL_GamepadDeviceEvent& deviceEvent) {
 		auto gameController = sdl::GameController::addController(deviceEvent.which);
+		const auto hardwareGuid = sdl::guidToString(gameController.getGuid());
 		auto found = std::ranges::find_if(devices_, [&](const GamepadDevice& pair) {
 			return !pair.device->isConnected() && pair.guid == gameController.getGuid();
 		});
@@ -325,7 +384,40 @@ namespace app::game {
 			return;
 		}
 
-		auto& pair = devices_.emplace_back(createGamepadDevice(std::move(gameController)));
+		auto configured = std::ranges::find_if(bindings_, [&](const DeviceBinding& binding) {
+			const auto physicalGuid = binding.hardwareGuid.empty() ? binding.deviceGuid : binding.hardwareGuid;
+			const bool instantiated = std::ranges::any_of(devices_, [&](const GamepadDevice& device) {
+				return device.device->getGuid() == binding.deviceGuid;
+			});
+			return binding.kind == DeviceKind::Gamepad && physicalGuid == hardwareGuid && !instantiated;
+		});
+		if (configured == bindings_.end()) {
+			DeviceBinding binding{
+				nextLogicalGuid(hardwareGuid),
+				getDefaultGamepadBindings(),
+				hardwareGuid,
+				DeviceKind::Gamepad,
+				nextAvailableColor(),
+			};
+			auto candidate = bindings_;
+			candidate.push_back(binding);
+			if (!persist_ || persist_(candidate)) {
+				bindings_ = std::move(candidate);
+				configured = std::prev(bindings_.end());
+			} else {
+				spdlog::error("Could not persist gamepad color for {}", binding.deviceGuid);
+				bindings_.push_back(std::move(binding));
+				configured = std::prev(bindings_.end());
+			}
+		} else {
+			if (configured->color == sdl::Color{}) {
+				configured->color = nextAvailableColor();
+			}
+			configured->hardwareGuid = hardwareGuid;
+			configured->kind = DeviceKind::Gamepad;
+		}
+
+		auto& pair = devices_.emplace_back(createGamepadDevice(std::move(gameController), *configured));
 		spdlog::info("GamePad added: {} {} {}", pair.gamePad->getInstanceId(), pair.gamePad->getGuid(), pair.gamePad->getName());
 		deviceConnected(pair.device);
 	}

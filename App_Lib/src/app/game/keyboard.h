@@ -12,7 +12,6 @@
 
 namespace app::game {
 
-	using KeyboardMapping = KeyboardBindings;
 	enum class MappingPollResult {
 		None,
 		Captured,
@@ -21,10 +20,7 @@ namespace app::game {
 
 	class Keyboard {
 	public:
-		Keyboard(
-			const std::string& name,
-			const KeyboardMapping& keyboardMapping,
-			const KeyboardMapping& defaultMapping);
+		Keyboard(const std::string& name, const KeyboardBindings& bindings, const KeyboardBindings& defaultBindings);
 
 		const char* getName() const;
 
@@ -35,6 +31,7 @@ namespace app::game {
 		void beginMapping();
 		void resetMapping();
 		void cancelMapping();
+
 		BindingsValidationResult commitMapping();
 		std::optional<MappingStatus> getMappingStatus() const;
 		std::array<std::string, 5> getMappingLabels() const;

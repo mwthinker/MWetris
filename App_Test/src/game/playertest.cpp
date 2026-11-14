@@ -102,7 +102,8 @@ namespace app::game {
 	}
 
 	TEST(PlayerTest, aiAndRemotePlayersHaveNoRuntimeControls) {
-		auto device = std::make_shared<Device>();
+		auto device = std::make_shared<Device>(
+			"Test Device", "test-device", DeviceKind::Gamepad, DeviceColors[0]);
 		auto ai = createAiPlayer(tetris::Ai{});
 		auto remote = createRemotePlayer();
 

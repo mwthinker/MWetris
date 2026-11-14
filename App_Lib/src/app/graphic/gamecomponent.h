@@ -2,8 +2,6 @@
 #define APP_GRAPHIC_GAMECOMPONENT_H
 
 #include "imguiboard.h"
-#include "types.h"
-
 #include "game/tetrisgameevent.h"
 #include "game/player.h"
 
