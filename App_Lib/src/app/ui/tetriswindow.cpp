@@ -151,11 +151,14 @@ namespace app::ui {
 		background_ = Configuration::getInstance().getBackgroundSprite();
 
 		mainStateMachine_.emplace<scene::GameRoomLooby>(tetrisController_, deviceManager_, controlProfiles_);
-		mainStateMachine_.emplace<scene::GameLauncher>(tetrisController_,
-			[this]() { startSinglePlayer(); },
-			[this]() { modalStateMachine_.switchTo<scene::CreateGameRoom>(); },
-			[this]() { modalStateMachine_.switchTo<scene::JoinGameRoom>(); },
-			[this]() { modalStateMachine_.switchTo<scene::HighScore>(); });
+		mainStateMachine_.emplace<scene::GameLauncher>(tetrisController_, scene::GameLauncherActions{
+			.startSinglePlayer = [this]() { startSinglePlayer(); },
+			.createNetworkGame = [this]() { modalStateMachine_.switchTo<scene::CreateGameRoom>(); },
+			.joinNetworkGame = [this]() { modalStateMachine_.switchTo<scene::JoinGameRoom>(); },
+			.showHighScores = [this]() { modalStateMachine_.switchTo<scene::HighScore>(); },
+			.showPreferences = [this]() { modalStateMachine_.switchTo<scene::Settings>(); },
+			.quit = [this]() { window_.quit(); },
+		});
 		mainStateMachine_.emplace<scene::Play>(tetrisController_);
 		
 		modalStateMachine_.emplace<scene::JoinGameRoom>(tetrisController_);

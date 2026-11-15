@@ -20,6 +20,7 @@
 - For nested namespaces, use the compact syntax `namespace a::b::c { … }`.
 - Prefer signed integers for values, counters, and arithmetic; use unsigned only for bit manipulation, intentional modular arithmetic, or API-required types (ES.101, ES.102).
 - Prefer keeping method parameters on the same line; wrap them only when needed for readability.
+- Use `std::move` when transferring ownership or when copying the object would be unnecessarily expensive. Do not use it mechanically or on `const` objects.
 - Do not add or preserve production APIs solely for test convenience. Design production interfaces around valid application use cases and invariants; tests must use those interfaces or dedicated test fixtures and helpers.
 
 # Tests
