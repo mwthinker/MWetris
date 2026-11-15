@@ -15,7 +15,8 @@ namespace app::ui::scene {
 	}
 
 	void NewHighScore::imGuiUpdate(const DeltaTime& deltaTime) {
-		const bool focusName = ImGui::IsWindowAppearing();
+		const bool focusName = ImGui::IsWindowAppearing() || requestNameFocus_;
+		requestNameFocus_ = false;
 
 		ImGui::PushFont(app::Configuration::getInstance().getImGuiSemiBoldFont(), 0.f);
 		ImGui::Text("Place %d", game::getHighScorePlacement(data_.points));
@@ -37,8 +38,16 @@ namespace app::ui::scene {
 			ImGui::EndModalBody();
 
 			ImGui::AlignNextItemRight(100.f);
-			if ((ImGui::ConfirmationButton("Save", {100.f, 0.f}) || submitted) && !data_.name.empty()) {
-				save();
+			const bool canSave = !data_.name.empty();
+			ImGui::BeginDisabled(!canSave);
+			const bool saveClicked = ImGui::ConfirmationButton("Save", {100.f, 0.f});
+			ImGui::EndDisabled();
+			if (saveClicked || submitted) {
+				if (!canSave) {
+					requestNameFocus_ = true;
+				} else {
+					save();
+				}
 			}
 		}
 	}
@@ -51,6 +60,7 @@ namespace app::ui::scene {
 	}
 
 	void NewHighScore::switchedTo(const SceneData& sceneData) {
+		requestNameFocus_ = true;
 		try {
 			data_ = dynamic_cast<const NewHighScoreData&>(sceneData);
 		} catch (const std::bad_cast& exp) {

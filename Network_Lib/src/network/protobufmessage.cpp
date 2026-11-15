@@ -1,5 +1,7 @@
 #include "protobufmessage.h"
 
+#include <stdexcept>
+
 namespace network {
 
 	ProtobufMessage::ProtobufMessage() {
@@ -20,7 +22,10 @@ namespace network {
 		buffer_.resize(getHeaderSize() + size);
 		
 		// Assume that the message size fits in an int.
-		message.SerializeToArray(buffer_.data() + getHeaderSize(), static_cast<int>(size));
+		if (!message.SerializeToArray(buffer_.data() + getHeaderSize(), static_cast<int>(size))) {
+			buffer_.clear();
+			throw std::runtime_error{"Failed to serialize protobuf message"};
+		}
 		defineBodySize();
 	}
 

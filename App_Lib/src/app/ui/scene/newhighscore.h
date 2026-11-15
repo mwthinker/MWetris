@@ -37,6 +37,7 @@ namespace app::ui::scene {
 		
 		NewHighScoreData data_{};
 		std::function<void(int)> closeFunction_;
+		bool requestNameFocus_ = false;
 	};
 
 }

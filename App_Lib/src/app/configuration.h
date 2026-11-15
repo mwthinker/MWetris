@@ -15,6 +15,7 @@
 
 #include <array>
 #include <expected>
+#include <filesystem>
 #include <memory>
 #include <span>
 #include <string>
@@ -49,6 +50,8 @@ namespace app {
 		struct WindowSettings {
 			int width = 0;
 			int height = 0;
+			int positionX = 0;
+			int positionY = 0;
 			int minWidth = 0;
 			int minHeight = 0;
 			bool resizable = true;
@@ -194,6 +197,8 @@ namespace app {
 		mw::PublicSignal<Configuration, const EditableSettings&, const EditableSettings&> settingsChanged;
 
 		static Configuration& getInstance();
+		std::filesystem::path getSaveDirectory() const;
+		std::filesystem::path getSavePath(std::string_view filename) const;
 
 		void resetRuntimeResources();
 

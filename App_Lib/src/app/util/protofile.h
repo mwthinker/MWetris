@@ -23,9 +23,12 @@ namespace app {
 	}
 
 	template <MessageLite Message>
-	void saveToFile(const Message& type, const std::string& file) {
+	[[nodiscard]] bool saveToFile(const Message& type, const std::string& file) {
 		std::ofstream output{file, std::ios::binary};
-		type.SerializePartialToOstream(&output);
+		if (!output) {
+			return false;
+		}
+		return type.SerializePartialToOstream(&output) && output.good();
 	}
 
 }

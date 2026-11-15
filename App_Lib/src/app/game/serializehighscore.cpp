@@ -1,8 +1,10 @@
 #include "serializehighscore.h"
+#include "configuration.h"
 #include "tetrisparameters.h"
 #include "util/protofile.h"
 
 #include <protocol/high_score.pb.h>
+#include <fmt/std.h>
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
@@ -19,8 +21,14 @@ namespace app::game {
 	namespace {
 
 		constexpr int NbrHighScoreResults = 10;
-		const std::string SavedGameFile{"savedGame.mw"};
-		const std::string SavedHighScoreFile{"highScore.mw"};
+		const std::filesystem::path& savedHighScoreFile() {
+			static const auto file = [] {
+				auto path = Configuration::getInstance().getSavePath("highScore.mw");
+				spdlog::info("[Serialize] High-score file: {}", path);
+				return path;
+			}();
+			return file;
+		}
 
 		bool resultRanksBefore(const tp::HighScore_Result& a, const tp::HighScore_Result& b) {
 			if (a.points() != b.points()) {
@@ -73,13 +81,14 @@ namespace app::game {
 
 	std::vector<HighScoreResult> loadHighScore() {
 		tp::HighScore highScore;
+		const auto file = savedHighScoreFile();
 
-		if (std::filesystem::exists(std::filesystem::path{SavedHighScoreFile})) {
-			if (!loadFromFile(highScore, SavedHighScoreFile)) {
+		if (std::filesystem::exists(file)) {
+			if (!loadFromFile(highScore, file.string())) {
 				spdlog::info("[Serialize] Nigscore  loaded: {}");
 			}
 		} else {
-			spdlog::info("[Serialize] Highscore file {} does not exist", SavedHighScoreFile);
+			spdlog::info("[Serialize] High-score file does not exist");
 		}
 
 		auto results = toHighScoreResults(highScore.results());
@@ -94,7 +103,8 @@ namespace app::game {
 
 	void saveHighScore(const std::string& name, int points, int rows, int level, int startLevel) {
 		tp::HighScore highScore;
-		loadFromFile(highScore, SavedHighScoreFile);
+		const auto& file = savedHighScoreFile();
+		loadFromFile(highScore, file.string());
 
 		auto result = highScore.add_results();
 		result->set_name(name);
@@ -112,7 +122,9 @@ namespace app::game {
 		for (int index = 0; index < resultCount; ++index) {
 			highScore.add_results()->CopyFrom(results[index]);
 		}
-		saveToFile(highScore, SavedHighScoreFile);
+		if (!saveToFile(highScore, file.string())) {
+			spdlog::error("[Serialize] Failed to save high scores: {}", file);
+		}
 	}
 
 }

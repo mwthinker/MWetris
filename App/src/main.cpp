@@ -9,6 +9,7 @@
 #include <argparse/argparse.hpp>
 #include <fmt/printf.h>
 #include <fmt/ostream.h>
+#include <fmt/std.h>
 
 template <> struct fmt::formatter<argparse::ArgumentParser> : fmt::ostream_formatter {};
 
@@ -73,6 +74,8 @@ int main(int argc, char** argv) {
 	spdlog::info("[main] MWetris Version:  {}", PROJECT_VERSION);
 	spdlog::info("[main] MWetris git hash:  {}  date: {}", GIT_VERSION, GIT_DATE);
 	spdlog::info("[main] MWetris GUI:  {}", MWETRIS_GUID);
+	auto& configuration = app::Configuration::getInstance();
+	spdlog::info("[main] Save directory: {}", configuration.getSaveDirectory());
 
 	MainWindow::ExitAction exitAction;
 	do {

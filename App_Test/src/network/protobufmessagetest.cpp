@@ -111,7 +111,7 @@ namespace network {
 		// When
 		message.reserveBodySize(static_cast<int>(package.ByteSizeLong()));
 		auto buffer = message.getMutableBodyBuffer();
-		package.SerializeToArray(buffer.data(), static_cast<int>(buffer.size()));
+		ASSERT_TRUE(package.SerializeToArray(buffer.data(), static_cast<int>(buffer.size())));
 
 		tp::GameRoomId result;
 		message.parseBodyInto(result);

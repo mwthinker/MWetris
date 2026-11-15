@@ -60,6 +60,7 @@ private:
 	void recordInputDelay(const SDL_Event& windowEvent);
 	void recordFrameTiming(const sdl::DeltaTime& deltaTime);
 	void processWindowMouseActions();
+	void persistWindowState();
 	void applyCommittedSettings(const app::Configuration::EditableSettings& settings, const app::Configuration::EditableSettings* previous = nullptr);
 	void applyUiScale();
 
@@ -79,6 +80,11 @@ private:
 	float dragMouseY_ = 0.f;
 	int dragWindowX_ = 0;
 	int dragWindowY_ = 0;
+	int restoredWindowX_ = 0;
+	int restoredWindowY_ = 0;
+	int restoredWindowWidth_ = 0;
+	int restoredWindowHeight_ = 0;
+	bool windowMaximized_ = false;
 	ImGuiStyle baseImGuiStyle_{};
 	float userUiScale_ = 1.f;
 	bool uiScaleDirty_ = true;

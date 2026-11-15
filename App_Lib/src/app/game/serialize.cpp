@@ -1,4 +1,5 @@
 #include "serialize.h"
+#include "configuration.h"
 #include "tetrisgame.h"
 #include "player.h"
 
@@ -6,6 +7,7 @@
 
 #include <protocol/shared.pb.h>
 
+#include <fmt/std.h>
 #include <spdlog/spdlog.h>
 
 #include <concepts>
@@ -23,9 +25,14 @@ namespace app::game {
 		static bool gameLoaded = false;
 		static tp::Game cachedGame; // cachedGame.last_played().seconds() == 0 means that no game is currently saved
 
-		constexpr int NbrHighScoreResults = 10;
-		const std::string SavedGameFile{"savedGame.mw"};
-		const std::string SavedHighScoreFile{"highScore.mw"};
+		const std::filesystem::path& savedGameFile() {
+			static const auto file = [] {
+				auto path = Configuration::getInstance().getSavePath("savedGame.mw");
+				spdlog::info("[Serialize] Saved-game file: {}", path);
+				return path;
+			}();
+			return file;
+		}
 
 		bool loadCachedGame() {
 			if (gameLoaded) {
@@ -33,13 +40,14 @@ namespace app::game {
 			}
 
 			gameLoaded = true;
-			if (!std::filesystem::exists(std::filesystem::path{SavedGameFile})) {
-				spdlog::info("[Serialize] Game save file {} does not exist", SavedGameFile);
+			const auto file = savedGameFile();
+			if (!std::filesystem::exists(file)) {
+				spdlog::info("[Serialize] Saved-game file does not exist");
 				return false;
 			}
 
-			if (!loadFromFile(cachedGame, SavedGameFile)) {
-				spdlog::warn("[Serialize] Game failed to be loaded: {}", SavedGameFile);
+			if (!loadFromFile(cachedGame, file.string())) {
+				spdlog::warn("[Serialize] Game failed to be loaded: {}", file);
 				return false;
 			}
 			return true;
@@ -133,7 +141,7 @@ namespace app::game {
 
 	void clearSavedGame() {
 		cachedGame.mutable_last_played()->set_seconds(0);
-		std::filesystem::path filepath{SavedGameFile};
+		auto filepath = savedGameFile();
 		if (std::filesystem::exists(filepath)) {
 			std::filesystem::remove(filepath);
 		}
@@ -143,7 +151,10 @@ namespace app::game {
 		try {
 			setTpPlayer(*cachedGame.mutable_player_board(), player);
 			cachedGame.mutable_last_played()->CopyFrom(google::protobuf::util::TimeUtil::GetCurrentTime());
-			saveToFile(cachedGame, SavedGameFile);
+			const auto& file = savedGameFile();
+			if (!saveToFile(cachedGame, file.string())) {
+				spdlog::error("[Serialize] Failed to save game: {}", file);
+			}
 		} catch (const std::bad_variant_access& e) {
 			spdlog::error("[Serilize] Fail to save, not DefaultPlayerData: {}", e.what());
 		}

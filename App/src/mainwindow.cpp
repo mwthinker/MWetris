@@ -23,10 +23,17 @@ using namespace std::chrono_literals;
 MainWindow::MainWindow(const Config& config) 
 	: config_{config} {
 
-	setPosition(app::Configuration::getInstance().getWindowPositionX(), app::Configuration::getInstance().getWindowPositionY());
-	setSize(app::Configuration::getInstance().getWindowWidth(), app::Configuration::getInstance().getWindowHeight());
+	auto& configuration = app::Configuration::getInstance();
+	const auto settings = configuration.getEditableSettings();
+	restoredWindowWidth_ = settings.window.width;
+	restoredWindowHeight_ = settings.window.height;
+	restoredWindowX_ = settings.window.positionX;
+	restoredWindowY_ = settings.window.positionY;
+	windowMaximized_ = settings.window.maximized;
+	setPosition(restoredWindowX_, restoredWindowY_);
+	setSize(restoredWindowWidth_, restoredWindowHeight_);
 	setTitle("MWetris");
-	setIcon(app::Configuration::getInstance().getWindowIcon());
+	setIcon(configuration.getWindowIcon());
 	setShowDemoWindow(config.showDemoWindow);
 }
 
@@ -36,6 +43,7 @@ MainWindow::~MainWindow() {
 	}
 	connections_.clear();
 	subWindows_.clear();
+	persistWindowState();
 	audioEngine_.reset();
 	server_.reset();
 	deviceManager_.reset();
@@ -45,6 +53,40 @@ MainWindow::~MainWindow() {
 	ioContext_.poll();
 
 	app::Configuration::getInstance().resetRuntimeResources();
+}
+
+void MainWindow::persistWindowState() {
+	if (!window_) {
+		return;
+	}
+
+	const auto windowFlags = SDL_GetWindowFlags(window_);
+	const bool fullscreen = (windowFlags & SDL_WINDOW_FULLSCREEN) != 0;
+	if (!fullscreen) {
+		windowMaximized_ = (windowFlags & SDL_WINDOW_MAXIMIZED) != 0;
+	}
+	if (!fullscreen && !windowMaximized_) {
+		SDL_GetWindowPosition(window_, &restoredWindowX_, &restoredWindowY_);
+		SDL_GetWindowSize(window_, &restoredWindowWidth_, &restoredWindowHeight_);
+	}
+
+	auto& configuration = app::Configuration::getInstance();
+	auto settings = configuration.getEditableSettings();
+	if (settings.window.width == restoredWindowWidth_
+		&& settings.window.height == restoredWindowHeight_
+		&& settings.window.positionX == restoredWindowX_
+		&& settings.window.positionY == restoredWindowY_
+		&& settings.window.maximized == windowMaximized_) {
+		return;
+	}
+	settings.window.width = restoredWindowWidth_;
+	settings.window.height = restoredWindowHeight_;
+	settings.window.positionX = restoredWindowX_;
+	settings.window.positionY = restoredWindowY_;
+	settings.window.maximized = windowMaximized_;
+	if (auto result = configuration.persistEditableSettings(settings); !result) {
+		spdlog::warn("Could not remember window state: {}", result.error());
+	}
 }
 
 MainWindow::ExitAction MainWindow::getExitAction() const {
@@ -63,8 +105,10 @@ void MainWindow::preLoop() {
 
 	auto& configuration = app::Configuration::getInstance();
 	baseImGuiStyle_ = ImGui::GetStyle();
-	audioEngine_ = std::make_shared<app::audio::AudioEngine>(configuration.getEditableSettings());
-	applyCommittedSettings(configuration.getEditableSettings());
+	const auto settings = configuration.getEditableSettings();
+	setPosition(settings.window.positionX, settings.window.positionY);
+	audioEngine_ = std::make_shared<app::audio::AudioEngine>(settings);
+	applyCommittedSettings(settings);
 	audioEngine_->playMusic();
 	configuration.initImGuiFonts();
 
@@ -371,6 +415,34 @@ void MainWindow::processEvent(const SDL_Event& windowEvent) {
 	}
 
 	switch (windowEvent.type) {
+		case SDL_EVENT_WINDOW_MOVED:
+			if (windowEvent.window.windowID == SDL_GetWindowID(window_)) {
+				const auto windowFlags = SDL_GetWindowFlags(window_);
+				if ((windowFlags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN)) == 0) {
+					restoredWindowX_ = windowEvent.window.data1;
+					restoredWindowY_ = windowEvent.window.data2;
+				}
+			}
+			break;
+		case SDL_EVENT_WINDOW_RESIZED:
+			if (windowEvent.window.windowID == SDL_GetWindowID(window_)) {
+				const auto windowFlags = SDL_GetWindowFlags(window_);
+				if ((windowFlags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN)) == 0) {
+					restoredWindowWidth_ = windowEvent.window.data1;
+					restoredWindowHeight_ = windowEvent.window.data2;
+				}
+			}
+			break;
+		case SDL_EVENT_WINDOW_MAXIMIZED:
+			if (windowEvent.window.windowID == SDL_GetWindowID(window_)) {
+				windowMaximized_ = true;
+			}
+			break;
+		case SDL_EVENT_WINDOW_RESTORED:
+			if (windowEvent.window.windowID == SDL_GetWindowID(window_)) {
+				windowMaximized_ = false;
+			}
+			break;
 		case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
 			if (windowEvent.window.windowID == SDL_GetWindowID(window_)) {
 				uiScaleDirty_ = true;

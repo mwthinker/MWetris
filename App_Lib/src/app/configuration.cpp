@@ -145,6 +145,15 @@ namespace app {
 		stream >> impl_->jsonObject;
 	}
 
+	std::filesystem::path Configuration::getSaveDirectory() const {
+		auto directory = std::filesystem::path{impl_->jsonPath}.parent_path();
+		return directory.empty() ? std::filesystem::current_path() : directory;
+	}
+
+	std::filesystem::path Configuration::getSavePath(std::string_view filename) const {
+		return getSaveDirectory() / std::string{filename};
+	}
+
 }
 
 namespace {
@@ -256,6 +265,8 @@ namespace {
 				.window = {
 					.width = window.at("width").get<int>(),
 					.height = window.at("height").get<int>(),
+					.positionX = window.at("positionX").get<int>(),
+					.positionY = window.at("positionY").get<int>(),
 					.minWidth = window.at("minWidth").get<int>(),
 					.minHeight = window.at("minHeight").get<int>(),
 					.resizable = window.at("resizeable").get<bool>(),
@@ -355,6 +366,8 @@ namespace {
 			auto& board = window["tetrisBoard"];
 			window["width"] = settings.window.width;
 			window["height"] = settings.window.height;
+			window["positionX"] = settings.window.positionX;
+			window["positionY"] = settings.window.positionY;
 			window["minWidth"] = settings.window.minWidth;
 			window["minHeight"] = settings.window.minHeight;
 			window["resizeable"] = settings.window.resizable;
