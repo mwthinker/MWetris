@@ -62,8 +62,6 @@ namespace app::game {
 		double fixedTimestep = 1.0 / 60.0;
 
 		bool paused_ = false;
-		bool countDown_ = false;
-		bool started_ = false;
 		TimeHandler timeHandler_;
 		TimeHandler::Key pauseKey_;
 	};

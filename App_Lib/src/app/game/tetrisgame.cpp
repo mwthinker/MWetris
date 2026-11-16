@@ -21,8 +21,6 @@ namespace app::game {
 	}
 
 	void TetrisGame::createGame(const std::vector<PlayerPtr>& players) {
-		countDown_ = players.size() > 1; // Only countdown if multiplayer.
-		started_ = false;
 		players_ = players;
 		playerConnections_.clear();
 		for (const auto& player : players_) {
@@ -42,7 +40,6 @@ namespace app::game {
 	void TetrisGame::restart() {
 		timeHandler_.reset();
 		paused_ = true;
-		started_ = false;
 		setPause(false);
 	}
 
@@ -74,42 +71,31 @@ namespace app::game {
 		for (const auto& player : players_) {
 			player->resetInput();
 		}
-		if (countDown_) {
-			paused_ = true;
-			gamePauseEvent(GamePause{
-				.countDown = 3,
-				.pause = true,
-				.action = GamePauseAction::Countdown
-			});
-			pauseKey_ = timeHandler_.scheduleRepeat([&, nbr = 2]() mutable {
-				if (nbr == 0) {
-					for (const auto& player : players_) {
-						player->resetInput();
-					}
-					paused_ = false;
-					gamePauseEvent(GamePause{
-						.countDown = 0,
-						.pause = false,
-						.action = GamePauseAction::CountdownFinished
-					});
-					started_ = true;
-				} else {
-					gamePauseEvent(GamePause{
-						.countDown = nbr--,
-						.pause = true,
-						.action = GamePauseAction::Countdown
-					});
+		paused_ = true;
+		gamePauseEvent(GamePause{
+			.countDown = 3,
+			.pause = true,
+			.action = GamePauseAction::Countdown
+		});
+		pauseKey_ = timeHandler_.scheduleRepeat([&, nbr = 2]() mutable {
+			if (nbr == 0) {
+				for (const auto& player : players_) {
+					player->resetInput();
 				}
-			}, 1.0, 3);
-		} else {
-			paused_ = false;
-			gamePauseEvent(GamePause{
-				.countDown = 0,
-				.pause = false,
-				.action = started_ ? GamePauseAction::Resumed : GamePauseAction::Started
-			});
-			started_ = true;
-		}
+				paused_ = false;
+				gamePauseEvent(GamePause{
+					.countDown = 0,
+					.pause = false,
+					.action = GamePauseAction::CountdownFinished
+				});
+			} else {
+				gamePauseEvent(GamePause{
+					.countDown = nbr--,
+					.pause = true,
+					.action = GamePauseAction::Countdown
+				});
+			}
+		}, 1.0, 3);
 	}
 
 	void TetrisGame::pause() {

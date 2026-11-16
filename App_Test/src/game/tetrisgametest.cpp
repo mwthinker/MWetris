@@ -65,4 +65,28 @@ namespace app::game {
 		EXPECT_EQ(eventPlayer, currentPlayer);
 	}
 
+	TEST(TetrisGameTest, countsDownBeforeStartingSinglePlayerGame) {
+		// Given
+		TetrisGame game;
+		std::vector<GamePause> events;
+		mw::signals::ScopedConnection connection = game.gamePauseEvent.connect([&](const GamePause& event) {
+			events.push_back(event);
+		});
+
+		// When
+		game.createGame({createRemotePlayer()});
+		game.update(1.0);
+		game.update(1.0);
+		game.update(1.0);
+
+		// Then
+		ASSERT_EQ(events.size(), 4);
+		EXPECT_EQ(events[0].countDown, 3);
+		EXPECT_EQ(events[1].countDown, 2);
+		EXPECT_EQ(events[2].countDown, 1);
+		EXPECT_EQ(events[3].action, GamePauseAction::CountdownFinished);
+		EXPECT_FALSE(events[3].pause);
+		EXPECT_FALSE(game.isPaused());
+	}
+
 }
