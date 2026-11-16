@@ -216,6 +216,22 @@ namespace app::game {
 		EXPECT_EQ(levels, (std::array{9, 10, 11}));
 	}
 
+	TEST(DefaultGameRulesTest, changingConfiguredStartLevelDoesNotAffectActiveGameProgression) {
+		// Given
+		auto player = createPlayerClearingRows(1);
+		DefaultGameRules rules{{.startLevel = 0}};
+		rules.createGame({player});
+		rules.setConfig({.startLevel = 10});
+
+		// When
+		player->updateMove(tetris::Move::DownGravity);
+
+		// Then
+		const auto data = std::get<DefaultPlayerData>(player->getPlayerData());
+		EXPECT_EQ(data.level, 0);
+		EXPECT_EQ(data.startLevel, 0);
+	}
+
 	TEST(DefaultGameRulesTest, scoresBoundaryClearAtConfiguredStartingLevel) {
 		// Given
 		auto player = createPlayerClearingRows(1, 99);

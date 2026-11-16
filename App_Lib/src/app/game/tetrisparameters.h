@@ -27,7 +27,7 @@ namespace app::game {
 		return std::min((startLevel + 1) * RowsToLevelUp, std::max(100, startLevel * RowsToLevelUp - 50));
 	}
 
-	constexpr int levelForClearedRows(int clearedRows, int startLevel = 0) {
+	constexpr int levelForClearedRows(int clearedRows, int startLevel) {
 		startLevel = clampStartLevel(startLevel);
 		const int firstLevelUp{rowsForFirstLevelUp(startLevel)};
 		if (clearedRows < firstLevelUp) {

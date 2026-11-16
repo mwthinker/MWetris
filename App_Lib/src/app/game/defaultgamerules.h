@@ -127,7 +127,7 @@ namespace app::game {
 				const int clearedRows = info.player->getClearedRows() + nbr;
 				const int previousLevel = info.data.level;
 				info.data.points += calculateLineClearPoints(nbr, info.data.level);
-				info.data.level = levelForClearedRows(clearedRows, config_.startLevel);
+				info.data.level = levelForClearedRows(clearedRows, info.data.startLevel);
 
 				if (info.data.level > previousLevel) {
 					info.player->updatePlayerData(info.data, LevelUp{.previous = previousLevel, .current = info.data.level});
