@@ -286,6 +286,7 @@ void MainWindow::initDebugServer() {
 
 void MainWindow::renderImGui(const sdl::DeltaTime& deltaTime) {
 	ImGui::BeginAudioFrame();
+	ImGui::EnsurePlatformWindowsVisible();
 	recordFrameTiming(deltaTime);
 	if (uiScaleDirty_) {
 		applyUiScale();

@@ -21,6 +21,22 @@ namespace ImGui {
 			return ImGui::GetIO().MouseClicked[ImGuiMouseButton_Right];
 		}
 
+		bool isViewportVisible(const ImGuiViewport& viewport, const ImGuiPlatformIO& platform) {
+			constexpr float MinimumVisibleWidth = 64.f;
+			constexpr float MinimumVisibleHeight = 32.f;
+			for (const auto& monitor : platform.Monitors) {
+				const auto overlapWidth = std::min(viewport.Pos.x + viewport.Size.x, monitor.WorkPos.x + monitor.WorkSize.x)
+					- std::max(viewport.Pos.x, monitor.WorkPos.x);
+				const auto overlapHeight = std::min(viewport.Pos.y + viewport.Size.y, monitor.WorkPos.y + monitor.WorkSize.y)
+					- std::max(viewport.Pos.y, monitor.WorkPos.y);
+				if (overlapWidth >= std::min(MinimumVisibleWidth, viewport.Size.x)
+					&& overlapHeight >= std::min(MinimumVisibleHeight, viewport.Size.y)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
 	}
 
 	void BeginAudioFrame() {
@@ -63,6 +79,31 @@ namespace ImGui {
 
 	void PopContentStyle() {
 		ImGui::PopStyleVar(3);
+	}
+
+	void EnsurePlatformWindowsVisible() {
+		auto& platform = ImGui::GetPlatformIO();
+		if (!platform.Platform_SetWindowPos) {
+			return;
+		}
+
+		const auto* mainViewport = ImGui::GetMainViewport();
+		for (auto* viewport : platform.Viewports) {
+			if (viewport == mainViewport
+				|| !viewport->PlatformWindowCreated
+				|| (viewport->Flags & (ImGuiViewportFlags_IsMinimized | ImGuiViewportFlags_NoInputs)) != 0) {
+				continue;
+			}
+
+			if (isViewportVisible(*viewport, platform)) {
+				continue;
+			}
+
+			platform.Platform_SetWindowPos(viewport, {
+				mainViewport->WorkPos.x + 60.f,
+				mainViewport->WorkPos.y + 60.f
+			});
+		}
 	}
 
 	float GetUiScale() {

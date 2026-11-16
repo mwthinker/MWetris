@@ -23,6 +23,8 @@ namespace ImGui {
 
 	void PopContentStyle();
 
+	void EnsurePlatformWindowsVisible();
+
 	float GetUiScale();
 
 	ImVec2 ModalSize(const ImVec2& logicalSize, float viewportFraction = 0.9f);
