@@ -1,4 +1,5 @@
 #include "tetriswindow.h"
+#include "windowevent.h"
 #include "tetriscontroller.h"
 #include "imguiextra.h"
 #include "controlspresenter.h"
@@ -145,6 +146,10 @@ namespace app::ui {
 			spdlog::warn("[TetrisWindow] Could not extract Window Hz, uses instead {}. Error: {}", DefaultRefreshRate, SDL_GetError());
 		}
 		return DefaultRefreshRate;
+	}
+
+	bool TetrisWindow::isFullscreen() const {
+		return (SDL_GetWindowFlags(window_.getSdlWindow()) & SDL_WINDOW_FULLSCREEN) != 0;
 	}
 
 	void TetrisWindow::initPreLoop() {
@@ -470,6 +475,23 @@ namespace app::ui {
 					}
 					if (ImGui::MenuItem("Controls...")) {
 						modalStateMachine_.switchTo<scene::Controls>();
+					}
+				});
+				menu("View", [&]() {
+					auto* window = window_.getSdlWindow();
+					const bool fullscreen = isFullscreen();
+					if (ImGui::MenuItem("Fullscreen", "F11", fullscreen)) {
+						const auto eventType = getToggleFullscreenEventType();
+						if (eventType == 0) {
+							spdlog::warn("Could not register fullscreen toggle event: {}", SDL_GetError());
+							return;
+						}
+						SDL_Event event{};
+						event.type = eventType;
+						event.user.windowID = SDL_GetWindowID(window);
+						if (!SDL_PushEvent(&event)) {
+							spdlog::warn("Could not request fullscreen toggle: {}", SDL_GetError());
+						}
 					}
 				});
 				menu("Help", [&]() {

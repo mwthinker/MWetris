@@ -60,6 +60,9 @@ private:
 	void recordInputDelay(const SDL_Event& windowEvent);
 	void recordFrameTiming(const sdl::DeltaTime& deltaTime);
 	void processWindowMouseActions();
+	bool isFullscreen() const;
+	void requestFullscreenToggle();
+	void toggleFullscreen();
 	void persistWindowState();
 	void applyCommittedSettings(const app::Configuration::EditableSettings& settings, const app::Configuration::EditableSettings* previous = nullptr);
 	void applyUiScale();

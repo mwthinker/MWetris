@@ -77,6 +77,7 @@ namespace app::ui {
 		void startSinglePlayer();
 		void rememberSinglePlayerControls();
 		int getCurrentMonitorHz() const;
+		bool isFullscreen() const;
 
 		void imGuiMainWindow(const sdl::DeltaTime& deltaTime);
 

@@ -6,6 +6,7 @@
 
 #include <app/ui/networkdebugwindow.h>
 #include <app/ui/tetriswindow.h>
+#include <app/ui/windowevent.h>
 #include <app/cnetwork/network.h>
 
 #include <network/tcpclient.h>
@@ -61,7 +62,7 @@ void MainWindow::persistWindowState() {
 	}
 
 	const auto windowFlags = SDL_GetWindowFlags(window_);
-	const bool fullscreen = (windowFlags & SDL_WINDOW_FULLSCREEN) != 0;
+	const bool fullscreen = isFullscreen();
 	if (!fullscreen) {
 		windowMaximized_ = (windowFlags & SDL_WINDOW_MAXIMIZED) != 0;
 	}
@@ -340,12 +341,7 @@ void MainWindow::recordFrameTiming(const sdl::DeltaTime& deltaTime) {
 void MainWindow::processWindowMouseActions() {
 	auto& configuration = app::Configuration::getInstance();
 	if (configuration.isFullscreenOnDoubleClick() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-		draggingWindow_ = false;
-		SDL_CaptureMouse(false);
-		auto fullscreen = (SDL_GetWindowFlags(window_) & SDL_WINDOW_FULLSCREEN) != 0;
-		if (!SDL_SetWindowFullscreen(window_, !fullscreen)) {
-			spdlog::warn("Could not toggle fullscreen: {}", SDL_GetError());
-		}
+		requestFullscreenToggle();
 		return;
 	}
 
@@ -355,7 +351,6 @@ void MainWindow::processWindowMouseActions() {
 		draggingWindow_ = true;
 		SDL_GetGlobalMouseState(&dragMouseX_, &dragMouseY_);
 		SDL_GetWindowPosition(window_, &dragWindowX_, &dragWindowY_);
-		SDL_CaptureMouse(true);
 	}
 
 	if (draggingWindow_ && ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
@@ -365,7 +360,31 @@ void MainWindow::processWindowMouseActions() {
 		SDL_SetWindowPosition(window_, dragWindowX_ + static_cast<int>(mouseX - dragMouseX_), dragWindowY_ + static_cast<int>(mouseY - dragMouseY_));
 	} else if (draggingWindow_) {
 		draggingWindow_ = false;
-		SDL_CaptureMouse(false);
+	}
+}
+
+bool MainWindow::isFullscreen() const {
+	return (SDL_GetWindowFlags(window_) & SDL_WINDOW_FULLSCREEN) != 0;
+}
+
+void MainWindow::requestFullscreenToggle() {
+	const auto eventType = app::ui::getToggleFullscreenEventType();
+	if (eventType == 0) {
+		spdlog::warn("Could not register fullscreen toggle event: {}", SDL_GetError());
+		return;
+	}
+	SDL_Event event{};
+	event.type = eventType;
+	event.user.windowID = SDL_GetWindowID(window_);
+	if (!SDL_PushEvent(&event)) {
+		spdlog::warn("Could not request fullscreen toggle: {}", SDL_GetError());
+	}
+}
+
+void MainWindow::toggleFullscreen() {
+	draggingWindow_ = false;
+	if (!SDL_SetWindowFullscreen(window_, !isFullscreen())) {
+		spdlog::warn("Could not toggle fullscreen: {}", SDL_GetError());
 	}
 }
 
@@ -410,6 +429,19 @@ void MainWindow::recordInputDelay(const SDL_Event& windowEvent) {
 
 void MainWindow::processEvent(const SDL_Event& windowEvent) {
 	recordInputDelay(windowEvent);
+	if (windowEvent.type == SDL_EVENT_KEY_DOWN
+		&& windowEvent.key.key == SDLK_F11
+		&& windowEvent.key.repeat == 0) {
+		toggleFullscreen();
+		return;
+	}
+	const auto toggleFullscreenEventType = app::ui::getToggleFullscreenEventType();
+	if (toggleFullscreenEventType != 0
+		&& windowEvent.type == toggleFullscreenEventType
+		&& windowEvent.user.windowID == SDL_GetWindowID(window_)) {
+		toggleFullscreen();
+		return;
+	}
 	if (deviceManager_->eventUpdate(windowEvent)) {
 		return;
 	}

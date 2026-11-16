@@ -47,6 +47,7 @@ namespace app::ui::scene {
 			shortcut("F1", "Start or resume single player");
 			shortcut("P / Pause", "Pause or resume the current game");
 			shortcut("F5", "Restart the current game");
+			shortcut("F11", "Toggle fullscreen");
 			shortcut("Escape", "Pause the game or close a dialog");
 			ImGui::EndTable();
 		}
