@@ -34,6 +34,7 @@ namespace app::game {
 		void restart();
 
 		bool isPaused() const;
+		bool isGameOver() const;
 
 		void setPause(bool pause);
 

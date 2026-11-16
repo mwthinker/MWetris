@@ -237,6 +237,10 @@ namespace app {
 		return network_->isInsideGameRoom();
 	}
 
+	bool TetrisController::isGameOver() const {
+		return tetrisGame_.isGameOver();
+	}
+
 	void TetrisController::createLocalGameRoom() {
 		setGameRoomType(GameRoomType::LocalGameRoomLooby);
 	}

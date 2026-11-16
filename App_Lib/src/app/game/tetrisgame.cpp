@@ -50,6 +50,12 @@ namespace app::game {
 		return paused_;
 	}
 
+	bool TetrisGame::isGameOver() const {
+		return !players_.empty() && std::ranges::all_of(players_, [](const PlayerPtr& player) {
+			return player->isGameOver();
+		});
+	}
+
 	void TetrisGame::setPause(bool pauseGame) {
 		if (paused_ == pauseGame) {
 			// No change, do nothing.

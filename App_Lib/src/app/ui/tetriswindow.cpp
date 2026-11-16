@@ -442,7 +442,11 @@ namespace app::ui {
 						tetrisController_->restartGame();
 					}
 					if (ImGui::MenuItem("Leave Game")) {
-						modalStateMachine_.switchTo<scene::LeaveGame>();
+						if (tetrisController_->isGameOver()) {
+							tetrisController_->leaveGameRoom();
+						} else {
+							modalStateMachine_.switchTo<scene::LeaveGame>();
+						}
 					}
 					ImGui::EndDisabled();
 					ImGui::Separator();

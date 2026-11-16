@@ -90,6 +90,7 @@ namespace app {
 		bool isGameRoomSession() const;
 
 		bool isNetworkGame() const;
+		bool isGameOver() const;
 
 		void createDefaultGame(game::DevicePtr device, const ProfileId& profileId, int startLevel);
 		void setDefaultStartLevel(int startLevel);
