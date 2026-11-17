@@ -121,6 +121,7 @@ namespace app {
 
 	private:
 		void createGame(const std::vector<game::PlayerPtr>& players, const game::GameRulesConfig& gameRulesConfig);
+		void endGameSession();
 
 		void onNetworkEvent(const cnetwork::PlayerSlotEvent& playerSlotEvent);
 		void onNetworkEvent(const cnetwork::RestartEvent& restartEvent);

@@ -138,9 +138,6 @@ namespace app {
 			player = createHumanPlayer(device, controlProfiles_, playerData, std::move(tetrisBoard));
 		}
 		player->setProfileId(profileId);
-		connections_ += player->playerBoardUpdate.connect([](const game::PlayerBoardEvent& playerBoardEvent) {
-			game::clearSavedGame();
-		});
 		gameRoomType_ = GameRoomType::GameSession;
 		int configuredStartLevel{game::clampStartLevel(startLevel)};
 		if (resumeSavedGame) {
@@ -151,6 +148,9 @@ namespace app {
 		createGame({player}, game::DefaultGameRules::Config{
 			.startLevel = configuredStartLevel,
 			.resume = resumeSavedGame
+		});
+		playerConnections_ += player->playerBoardUpdate.connect([](const game::PlayerBoardEvent&) {
+			game::clearSavedGame();
 		});
 		if (resumeSavedGame) {
 			tetrisGame_.setPause(true);
@@ -301,7 +301,18 @@ namespace app {
 		network_->requestGameRoomList();
 	}
 
+	void TetrisController::endGameSession() {
+		playerConnections_.clear();
+		rules_.reset();
+		tetrisGame_.stop();
+		gameComponent_->initGame({});
+	}
+
 	void TetrisController::setGameRoomType(GameRoomType gameRoomType) {
+		if (gameRoomType == GameRoomType::OutsideGameRoom) {
+			endGameSession();
+		}
+
 		if (gameRoomType != GameRoomType::NetworkGameRoomLooby) {
 			gameRoomClients_.clear();
 		}

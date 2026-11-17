@@ -31,6 +31,8 @@ namespace app::game {
 
 		void createGame(const std::vector<PlayerPtr>& players);
 
+		void stop();
+
 		void restart();
 
 		bool isPaused() const;

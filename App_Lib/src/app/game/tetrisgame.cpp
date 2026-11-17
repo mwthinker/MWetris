@@ -33,8 +33,20 @@ namespace app::game {
 			});
 		}
 		timeHandler_.reset();
+		accumulator_ = 0.0;
 		paused_ = true;
 		setPause(false);
+	}
+
+	void TetrisGame::stop() {
+		for (const auto& player : players_) {
+			player->resetInput();
+		}
+		playerConnections_.clear();
+		players_.clear();
+		timeHandler_.reset();
+		accumulator_ = 0.0;
+		paused_ = true;
 	}
 
 	void TetrisGame::restart() {
