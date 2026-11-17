@@ -60,6 +60,7 @@ namespace app {
 			};
 			document["window"] = {
 				{"width", 860}, {"height", 1120}, {"minWidth", 480}, {"minHeight", 480},
+				{"positionX", 100}, {"positionY", 100},
 				{"resizeable", true}, {"border", true}, {"maximized", false},
 				{"pauseOnLostFocus", true}, {"fullscreenOnDoubleClick", false},
 				{"moveWindowByHoldingDownMouse", false}, {"vsync", true}, {"limitFps", false},
