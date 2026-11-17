@@ -120,7 +120,7 @@ namespace app {
 		: impl_{std::make_unique<Configuration::Impl>()} {
 
 		std::ifstream defaultStream{"USE_APPLICATION_JSON"};
-		bool applicationJson;
+		bool applicationJson = false;
 		defaultStream >> applicationJson;
 		const std::string APPLICATION_JSON{"tetris.json"};
 		impl_->defaultsPath = "tetris.defaults.json";

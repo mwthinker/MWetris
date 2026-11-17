@@ -8,7 +8,9 @@
 
 #include <protocol/high_score.pb.h>
 
+#include <chrono>
 #include <filesystem>
+#include <fstream>
 
 namespace app::game {
 
@@ -19,6 +21,21 @@ namespace app::game {
 
 		~SerilizeTest() override {}
 
+		static void SetUpTestSuite() {
+			originalDirectory_ = std::filesystem::current_path();
+			const auto unique = std::chrono::steady_clock::now().time_since_epoch().count();
+			testDirectory_ = std::filesystem::temp_directory_path()/("mwetris-serialize-test-" + std::to_string(unique));
+			std::filesystem::create_directories(testDirectory_);
+			std::filesystem::current_path(testDirectory_);
+			std::ofstream{"USE_APPLICATION_JSON"} << true;
+			std::ofstream{"tetris.json"} << "{}";
+		}
+
+		static void TearDownTestSuite() {
+			std::filesystem::current_path(originalDirectory_);
+			std::filesystem::remove_all(testDirectory_);
+		}
+
 		void SetUp() override {
 			clearSavedGame();
 			std::filesystem::remove("highScore.mw");
@@ -28,7 +45,9 @@ namespace app::game {
 			clearSavedGame();
 			std::filesystem::remove("highScore.mw");
 		}
-		
+
+		static inline std::filesystem::path originalDirectory_;
+		static inline std::filesystem::path testDirectory_;
 	};
 
 	TEST_F(SerilizeTest, loadedHumanUsesSharedCatalogAndPersistentDeviceDefault) {
